@@ -138,3 +138,4 @@ Translation helpers:
 If you add new UI, you must:
 1) add keys to `pl.json` + `en.json`
 2) use translations everywhere (no exceptions)
+always check for components folder.
