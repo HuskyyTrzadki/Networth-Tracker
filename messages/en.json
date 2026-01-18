@@ -1,0 +1,115 @@
+{
+  "App": {
+    "metadata": {
+      "title": "Portfolio Tracker",
+      "description": "Track your portfolio with delayed quotes and currency conversion."
+    }
+  },
+  "HomePage": {
+    "metadata": {
+      "title": "Portfolio Tracker"
+    },
+    "heading": "Portfolio Tracker",
+    "subtitle": "Template cleaned and ready for your first feature."
+  },
+  "DesignSystem": {
+    "Colors": {
+      "title": "Color palette",
+      "swatches": {
+        "background": "Background",
+        "foreground": "Foreground",
+        "card": "Card",
+        "popover": "Popover",
+        "primary": "Primary",
+        "secondary": "Secondary",
+        "accent": "Accent",
+        "muted": "Muted",
+        "destructive": "Destructive",
+        "border": "Border",
+        "input": "Input",
+        "ring": "Ring",
+        "chart1": "Chart 1",
+        "chart2": "Chart 2",
+        "chart3": "Chart 3",
+        "chart4": "Chart 4",
+        "chart5": "Chart 5",
+        "profit": "Profit",
+        "loss": "Loss",
+        "sidebar": "Sidebar",
+        "sidebarPrimary": "Sidebar primary",
+        "sidebarAccent": "Sidebar accent",
+        "sidebarBorder": "Sidebar border",
+        "sidebarRing": "Sidebar ring"
+      }
+    },
+    "Charts": {
+      "title": "Charts (Recharts)",
+      "subtitle": "Recharts components wired to semantic color tokens.",
+      "valueTitle": "Portfolio value",
+      "valueSubtitle": "Mocked 30-day curve (chart-1).",
+      "valueCurrentLabel": "Current",
+      "allocationTitle": "Allocation",
+      "allocationSubtitle": "Donut chart uses chart-1..5 tokens.",
+      "pnlTitle": "Daily P/L",
+      "pnlSubtitle": "Bars map positive/negative to chart-2/chart-3.",
+      "pnlSumLabel": "Sum"
+    },
+    "FinanceDemo": {
+      "title": "Financial demo",
+      "appName": "Portfolio Tracker",
+      "appSubtitle": "Server-first portfolio view",
+      "navTitle": "Navigation",
+      "navOverview": "Overview",
+      "navHoldings": "Holdings",
+      "navTransactions": "Transactions",
+      "navSettings": "Settings",
+      "sidebarCalloutTitle": "Tip",
+      "sidebarCalloutBody": "Use delayed quotes + cached FX to keep valuation fast.",
+      "fxRateLabel": "USD/PLN",
+      "sparklineRangeLabel": "30D",
+      "searchPlaceholder": "Search instrument…",
+      "actionAdd": "Add transaction",
+      "actionExport": "Export",
+      "actionDelete": "Delete",
+      "marketStatusLabel": "Market",
+      "marketStatusValue": "Delayed",
+      "totalValueUsd": "Total value (USD)",
+      "totalValuePln": "Total value (PLN)",
+      "dayChange": "Day change",
+      "holdingsTitle": "Holdings",
+      "symbol": "Symbol",
+      "name": "Name",
+      "shares": "Shares",
+      "price": "Price",
+      "value": "Value",
+      "day": "Day",
+      "allocationTitle": "Allocation",
+      "allocationAction": "Details",
+      "allocationEquities": "Equities",
+      "allocationCash": "Cash",
+      "allocationCrypto": "Crypto",
+      "allocationBonds": "Bonds",
+      "allocationOther": "Other",
+      "insightTitle": "What you see",
+      "insightBody": "Semantically-tokenized UI primitives (colors, radius, shadows, typography) ready for real product screens.",
+      "tagDelayedQuotes": "Delayed quotes",
+      "tagFxCached": "FX cached",
+      "tagRlsReady": "RLS-ready",
+      "destructiveTitle": "Danger zone",
+      "destructiveBody": "This card intentionally uses destructive tokens to validate contrast and hierarchy.",
+      "destructiveAction": "Review"
+    },
+    "Typography": {
+      "title": "Typography",
+      "heading": "Heading",
+      "body": "Body text",
+      "muted": "Muted text",
+      "serif": "Serif (News)",
+      "mono": "Monospace (data)",
+      "numbers": "Numbers (tabular-nums)",
+      "sampleProductName": "Portfolio Tracker",
+      "sampleBodySentence": "Portfolio tools should feel precise, fast, and trustworthy.",
+      "sampleSerifSentence": "Markets move on stories as much as numbers."
+    }
+  }
+}

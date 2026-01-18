@@ -1,0 +1,140 @@
+# Repository Guidelines
+CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
+We build both for desktop and mobile.
+
+## Coding Style & Naming Conventions
+- Language: TypeScript + React (Next.js 16 App Router).
+- Indentation: 2 spaces in JS/TS/JSON/MD.
+- Components: PascalCase file and component names (e.g., `MarketCard.tsx`).
+- CSS: Tailwind utility classes in JSX; shared styles belong in `globals.css`.
+- Linting: ESLint via `npm run lint`; keep files lint-clean before pushing.
+- 
+## Project context
+We are building a **server-first Portfolio Tracker** (Next.js App Router).
+MVP scope:
+- Search instrument by name/ticker
+- Add to portfolio (holdings/transactions)
+- Show portfolio valuation using **delayed quotes**
+- Multi-currency valuation (at least PLN + USD)
+
+Non-goals (MVP):
+- Screener / discovery filters
+- Fundamentals / DCF / “Qualtrim-level” analytics
+
+## Stack (high level)
+- Next.js (App Router), TypeScript
+- Supabase (Postgres + Auth + RLS)
+- Tailwind + shadcn/ui + v0
+- Market data via a swappable provider (start: Yahoo via `yahoo-finance2`)
+- Cache-first quotes & FX (DB cache with TTL)
+
+## Engineering rules
+- Server-first: prefer Server Components + server-side data prep.
+- Keep business logic owned in-repo (no “logic rental” from SDKs).
+- Feature-first structure (`features/*`) with explicit public APIs (`index.ts`).
+- No provider-specific shapes leaking to UI: normalize responses.
+- Shared vs feature UI:
+  - Domain features live in `src/features/*` (e.g. `portfolio`, `market-data`).
+  - Shared UI / design system currently lives in `src/features/design-system` (intentional for simplicity). If it starts to dominate the tree, move it to `src/shared/ui/*` and keep `src/features/*` strictly domain-focused.
+- API (App Router):
+  - HTTP endpoints: `src/app/api/**/route.ts`.
+  - Route handlers must stay thin: validate input → call a feature “service” (e.g. `src/features/market-data/server/*`) → return JSON.
+
+## Testing (required)
+We test at 2 levels:
+1) Unit/integration: **Vitest + React Testing Library**
+  - Test pure financial logic, parsers, normalizers, and client components.
+  - Convention: co-locate tests as `*.test.ts` / `*.test.tsx` next to the module under `src/features/*` or `src/lib/*`.
+  - For App Router route handlers, prefer importing the handler and calling it with a real `Request` (or `NextRequest` if you need Next-specific helpers) instead of spinning up a server.
+  - Default commands: `npm run test` (CI-like), `npm run test:watch` (local loop).
+2) E2E: **Playwright**
+  - Test core flows: search -> add -> portfolio valuation -> currency conversion.
+    Notes:
+- Async Server Components are best covered by E2E tests.
+
+## Package manager
+Use the repo’s package manager (do not switch).
+Rule: follow the existing lockfile (`pnpm-lock.yaml` / `package-lock.json` / `yarn.lock`).
+
+## Documentation rule (MANDATORY)
+Whenever you ship a new feature or change architecture:
+- Update this file.
+- Maintain these sections:
+
+### Already built
+- Tailwind v4 configured (PostCSS + `globals.css`)
+- Tailwind theme tokens (colors, radius, shadow, typography) wired via CSS variables + Tailwind config
+- Local fonts via Fontsource (Geist Sans, Geist Mono, Source Serif 4)
+- i18n routing scaffold (`next-intl`, `pl` default, `/en/...`)
+- Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
+- Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars
+- Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) (no tests yet)
+
+### Will be built next
+- Supabase setup (Auth + DB + RLS)
+- Instrument search (normalized market data provider API)
+- Portfolio: holdings + transactions
+- Cache-first quotes + FX with TTL (PLN + USD)
+- TODO: add first unit/integration tests for normalizers + cache logic (Vitest)
+
+Keep it short and current. If unsure, add a TODO with rationale.
+
+## Quality bar
+- Clean, readable code > clever abstractions.
+- files shouldnt be big, if u see one refactor.
+- reuse code.
+- care about types, no ANY or unknown
+- modern.
+- dont mutate objects.
+- one component=one role.
+- no hidden state
+- Hooki: jeden hook = jedna intencja
+- pure render” w React
+- Validate inputs; handle errors; avoid fetch-per-row patterns.
+- Add/adjust tests for every new module unit tests.
+- -lets try not to use useffect extensively, u are aware about "u might not need useeffect guide"
+- -remember we use react compiler, so now need for usememo, and usecallback.
+- -------------
+please teach me between the lines, i m not an expert so any tech stuff u do, u can explain more cleanly, why u do it the way u do.
+
+## i18n (MANDATORY)
+We ship **two locales only**:
+- `pl` (default)
+- `en`
+
+### Routing (App Router)
+We use locale-based routing with `next-intl`.
+- Default Polish has **no prefix**: `/`
+- English is prefixed: `/en/...`
+  Implementation detail: `localePrefix: "as-needed"` in i18n routing config. :contentReference[oaicite:1]{index=1}
+
+Pages live under: `app/[locale]/...` (or `app/(site)/[locale]/...`).
+
+Middleware negotiates locale + handles redirects/rewrites (only `pl` and `en`). :contentReference[oaicite:2]{index=2}
+
+### SSR / Static rendering rule (important)
+Do NOT rely on reading locale from `headers()` in Server Components (it opts routes into dynamic rendering).
+Instead, in `app/[locale]/layout.tsx` and pages, always forward `params.locale` using `setRequestLocale(locale)` so pages can stay statically renderable when possible. :contentReference[oaicite:3]{index=3}
+
+### Messages
+Translation files:
+- `messages/pl.json`
+- `messages/en.json`
+
+Keys should be grouped by component/feature (e.g. `PortfolioPage.title`, `Common.save`) for clean ownership. :contentReference[oaicite:4]{index=4}
+
+### No hardcoded strings (STRICT)
+Never put user-facing copy as raw string literals in components/pages.
+All UI text must come from i18n (e.g. `t("...")`) — including buttons, labels, empty states, errors, and metadata titles/descriptions.
+
+Allowed exceptions (only):
+- Storybook stories: `*.stories.tsx`
+- Tests: `*.test.ts` / `*.test.tsx`
+
+Translation helpers:
+- Server Components / route-level code: `getTranslations(...)`
+- Client Components: `useTranslations(...)`
+
+If you add new UI, you must:
+1) add keys to `pl.json` + `en.json`
+2) use translations everywhere (no exceptions)

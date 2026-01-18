@@ -1,0 +1,115 @@
+{
+  "App": {
+    "metadata": {
+      "title": "Portfolio Tracker",
+      "description": "Śledź portfel z opóźnionymi notowaniami i przeliczeniem walut."
+    }
+  },
+  "HomePage": {
+    "metadata": {
+      "title": "Portfolio Tracker"
+    },
+    "heading": "Portfolio Tracker",
+    "subtitle": "Szablon wyczyszczony i gotowy na pierwszą funkcję."
+  },
+  "DesignSystem": {
+    "Colors": {
+      "title": "Paleta kolorów",
+      "swatches": {
+        "background": "Tło",
+        "foreground": "Tekst",
+        "card": "Karta",
+        "popover": "Popover",
+        "primary": "Główny",
+        "secondary": "Drugorzędny",
+        "accent": "Akcent",
+        "muted": "Wyciszony",
+        "destructive": "Destrukcyjny",
+        "border": "Obramowanie",
+        "input": "Pole",
+        "ring": "Obwódka (focus)",
+        "chart1": "Wykres 1",
+        "chart2": "Wykres 2",
+        "chart3": "Wykres 3",
+        "chart4": "Wykres 4",
+        "chart5": "Wykres 5",
+        "profit": "Zysk",
+        "loss": "Strata",
+        "sidebar": "Panel boczny",
+        "sidebarPrimary": "Panel: primary",
+        "sidebarAccent": "Panel: accent",
+        "sidebarBorder": "Panel: border",
+        "sidebarRing": "Panel: ring"
+      }
+    },
+    "Charts": {
+      "title": "Wykresy (Recharts)",
+      "subtitle": "Komponenty Recharts podpięte pod semantyczne tokeny kolorów.",
+      "valueTitle": "Wartość portfela",
+      "valueSubtitle": "Mockowana krzywa 30D (chart-1).",
+      "valueCurrentLabel": "Aktualnie",
+      "allocationTitle": "Alokacja",
+      "allocationSubtitle": "Donut używa tokenów chart-1..5.",
+      "pnlTitle": "Dzienny P/L",
+      "pnlSubtitle": "Słupki mapują plus/minus na chart-2/chart-3.",
+      "pnlSumLabel": "Suma"
+    },
+    "FinanceDemo": {
+      "title": "Demo finansowe",
+      "appName": "Portfolio Tracker",
+      "appSubtitle": "Widok portfela (server-first)",
+      "navTitle": "Nawigacja",
+      "navOverview": "Przegląd",
+      "navHoldings": "Pozycje",
+      "navTransactions": "Transakcje",
+      "navSettings": "Ustawienia",
+      "sidebarCalloutTitle": "Wskazówka",
+      "sidebarCalloutBody": "Opóźnione notowania + cache FX = szybka wycena.",
+      "fxRateLabel": "USD/PLN",
+      "sparklineRangeLabel": "30D",
+      "searchPlaceholder": "Szukaj instrumentu…",
+      "actionAdd": "Dodaj transakcję",
+      "actionExport": "Eksportuj",
+      "actionDelete": "Usuń",
+      "marketStatusLabel": "Rynek",
+      "marketStatusValue": "Opóźnione",
+      "totalValueUsd": "Wartość łączna (USD)",
+      "totalValuePln": "Wartość łączna (PLN)",
+      "dayChange": "Zmiana dzienna",
+      "holdingsTitle": "Pozycje",
+      "symbol": "Symbol",
+      "name": "Nazwa",
+      "shares": "Akcje",
+      "price": "Cena",
+      "value": "Wartość",
+      "day": "Dzień",
+      "allocationTitle": "Alokacja",
+      "allocationAction": "Szczegóły",
+      "allocationEquities": "Akcje",
+      "allocationCash": "Gotówka",
+      "allocationCrypto": "Krypto",
+      "allocationBonds": "Obligacje",
+      "allocationOther": "Inne",
+      "insightTitle": "Co tu jest",
+      "insightBody": "UI oparte o semantyczne tokeny (kolory, radius, cienie, typografia) gotowe do prawdziwych ekranów produktu.",
+      "tagDelayedQuotes": "Opóźnione notowania",
+      "tagFxCached": "FX w cache",
+      "tagRlsReady": "Gotowe pod RLS",
+      "destructiveTitle": "Strefa ryzyka",
+      "destructiveBody": "Ta karta celowo używa tokenów destructive, żeby sprawdzić kontrast i hierarchię.",
+      "destructiveAction": "Sprawdź"
+    },
+    "Typography": {
+      "title": "Typografia",
+      "heading": "Nagłówek",
+      "body": "Tekst główny",
+      "muted": "Tekst pomocniczy",
+      "serif": "Szeryf (News)",
+      "mono": "Monospace (dane)",
+      "numbers": "Liczby (tabular-nums)",
+      "sampleProductName": "Portfolio Tracker",
+      "sampleBodySentence": "Narzędzia do portfela powinny być precyzyjne, szybkie i godne zaufania.",
+      "sampleSerifSentence": "Rynki poruszają się historiami tak samo jak liczbami."
+    }
+  }
+}

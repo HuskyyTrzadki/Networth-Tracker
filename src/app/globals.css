@@ -1,26 +1,144 @@
+@import "@fontsource/geist-sans/latin.css";
+@import "@fontsource/geist-mono/latin.css";
+@import "@fontsource/source-serif-4/latin.css";
+
+@config "../../tailwind.config.mjs";
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafafa;
+  --foreground: #09090b;
+
+  --card: #ffffff;
+  --card-foreground: #09090b;
+
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #4f46e5;
+
+  --chart-1: #4f46e5;
+  --chart-2: #0d9488;
+  --chart-3: #0284c7;
+  --chart-4: #7c3aed;
+  --chart-5: #475569;
+
+  --profit: #047857;
+  --loss: #9f1239;
+
+  --sidebar: var(--background);
+  --sidebar-foreground: #18181b;
+  --sidebar-primary: #4f46e5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e4e4e7;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #4f46e5;
+
+  --radius: 0.25rem;
+  --shadow: 0 0 0 1px #00000008, 0 1px 2px #00000010;
+
+  --font-sans: "Geist Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+    "Segoe UI Emoji";
+  --font-serif: "Source Serif 4", ui-serif, Georgia, Cambria, "Times New Roman",
+    Times, serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+
+  color-scheme: light dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+
+  --card: #0b0b0f;
+  --card-foreground: #f4f4f5;
+
+  --popover: #0b0b0f;
+  --popover-foreground: #f4f4f5;
+
+  --secondary: #18181b;
+  --secondary-foreground: #f4f4f5;
+
+  --accent: #18181b;
+  --accent-foreground: #f4f4f5;
+
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+
+  --border: #27272a;
+  --input: #27272a;
+
+  --sidebar: #09090b;
+  --sidebar-foreground: #f4f4f5;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #f4f4f5;
+  --sidebar-border: #27272a;
+
+  --shadow: 0 0 0 1px #ffffff0f, 0 1px 2px #00000066;
+
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme]) {
+    --background: #09090b;
+    --foreground: #f4f4f5;
+
+    --card: #0b0b0f;
+    --card-foreground: #f4f4f5;
+
+    --popover: #0b0b0f;
+    --popover-foreground: #f4f4f5;
+
+    --secondary: #18181b;
+    --secondary-foreground: #f4f4f5;
+
+    --accent: #18181b;
+    --accent-foreground: #f4f4f5;
+
+    --muted: #18181b;
+    --muted-foreground: #a1a1aa;
+
+    --border: #27272a;
+    --input: #27272a;
+
+    --sidebar: #09090b;
+    --sidebar-foreground: #f4f4f5;
+    --sidebar-accent: #27272a;
+    --sidebar-accent-foreground: #f4f4f5;
+    --sidebar-border: #27272a;
+
+    --shadow: 0 0 0 1px #ffffff0f, 0 1px 2px #00000066;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    @apply bg-background font-sans text-foreground;
+    font-variant-numeric: tabular-nums;
+  }
 }
