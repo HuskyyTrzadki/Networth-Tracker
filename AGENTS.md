@@ -39,7 +39,7 @@ Non-goals (MVP):
 - API (App Router):
   - HTTP endpoints: `src/app/api/**/route.ts`.
   - Route handlers must stay thin: validate input → call a feature “service” (e.g. `src/features/market-data/server/*`) → return JSON.
-
+-use cn() function from cn.ts for classnames.
 ## Testing (required)
 We test at 2 levels:
 1) Unit/integration: **Vitest + React Testing Library**
@@ -65,17 +65,18 @@ Whenever you ship a new feature or change architecture:
 - Tailwind v4 configured (PostCSS + `globals.css`)
 - Tailwind theme tokens (colors, radius, shadow, typography) wired via CSS variables + Tailwind config
 - Local fonts via Fontsource (Geist Sans, Geist Mono, Source Serif 4)
-- i18n routing scaffold (`next-intl`, `pl` default, `/en/...`)
+- i18n routing scaffold (`next-intl`, `pl` default, `/en/...`) + middleware rewrites (`middleware.ts`)
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
 - Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars
-- Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) (no tests yet)
+- App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
+- Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 
 ### Will be built next
 - Supabase setup (Auth + DB + RLS)
 - Instrument search (normalized market data provider API)
 - Portfolio: holdings + transactions
 - Cache-first quotes + FX with TTL (PLN + USD)
-- TODO: add first unit/integration tests for normalizers + cache logic (Vitest)
+- TODO: add unit/integration tests for normalizers + cache logic (Vitest)
 
 Keep it short and current. If unsure, add a TODO with rationale.
 
@@ -108,13 +109,13 @@ We use locale-based routing with `next-intl`.
 - English is prefixed: `/en/...`
   Implementation detail: `localePrefix: "as-needed"` in i18n routing config. :contentReference[oaicite:1]{index=1}
 
-Pages live under: `app/[locale]/...` (or `app/(site)/[locale]/...`).
+Pages live under: `src/app/[locale]/...` (or `src/app/(site)/[locale]/...`).
 
 Middleware negotiates locale + handles redirects/rewrites (only `pl` and `en`). :contentReference[oaicite:2]{index=2}
 
 ### SSR / Static rendering rule (important)
 Do NOT rely on reading locale from `headers()` in Server Components (it opts routes into dynamic rendering).
-Instead, in `app/[locale]/layout.tsx` and pages, always forward `params.locale` using `setRequestLocale(locale)` so pages can stay statically renderable when possible. :contentReference[oaicite:3]{index=3}
+Instead, in `src/app/[locale]/layout.tsx` and pages, always forward `params.locale` using `setRequestLocale(locale)` so pages can stay statically renderable when possible. :contentReference[oaicite:3]{index=3}
 
 ### Messages
 Translation files:
@@ -134,6 +135,7 @@ Allowed exceptions (only):
 Translation helpers:
 - Server Components / route-level code: `getTranslations(...)`
 - Client Components: `useTranslations(...)`
+Rule of thumb: server uses async `getTranslations`, client uses `useTranslations` hook.
 
 If you add new UI, you must:
 1) add keys to `pl.json` + `en.json`

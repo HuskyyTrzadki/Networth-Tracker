@@ -12,6 +12,24 @@
     "heading": "Portfolio Tracker",
     "subtitle": "Szablon wyczyszczony i gotowy na pierwszą funkcję."
   },
+  "Navigation": {
+    "brand": "Portfolio Tracker",
+    "mobileNavLabel": "Główna nawigacja",
+    "actions": {
+      "close": "Zamknij"
+    },
+    "items": {
+      "portfolio": "Portfel",
+      "search": "Szukaj",
+      "transactions": "Transakcje",
+      "add": "Dodaj",
+      "settings": "Ustawienia",
+      "more": "Więcej"
+    },
+    "more": {
+      "title": "Menu"
+    }
+  },
   "DesignSystem": {
     "Colors": {
       "title": "Paleta kolorów",
@@ -98,6 +116,22 @@
       "destructiveTitle": "Strefa ryzyka",
       "destructiveBody": "Ta karta celowo używa tokenów destructive, żeby sprawdzić kontrast i hierarchię.",
       "destructiveAction": "Sprawdź"
+    },
+    "Sheet": {
+      "pageTitle": "Sheet (centrum operacyjne)",
+      "pageHint": "Zmień rozmiar okna, żeby zobaczyć zachowanie mobile/desktop.",
+      "mockCardTitle": "Pozycja w portfelu",
+      "mockCardSubtitle": "Szybka edycja i akcje w panelu bocznym.",
+      "open": "Otwórz panel",
+      "title": "Edytuj pozycję",
+      "description": "Szczegóły, szybki podgląd i akcje.",
+      "close": "Zamknij",
+      "sectionTitle": "Formularz",
+      "sectionHint": "Treść scrolluje się niezależnie, footer jest zawsze widoczny.",
+      "fieldLabel": "Pole {index}",
+      "fieldPlaceholder": "Wpisz wartość…",
+      "cancel": "Anuluj",
+      "save": "Zapisz"
     },
     "Typography": {
       "title": "Typografia",

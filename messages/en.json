@@ -12,6 +12,24 @@
     "heading": "Portfolio Tracker",
     "subtitle": "Template cleaned and ready for your first feature."
   },
+  "Navigation": {
+    "brand": "Portfolio Tracker",
+    "mobileNavLabel": "Main navigation",
+    "actions": {
+      "close": "Close"
+    },
+    "items": {
+      "portfolio": "Portfolio",
+      "search": "Search",
+      "transactions": "Transactions",
+      "add": "Add",
+      "settings": "Settings",
+      "more": "More"
+    },
+    "more": {
+      "title": "Menu"
+    }
+  },
   "DesignSystem": {
     "Colors": {
       "title": "Color palette",
@@ -98,6 +116,22 @@
       "destructiveTitle": "Danger zone",
       "destructiveBody": "This card intentionally uses destructive tokens to validate contrast and hierarchy.",
       "destructiveAction": "Review"
+    },
+    "Sheet": {
+      "pageTitle": "Sheet (operational panel)",
+      "pageHint": "Resize the window to see mobile/desktop behavior.",
+      "mockCardTitle": "Portfolio position",
+      "mockCardSubtitle": "Quick edit and actions in a side panel.",
+      "open": "Open panel",
+      "title": "Edit position",
+      "description": "Details, quick preview, and actions.",
+      "close": "Close",
+      "sectionTitle": "Form",
+      "sectionHint": "Content scrolls independently, footer stays visible.",
+      "fieldLabel": "Field {index}",
+      "fieldPlaceholder": "Enter a value…",
+      "cancel": "Cancel",
+      "save": "Save"
     },
     "Typography": {
       "title": "Typography",

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { AppShell } from "@/features/app-shell";
 import { isLocale, routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -40,7 +41,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale}>
       <body className="antialiased" suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+          <AppShell>{children}</AppShell>
         </NextIntlClientProvider>
       </body>
     </html>
