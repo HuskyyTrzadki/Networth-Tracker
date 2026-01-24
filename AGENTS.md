@@ -80,6 +80,7 @@ Whenever you ship a new feature or change architecture:
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
+- Landing page.
 
 ### Will be built next
 - Apply DB schema + RLS for auth (run `supabase/migrations/20260124_profiles.sql`)

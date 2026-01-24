@@ -24,7 +24,7 @@ export type AppNavItem = Readonly<{
 export const primaryNavItems: readonly AppNavItem[] = [
   {
     id: "portfolio",
-    href: "/",
+    href: "/portfolio",
     icon: LayoutGrid,
     labelKey: "Navigation.items.portfolio",
   },
