@@ -1,0 +1,81 @@
+import { createClient } from "@/lib/supabase/server";
+import type { cookies } from "next/headers";
+
+import { ensureProfileExists, markProfileUpgradedIfNeeded } from "./profiles";
+
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
+type SupabaseServerClient = ReturnType<typeof createClient>;
+
+export async function signInAnonymously(cookieStore: CookieStore) {
+  // Server-side anonymous session creation so cookies are set securely.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.signInAnonymously();
+
+  if (error) throw new Error(error.message);
+  const user = data?.user;
+  if (!user) throw new Error("Missing user after anonymous sign-in.");
+
+  await ensureProfileExists(supabase, user.id);
+
+  return {
+    userId: user.id,
+    isAnonymous: Boolean(user.is_anonymous),
+  } as const;
+}
+
+export async function exchangeOAuthCodeForSession(
+  cookieStore: CookieStore,
+  code: string
+) {
+  // OAuth callback: exchange the code for a session and set cookies.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) throw new Error(error.message);
+  const user = data?.user;
+  if (!user) throw new Error("Missing user after OAuth callback.");
+
+  await ensureProfileExists(supabase, user.id);
+  if (!user.is_anonymous) {
+    await markProfileUpgradedIfNeeded(supabase, user.id);
+  }
+
+  return {
+    userId: user.id,
+    isAnonymous: Boolean(user.is_anonymous),
+  } as const;
+}
+
+export async function signOut(cookieStore: CookieStore) {
+  // Clear auth cookies and session on the server.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { error } = await supabase.auth.signOut();
+  if (error) throw new Error(error.message);
+}
+
+export async function upgradeToEmailPassword(
+  cookieStore: CookieStore,
+  input: Readonly<{ email: string; password: string }>
+) {
+  // Link email/password credentials to the current session.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.updateUser(input);
+
+  if (error) throw new Error(error.message);
+  const user = data?.user;
+  if (!user) throw new Error("Missing user after email/password upgrade.");
+
+  await ensureProfileExists(supabase, user.id);
+  await markProfileUpgradedIfNeeded(supabase, user.id);
+
+  return { userId: user.id } as const;
+}
+
+export async function getAuthUser(cookieStore: CookieStore) {
+  // Lightweight helper to read the current user (if any).
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.getUser();
+  if (error) return null;
+  return data?.user ?? null;
+}

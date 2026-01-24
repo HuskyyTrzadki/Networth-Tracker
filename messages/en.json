@@ -146,4 +146,41 @@
       "sampleSerifSentence": "Markets move on stories as much as numbers."
     }
   }
+  ,
+  "Auth": {
+    "settings": {
+      "title": "Account",
+      "subtitle": "Start as a guest and upgrade later to keep your portfolio.",
+      "status": {
+        "signedOut": "Signed out",
+        "guest": "Guest session",
+        "signedIn": "Signed in"
+      },
+      "actions": {
+        "googleSignIn": "Continue with Google",
+        "googleUpgrade": "Upgrade with Google",
+        "guest": "Continue as guest",
+        "signOut": "Sign out"
+      },
+      "email": {
+        "title": "Upgrade with email",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Password (min 8 characters)",
+        "hint": "Depending on your settings, email confirmation may be required.",
+        "submit": "Set email & password"
+      },
+      "messages": {
+        "oauthError": "We couldn't complete sign-in. Try again.",
+        "emailUpgradeOk": "Updated. Check your inbox if confirmation is required."
+      },
+      "errors": {
+        "generic": "Something went wrong. Please try again.",
+        "google": "Couldn't start Google sign-in. Try again.",
+        "guest": "Couldn't start a guest session. Try again.",
+        "signOut": "Couldn't sign out. Try again.",
+        "email": "Couldn't upgrade with email. Check your inputs and try again."
+      },
+      "retentionHint": "Guest data may be deleted after 60 days of inactivity. Upgrade to keep it."
+    }
+  }
 }

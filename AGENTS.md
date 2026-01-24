@@ -151,3 +151,5 @@ If you add new UI, you must:
 1) add keys to `pl.json` + `en.json`
 2) use translations everywhere (no exceptions)
 always check for components folder.
+---
+on all of the backend stuff u add, pls add comments, i m not BE engineer, make it so i can understand.

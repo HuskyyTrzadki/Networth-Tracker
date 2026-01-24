@@ -146,4 +146,41 @@
       "sampleSerifSentence": "Rynki poruszają się historiami tak samo jak liczbami."
     }
   }
+  ,
+  "Auth": {
+    "settings": {
+      "title": "Konto",
+      "subtitle": "Zacznij jako gość i uaktualnij później, żeby zachować portfel.",
+      "status": {
+        "signedOut": "Wylogowano",
+        "guest": "Sesja gościa",
+        "signedIn": "Zalogowano"
+      },
+      "actions": {
+        "googleSignIn": "Kontynuuj z Google",
+        "googleUpgrade": "Uaktualnij przez Google",
+        "guest": "Kontynuuj jako gość",
+        "signOut": "Wyloguj"
+      },
+      "email": {
+        "title": "Uaktualnij przez e-mail",
+        "emailPlaceholder": "E-mail",
+        "passwordPlaceholder": "Hasło (min. 8 znaków)",
+        "hint": "W zależności od ustawień może być wymagana weryfikacja e-mail.",
+        "submit": "Ustaw e-mail i hasło"
+      },
+      "messages": {
+        "oauthError": "Nie udało się dokończyć logowania. Spróbuj ponownie.",
+        "emailUpgradeOk": "Zaktualizowano. Sprawdź skrzynkę, jeśli wymagana jest weryfikacja."
+      },
+      "errors": {
+        "generic": "Coś poszło nie tak. Spróbuj ponownie.",
+        "google": "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie.",
+        "guest": "Nie udało się uruchomić sesji gościa. Spróbuj ponownie.",
+        "signOut": "Nie udało się wylogować. Spróbuj ponownie.",
+        "email": "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie."
+      },
+      "retentionHint": "Dane gościa mogą zostać usunięte po 60 dniach braku aktywności. Uaktualnij, żeby je zachować."
+    }
+  }
 }
