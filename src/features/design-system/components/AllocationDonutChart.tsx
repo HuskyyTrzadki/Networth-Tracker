@@ -12,19 +12,21 @@ type Props = Readonly<{
 }>;
 
 export function AllocationDonutChart({ data, height = 240 }: Props) {
+  const chartData = [...data];
+
   return (
     <div className="w-full" style={{ height }}>
       <ResponsiveContainer>
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             dataKey="value"
             nameKey="id"
             innerRadius={60}
             outerRadius={90}
             paddingAngle={2}
           >
-            {data.map((slice) => (
+            {chartData.map((slice) => (
               <Cell key={slice.id} fill={slice.color} stroke="var(--card)" />
             ))}
           </Pie>
@@ -33,4 +35,3 @@ export function AllocationDonutChart({ data, height = 240 }: Props) {
     </div>
   );
 }
-

@@ -11,7 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/features/design-system/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 

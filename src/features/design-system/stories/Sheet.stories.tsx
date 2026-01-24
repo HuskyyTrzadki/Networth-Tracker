@@ -4,8 +4,8 @@ import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import { Container } from "@/features/common";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/features/design-system/components/ui/button";
+import { Input } from "@/features/design-system/components/ui/input";
 import {
   Sheet,
   SheetBody,
@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/features/design-system/components/ui/sheet";
 
 import { DesignSurface } from "../components/DesignSurface";
 

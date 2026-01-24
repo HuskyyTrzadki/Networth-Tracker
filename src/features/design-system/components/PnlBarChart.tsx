@@ -20,10 +20,15 @@ type Props = Readonly<{
 }>;
 
 export function PnlBarChart({ data, height = 240 }: Props) {
+  const chartData = [...data];
+
   return (
     <div className="w-full" style={{ height }}>
       <ResponsiveContainer>
-        <BarChart data={data} margin={{ top: 12, right: 8, bottom: 0, left: 0 }}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 12, right: 8, bottom: 0, left: 0 }}
+        >
           <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
           <XAxis
             dataKey="label"
@@ -50,7 +55,7 @@ export function PnlBarChart({ data, height = 240 }: Props) {
             itemStyle={{ color: "var(--popover-foreground)" }}
           />
           <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-            {data.map((entry) => (
+            {chartData.map((entry) => (
               <Cell
                 key={entry.label}
                 fill={entry.pnl >= 0 ? "var(--profit)" : "var(--loss)"}

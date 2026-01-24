@@ -40,6 +40,12 @@ Non-goals (MVP):
   - HTTP endpoints: `src/app/api/**/route.ts`.
   - Route handlers must stay thin: validate input → call a feature “service” (e.g. `src/features/market-data/server/*`) → return JSON.
 -use cn() function from cn.ts for classnames.
+
+## Supabase connection (basic)
+- Set env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
+- Browser: use `createClient()` from `src/lib/supabase/client.ts` inside Client Components.
+- Server/route handlers: pass `cookies()` into `createClient()` from `src/lib/supabase/server.ts`.
+- Middleware: compose with other middleware (e.g. `next-intl`) by calling `createClient(request, response)` from `src/lib/supabase/middleware.ts`, then `await supabase.auth.getSession()`, then return that same `response`.
 ## Testing (required)
 We test at 2 levels:
 1) Unit/integration: **Vitest + React Testing Library**
@@ -70,9 +76,12 @@ Whenever you ship a new feature or change architecture:
 - Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars
 - App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
+- Supabase connection helpers (env + browser/server/middleware clients)
+- Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
 
 ### Will be built next
-- Supabase setup (Auth + DB + RLS)
+- Apply DB schema + RLS for auth (run `supabase/migrations/20260124_profiles.sql`)
+- Wire `profiles.last_active_at` updates into write actions (transactions/portfolio) for 60-day retention cleanup
 - Instrument search (normalized market data provider API)
 - Portfolio: holdings + transactions
 - Cache-first quotes + FX with TTL (PLN + USD)
@@ -93,6 +102,7 @@ Keep it short and current. If unsure, add a TODO with rationale.
 - pure render” w React
 - Validate inputs; handle errors; avoid fetch-per-row patterns.
 - Add/adjust tests for every new module unit tests.
+- After bigger changes, run `npm run typecheck` and `npm run test`.
 - -lets try not to use useffect extensively, u are aware about "u might not need useeffect guide"
 - -remember we use react compiler, so now need for usememo, and usecallback.
 - -------------
