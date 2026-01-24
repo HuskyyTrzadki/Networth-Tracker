@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
-import { isLocale } from "@/i18n/routing";
+import { DashboardEmptyState } from "@/features/portfolio";
+import { getLocaleForMetadata, getLocaleFromParams } from "@/lib/locale";
 
 type Props = Readonly<{
   params: Promise<{ locale: string }>;
@@ -11,23 +11,40 @@ type Props = Readonly<{
 export async function generateMetadata({
   params,
 }: Pick<Props, "params">): Promise<Metadata> {
-  const { locale } = await params;
-  if (!isLocale(locale)) return {};
+  const locale = await getLocaleForMetadata(params);
+  if (!locale) return {};
 
-  const t = await getTranslations({ locale, namespace: "Navigation.items" });
-  return { title: t("portfolio") };
+  const nav = await getTranslations({ locale, namespace: "Navigation.items" });
+  return { title: nav("portfolio") };
 }
 
 export default async function PortfolioPage({ params }: Props) {
-  const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "Navigation.items" });
+  const locale = await getLocaleFromParams(params);
+  const nav = await getTranslations({ locale, namespace: "Navigation.items" });
+  const emptyState = await getTranslations({
+    locale,
+    namespace: "PortfolioPage.empty",
+  });
 
   return (
-    <main className="px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">{t("portfolio")}</h1>
+    <main className="flex min-h-[calc(100vh-120px)] flex-col px-6 py-8">
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {nav("portfolio")}
+      </h1>
+      <div className="flex flex-1 items-center justify-center py-10">
+        <DashboardEmptyState
+          title={emptyState("title")}
+          subtitle={emptyState("subtitle")}
+          primaryAction={{
+            label: emptyState("actions.addTransaction"),
+            href: "/transactions/new",
+          }}
+          secondaryAction={{
+            label: emptyState("actions.importCsv"),
+            href: "/transactions/new?import=csv",
+          }}
+        />
+      </div>
     </main>
   );
 }

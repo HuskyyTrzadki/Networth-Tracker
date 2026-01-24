@@ -1,6 +1,6 @@
 # Repository Guidelines
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
-We build both for desktop and mobile. styles need to use our patterns and typography and color palette, u are encouraged to use shadcn components we already have in storybook, when u add new component add storybook for it.
+We build both for desktop and mobile. styles need to use our patterns and typography and color palette, u are encouraged to use shadcn components we already have in storybook, when u add new component u think its worth to add to storybook , go for it.
 
 ## Coding Style & Naming Conventions
 - Language: TypeScript + React (Next.js 16 App Router).
@@ -29,6 +29,7 @@ Non-goals (MVP):
 - Cache-first quotes & FX (DB cache with TTL)
 
 ## Engineering rules
+-no file bigger than 400 lines. see bigger one? refactor/split.
 - Server-first: prefer Server Components + server-side data prep.
 - Keep business logic owned in-repo (no “logic rental” from SDKs).
 - Feature-first structure (`features/*`) with explicit public APIs (`index.ts`).
@@ -40,6 +41,7 @@ Non-goals (MVP):
   - HTTP endpoints: `src/app/api/**/route.ts`.
   - Route handlers must stay thin: validate input → call a feature “service” (e.g. `src/features/market-data/server/*`) → return JSON.
 -use cn() function from cn.ts for classnames.
+  
 
 ## Supabase connection (basic)
 - Set env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
@@ -69,7 +71,7 @@ Whenever you ship a new feature or change architecture:
 
 ### Already built
 - Tailwind v4 configured (PostCSS + `globals.css`)
-- Tailwind theme tokens (colors, radius, shadow, typography) wired via CSS variables + Tailwind config
+- Tailwind theme tokens (colors, radius, shadow, typography) wired via CSS variables + Tailwind config (Wealth OS “Black & Indigo”)
 - Local fonts via Fontsource (Geist Sans, Geist Mono, Source Serif 4)
 - i18n routing scaffold (`next-intl`, `pl` default, `/en/...`) + middleware rewrites (`middleware.ts`)
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
@@ -77,10 +79,11 @@ Whenever you ship a new feature or change architecture:
 - App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
 - Landing page (PL/EN) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/[locale]/(app)`
+- Portfolio empty state with CTA actions (Dashboard)
+- Locale helper for page/metadata locale handling (`src/lib/locale.ts`)
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
-- Landing page.
 
 ### Will be built next
 - Apply DB schema + RLS for auth (run `supabase/migrations/20260124_profiles.sql`)

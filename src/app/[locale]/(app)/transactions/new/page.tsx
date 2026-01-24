@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
-import { isLocale } from "@/i18n/routing";
+import { getLocaleForMetadata, getLocaleFromParams } from "@/lib/locale";
 
 type Props = Readonly<{
   params: Promise<{ locale: string }>;
@@ -11,18 +10,15 @@ type Props = Readonly<{
 export async function generateMetadata({
   params,
 }: Pick<Props, "params">): Promise<Metadata> {
-  const { locale } = await params;
-  if (!isLocale(locale)) return {};
+  const locale = await getLocaleForMetadata(params);
+  if (!locale) return {};
 
   const t = await getTranslations({ locale, namespace: "Navigation.items" });
   return { title: t("add") };
 }
 
 export default async function TransactionNewPage({ params }: Props) {
-  const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-
-  setRequestLocale(locale);
+  const locale = await getLocaleFromParams(params);
   const t = await getTranslations({ locale, namespace: "Navigation.items" });
 
   return (

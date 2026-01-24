@@ -33,6 +33,16 @@
     },
     "footnote": "Dane gościa mogą zostać usunięte po 60 dniach braku aktywności."
   },
+  "PortfolioPage": {
+    "empty": {
+      "title": "Twój portfel jest pusty.",
+      "subtitle": "Dodaj swoje pierwsze aktywo, aby zobaczyć analizę.",
+      "actions": {
+        "addTransaction": "Dodaj transakcję",
+        "importCsv": "Importuj CSV"
+      }
+    }
+  },
   "Navigation": {
     "brand": "Portfolio Tracker",
     "mobileNavLabel": "Główna nawigacja",

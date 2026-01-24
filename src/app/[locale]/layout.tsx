@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
-import { isLocale, routing } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import { getLocaleForMetadata, getLocaleFromParams } from "@/lib/locale";
 
 import "../globals.css";
 
@@ -19,8 +19,8 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: Pick<Props, "params">): Promise<Metadata> {
-  const { locale } = await params;
-  if (!isLocale(locale)) return {};
+  const locale = await getLocaleForMetadata(params);
+  if (!locale) return {};
 
   const t = await getTranslations({ locale, namespace: "App.metadata" });
   return {
@@ -30,10 +30,7 @@ export async function generateMetadata({
 }
 
 export default async function LocaleLayout({ children, params }: Props) {
-  const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-
-  setRequestLocale(locale);
+  const locale = await getLocaleFromParams(params);
   const messages = await getMessages();
 
   return (

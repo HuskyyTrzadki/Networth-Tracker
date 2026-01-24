@@ -33,6 +33,16 @@
     },
     "footnote": "Guest data may be deleted after 60 days of inactivity."
   },
+  "PortfolioPage": {
+    "empty": {
+      "title": "Your portfolio is empty.",
+      "subtitle": "Add your first asset to see analytics.",
+      "actions": {
+        "addTransaction": "Add transaction",
+        "importCsv": "Import CSV"
+      }
+    }
+  },
   "Navigation": {
     "brand": "Portfolio Tracker",
     "mobileNavLabel": "Main navigation",
