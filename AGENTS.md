@@ -1,6 +1,6 @@
 # Repository Guidelines
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
-We build both for desktop and mobile.
+We build both for desktop and mobile. styles need to use our patterns and typography and color palette, u are encouraged to use shadcn components we already have in storybook, when u add new component add storybook for it.
 
 ## Coding Style & Naming Conventions
 - Language: TypeScript + React (Next.js 16 App Router).
@@ -73,8 +73,10 @@ Whenever you ship a new feature or change architecture:
 - Local fonts via Fontsource (Geist Sans, Geist Mono, Source Serif 4)
 - i18n routing scaffold (`next-intl`, `pl` default, `/en/...`) + middleware rewrites (`middleware.ts`)
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
-- Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars
+- Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars,
 - App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
+- Landing page (PL/EN) with a single “Try as guest” CTA (anonymous session)
+- Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/[locale]/(app)`
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
@@ -153,3 +155,5 @@ If you add new UI, you must:
 always check for components folder.
 ---
 on all of the backend stuff u add, pls add comments, i m not BE engineer, make it so i can understand.
+--
+supabase project is Project (id kfhnnqqokibnjjtipoom, region eu-west-1)

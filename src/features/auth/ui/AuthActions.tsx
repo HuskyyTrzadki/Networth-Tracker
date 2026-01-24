@@ -58,20 +58,6 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
     }
   };
 
-  const startAnonymous = async () => {
-    setNotice(null);
-    try {
-      const response = await fetch("/api/auth/anonymous", { method: "POST" });
-      if (!response.ok) {
-        setNotice({ kind: "error", message: t("errors.guest") });
-        return;
-      }
-      router.refresh();
-    } catch {
-      setNotice({ kind: "error", message: t("errors.generic") });
-    }
-  };
-
   const startSignOut = async () => {
     setNotice(null);
     try {
@@ -136,11 +122,7 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
           {mode === "guest" ? t("actions.googleUpgrade") : t("actions.googleSignIn")}
         </Button>
 
-        {mode === "signedOut" ? (
-          <Button variant="secondary" onClick={startAnonymous}>
-            {t("actions.guest")}
-          </Button>
-        ) : (
+        {mode === "signedOut" ? null : (
           <Button variant="secondary" onClick={startSignOut}>
             {t("actions.signOut")}
           </Button>
@@ -177,4 +159,3 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
     </div>
   );
 }
-

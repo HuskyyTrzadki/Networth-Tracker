@@ -31,4 +31,3 @@ export default async function TransactionNewPage({ params }: Props) {
     </main>
   );
 }
-

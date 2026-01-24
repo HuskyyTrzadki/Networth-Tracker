@@ -9,8 +9,29 @@
     "metadata": {
       "title": "Portfolio Tracker"
     },
+    "brand": "Portfolio Tracker",
     "heading": "Portfolio Tracker",
-    "subtitle": "Template cleaned and ready for your first feature."
+    "subtitle": "Track your portfolio with delayed quotes. PLN + USD from day one.",
+    "cta": {
+      "guest": "Try as guest",
+      "hint": "No account needed. You can upgrade later in Settings.",
+      "error": "Couldn't start a guest session. Try again."
+    },
+    "highlights": {
+      "delayed": {
+        "title": "Delayed quotes",
+        "body": "Stable valuation without chasing ticks."
+      },
+      "fx": {
+        "title": "PLN + USD",
+        "body": "One portfolio value in your chosen currency."
+      },
+      "cache": {
+        "title": "Cache-first",
+        "body": "Quotes and FX with TTL — fast and cheap."
+      }
+    },
+    "footnote": "Guest data may be deleted after 60 days of inactivity."
   },
   "Navigation": {
     "brand": "Portfolio Tracker",
@@ -159,7 +180,6 @@
       "actions": {
         "googleSignIn": "Continue with Google",
         "googleUpgrade": "Upgrade with Google",
-        "guest": "Continue as guest",
         "signOut": "Sign out"
       },
       "email": {
@@ -176,7 +196,6 @@
       "errors": {
         "generic": "Something went wrong. Please try again.",
         "google": "Couldn't start Google sign-in. Try again.",
-        "guest": "Couldn't start a guest session. Try again.",
         "signOut": "Couldn't sign out. Try again.",
         "email": "Couldn't upgrade with email. Check your inputs and try again."
       },

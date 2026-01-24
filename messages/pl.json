@@ -9,8 +9,29 @@
     "metadata": {
       "title": "Portfolio Tracker"
     },
+    "brand": "Portfolio Tracker",
     "heading": "Portfolio Tracker",
-    "subtitle": "Szablon wyczyszczony i gotowy na pierwszą funkcję."
+    "subtitle": "Śledź portfel na opóźnionych notowaniach. PLN + USD od startu.",
+    "cta": {
+      "guest": "Wypróbuj jako gość",
+      "hint": "Bez zakładania konta. Możesz uaktualnić później w ustawieniach.",
+      "error": "Nie udało się uruchomić sesji gościa. Spróbuj ponownie."
+    },
+    "highlights": {
+      "delayed": {
+        "title": "Opóźnione notowania",
+        "body": "Stabilna wycena bez gonienia za tickami."
+      },
+      "fx": {
+        "title": "PLN + USD",
+        "body": "Jedna wartość portfela w wybranej walucie."
+      },
+      "cache": {
+        "title": "Cache-first",
+        "body": "Notowania i FX z TTL — szybko i tanio."
+      }
+    },
+    "footnote": "Dane gościa mogą zostać usunięte po 60 dniach braku aktywności."
   },
   "Navigation": {
     "brand": "Portfolio Tracker",
@@ -159,7 +180,6 @@
       "actions": {
         "googleSignIn": "Kontynuuj z Google",
         "googleUpgrade": "Uaktualnij przez Google",
-        "guest": "Kontynuuj jako gość",
         "signOut": "Wyloguj"
       },
       "email": {
@@ -176,7 +196,6 @@
       "errors": {
         "generic": "Coś poszło nie tak. Spróbuj ponownie.",
         "google": "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie.",
-        "guest": "Nie udało się uruchomić sesji gościa. Spróbuj ponownie.",
         "signOut": "Nie udało się wylogować. Spróbuj ponownie.",
         "email": "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie."
       },

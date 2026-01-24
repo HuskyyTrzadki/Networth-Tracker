@@ -15,10 +15,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
 
   const t = await getTranslations({ locale, namespace: "Navigation.items" });
-  return { title: t("transactions") };
+  return { title: t("search") };
 }
 
-export default async function TransactionsPage({ params }: Props) {
+export default async function SearchPage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
@@ -27,10 +27,7 @@ export default async function TransactionsPage({ params }: Props) {
 
   return (
     <main className="px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {t("transactions")}
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("search")}</h1>
     </main>
   );
 }
-
