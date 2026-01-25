@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { getAuthUser } from "@/features/auth/server/service";
+import { redirect } from "@/i18n/navigation";
 import { getLocaleForMetadata, getLocaleFromParams } from "@/lib/locale";
 import { HomeHero } from "@/features/home";
 
@@ -26,7 +26,7 @@ export default async function Home({ params }: Props) {
 
   const user = await getAuthUser(await cookies());
   if (user) {
-    redirect(locale === "en" ? "/en/search" : "/search");
+    redirect({ href: "/search", locale });
   }
 
   return <HomeHero />;

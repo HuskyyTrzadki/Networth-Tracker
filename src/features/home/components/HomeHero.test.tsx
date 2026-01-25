@@ -11,7 +11,7 @@ const useTranslationsMock = vi.fn((namespace?: string) => {
   return (key: string) => (namespace ? `${namespace}.${key}` : key);
 });
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({
     replace: replaceMock,
   }),
@@ -48,7 +48,7 @@ describe("HomeHero", () => {
 
     expect(fetch).toHaveBeenCalledWith("/api/auth/anonymous", { method: "POST" });
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/search");
+      expect(replaceMock).toHaveBeenCalledWith("/search", { locale: "pl" });
     });
   });
 
@@ -65,7 +65,7 @@ describe("HomeHero", () => {
     );
 
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/en/search");
+      expect(replaceMock).toHaveBeenCalledWith("/search", { locale: "en" });
     });
   });
 

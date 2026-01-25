@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { DashboardEmptyState } from "@/features/portfolio";
+import { getPathname } from "@/i18n/navigation";
 import { getLocaleForMetadata, getLocaleFromParams } from "@/lib/locale";
 
 type Props = Readonly<{
@@ -26,6 +27,12 @@ export default async function PortfolioPage({ params }: Props) {
     namespace: "PortfolioPage.empty",
   });
 
+  const addTransactionHref = getPathname({ href: "/transactions/new", locale });
+  const importCsvHref = getPathname({
+    href: { pathname: "/transactions/new", query: { import: "csv" } },
+    locale,
+  });
+
   return (
     <main className="flex min-h-[calc(100vh-120px)] flex-col px-6 py-8">
       <h1 className="text-2xl font-semibold tracking-tight">
@@ -37,11 +44,11 @@ export default async function PortfolioPage({ params }: Props) {
           subtitle={emptyState("subtitle")}
           primaryAction={{
             label: emptyState("actions.addTransaction"),
-            href: "/transactions/new",
+            href: addTransactionHref,
           }}
           secondaryAction={{
             label: emptyState("actions.importCsv"),
-            href: "/transactions/new?import=csv",
+            href: importCsvHref,
           }}
         />
       </div>

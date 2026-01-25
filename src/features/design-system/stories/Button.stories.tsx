@@ -27,6 +27,9 @@ export const Variants: Story = {
       <Button size="lg" variant="ghost">
         Ghost
       </Button>
+      <Button size="lg" variant="link">
+        Link
+      </Button>
       <Button size="lg" variant="destructive">
         Destructive
       </Button>

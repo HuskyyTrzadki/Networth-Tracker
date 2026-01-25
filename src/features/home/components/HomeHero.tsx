@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import { useRouter } from "@/i18n/navigation";
 
 export function HomeHero() {
   const t = useTranslations("HomePage");
@@ -13,8 +13,6 @@ export function HomeHero() {
 
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-
-  const nextPath = locale === "en" ? "/en/search" : "/search";
 
   const startGuest = async () => {
     setNotice(null);
@@ -27,7 +25,7 @@ export function HomeHero() {
         return;
       }
 
-      router.replace(nextPath);
+      router.replace("/search", { locale });
     } catch {
       setNotice(t("cta.error"));
     } finally {

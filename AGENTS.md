@@ -76,6 +76,7 @@ Whenever you ship a new feature or change architecture:
 - i18n routing scaffold (`next-intl`, `pl` default, `/en/...`) + middleware rewrites (`middleware.ts`)
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
 - Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars,
+- shadcn/ui primitives live in `src/components/ui` and are re-exported from `src/features/design-system/components/ui/*`
 - App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
 - Landing page (PL/EN) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/[locale]/(app)`
@@ -123,22 +124,23 @@ We ship **two locales only**:
 We use locale-based routing with `next-intl`.
 - Default Polish has **no prefix**: `/`
 - English is prefixed: `/en/...`
-  Implementation detail: `localePrefix: "as-needed"` in i18n routing config. :contentReference[oaicite:1]{index=1}
+  Implementation detail: `localePrefix: "as-needed"` in i18n routing config.
 
 Pages live under: `src/app/[locale]/...` (or `src/app/(site)/[locale]/...`).
 
-Middleware negotiates locale + handles redirects/rewrites (only `pl` and `en`). :contentReference[oaicite:2]{index=2}
+Middleware negotiates locale + handles redirects/rewrites (only `pl` and `en`).
 
 ### SSR / Static rendering rule (important)
 Do NOT rely on reading locale from `headers()` in Server Components (it opts routes into dynamic rendering).
-Instead, in `src/app/[locale]/layout.tsx` and pages, always forward `params.locale` using `setRequestLocale(locale)` so pages can stay statically renderable when possible. :contentReference[oaicite:3]{index=3}
+Instead, in `src/app/[locale]/layout.tsx` and pages, always forward `params.locale` using `setRequestLocale(locale)` so pages can stay statically renderable when possible.
+Practical rule: use `getLocaleFromParams(params)` from `src/lib/locale.ts` so every page/layout does validation + `setRequestLocale(...)` consistently (no copy/paste).
 
 ### Messages
 Translation files:
 - `messages/pl.json`
 - `messages/en.json`
 
-Keys should be grouped by component/feature (e.g. `PortfolioPage.title`, `Common.save`) for clean ownership. :contentReference[oaicite:4]{index=4}
+Keys should be grouped by component/feature (e.g. `PortfolioPage.title`, `Common.save`) for clean ownership.
 
 ### No hardcoded strings (STRICT)
 Never put user-facing copy as raw string literals in components/pages.

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { getAuthUser } from "@/features/auth/server/service";
+import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
 import { AuthActions } from "./AuthActions";
@@ -16,7 +17,7 @@ export async function AuthSettingsSection({ locale, showAuthError }: Props) {
   const user = await getAuthUser(await cookies());
 
   const mode = !user ? "signedOut" : user.is_anonymous ? "guest" : "signedIn";
-  const nextPath = locale === "en" ? "/en/settings" : "/settings";
+  const nextPath = getPathname({ href: "/settings", locale });
   const userEmail = user?.email ?? null;
 
   return (
