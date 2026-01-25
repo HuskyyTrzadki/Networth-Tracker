@@ -1,7 +1,26 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import type { ComponentPropsWithoutRef } from "react";
+import { describe, expect, it, vi } from "vitest";
 
 import { DashboardEmptyState } from "./DashboardEmptyState";
+
+type MockLinkProps = ComponentPropsWithoutRef<"a"> & {
+  href: string;
+  scroll?: boolean;
+};
+
+vi.mock("next/link", () => ({
+  default: (props: MockLinkProps) => {
+    const { href, children, scroll, ...rest } = props;
+    void scroll;
+
+    return (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    );
+  },
+}));
 
 const defaultProps = {
   title: "Twój portfel jest pusty.",
@@ -12,7 +31,7 @@ const defaultProps = {
   },
   secondaryAction: {
     label: "Importuj CSV",
-    href: "/transactions/new?import=csv",
+    href: "/transactions/import",
   },
 };
 

@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { Wallet } from "lucide-react";
 
 import { buttonVariants } from "@/features/design-system/components/ui/button";
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 type DashboardEmptyStateAction = Readonly<{
@@ -35,6 +35,7 @@ export function DashboardEmptyState({
         <Link
           className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
           href={primaryAction.href}
+          scroll={false}
         >
           {primaryAction.label}
         </Link>
@@ -44,6 +45,7 @@ export function DashboardEmptyState({
             "w-full sm:w-auto"
           )}
           href={secondaryAction.href}
+          scroll={false}
         >
           {secondaryAction.label}
         </Link>

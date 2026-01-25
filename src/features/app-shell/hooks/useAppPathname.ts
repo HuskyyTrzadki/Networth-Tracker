@@ -2,10 +2,9 @@
 
 import { usePathname } from "next/navigation";
 
-import { stripLocalePrefix } from "../lib/path";
+import { normalizeAppPath } from "../lib/path";
 
 export function useAppPathname() {
   const pathname = usePathname() ?? "/";
-  return stripLocalePrefix(pathname);
+  return normalizeAppPath(pathname);
 }
-

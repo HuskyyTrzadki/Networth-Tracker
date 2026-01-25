@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useLocale, useTranslations } from "next-intl";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
@@ -82,8 +81,7 @@ function SidebarNavItem({
 }
 
 function FinanceDemoStory() {
-  const t = useTranslations("DesignSystem.FinanceDemo");
-  const locale = useLocale();
+  const locale = "pl-PL";
 
   const totalUsd = mockHoldingsUsd.reduce(
     (sum, holding) => sum + holding.shares * holding.price.amount,
@@ -128,27 +126,29 @@ function FinanceDemoStory() {
       <div className="flex min-h-screen">
         <aside className="hidden w-72 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex md:flex-col">
           <div className="px-4 py-5">
-            <div className="text-sm font-semibold tracking-tight">{t("appName")}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{t("appSubtitle")}</div>
+            <div className="text-sm font-semibold tracking-tight">Portfolio Tracker</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Widok portfela (server-first)
+            </div>
           </div>
 
           <nav className="px-2">
             <div className="px-3 pb-2 text-xs font-medium text-muted-foreground">
-              {t("navTitle")}
+              Nawigacja
             </div>
             <div className="space-y-1">
-              <SidebarNavItem active>{t("navOverview")}</SidebarNavItem>
-              <SidebarNavItem>{t("navHoldings")}</SidebarNavItem>
-              <SidebarNavItem>{t("navTransactions")}</SidebarNavItem>
-              <SidebarNavItem>{t("navSettings")}</SidebarNavItem>
+              <SidebarNavItem active>Przegląd</SidebarNavItem>
+              <SidebarNavItem>Pozycje</SidebarNavItem>
+              <SidebarNavItem>Transakcje</SidebarNavItem>
+              <SidebarNavItem>Ustawienia</SidebarNavItem>
             </div>
           </nav>
 
           <div className="mt-auto p-4">
             <div className="rounded-lg border border-sidebar-border bg-sidebar-accent p-3 shadow-sm">
-              <div className="text-xs font-semibold">{t("sidebarCalloutTitle")}</div>
+              <div className="text-xs font-semibold">Wskazówka</div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {t("sidebarCalloutBody")}
+                Opóźnione notowania + cache FX = szybka wycena.
               </div>
             </div>
           </div>
@@ -159,9 +159,9 @@ function FinanceDemoStory() {
             <div className="mx-auto max-w-6xl px-6 py-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
-                  <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+                  <h1 className="text-2xl font-semibold tracking-tight">Demo finansowe</h1>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {t("fxRateLabel")}{" "}
+                    USD/PLN{" "}
                     {formatNumber(locale, mockUsdPln.rate, {
                       maximumFractionDigits: 2,
                     })}
@@ -170,12 +170,12 @@ function FinanceDemoStory() {
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="w-full sm:w-80">
-                    <DemoInput placeholder={t("searchPlaceholder")} />
+                    <DemoInput placeholder="Szukaj instrumentu…" />
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <DemoButton variant="primary">{t("actionAdd")}</DemoButton>
-                    <DemoButton variant="secondary">{t("actionExport")}</DemoButton>
-                    <DemoButton variant="destructive">{t("actionDelete")}</DemoButton>
+                    <DemoButton variant="primary">Dodaj transakcję</DemoButton>
+                    <DemoButton variant="secondary">Eksportuj</DemoButton>
+                    <DemoButton variant="destructive">Usuń</DemoButton>
                   </div>
                 </div>
               </div>
@@ -187,7 +187,7 @@ function FinanceDemoStory() {
               <div className="rounded-lg border border-border bg-popover px-3 py-2 text-popover-foreground shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="text-xs font-medium text-muted-foreground">
-                    {t("sparklineRangeLabel")}
+                    30D
                   </div>
                   <Sparkline values={[10, 10.1, 10.08, 10.2, 10.3, 10.28, 10.42]} />
                 </div>
@@ -196,10 +196,10 @@ function FinanceDemoStory() {
               <div className="rounded-lg border border-border bg-muted px-3 py-2 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="text-xs font-medium text-muted-foreground">
-                    {t("marketStatusLabel")}
+                    Rynek
                   </div>
                   <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                    {t("marketStatusValue")}
+                    Opóźnione
                   </span>
                 </div>
               </div>
@@ -207,15 +207,15 @@ function FinanceDemoStory() {
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               <MetricCard
-                label={t("totalValueUsd")}
+                label="Wartość łączna (USD)"
                 value={formatMoney(locale, { amount: totalUsd, currency: "USD" })}
               />
               <MetricCard
-                label={t("totalValuePln")}
+                label="Wartość łączna (PLN)"
                 value={formatMoney(locale, totalPln)}
               />
               <MetricCard
-                label={t("dayChange")}
+                label="Zmiana dzienna"
                 value={formatPercent(locale, dayChangePct, { signDisplay: "always" })}
                 right={
                   <ChangePill
@@ -229,14 +229,14 @@ function FinanceDemoStory() {
             <div className="mt-6 grid gap-4 lg:grid-cols-3">
               <HoldingsTable
                 className="lg:col-span-2"
-                title={t("holdingsTitle")}
+                title="Pozycje"
                 columns={{
-                  symbol: t("symbol"),
-                  name: t("name"),
-                  shares: t("shares"),
-                  price: t("price"),
-                  value: t("value"),
-                  day: t("day"),
+                  symbol: "Symbol",
+                  name: "Nazwa",
+                  shares: "Akcje",
+                  price: "Cena",
+                  value: "Wartość",
+                  day: "Dzień",
                 }}
                 rows={rows}
               />
@@ -244,19 +244,19 @@ function FinanceDemoStory() {
               <div className="space-y-4">
                 <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold">{t("allocationTitle")}</div>
+                    <div className="text-sm font-semibold">Alokacja</div>
                     <DemoButton variant="ghost" className="h-8 px-2 text-xs shadow-none">
-                      {t("allocationAction")}
+                      Szczegóły
                     </DemoButton>
                   </div>
 
                   <div className="mt-4 space-y-3">
                     {[
-                      { label: t("allocationEquities"), pct: 0.62, bar: "bg-chart-1" },
-                      { label: t("allocationCash"), pct: 0.18, bar: "bg-chart-2" },
-                      { label: t("allocationCrypto"), pct: 0.11, bar: "bg-chart-5" },
-                      { label: t("allocationBonds"), pct: 0.06, bar: "bg-chart-4" },
-                      { label: t("allocationOther"), pct: 0.03, bar: "bg-chart-3" },
+                      { label: "Akcje", pct: 0.62, bar: "bg-chart-1" },
+                      { label: "Gotówka", pct: 0.18, bar: "bg-chart-2" },
+                      { label: "Krypto", pct: 0.11, bar: "bg-chart-5" },
+                      { label: "Obligacje", pct: 0.06, bar: "bg-chart-4" },
+                      { label: "Inne", pct: 0.03, bar: "bg-chart-3" },
                     ].map((row) => (
                       <div key={row.label}>
                         <div className="flex items-center justify-between gap-3 text-sm">
@@ -277,30 +277,36 @@ function FinanceDemoStory() {
                 </div>
 
                 <div className="rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-sm">
-                  <div className="text-sm font-semibold">{t("insightTitle")}</div>
-                  <p className="mt-2 text-sm text-muted-foreground">{t("insightBody")}</p>
+                  <div className="text-sm font-semibold">Co tu jest</div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    UI oparte o semantyczne tokeny (kolory, radius, cienie, typografia)
+                    gotowe do prawdziwych ekranów produktu.
+                  </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground shadow-sm">
-                      {t("tagDelayedQuotes")}
+                      Opóźnione notowania
                     </span>
                     <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground shadow-sm">
-                      {t("tagFxCached")}
+                      FX w cache
                     </span>
                     <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground shadow-sm">
-                      {t("tagRlsReady")}
+                      Gotowe pod RLS
                     </span>
                   </div>
                 </div>
 
                 <div className="rounded-lg border border-border bg-destructive p-4 text-destructive-foreground shadow-sm">
-                  <div className="text-sm font-semibold">{t("destructiveTitle")}</div>
-                  <p className="mt-2 text-sm opacity-90">{t("destructiveBody")}</p>
+                  <div className="text-sm font-semibold">Strefa ryzyka</div>
+                  <p className="mt-2 text-sm opacity-90">
+                    Ta karta celowo używa tokenów destructive, żeby sprawdzić kontrast
+                    i hierarchię.
+                  </p>
                   <div className="mt-4">
                     <DemoButton
                       variant="secondary"
                       className="h-8 px-2 text-xs shadow-none"
                     >
-                      {t("destructiveAction")}
+                      Sprawdź
                     </DemoButton>
                   </div>
                 </div>

@@ -11,7 +11,7 @@ describe("getSafeNextPath", () => {
 
   it("accepts a relative path", () => {
     expect(getSafeNextPath("/settings")).toBe("/settings");
-    expect(getSafeNextPath("/en/settings")).toBe("/en/settings");
+    expect(getSafeNextPath("/settings")).toBe("/settings");
   });
 
   it("rejects suspicious paths", () => {
@@ -21,7 +21,6 @@ describe("getSafeNextPath", () => {
   });
 
   it("decodes url-encoded values", () => {
-    expect(getSafeNextPath("%2Fen%2Fsettings")).toBe("/en/settings");
+    expect(getSafeNextPath("%2Fsettings")).toBe("/settings");
   });
 });
-

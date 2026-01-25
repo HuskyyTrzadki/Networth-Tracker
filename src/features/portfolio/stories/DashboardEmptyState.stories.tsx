@@ -24,7 +24,7 @@ export const Default: Story = {
     },
     secondaryAction: {
       label: "Importuj CSV",
-      href: "/transactions/new?import=csv",
+      href: "/transactions/import",
     },
   },
 };

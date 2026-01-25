@@ -15,13 +15,13 @@ vi.mock("@/features/auth/server/service", () => ({
 describe("GET /api/auth/callback", () => {
   it("exchanges code and redirects to safe next", async () => {
     const request = new Request(
-      "http://localhost:3000/api/auth/callback?code=abc&next=%2Fen%2Fsettings"
+      "http://localhost:3000/api/auth/callback?code=abc&next=%2Fsettings"
     );
 
     const response = await GET(request);
 
     expect(vi.mocked(exchangeOAuthCodeForSession)).toHaveBeenCalled();
-    expect(response.headers.get("location")).toBe("http://localhost:3000/en/settings");
+    expect(response.headers.get("location")).toBe("http://localhost:3000/settings");
   });
 
   it("redirects to fallback when next is unsafe", async () => {
@@ -45,4 +45,3 @@ describe("GET /api/auth/callback", () => {
     );
   });
 });
-

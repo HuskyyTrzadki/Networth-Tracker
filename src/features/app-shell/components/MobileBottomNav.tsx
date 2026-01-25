@@ -1,7 +1,7 @@
 "use client";
 
 import { MoreHorizontal } from "lucide-react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 import {
   Sheet,
@@ -12,7 +12,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/features/design-system/components/ui/sheet";
-import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 
 import { useAppPathname } from "../hooks/useAppPathname";
@@ -26,7 +25,6 @@ import { isHrefActive } from "../lib/path";
 type Props = Readonly<{ className?: string }>;
 
 export function MobileBottomNav({ className }: Props) {
-  const t = useTranslations();
   const pathname = useAppPathname();
 
   const isAnyPrimaryActive = primaryNavItems.some((item) =>
@@ -43,7 +41,7 @@ export function MobileBottomNav({ className }: Props) {
         "pb-[env(safe-area-inset-bottom)]",
         className
       )}
-      aria-label={t("Navigation.mobileNavLabel")}
+      aria-label="Główna nawigacja"
     >
       <div className="mx-auto grid h-16 max-w-xl grid-cols-5 items-center px-2">
         {primaryNavItems.slice(0, 2).map((item) => (
@@ -57,7 +55,8 @@ export function MobileBottomNav({ className }: Props) {
               "inline-flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             )}
-            aria-label={t(mobileActionNavItem.labelKey)}
+            scroll={false}
+            aria-label={mobileActionNavItem.label}
           >
             <ActionIcon className="size-5" aria-hidden="true" />
           </Link>
@@ -77,10 +76,10 @@ export function MobileBottomNav({ className }: Props) {
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 isMoreActive ? "text-foreground" : "text-muted-foreground"
               )}
-              aria-label={t("Navigation.items.more")}
+              aria-label="Więcej"
             >
               <MoreHorizontal className="size-5" aria-hidden="true" />
-              <span className="text-[11px] font-medium">{t("Navigation.items.more")}</span>
+              <span className="text-[11px] font-medium">Więcej</span>
             </button>
           </SheetTrigger>
 
@@ -89,7 +88,7 @@ export function MobileBottomNav({ className }: Props) {
             className="max-h-[80dvh] rounded-t-xl pb-[env(safe-area-inset-bottom)]"
           >
             <SheetHeader>
-              <SheetTitle>{t("Navigation.more.title")}</SheetTitle>
+              <SheetTitle>Menu</SheetTitle>
               <SheetClose asChild>
                 <button
                   type="button"
@@ -99,7 +98,7 @@ export function MobileBottomNav({ className }: Props) {
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   )}
                 >
-                  <span className="sr-only">{t("Navigation.actions.close")}</span>
+                  <span className="sr-only">Zamknij</span>
                   <span aria-hidden="true">×</span>
                 </button>
               </SheetClose>
@@ -122,7 +121,7 @@ export function MobileBottomNav({ className }: Props) {
                         )}
                       >
                         <Icon className="size-5 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{t(item.labelKey)}</span>
+                        <span className="truncate">{item.label}</span>
                       </Link>
                     </SheetClose>
                   );
@@ -142,7 +141,6 @@ type MobileNavLinkProps = Readonly<{
 }>;
 
 function MobileNavLink({ item, pathname }: MobileNavLinkProps) {
-  const t = useTranslations();
   const active = isHrefActive(pathname, item.href);
   const Icon = item.icon;
 
@@ -155,11 +153,10 @@ function MobileNavLink({ item, pathname }: MobileNavLinkProps) {
         active ? "text-foreground" : "text-muted-foreground"
       )}
       aria-current={active ? "page" : undefined}
-      aria-label={t(item.labelKey)}
+      aria-label={item.label}
     >
       <Icon className="size-5" aria-hidden="true" />
-      <span className="text-[11px] font-medium">{t(item.labelKey)}</span>
+      <span className="text-[11px] font-medium">{item.label}</span>
     </Link>
   );
 }
-

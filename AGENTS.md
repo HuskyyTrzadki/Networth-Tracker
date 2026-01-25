@@ -47,7 +47,7 @@ Non-goals (MVP):
 - Set env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
 - Browser: use `createClient()` from `src/lib/supabase/client.ts` inside Client Components.
 - Server/route handlers: pass `cookies()` into `createClient()` from `src/lib/supabase/server.ts`.
-- Middleware: compose with other middleware (e.g. `next-intl`) by calling `createClient(request, response)` from `src/lib/supabase/middleware.ts`, then `await supabase.auth.getSession()`, then return that same `response`.
+- Middleware: call `createClient(request, response)` from `src/lib/supabase/middleware.ts`, then `await supabase.auth.getSession()`, then return that same `response`.
 ## Testing (required)
 We test at 2 levels:
 1) Unit/integration: **Vitest + React Testing Library**
@@ -73,24 +73,25 @@ Whenever you ship a new feature or change architecture:
 - Tailwind v4 configured (PostCSS + `globals.css`)
 - Tailwind theme tokens (colors, radius, shadow, typography) wired via CSS variables + Tailwind config (Wealth OS “Black & Indigo”)
 - Local fonts via Fontsource (Geist Sans, Geist Mono, Source Serif 4)
-- i18n routing scaffold (`next-intl`, `pl` default, `/en/...`) + middleware rewrites (`middleware.ts`)
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
-- Storybook + design system stories (colors, typography, finance demo, Recharts charts) with locale + theme toolbars,
+- Storybook + design system stories (colors, typography, finance demo, Recharts charts) with theme toolbars,
 - shadcn/ui primitives live in `src/components/ui` and are re-exported from `src/features/design-system/components/ui/*`
 - App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
-- Landing page (PL/EN) with a single “Try as guest” CTA (anonymous session)
-- Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/[locale]/(app)`
+- Landing page (PL) with a single “Try as guest” CTA (anonymous session)
+- Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
 - Portfolio empty state with CTA actions (Dashboard)
-- Locale helper for page/metadata locale handling (`src/lib/locale.ts`)
+- Transactions: “Add transaction” modal UI (`/transactions/new`) + “Import CSV” placeholder modal (`/transactions/import`) via intercepting routes (UI-only)
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
+- Single-locale app: Polish copy in UI (no i18n layer)
 
 ### Will be built next
 - Apply DB schema + RLS for auth (run `supabase/migrations/20260124_profiles.sql`)
 - Wire `profiles.last_active_at` updates into write actions (transactions/portfolio) for 60-day retention cleanup
 - Instrument search (normalized market data provider API)
 - Portfolio: holdings + transactions
+- Persist transactions to DB (schema + RLS) + connect “Add transaction” modal + add tests
 - Cache-first quotes + FX with TTL (PLN + USD)
 - TODO: add unit/integration tests for normalizers + cache logic (Vitest)
 
@@ -115,50 +116,8 @@ Keep it short and current. If unsure, add a TODO with rationale.
 - -------------
 please teach me between the lines, i m not an expert so any tech stuff u do, u can explain more cleanly, why u do it the way u do.
 
-## i18n (MANDATORY)
-We ship **two locales only**:
-- `pl` (default)
-- `en`
-
-### Routing (App Router)
-We use locale-based routing with `next-intl`.
-- Default Polish has **no prefix**: `/`
-- English is prefixed: `/en/...`
-  Implementation detail: `localePrefix: "as-needed"` in i18n routing config.
-
-Pages live under: `src/app/[locale]/...` (or `src/app/(site)/[locale]/...`).
-
-Middleware negotiates locale + handles redirects/rewrites (only `pl` and `en`).
-
-### SSR / Static rendering rule (important)
-Do NOT rely on reading locale from `headers()` in Server Components (it opts routes into dynamic rendering).
-Instead, in `src/app/[locale]/layout.tsx` and pages, always forward `params.locale` using `setRequestLocale(locale)` so pages can stay statically renderable when possible.
-Practical rule: use `getLocaleFromParams(params)` from `src/lib/locale.ts` so every page/layout does validation + `setRequestLocale(...)` consistently (no copy/paste).
-
-### Messages
-Translation files:
-- `messages/pl.json`
-- `messages/en.json`
-
-Keys should be grouped by component/feature (e.g. `PortfolioPage.title`, `Common.save`) for clean ownership.
-
-### No hardcoded strings (STRICT)
-Never put user-facing copy as raw string literals in components/pages.
-All UI text must come from i18n (e.g. `t("...")`) — including buttons, labels, empty states, errors, and metadata titles/descriptions.
-
-Allowed exceptions (only):
-- Storybook stories: `*.stories.tsx`
-- Tests: `*.test.ts` / `*.test.tsx`
-
-Translation helpers:
-- Server Components / route-level code: `getTranslations(...)`
-- Client Components: `useTranslations(...)`
-Rule of thumb: server uses async `getTranslations`, client uses `useTranslations` hook.
-
-If you add new UI, you must:
-1) add keys to `pl.json` + `en.json`
-2) use translations everywhere (no exceptions)
-always check for components folder.
+## Copy (PL only)
+UI copy is written directly in Polish (no i18n layer).
 ---
 on all of the backend stuff u add, pls add comments, i m not BE engineer, make it so i can understand.
 --

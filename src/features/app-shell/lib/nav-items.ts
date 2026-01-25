@@ -18,7 +18,7 @@ export type AppNavItem = Readonly<{
   id: AppNavId;
   href: string;
   icon: LucideIcon;
-  labelKey: string;
+  label: string;
 }>;
 
 export const primaryNavItems: readonly AppNavItem[] = [
@@ -26,19 +26,19 @@ export const primaryNavItems: readonly AppNavItem[] = [
     id: "portfolio",
     href: "/portfolio",
     icon: LayoutGrid,
-    labelKey: "Navigation.items.portfolio",
+    label: "Portfel",
   },
   {
     id: "search",
     href: "/search",
     icon: Search,
-    labelKey: "Navigation.items.search",
+    label: "Szukaj",
   },
   {
     id: "transactions",
     href: "/transactions",
     icon: ArrowLeftRight,
-    labelKey: "Navigation.items.transactions",
+    label: "Transakcje",
   },
 ] as const;
 
@@ -47,7 +47,7 @@ export const secondaryNavItems: readonly AppNavItem[] = [
     id: "settings",
     href: "/settings",
     icon: Settings,
-    labelKey: "Navigation.items.settings",
+    label: "Ustawienia",
   },
 ] as const;
 
@@ -55,5 +55,5 @@ export const mobileActionNavItem: AppNavItem = {
   id: "add",
   href: "/transactions/new",
   icon: Plus,
-  labelKey: "Navigation.items.add",
+  label: "Dodaj",
 } as const;

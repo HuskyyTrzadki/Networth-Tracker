@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -30,7 +29,6 @@ const buildRedirectTo = (nextPath: string) => {
 };
 
 export function AuthActions({ mode, nextPath, userEmail }: Props) {
-  const t = useTranslations("Auth.settings");
   const router = useRouter();
   const supabase = createClient();
 
@@ -54,7 +52,10 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
           });
 
     if (error) {
-      setNotice({ kind: "error", message: t("errors.google") });
+      setNotice({
+        kind: "error",
+        message: "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie.",
+      });
     }
   };
 
@@ -63,12 +64,18 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
     try {
       const response = await fetch("/api/auth/signout", { method: "POST" });
       if (!response.ok) {
-        setNotice({ kind: "error", message: t("errors.signOut") });
+        setNotice({
+          kind: "error",
+          message: "Nie udało się wylogować. Spróbuj ponownie.",
+        });
         return;
       }
       router.refresh();
     } catch {
-      setNotice({ kind: "error", message: t("errors.generic") });
+      setNotice({
+        kind: "error",
+        message: "Coś poszło nie tak. Spróbuj ponownie.",
+      });
     }
   };
 
@@ -82,14 +89,24 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
       });
 
       if (!response.ok) {
-        setNotice({ kind: "error", message: t("errors.email") });
+        setNotice({
+          kind: "error",
+          message:
+            "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie.",
+        });
         return;
       }
 
-      setNotice({ kind: "success", message: t("messages.emailUpgradeOk") });
+      setNotice({
+        kind: "success",
+        message: "Zaktualizowano. Sprawdź skrzynkę, jeśli wymagana jest weryfikacja.",
+      });
       router.refresh();
     } catch {
-      setNotice({ kind: "error", message: t("errors.generic") });
+      setNotice({
+        kind: "error",
+        message: "Coś poszło nie tak. Spróbuj ponownie.",
+      });
     }
   };
 
@@ -107,10 +124,10 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
       <div className="space-y-2">
         <div className="text-sm text-muted-foreground">
           {mode === "signedOut"
-            ? t("status.signedOut")
+            ? "Wylogowano"
             : mode === "guest"
-              ? t("status.guest")
-              : t("status.signedIn")}
+              ? "Sesja gościa"
+              : "Zalogowano"}
         </div>
         {userEmail ? (
           <div className="text-sm font-medium text-foreground">{userEmail}</div>
@@ -119,39 +136,41 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button onClick={startGoogleAuth}>
-          {mode === "guest" ? t("actions.googleUpgrade") : t("actions.googleSignIn")}
+          {mode === "guest" ? "Uaktualnij przez Google" : "Kontynuuj z Google"}
         </Button>
 
         {mode === "signedOut" ? null : (
           <Button variant="secondary" onClick={startSignOut}>
-            {t("actions.signOut")}
+            Wyloguj
           </Button>
         )}
       </div>
 
       {mode === "guest" ? (
         <div className="space-y-2 rounded-md border border-border bg-card p-3">
-          <div className="text-sm font-medium">{t("email.title")}</div>
+          <div className="text-sm font-medium">Uaktualnij przez e-mail</div>
           <div className="grid gap-2 sm:grid-cols-2">
             <Input
               value={email}
               onChange={(e) => setEmail(e.currentTarget.value)}
-              placeholder={t("email.emailPlaceholder")}
+              placeholder="E-mail"
               inputMode="email"
               autoComplete="email"
             />
             <Input
               value={password}
               onChange={(e) => setPassword(e.currentTarget.value)}
-              placeholder={t("email.passwordPlaceholder")}
+              placeholder="Hasło (min. 8 znaków)"
               type="password"
               autoComplete="new-password"
             />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs text-muted-foreground">{t("email.hint")}</div>
+            <div className="text-xs text-muted-foreground">
+              W zależności od ustawień może być wymagana weryfikacja e-mail.
+            </div>
             <Button variant="outline" onClick={submitEmailUpgrade}>
-              {t("email.submit")}
+              Ustaw e-mail i hasło
             </Button>
           </div>
         </div>

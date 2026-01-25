@@ -1,8 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 import { useAppPathname } from "../hooks/useAppPathname";
@@ -12,7 +10,6 @@ import { isHrefActive } from "../lib/path";
 type Props = Readonly<{ className?: string }>;
 
 export function AppSidebar({ className }: Props) {
-  const t = useTranslations();
   const pathname = useAppPathname();
 
   return (
@@ -25,7 +22,7 @@ export function AppSidebar({ className }: Props) {
       <div className="px-4 py-5">
         <Link href="/" className="block">
           <div className="text-sm font-semibold tracking-tight">
-            {t("Navigation.brand")}
+            Portfolio Tracker
           </div>
         </Link>
       </div>
@@ -48,7 +45,7 @@ export function AppSidebar({ className }: Props) {
                 )}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{t(item.labelKey)}</span>
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
@@ -73,7 +70,7 @@ export function AppSidebar({ className }: Props) {
                 )}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{t(item.labelKey)}</span>
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
@@ -82,4 +79,3 @@ export function AppSidebar({ className }: Props) {
     </aside>
   );
 }
-

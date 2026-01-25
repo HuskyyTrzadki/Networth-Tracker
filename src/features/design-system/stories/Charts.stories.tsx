@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useLocale, useTranslations } from "next-intl";
 
 import { Container } from "@/features/common";
 import { AllocationDonutChart } from "../components/AllocationDonutChart";
@@ -13,8 +12,7 @@ import { mockPnl14d, mockPortfolioValue30d } from "../fixtures/mockCharts";
 import { formatMoney, formatNumber, formatPercent } from "../lib/format";
 
 function ChartsStory() {
-  const t = useTranslations("DesignSystem.Charts");
-  const locale = useLocale();
+  const locale = "pl-PL";
 
   const allocationTotal = mockHoldingsUsd.reduce(
     (sum, holding) => sum + holding.shares * holding.price.amount,
@@ -43,18 +41,20 @@ function ChartsStory() {
     <DesignSurface className="p-6">
       <Container className="max-w-6xl space-y-6">
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Wykresy (Recharts)</h1>
+          <p className="text-sm text-muted-foreground">
+            Komponenty Recharts podpięte pod semantyczne tokeny kolorów.
+          </p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <ChartCard
-            title={t("valueTitle")}
-            subtitle={t("valueSubtitle")}
+            title="Wartość portfela"
+            subtitle="Mockowana krzywa 30D (chart-1)."
             right={
               <div className="text-right">
                 <div className="text-xs font-medium text-muted-foreground">
-                  {t("valueCurrentLabel")}
+                  Aktualnie
                 </div>
                 <div className="font-mono text-sm tabular-nums">
                   {formatMoney(locale, {
@@ -65,10 +65,13 @@ function ChartsStory() {
               </div>
             }
           >
-            <PortfolioAreaChart data={mockPortfolioValue30d} />
+          <PortfolioAreaChart data={mockPortfolioValue30d} />
           </ChartCard>
 
-          <ChartCard title={t("allocationTitle")} subtitle={t("allocationSubtitle")}>
+          <ChartCard
+            title="Alokacja"
+            subtitle="Donut używa tokenów chart-1..5."
+          >
             <div className="grid gap-4 sm:grid-cols-2">
               <AllocationDonutChart data={donutData} />
               <div className="space-y-3">
@@ -102,12 +105,12 @@ function ChartsStory() {
         </div>
 
         <ChartCard
-          title={t("pnlTitle")}
-          subtitle={t("pnlSubtitle")}
+          title="Dzienny P/L"
+          subtitle="Słupki mapują plus/minus na chart-2/chart-3."
           right={
             <div className="text-right">
               <div className="text-xs font-medium text-muted-foreground">
-                {t("pnlSumLabel")}
+                Suma
               </div>
               <div className="font-mono text-sm tabular-nums">
                 {formatNumber(
@@ -135,4 +138,3 @@ export default meta;
 type Story = StoryObj<typeof ChartsStory>;
 
 export const Charts: Story = {};
-

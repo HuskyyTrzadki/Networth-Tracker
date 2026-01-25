@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { isHrefActive, normalizeAppPath, stripLocalePrefix } from "./path"
+import { isHrefActive, normalizeAppPath } from "./path"
 
 describe("normalizeAppPath", () => {
   it("adds a leading slash", () => {
@@ -13,20 +13,6 @@ describe("normalizeAppPath", () => {
 
   it("normalizes empty to root", () => {
     expect(normalizeAppPath("")).toBe("/")
-  })
-})
-
-describe("stripLocalePrefix", () => {
-  it("removes /en prefix", () => {
-    expect(stripLocalePrefix("/en/search")).toBe("/search")
-  })
-
-  it("removes /pl prefix", () => {
-    expect(stripLocalePrefix("/pl/transactions")).toBe("/transactions")
-  })
-
-  it("keeps root stable", () => {
-    expect(stripLocalePrefix("/en")).toBe("/")
   })
 })
 
@@ -48,4 +34,3 @@ describe("isHrefActive", () => {
     expect(isHrefActive("/", "/")).toBe(true)
   })
 })
-

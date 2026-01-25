@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     await exchangeOAuthCodeForSession(await cookies(), code);
     return NextResponse.redirect(new URL(safeNext, url.origin));
   } catch {
-    // Surface a simple flag so UI can show a localized error message.
+    // Surface a simple flag so UI can show an error message.
     const errorUrl = new URL(safeNext, url.origin);
     errorUrl.searchParams.set("auth", "error");
     return NextResponse.redirect(errorUrl);

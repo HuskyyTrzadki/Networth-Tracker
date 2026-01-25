@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { useRouter } from "@/i18n/navigation";
 
 export function HomeHero() {
-  const t = useTranslations("HomePage");
-  const locale = useLocale();
   const router = useRouter();
 
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const errorMessage = "Nie udało się uruchomić sesji gościa. Spróbuj ponownie.";
 
   const startGuest = async () => {
     setNotice(null);
@@ -21,13 +19,13 @@ export function HomeHero() {
     try {
       const response = await fetch("/api/auth/anonymous", { method: "POST" });
       if (!response.ok) {
-        setNotice(t("cta.error"));
+        setNotice(errorMessage);
         return;
       }
 
-      router.replace("/search", { locale });
+      router.replace("/search");
     } catch {
-      setNotice(t("cta.error"));
+      setNotice(errorMessage);
     } finally {
       setPending(false);
     }
@@ -37,17 +35,17 @@ export function HomeHero() {
     <main className="min-h-dvh bg-background">
       <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-6 py-10">
         <div className="text-sm font-semibold tracking-tight text-foreground">
-          {t("brand")}
+          Portfolio Tracker
         </div>
 
         <div className="flex flex-1 items-center">
           <div className="w-full">
             <div className="max-w-2xl">
               <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                {t("heading")}
+                Portfolio Tracker
               </h1>
               <p className="mt-4 text-base text-muted-foreground sm:text-lg">
-                {t("subtitle")}
+                Śledź portfel na opóźnionych notowaniach. PLN + USD od startu.
               </p>
             </div>
 
@@ -59,10 +57,12 @@ export function HomeHero() {
                 disabled={pending}
                 aria-busy={pending}
               >
-                {t("cta.guest")}
+                Wypróbuj jako gość
               </Button>
 
-              <p className="text-sm text-muted-foreground">{t("cta.hint")}</p>
+              <p className="text-sm text-muted-foreground">
+                Bez zakładania konta. Możesz uaktualnić później w ustawieniach.
+              </p>
 
               {notice ? (
                 <div
@@ -77,26 +77,26 @@ export function HomeHero() {
             <div className="mt-12 grid gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
                 <div className="text-sm font-semibold tracking-tight">
-                  {t("highlights.delayed.title")}
+                  Opóźnione notowania
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {t("highlights.delayed.body")}
+                  Stabilna wycena bez gonienia za tickami.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
                 <div className="text-sm font-semibold tracking-tight">
-                  {t("highlights.fx.title")}
+                  PLN + USD
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {t("highlights.fx.body")}
+                  Jedna wartość portfela w wybranej walucie.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
                 <div className="text-sm font-semibold tracking-tight">
-                  {t("highlights.cache.title")}
+                  Cache-first
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {t("highlights.cache.body")}
+                  Notowania i FX z TTL — szybko i tanio.
                 </p>
               </div>
             </div>
@@ -104,7 +104,7 @@ export function HomeHero() {
         </div>
 
         <div className="pt-10 text-xs text-muted-foreground">
-          {t("footnote")}
+          Dane gościa mogą zostać usunięte po 60 dniach braku aktywności.
         </div>
       </div>
     </main>
