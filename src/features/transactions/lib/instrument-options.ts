@@ -1,27 +1,47 @@
 export type InstrumentOption = Readonly<{
   id: string;
   ticker: string;
+  symbol: string;
   name: string;
   currency: "USD" | "PLN";
+  provider: "yahoo";
+  providerKey: string;
+  exchange?: string;
+  region?: string;
 }>;
 
 export const instrumentOptions: readonly InstrumentOption[] = [
   {
-    id: "a987e7d4-3c70-4e1c-9b9b-3e8acb2f7b05",
+    id: "yahoo:AAPL",
     ticker: "AAPL",
+    symbol: "AAPL",
     name: "Apple Inc.",
     currency: "USD",
+    provider: "yahoo",
+    providerKey: "AAPL",
+    exchange: "NASDAQ",
+    region: "US",
   },
   {
-    id: "f6a6c11b-90de-4f25-9b7e-3f5a43db1b4f",
+    id: "yahoo:BTC-USD",
     ticker: "BTC",
+    symbol: "BTC-USD",
     name: "Bitcoin",
     currency: "USD",
+    provider: "yahoo",
+    providerKey: "BTC-USD",
+    exchange: "CRYPTO",
+    region: "GLOBAL",
   },
   {
-    id: "0d35a0e9-6c22-44df-9d65-b0f4f3f2b5a2",
+    id: "yahoo:XTB.WA",
     ticker: "XTB",
+    symbol: "XTB.WA",
     name: "XTB S.A.",
     currency: "PLN",
+    provider: "yahoo",
+    providerKey: "XTB.WA",
+    exchange: "WSE",
+    region: "PL",
   },
 ] as const;

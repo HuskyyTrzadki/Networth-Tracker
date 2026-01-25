@@ -63,7 +63,7 @@ function FilledDemo() {
       <AddTransactionDialog
         initialValues={{
           type: "BUY",
-          assetId: "a987e7d4-3c70-4e1c-9b9b-3e8acb2f7b05",
+          assetId: "yahoo:AAPL",
           currency: "USD",
           date: format(new Date(), "yyyy-MM-dd"),
           quantity: "10",

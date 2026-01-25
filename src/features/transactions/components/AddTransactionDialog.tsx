@@ -3,6 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { X } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -34,6 +36,7 @@ import { InstrumentCombobox } from "./InstrumentCombobox";
 import { MoneyInput } from "./MoneyInput";
 import { TransactionDatePicker } from "./TransactionDatePicker";
 import { TransactionLiveSummary } from "./TransactionLiveSummary";
+import { createTransaction } from "../client/create-transaction";
 
 type FormValues = Readonly<{
   type: TransactionType;
@@ -56,6 +59,8 @@ export function AddTransactionDialog({
   onOpenChange: (nextOpen: boolean) => void;
 }>) {
   const schema = createAddTransactionFormSchema();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -97,13 +102,60 @@ export function AddTransactionDialog({
     notes,
   }).success;
 
+  const submitTransaction = form.handleSubmit(async (values) => {
+    const instrument =
+      instrumentOptions.find((option) => option.id === values.assetId) ?? null;
+
+    if (!instrument) {
+      form.setError("assetId", { message: "Wybierz instrument." });
+      return;
+    }
+
+    setIsSubmitting(true);
+    form.clearErrors("root");
+
+    try {
+      await createTransaction({
+        type: values.type,
+        date: values.date,
+        quantity: values.quantity,
+        price: values.price,
+        fee: values.fee,
+        notes: values.notes,
+        clientRequestId: crypto.randomUUID(),
+        instrument: {
+          provider: instrument.provider,
+          providerKey: instrument.providerKey,
+          symbol: instrument.symbol,
+          name: instrument.name,
+          currency: instrument.currency,
+          exchange: instrument.exchange,
+          region: instrument.region,
+        },
+      });
+
+      onOpenChange(false);
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Nie udało się zapisać transakcji.";
+      form.setError("root", { message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  });
+
+  const rootError = form.formState.errors.root?.message;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] p-0 sm:max-w-xl">
         <Form {...form}>
           <form
             className="flex max-h-[90dvh] flex-col"
-            onSubmit={form.handleSubmit(() => onOpenChange(false))}
+            onSubmit={submitTransaction}
           >
             <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
               <div className="min-w-0">
@@ -130,7 +182,7 @@ export function AddTransactionDialog({
                   control={form.control}
                   name="type"
                   render={({ field }) => (
-                      <FormItem>
+                    <FormItem>
                       <FormLabel>Typ transakcji</FormLabel>
                       <FormControl>
                         <Tabs
@@ -181,18 +233,18 @@ export function AddTransactionDialog({
                   <FormField
                     control={form.control}
                     name="quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ilość</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          className="h-11 font-mono tabular-nums text-right"
-                          inputMode="decimal"
-                          placeholder="np. 1,5"
-                          type="text"
-                        />
-                      </FormControl>
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ilość</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="h-11 font-mono tabular-nums text-right"
+                            inputMode="decimal"
+                            placeholder="np. 1,5"
+                            type="text"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -201,17 +253,17 @@ export function AddTransactionDialog({
                   <FormField
                     control={form.control}
                     name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cena jednostkowa</FormLabel>
-                      <FormControl>
-                        <MoneyInput
-                          {...field}
-                          className="h-11"
-                          currency={displayCurrency}
-                          placeholder="np. 100,00"
-                        />
-                      </FormControl>
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cena jednostkowa</FormLabel>
+                        <FormControl>
+                          <MoneyInput
+                            {...field}
+                            className="h-11"
+                            currency={displayCurrency}
+                            placeholder="np. 100,00"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -222,13 +274,13 @@ export function AddTransactionDialog({
                   <FormField
                     control={form.control}
                     name="date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Data transakcji</FormLabel>
-                      <FormControl>
-                        <TransactionDatePicker
-                          onChange={field.onChange}
-                          value={field.value}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data transakcji</FormLabel>
+                        <FormControl>
+                          <TransactionDatePicker
+                            onChange={field.onChange}
+                            value={field.value}
                           />
                         </FormControl>
                         <FormMessage />
@@ -239,17 +291,17 @@ export function AddTransactionDialog({
                   <FormField
                     control={form.control}
                     name="fee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Prowizja / opłaty</FormLabel>
-                      <FormControl>
-                        <MoneyInput
-                          {...field}
-                          className="h-11"
-                          currency={displayCurrency}
-                          placeholder="np. 0,00"
-                        />
-                      </FormControl>
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prowizja / opłaty</FormLabel>
+                        <FormControl>
+                          <MoneyInput
+                            {...field}
+                            className="h-11"
+                            currency={displayCurrency}
+                            placeholder="np. 0,00"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -285,20 +337,26 @@ export function AddTransactionDialog({
             </div>
 
             <footer className="border-t border-border px-6 py-5">
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <Button
-                  onClick={() => onOpenChange(false)}
-                  type="button"
-                  variant="outline"
-                >
-                  Anuluj
-                </Button>
-                <Button
-                  disabled={!isSubmittable}
-                  type="submit"
-                >
-                  Zapisz
-                </Button>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-h-5 text-sm text-destructive">
+                  {rootError ?? ""}
+                </div>
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    onClick={() => onOpenChange(false)}
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                  >
+                    Anuluj
+                  </Button>
+                  <Button
+                    disabled={!isSubmittable || isSubmitting}
+                    type="submit"
+                  >
+                    Zapisz
+                  </Button>
+                </div>
               </div>
             </footer>
           </form>
