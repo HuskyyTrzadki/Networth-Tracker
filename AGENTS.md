@@ -84,7 +84,8 @@ Whenever you ship a new feature or change architecture:
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
-- Single-locale app: Polish copy in UI (no i18n layer)
+- Single-locale app: UI copy only in Polish (no translations, no i18n layer)
+- AddTrasactionDialog UI.
 
 ### Will be built next
 - Apply DB schema + RLS for auth (run `supabase/migrations/20260124_profiles.sql`)
@@ -121,4 +122,20 @@ UI copy is written directly in Polish (no i18n layer).
 ---
 on all of the backend stuff u add, pls add comments, i m not BE engineer, make it so i can understand.
 --
-supabase project is Project (id kfhnnqqokibnjjtipoom, region eu-west-1)
+supabase project is Project (id ayeeksbqwyqkevbpdlef,, region eu-west-1)
+
+## Feature AGENTS (must stay updated by LLMs, if touched)
+- App shell: `src/features/app-shell/AGENTS.md`
+- Auth: `src/features/auth/AGENTS.md`
+- Common UI: `src/features/common/AGENTS.md`
+- Design system: `src/features/design-system/AGENTS.md`
+- Home/landing: `src/features/home/AGENTS.md`
+- Portfolio: `src/features/portfolio/AGENTS.md`
+- Transactions: `src/features/transactions/AGENTS.md`
+
+## Transactions MVP decisions (keep aligned)
+- Instruments cache is per-user (`user_id` + RLS); no global instruments for now.
+- Instrument uniqueness: prefer `provider_key`; fallback to `provider + symbol + exchange` (optionally `region/mic`).
+- Idempotency: `client_request_id` with unique `(user_id, client_request_id)` and conflict-safe insert.
+- Money math in UI: no floats (use big.js or string-safe decimal parsing).
+- Transactions: `side` enum, `quantity > 0` (no negative quantities).
