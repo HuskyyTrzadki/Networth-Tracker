@@ -82,6 +82,7 @@ Whenever you ship a new feature or change architecture:
 - Portfolio empty state with CTA actions (Dashboard)
 - Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with mocked instruments
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
+- Transactions list: table view with search, type filter, and paging in `/transactions`
 - Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
 - `profiles.last_active_at` updates wired into transactions writes
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests

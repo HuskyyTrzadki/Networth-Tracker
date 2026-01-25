@@ -7,8 +7,16 @@ type DecimalValue = Big;
 const normalizeDecimalInput = (value: string) =>
   value.trim().replace(/\s+/g, "").replace(",", ".");
 
-export function parseDecimalString(value: string): DecimalValue | null {
-  const normalized = normalizeDecimalInput(value);
+export function parseDecimalString(
+  value: string | number | null | undefined
+): DecimalValue | null {
+  if (value === null || value === undefined) return null;
+
+  const stringValue =
+    typeof value === "number" ? value.toString() : value;
+  if (typeof stringValue !== "string") return null;
+
+  const normalized = normalizeDecimalInput(stringValue);
   if (!normalized) return null;
 
   try {

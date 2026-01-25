@@ -9,6 +9,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Components: `src/features/design-system/components/*`
 - Re-exports: `src/features/design-system/index.ts`
 - Stories: `src/features/design-system/stories/*`
+- UI primitives (example): `src/components/ui/badge.tsx` re-exported via `src/features/design-system/components/ui/badge.tsx`
 
 ## Boundaries
 - UI only, no business logic.

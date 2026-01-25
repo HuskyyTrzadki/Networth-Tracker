@@ -16,6 +16,11 @@ describe("parseDecimalString", () => {
   it("returns null for invalid input", () => {
     expect(parseDecimalString("abc")).toBeNull();
   });
+
+  it("accepts number input for server payloads", () => {
+    const parsed = parseDecimalString(12.5);
+    expect(parsed?.toFixed(1)).toBe("12.5");
+  });
 });
 
 describe("decimal math", () => {
