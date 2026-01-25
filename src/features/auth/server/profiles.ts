@@ -45,3 +45,18 @@ export async function markProfileUpgradedIfNeeded(
     throw new Error(error.message);
   }
 }
+
+export async function touchProfileLastActive(
+  supabase: SupabaseServerClient,
+  userId: string
+) {
+  // Best-effort update used by write actions (transactions/portfolio).
+  const { error } = await supabase
+    .from("profiles")
+    .update({ last_active_at: toIsoNow() })
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}

@@ -14,5 +14,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server logic only in `server/*`.
 - UI must not leak Supabase-specific shapes.
 
+## Notes
+- `profiles.last_active_at` is touched by write actions (e.g. transactions) via `touchProfileLastActive`.
+
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.
