@@ -9,6 +9,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dialog UI: `src/features/transactions/components/AddTransactionDialog.tsx`
 - Routes: `src/features/transactions/components/AddTransactionDialogRoute.tsx`
 - Form schema: `src/features/transactions/lib/add-transaction-form-schema.ts`
+- Decimal helpers: `src/features/transactions/lib/decimal.ts`
 - Client API: `src/features/transactions/client/create-transaction.ts`
 - Server service: `src/features/transactions/server/create-transaction.ts`
 - API schema: `src/features/transactions/server/schema.ts`

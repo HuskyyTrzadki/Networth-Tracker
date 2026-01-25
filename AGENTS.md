@@ -80,19 +80,19 @@ Whenever you ship a new feature or change architecture:
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
 - Portfolio empty state with CTA actions (Dashboard)
-- Transactions: “Add transaction” modal UI (`/transactions/new`) + “Import CSV” placeholder modal (`/transactions/import`) via intercepting routes (UI-only)
+- Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with mocked instruments
+- Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
+- Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
+- `profiles.last_active_at` updates wired into transactions writes
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
-- AddTrasactionDialog UI.
 
 ### Will be built next
-- Apply DB schema + RLS for auth (run `supabase/migrations/20260124_profiles.sql`)
-- Wire `profiles.last_active_at` updates into write actions (transactions/portfolio) for 60-day retention cleanup
 - Instrument search (normalized market data provider API)
 - Portfolio: holdings + transactions
-- Persist transactions to DB (schema + RLS) + connect “Add transaction” modal + add tests
+- Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup
 - Cache-first quotes + FX with TTL (PLN + USD)
 - TODO: add unit/integration tests for normalizers + cache logic (Vitest)
 
