@@ -7,6 +7,7 @@ export type CreateTransactionPayload = Readonly<{
   price: string;
   fee: string;
   notes: string;
+  portfolioId: string;
   clientRequestId: string;
   instrument: Readonly<{
     provider: string;

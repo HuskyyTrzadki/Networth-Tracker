@@ -101,6 +101,7 @@ function Demo() {
         onOpenChange={setOpen}
         open={open}
         searchClient={mockSearchClient}
+        portfolioId="portfolio-demo"
       />
     </div>
   );
@@ -139,6 +140,7 @@ function FilledDemo() {
         onOpenChange={setOpen}
         open={open}
         searchClient={mockSearchClient}
+        portfolioId="portfolio-demo"
       />
     </div>
   );

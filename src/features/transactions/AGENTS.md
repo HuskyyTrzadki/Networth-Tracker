@@ -4,6 +4,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Purpose
 - Transaction add/import UI, list view, and supporting form helpers.
 - Persistence, validation, and server-side services.
+- Transactions always belong to a portfolio (portfolio is created during auth).
 
 ## Main entrypoints
 - Dialog UI: `src/features/transactions/components/AddTransactionDialog.tsx`

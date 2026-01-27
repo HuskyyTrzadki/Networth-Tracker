@@ -90,6 +90,8 @@ export async function createTransaction(
     .insert({
       user_id: userId,
       instrument_id: instrument.id,
+      // portfolio_id is required and must belong to the user (enforced by RLS).
+      portfolio_id: input.portfolioId,
       side: input.type,
       trade_date: input.date,
       quantity: input.quantity,

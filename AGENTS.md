@@ -85,6 +85,7 @@ Whenever you ship a new feature or change architecture:
 - Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with live instrument search
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
+- Portfolios table + `transactions.portfolio_id` (default portfolio created during auth)
 - Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
 - `profiles.last_active_at` updates wired into transactions writes
 - Instruments cache stores optional logo URL (for branding in lists)
@@ -97,6 +98,7 @@ Whenever you ship a new feature or change architecture:
 
 ### Will be built next
 - Portfolio: holdings + transactions
+- Portfolio management UI (create/select portfolio in transactions)
 - Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup
 - Cache-first quotes + FX with TTL (PLN + USD)
 - TODO: add unit/integration tests for normalizers + cache logic (Vitest)

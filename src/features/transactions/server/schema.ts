@@ -59,6 +59,8 @@ export const createTransactionRequestSchema = z.object({
   price: nonNegativeDecimalString,
   fee: optionalNonNegativeDecimalString,
   notes: z.string().trim().max(500).optional(),
+  // Required: every transaction must belong to a portfolio.
+  portfolioId: z.string().uuid(),
   clientRequestId: z.string().uuid(),
   instrument: instrumentSchema,
 });

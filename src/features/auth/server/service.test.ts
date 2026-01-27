@@ -14,6 +14,7 @@ import {
   ensureProfileExists,
   markProfileUpgradedIfNeeded,
 } from "./profiles";
+import { ensureDefaultPortfolioExists } from "@/features/portfolio/server/default-portfolio";
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
@@ -22,6 +23,10 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("./profiles", () => ({
   ensureProfileExists: vi.fn(),
   markProfileUpgradedIfNeeded: vi.fn(),
+}));
+
+vi.mock("@/features/portfolio/server/default-portfolio", () => ({
+  ensureDefaultPortfolioExists: vi.fn(),
 }));
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -55,6 +60,7 @@ describe("auth service", () => {
     expect(result).toEqual({ userId: "u1", isAnonymous: true });
     expect(createClient).toHaveBeenCalledWith(cookieStore);
     expect(ensureProfileExists).toHaveBeenCalledWith(supabase, "u1");
+    expect(ensureDefaultPortfolioExists).toHaveBeenCalledWith(supabase, "u1");
   });
 
   it("exchanges OAuth code and marks upgraded when not anonymous", async () => {
@@ -73,6 +79,7 @@ describe("auth service", () => {
 
     expect(result).toEqual({ userId: "u2", isAnonymous: false });
     expect(ensureProfileExists).toHaveBeenCalledWith(supabase, "u2");
+    expect(ensureDefaultPortfolioExists).toHaveBeenCalledWith(supabase, "u2");
     expect(markProfileUpgradedIfNeeded).toHaveBeenCalledWith(supabase, "u2");
   });
 
@@ -108,6 +115,7 @@ describe("auth service", () => {
 
     expect(result).toEqual({ userId: "u3" });
     expect(ensureProfileExists).toHaveBeenCalledWith(supabase, "u3");
+    expect(ensureDefaultPortfolioExists).toHaveBeenCalledWith(supabase, "u3");
     expect(markProfileUpgradedIfNeeded).toHaveBeenCalledWith(supabase, "u3");
   });
 

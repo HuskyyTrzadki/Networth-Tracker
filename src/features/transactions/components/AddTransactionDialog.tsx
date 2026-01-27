@@ -54,12 +54,14 @@ export function AddTransactionDialog({
   initialValues,
   initialInstrument,
   searchClient,
+  portfolioId,
   open,
   onOpenChange,
 }: Readonly<{
   initialValues?: Partial<FormValues>;
   initialInstrument?: InstrumentSearchResult;
   searchClient?: InstrumentSearchClient;
+  portfolioId: string;
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
 }>) {
@@ -129,6 +131,7 @@ export function AddTransactionDialog({
         price: values.price,
         fee: values.fee,
         notes: values.notes,
+        portfolioId,
         clientRequestId: crypto.randomUUID(),
         instrument: {
           provider: selectedInstrument.provider,
