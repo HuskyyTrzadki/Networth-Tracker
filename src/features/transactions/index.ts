@@ -4,6 +4,6 @@ export { AddTransactionDialog } from "./components/AddTransactionDialog";
 export { ImportCsvDialogRoute } from "./components/ImportCsvDialogRoute";
 export { ImportCsvDialogStandaloneRoute } from "./components/ImportCsvDialogStandaloneRoute";
 export { TransactionsEmptyState } from "./components/TransactionsEmptyState";
-export { TransactionsFilters } from "./components/TransactionsFilters";
+export { TransactionsSearchToolbar } from "./components/TransactionsSearchToolbar";
 export { TransactionsPagination } from "./components/TransactionsPagination";
 export { TransactionsTable } from "./components/TransactionsTable";

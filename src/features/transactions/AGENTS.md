@@ -7,9 +7,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Main entrypoints
 - Dialog UI: `src/features/transactions/components/AddTransactionDialog.tsx`
+- Instrument search UI: `src/features/transactions/components/InstrumentCombobox.tsx`
 - Routes: `src/features/transactions/components/AddTransactionDialogRoute.tsx`
 - List UI: `src/features/transactions/components/TransactionsTable.tsx`
-- Filters UI: `src/features/transactions/components/TransactionsFilters.tsx`
+- Filters UI: `src/features/transactions/components/TransactionsSearchToolbar.tsx`
 - Pagination UI: `src/features/transactions/components/TransactionsPagination.tsx`
 - Row actions menu: `src/features/transactions/components/TransactionsRowActions.tsx`
 - Form schema: `src/features/transactions/lib/add-transaction-form-schema.ts`
@@ -20,10 +21,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server query: `src/features/transactions/server/list-transactions.ts`
 - Server filters: `src/features/transactions/server/filters.ts`
 - API schema: `src/features/transactions/server/schema.ts`
+- Instrument search service: `src/features/transactions/server/search-instruments.ts`
+- Instrument search API: `src/app/api/instruments/search/route.ts`
 
 ## Boundaries
 - UI should not depend on provider-specific market data shapes.
 - Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts`.
+  - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
+- Instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

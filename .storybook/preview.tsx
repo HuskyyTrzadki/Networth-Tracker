@@ -1,12 +1,6 @@
 import type { Decorator, Preview } from "@storybook/react";
-import { NextIntlClientProvider } from "next-intl";
 import { type ReactNode, useEffect } from "react";
-
-import pl from "../messages/pl.json";
-import en from "../messages/en.json";
 import "../src/app/globals.css";
-
-const messagesByLocale = { pl, en } as const;
 
 type ThemeMode = "system" | "light" | "dark";
 
@@ -38,19 +32,8 @@ const withTheme: Decorator = (Story, context) => {
   );
 };
 
-const withNextIntl: Decorator = (Story, context) => {
-  const locale = context.globals.locale as keyof typeof messagesByLocale;
-  const messages = messagesByLocale[locale] ?? messagesByLocale.pl;
-
-  return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <Story />
-    </NextIntlClientProvider>
-  );
-};
-
 const preview: Preview = {
-  decorators: [withTheme, withNextIntl],
+  decorators: [withTheme],
   globalTypes: {
     theme: {
       description: "Preview theme",
@@ -61,18 +44,6 @@ const preview: Preview = {
           { value: "system", title: "system" },
           { value: "light", title: "light" },
           { value: "dark", title: "dark" },
-        ],
-        dynamicTitle: true,
-      },
-    },
-    locale: {
-      description: "UI locale",
-      defaultValue: "pl",
-      toolbar: {
-        title: "Locale",
-        items: [
-          { value: "pl", title: "pl" },
-          { value: "en", title: "en" },
         ],
         dynamicTitle: true,
       },

@@ -42,6 +42,7 @@ const instrumentSchema = z.object({
   currency: z.string().trim().length(3),
   exchange: z.string().trim().min(1).optional(),
   region: z.string().trim().min(1).optional(),
+  logoUrl: z.string().trim().url().optional(),
 });
 
 // Server-side request schema for creating a transaction.

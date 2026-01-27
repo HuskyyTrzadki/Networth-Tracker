@@ -16,6 +16,7 @@ export type CreateTransactionPayload = Readonly<{
     currency: string;
     exchange?: string;
     region?: string;
+    logoUrl?: string | null;
   }>;
 }>;
 

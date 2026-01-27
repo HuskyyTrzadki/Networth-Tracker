@@ -1,4 +1,5 @@
 # Repository Guidelines
+I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your 100%
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
 We build both for desktop and mobile. styles need to use our patterns and typography and color palette, u are encouraged to use shadcn components we already have in storybook, when u add new component u think its worth to add to storybook , go for it.
 
@@ -40,7 +41,8 @@ Non-goals (MVP):
 - API (App Router):
   - HTTP endpoints: `src/app/api/**/route.ts`.
   - Route handlers must stay thin: validate input → call a feature “service” (e.g. `src/features/market-data/server/*`) → return JSON.
--use cn() function from cn.ts for classnames.
+- API integrations: always verify provider interfaces in the official docs before coding, and link to the relevant module docs when adding/adjusting API usage (start here for Yahoo Finance: https://jsr.io/@gadicc/yahoo-finance2/doc/modules).
+-use cn() function from cn.ts for classnames.![img.png](img.png)
   
 
 ## Supabase connection (basic)
@@ -80,18 +82,20 @@ Whenever you ship a new feature or change architecture:
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
 - Portfolio empty state with CTA actions (Dashboard)
-- Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with mocked instruments
+- Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with live instrument search
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
 - Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
 - `profiles.last_active_at` updates wired into transactions writes
+- Instruments cache stores optional logo URL (for branding in lists)
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
+- Instrument search (normalized market data provider API via `/api/instruments/search`)
+- Transactions page.
 
 ### Will be built next
-- Instrument search (normalized market data provider API)
 - Portfolio: holdings + transactions
 - Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup
 - Cache-first quotes + FX with TTL (PLN + USD)
@@ -113,7 +117,7 @@ Keep it short and current. If unsure, add a TODO with rationale.
 - Validate inputs; handle errors; avoid fetch-per-row patterns.
 - Add/adjust tests for every new module unit tests.
 - After bigger changes, run `npm run typecheck` and `npm run test`.
-- -lets try not to use useffect extensively, u are aware about "u might not need useeffect guide"
+- -lets try not to use useffect extensively, u are aware about "u might not need useeffect guide" try not to use it.
 - -remember we use react compiler, so now need for usememo, and usecallback.
 - -------------
 please teach me between the lines, i m not an expert so any tech stuff u do, u can explain more cleanly, why u do it the way u do.

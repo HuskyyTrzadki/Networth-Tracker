@@ -5,7 +5,7 @@ import { Button } from "@/features/design-system/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import {
   TransactionsEmptyState,
-  TransactionsFilters,
+  TransactionsSearchToolbar,
   TransactionsPagination,
   TransactionsTable,
 } from "@/features/transactions";
@@ -61,7 +61,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
       </header>
 
       <section className="mt-6">
-        <TransactionsFilters
+        <TransactionsSearchToolbar
           key={`${filters.query ?? ""}:${filters.type ?? "all"}:${filters.sort}`}
           query={filters.query}
           sort={filters.sort}

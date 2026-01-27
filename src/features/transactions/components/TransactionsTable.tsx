@@ -22,6 +22,19 @@ type Props = Readonly<{
   items: readonly TransactionListItem[];
 }>;
 
+const getRegionFlag = (region?: string) => {
+  const raw = region?.trim().toUpperCase();
+  if (!raw) return "🏳️";
+  const normalized = raw === "UK" ? "GB" : raw === "USA" ? "US" : raw;
+  if (normalized === "EU") return "🇪🇺";
+  if (!/^[A-Z]{2}$/.test(normalized)) return "🏳️";
+  const [first, second] = normalized;
+  return String.fromCodePoint(
+    127397 + first.charCodeAt(0),
+    127397 + second.charCodeAt(0)
+  );
+};
+
 const getTypeLabel = (side: TransactionListItem["side"]) =>
   side === "BUY" ? "Kupno" : "Sprzedaż";
 
@@ -83,13 +96,27 @@ export function TransactionsTable({ items }: Props) {
                 {item.tradeDate}
               </TableCell>
               <TableCell className="px-4">
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    {item.instrument.symbol}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {item.instrument.name}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="grid size-8 place-items-center text-base leading-none">
+                    {item.instrument.logoUrl ? (
+                      <img
+                        alt=""
+                        className="size-6 rounded-full object-contain"
+                        loading="lazy"
+                        src={item.instrument.logoUrl}
+                      />
+                    ) : (
+                      <span>{getRegionFlag(item.instrument.region)}</span>
+                    )}
+                  </div>
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-sm font-semibold text-foreground">
+                      {item.instrument.symbol}
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {item.instrument.name}
+                    </span>
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="px-4">

@@ -48,6 +48,7 @@ export async function createTransaction(
   const currency = normalizeRequiredText(input.instrument.currency).toUpperCase();
   const exchange = normalizeOptionalText(input.instrument.exchange);
   const region = normalizeOptionalText(input.instrument.region);
+  const logoUrl = normalizeOptionalText(input.instrument.logoUrl);
   const identityKey = buildIdentityKey({
     provider,
     providerKey,
@@ -57,6 +58,7 @@ export async function createTransaction(
   });
 
   const now = new Date().toISOString();
+  // Persist logo URL (if provided) so lists can render instrument branding later.
   const { data: instrument, error: instrumentError } = await supabase
     .from("instruments")
     .upsert(
@@ -70,6 +72,7 @@ export async function createTransaction(
         currency,
         exchange,
         region,
+        logo_url: logoUrl,
         updated_at: now,
       },
       { onConflict: "user_id,identity_key" }

@@ -27,16 +27,17 @@ import { Input } from "@/features/design-system/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
 import { Textarea } from "@/features/design-system/components/ui/textarea";
 
-import { instrumentOptions } from "../lib/instrument-options";
 import {
   createAddTransactionFormSchema,
   type TransactionType,
 } from "../lib/add-transaction-form-schema";
+import type { InstrumentSearchResult } from "../lib/instrument-search";
 import { InstrumentCombobox } from "./InstrumentCombobox";
 import { MoneyInput } from "./MoneyInput";
 import { TransactionDatePicker } from "./TransactionDatePicker";
 import { TransactionLiveSummary } from "./TransactionLiveSummary";
 import { createTransaction } from "../client/create-transaction";
+import type { InstrumentSearchClient } from "../client/search-instruments";
 
 type FormValues = Readonly<{
   type: TransactionType;
@@ -51,23 +52,32 @@ type FormValues = Readonly<{
 
 export function AddTransactionDialog({
   initialValues,
+  initialInstrument,
+  searchClient,
   open,
   onOpenChange,
 }: Readonly<{
   initialValues?: Partial<FormValues>;
+  initialInstrument?: InstrumentSearchResult;
+  searchClient?: InstrumentSearchClient;
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
 }>) {
   const schema = createAddTransactionFormSchema();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedInstrument, setSelectedInstrument] =
+    useState<InstrumentSearchResult | null>(initialInstrument ?? null);
+
+  const initialAssetId = initialInstrument?.id ?? "";
+  const initialCurrency = initialInstrument?.currency ?? "";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       type: "BUY",
-      assetId: "",
-      currency: "",
+      assetId: initialAssetId,
+      currency: initialCurrency,
       date: format(new Date(), "yyyy-MM-dd"),
       quantity: "",
       price: "",
@@ -87,26 +97,23 @@ export function AddTransactionDialog({
   const fee = useWatch({ control: form.control, name: "fee" });
   const notes = useWatch({ control: form.control, name: "notes" });
 
-  const selectedInstrument =
-    instrumentOptions.find((option) => option.id === assetId) ?? null;
   const displayCurrency = selectedInstrument?.currency ?? currency ?? "";
 
-  const isSubmittable = schema.safeParse({
-    type,
-    assetId,
-    currency,
-    date,
-    quantity,
-    price,
-    fee,
-    notes,
-  }).success;
+  const isSubmittable =
+    Boolean(selectedInstrument) &&
+    schema.safeParse({
+      type,
+      assetId,
+      currency,
+      date,
+      quantity,
+      price,
+      fee,
+      notes,
+    }).success;
 
   const submitTransaction = form.handleSubmit(async (values) => {
-    const instrument =
-      instrumentOptions.find((option) => option.id === values.assetId) ?? null;
-
-    if (!instrument) {
+    if (!selectedInstrument) {
       form.setError("assetId", { message: "Wybierz instrument." });
       return;
     }
@@ -124,13 +131,14 @@ export function AddTransactionDialog({
         notes: values.notes,
         clientRequestId: crypto.randomUUID(),
         instrument: {
-          provider: instrument.provider,
-          providerKey: instrument.providerKey,
-          symbol: instrument.symbol,
-          name: instrument.name,
-          currency: instrument.currency,
-          exchange: instrument.exchange,
-          region: instrument.region,
+          provider: selectedInstrument.provider,
+          providerKey: selectedInstrument.providerKey,
+          symbol: selectedInstrument.symbol,
+          name: selectedInstrument.name,
+          currency: selectedInstrument.currency,
+          exchange: selectedInstrument.exchange,
+          region: selectedInstrument.region,
+          logoUrl: selectedInstrument.logoUrl,
         },
       });
 
@@ -215,13 +223,15 @@ export function AddTransactionDialog({
                       <FormControl>
                         <InstrumentCombobox
                           onChange={(instrument) => {
+                            setSelectedInstrument(instrument);
                             field.onChange(instrument.id);
                             form.setValue("currency", instrument.currency, {
                               shouldDirty: true,
                               shouldValidate: true,
                             });
                           }}
-                          value={field.value ? String(field.value) : null}
+                          searchClient={searchClient}
+                          value={selectedInstrument}
                         />
                       </FormControl>
                       <FormMessage />

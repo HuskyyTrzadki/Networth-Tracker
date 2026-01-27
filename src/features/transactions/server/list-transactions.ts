@@ -16,11 +16,15 @@ type TransactionRow = Readonly<{
         symbol: string;
         name: string;
         currency: string;
+        region: string | null;
+        logo_url: string | null;
       }>
     | Readonly<{
         symbol: string;
         name: string;
         currency: string;
+        region: string | null;
+        logo_url: string | null;
       }>[]
     | null;
 }>;
@@ -36,6 +40,8 @@ export type TransactionListItem = Readonly<{
     symbol: string;
     name: string;
     currency: string;
+    region?: string;
+    logoUrl?: string | null;
   }>;
 }>;
 
@@ -66,7 +72,7 @@ export async function listTransactions(
   let query = supabase
     .from("transactions")
     .select(
-      "id, trade_date, side, quantity, price, fee, instrument:instruments!inner(symbol, name, currency)"
+      "id, trade_date, side, quantity, price, fee, instrument:instruments!inner(symbol, name, currency, region, logo_url)"
     )
     .eq("user_id", userId)
     .order("trade_date", { ascending })
@@ -120,6 +126,8 @@ export async function listTransactions(
           symbol: instrument.symbol,
           name: instrument.name,
           currency: instrument.currency,
+          region: instrument.region ?? undefined,
+          logoUrl: instrument.logo_url ?? null,
         },
       };
     }),

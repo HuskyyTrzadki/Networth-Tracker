@@ -1,7 +1,8 @@
 "use client";
 
+import debounce from "lodash.debounce";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent } from "react";
 
 import { Input } from "@/features/design-system/components/ui/input";
 import {
@@ -28,12 +29,12 @@ const buildTransactionsUrl = (params: URLSearchParams) => {
   return queryString.length > 0 ? `/transactions?${queryString}` : "/transactions";
 };
 
-export function TransactionsFilters({ query, type, sort }: Props) {
+export function TransactionsSearchToolbar({ query, type, sort }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(query ?? "");
   const [isPending, startTransition] = useTransition();
-  const debounceRef = useRef<number | null>(null);
+  const commitRef = useRef<(value: string) => void>(() => undefined);
 
   const pushWithUpdates = (updates: Readonly<Record<string, string | null>>) => {
     const params = new URLSearchParams(searchParams?.toString());
@@ -59,17 +60,23 @@ export function TransactionsFilters({ query, type, sort }: Props) {
     pushWithUpdates({ q: trimmed.length > 0 ? trimmed : null });
   };
 
+  commitRef.current = handleSearchCommit;
+
+  const debouncedCommit = useMemo(
+    () =>
+      debounce((value: string) => {
+        commitRef.current(value);
+      }, searchDebounceMs),
+    []
+  );
+
+  useEffect(() => () => debouncedCommit.cancel(), [debouncedCommit]);
+
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
     setSearchValue(nextValue);
 
-    if (debounceRef.current !== null) {
-      window.clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = window.setTimeout(() => {
-      handleSearchCommit(nextValue);
-    }, searchDebounceMs);
+    debouncedCommit(nextValue);
   };
 
   return (
