@@ -66,6 +66,11 @@ const mockSearchClient: InstrumentSearchClient = async (
   );
 };
 
+const mockPortfolios = [
+  { id: "portfolio-main", name: "Główny" },
+  { id: "portfolio-growth", name: "Rozwój" },
+] as const;
+
 const meta: Meta<typeof AddTransactionDialog> = {
   title: "Transactions/Add Transaction Dialog",
   component: AddTransactionDialog,
@@ -101,7 +106,9 @@ function Demo() {
         onOpenChange={setOpen}
         open={open}
         searchClient={mockSearchClient}
-        portfolioId="portfolio-demo"
+        portfolios={mockPortfolios}
+        initialPortfolioId="portfolio-main"
+        forcedPortfolioId={null}
       />
     </div>
   );
@@ -140,7 +147,9 @@ function FilledDemo() {
         onOpenChange={setOpen}
         open={open}
         searchClient={mockSearchClient}
-        portfolioId="portfolio-demo"
+        portfolios={mockPortfolios}
+        initialPortfolioId="portfolio-main"
+        forcedPortfolioId="portfolio-main"
       />
     </div>
   );

@@ -23,7 +23,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server service: `src/features/transactions/server/create-transaction.ts`
 - Server query: `src/features/transactions/server/list-transactions.ts`
 - Server filters: `src/features/transactions/server/filters.ts`
-- Server helper: `src/features/transactions/server/resolve-portfolio-id.ts`
+- Server helper: `src/features/transactions/server/resolve-portfolio-selection.ts`
 - API schema: `src/features/transactions/server/schema.ts`
 - Instrument search service: `src/features/transactions/server/search-instruments.ts`
 - Instrument search API: `src/app/api/instruments/search/route.ts`

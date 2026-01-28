@@ -82,7 +82,7 @@ Whenever you ship a new feature or change architecture:
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
 - Portfolio empty state with CTA actions (Dashboard)
-- Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with live instrument search
+- Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with live instrument search + portfolio select (forced when URL has `?portfolio=...`)
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
 - Portfolios table + `transactions.portfolio_id` (default portfolio created during auth)

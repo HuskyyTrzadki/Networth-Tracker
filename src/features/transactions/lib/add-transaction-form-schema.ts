@@ -10,6 +10,7 @@ export const transactionTypes = ["BUY", "SELL"] as const satisfies readonly Tran
 export function createAddTransactionFormSchema() {
   return z.object({
     type: z.enum(transactionTypes),
+    portfolioId: z.string().trim().min(1, { message: "Wybierz portfel." }),
     assetId: z.string().trim().min(1, { message: "Wybierz instrument." }),
     currency: z.string().length(3, { message: "Brak waluty dla instrumentu." }),
     date: z.string().refine(

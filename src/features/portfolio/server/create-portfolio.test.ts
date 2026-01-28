@@ -30,15 +30,15 @@ describe("createPortfolioStrict", () => {
       })
     );
 
-    expect(
-        createPortfolioStrict(supabase as never, "user-1", {
-            name: "Nowy",
-            baseCurrency: "USD",
-        })
-    ).resolves.toEqual({
-        id: "p1",
+    await expect(
+      createPortfolioStrict(supabase as never, "user-1", {
         name: "Nowy",
         baseCurrency: "USD",
+      })
+    ).resolves.toEqual({
+      id: "p1",
+      name: "Nowy",
+      baseCurrency: "USD",
     });
   });
 
@@ -50,11 +50,11 @@ describe("createPortfolioStrict", () => {
       })
     );
 
-    expect(
-        createPortfolioStrict(supabase as never, "user-1", {
-            name: "Główny",
-            baseCurrency: "PLN",
-        })
+    await expect(
+      createPortfolioStrict(supabase as never, "user-1", {
+        name: "Główny",
+        baseCurrency: "PLN",
+      })
     ).rejects.toThrow("Masz już portfel o takiej nazwie.");
   });
 });

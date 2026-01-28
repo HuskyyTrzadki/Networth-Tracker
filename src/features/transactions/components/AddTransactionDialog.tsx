@@ -24,6 +24,13 @@ import {
   FormMessage,
 } from "@/features/design-system/components/ui/form";
 import { Input } from "@/features/design-system/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/features/design-system/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
 import { Textarea } from "@/features/design-system/components/ui/textarea";
 
@@ -41,6 +48,7 @@ import type { InstrumentSearchClient } from "../client/search-instruments";
 
 type FormValues = Readonly<{
   type: TransactionType;
+  portfolioId: string;
   assetId: string;
   currency: string;
   date: string;
@@ -54,14 +62,18 @@ export function AddTransactionDialog({
   initialValues,
   initialInstrument,
   searchClient,
-  portfolioId,
+  portfolios,
+  initialPortfolioId,
+  forcedPortfolioId,
   open,
   onOpenChange,
 }: Readonly<{
   initialValues?: Partial<FormValues>;
   initialInstrument?: InstrumentSearchResult;
   searchClient?: InstrumentSearchClient;
-  portfolioId: string;
+  portfolios: readonly { id: string; name: string }[];
+  initialPortfolioId: string;
+  forcedPortfolioId: string | null;
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
 }>) {
@@ -78,6 +90,7 @@ export function AddTransactionDialog({
     resolver: zodResolver(schema),
     defaultValues: {
       type: "BUY",
+      portfolioId: initialPortfolioId,
       assetId: initialAssetId,
       currency: initialCurrency,
       date: format(new Date(), "yyyy-MM-dd"),
@@ -93,6 +106,7 @@ export function AddTransactionDialog({
   const assetId = useWatch({ control: form.control, name: "assetId" });
   const currency = useWatch({ control: form.control, name: "currency" });
   const date = useWatch({ control: form.control, name: "date" });
+  const portfolioId = useWatch({ control: form.control, name: "portfolioId" });
   const type = useWatch({ control: form.control, name: "type" });
   const quantity = useWatch({ control: form.control, name: "quantity" });
   const price = useWatch({ control: form.control, name: "price" });
@@ -105,6 +119,7 @@ export function AddTransactionDialog({
     Boolean(selectedInstrument) &&
     schema.safeParse({
       type,
+      portfolioId,
       assetId,
       currency,
       date,
@@ -124,6 +139,7 @@ export function AddTransactionDialog({
     form.clearErrors("root");
 
     try {
+      const resolvedPortfolioId = forcedPortfolioId ?? values.portfolioId;
       await createTransaction({
         type: values.type,
         date: values.date,
@@ -131,7 +147,7 @@ export function AddTransactionDialog({
         price: values.price,
         fee: values.fee,
         notes: values.notes,
-        portfolioId,
+        portfolioId: resolvedPortfolioId,
         clientRequestId: crypto.randomUUID(),
         instrument: {
           provider: selectedInstrument.provider,
@@ -139,9 +155,9 @@ export function AddTransactionDialog({
           symbol: selectedInstrument.symbol,
           name: selectedInstrument.name,
           currency: selectedInstrument.currency,
-          exchange: selectedInstrument.exchange,
-          region: selectedInstrument.region,
-          logoUrl: selectedInstrument.logoUrl,
+          exchange: selectedInstrument.exchange ?? undefined,
+          region: selectedInstrument.region ?? undefined,
+          logoUrl: selectedInstrument.logoUrl ?? undefined,
         },
       });
 
@@ -189,6 +205,35 @@ export function AddTransactionDialog({
 
             <div className="flex-1 overflow-y-auto px-6 py-5">
               <div className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="portfolioId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Portfel</FormLabel>
+                      <Select
+                        disabled={Boolean(forcedPortfolioId)}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-10">
+                            <SelectValue placeholder="Wybierz portfel" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {portfolios.map((portfolio) => (
+                            <SelectItem key={portfolio.id} value={portfolio.id}>
+                              {portfolio.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="type"

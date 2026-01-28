@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 
+import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { AddTransactionDialogStandaloneRoute } from "@/features/transactions";
-import { resolvePortfolioId } from "@/features/transactions/server/resolve-portfolio-id";
+import { resolvePortfolioSelection } from "@/features/transactions/server/resolve-portfolio-selection";
 import { createClient } from "@/lib/supabase/server";
 
 type Props = Readonly<{
@@ -29,11 +30,33 @@ export default async function TransactionNewPage({ searchParams }: Props) {
     );
   }
 
-  const portfolioId = await resolvePortfolioId({
+  const portfolios = await listPortfolios(supabase, data.user.id);
+  const portfolioOptions = portfolios.map((portfolio) => ({
+    id: portfolio.id,
+    name: portfolio.name,
+  }));
+
+  if (portfolioOptions.length === 0) {
+    return (
+      <main className="px-6 py-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
+        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
+          Brak portfeli do przypisania transakcji.
+        </div>
+      </main>
+    );
+  }
+
+  const selection = resolvePortfolioSelection({
     searchParams: params,
-    supabase,
-    userId: data.user.id,
+    portfolios: portfolioOptions,
   });
 
-  return <AddTransactionDialogStandaloneRoute portfolioId={portfolioId} />;
+  return (
+    <AddTransactionDialogStandaloneRoute
+      portfolios={portfolioOptions}
+      initialPortfolioId={selection.initialPortfolioId}
+      forcedPortfolioId={selection.forcedPortfolioId}
+    />
+  );
 }
