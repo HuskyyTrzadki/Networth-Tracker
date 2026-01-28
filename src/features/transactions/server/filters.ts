@@ -8,6 +8,7 @@ export type TransactionsFilters = Readonly<{
   sort: TransactionsSort;
   page: number;
   pageSize: number;
+  portfolioId: string | null;
 }>;
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -21,6 +22,7 @@ export function parseTransactionsFilters(
   const queryRaw = getFirstParam(searchParams.q)?.trim();
   const typeRaw = getFirstParam(searchParams.type)?.toUpperCase();
   const sortRaw = getFirstParam(searchParams.sort);
+  const portfolioRaw = getFirstParam(searchParams.portfolio)?.trim();
   const pageRaw = Number.parseInt(getFirstParam(searchParams.page) ?? "1", 10);
 
   return {
@@ -29,5 +31,9 @@ export function parseTransactionsFilters(
     sort: sortRaw === "date_asc" ? "date_asc" : "date_desc",
     page: Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1,
     pageSize: DEFAULT_PAGE_SIZE,
+    portfolioId:
+      portfolioRaw && portfolioRaw.length > 0 && portfolioRaw !== "all"
+        ? portfolioRaw
+        : null,
   };
 }

@@ -1,13 +1,19 @@
 import { cookies } from "next/headers";
 
 import { AddTransactionDialogStandaloneRoute } from "@/features/transactions";
-import { getDefaultPortfolioId } from "@/features/portfolio/server/default-portfolio";
+import { resolvePortfolioId } from "@/features/transactions/server/resolve-portfolio-id";
 import { createClient } from "@/lib/supabase/server";
+
+type Props = Readonly<{
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}>;
+
 export const metadata = {
   title: "Dodaj transakcję",
 };
 
-export default async function TransactionNewPage() {
+export default async function TransactionNewPage({ searchParams }: Props) {
+  const params = await searchParams;
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
   const { data } = await supabase.auth.getUser();
@@ -23,7 +29,11 @@ export default async function TransactionNewPage() {
     );
   }
 
-  const portfolioId = await getDefaultPortfolioId(supabase, data.user.id);
+  const portfolioId = await resolvePortfolioId({
+    searchParams: params,
+    supabase,
+    userId: data.user.id,
+  });
 
   return <AddTransactionDialogStandaloneRoute portfolioId={portfolioId} />;
 }

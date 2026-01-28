@@ -11,6 +11,7 @@ import {
 } from "@/features/transactions";
 import { parseTransactionsFilters } from "@/features/transactions/server/filters";
 import { listTransactions } from "@/features/transactions/server/list-transactions";
+import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 
 type Props = Readonly<{
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -38,11 +39,13 @@ export default async function TransactionsPage({ searchParams }: Props) {
     );
   }
 
-  const transactionsPage = await listTransactions(
-    supabase,
-    data.user.id,
-    filters
-  );
+  const [transactionsPage, portfolios] = await Promise.all([
+    listTransactions(supabase, data.user.id, filters),
+    listPortfolios(supabase, data.user.id),
+  ]);
+  const transactionCreateHref = filters.portfolioId
+    ? `/transactions/new?portfolio=${filters.portfolioId}`
+    : "/transactions/new";
 
   return (
     <main className="px-6 py-8">
@@ -56,14 +59,18 @@ export default async function TransactionsPage({ searchParams }: Props) {
           </p>
         </div>
         <Button asChild size="lg">
-          <Link href="/transactions/new">Dodaj transakcję</Link>
+          <Link href={transactionCreateHref}>Dodaj transakcję</Link>
         </Button>
       </header>
 
       <section className="mt-6">
         <TransactionsSearchToolbar
-          key={`${filters.query ?? ""}:${filters.type ?? "all"}:${filters.sort}`}
+          key={`${filters.query ?? ""}:${filters.type ?? "all"}:${
+            filters.sort
+          }:${filters.portfolioId ?? "all"}`}
+          portfolios={portfolios}
           query={filters.query}
+          selectedPortfolioId={filters.portfolioId}
           sort={filters.sort}
           type={filters.type}
         />

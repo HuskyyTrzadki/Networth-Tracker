@@ -12,6 +12,7 @@ describe("parseTransactionsFilters", () => {
       sort: "date_desc",
       page: 1,
       pageSize: 20,
+      portfolioId: null,
     });
   });
 
@@ -29,6 +30,7 @@ describe("parseTransactionsFilters", () => {
       sort: "date_asc",
       page: 3,
       pageSize: 20,
+      portfolioId: null,
     });
   });
 
@@ -46,6 +48,7 @@ describe("parseTransactionsFilters", () => {
       sort: "date_desc",
       page: 1,
       pageSize: 20,
+      portfolioId: null,
     });
   });
 
@@ -63,6 +66,23 @@ describe("parseTransactionsFilters", () => {
       sort: "date_asc",
       page: 2,
       pageSize: 20,
+      portfolioId: null,
     });
+  });
+
+  it("parses portfolio selection", () => {
+    const filters = parseTransactionsFilters({
+      portfolio: "portfolio-123",
+    });
+
+    expect(filters.portfolioId).toBe("portfolio-123");
+  });
+
+  it("treats all as a missing portfolio filter", () => {
+    const filters = parseTransactionsFilters({
+      portfolio: "all",
+    });
+
+    expect(filters.portfolioId).toBeNull();
   });
 });

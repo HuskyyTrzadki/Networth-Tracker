@@ -16,24 +16,12 @@ import {
 } from "../lib/format-currency";
 import { multiplyDecimals, parseDecimalString } from "../lib/decimal";
 import type { TransactionListItem } from "../server/list-transactions";
+import { InstrumentLogoImage } from "./InstrumentLogoImage";
 import { TransactionsRowActions } from "./TransactionsRowActions";
 
 type Props = Readonly<{
   items: readonly TransactionListItem[];
 }>;
-
-const getRegionFlag = (region?: string) => {
-  const raw = region?.trim().toUpperCase();
-  if (!raw) return "🏳️";
-  const normalized = raw === "UK" ? "GB" : raw === "USA" ? "US" : raw;
-  if (normalized === "EU") return "🇪🇺";
-  if (!/^[A-Z]{2}$/.test(normalized)) return "🏳️";
-  const [first, second] = normalized;
-  return String.fromCodePoint(
-    127397 + first.charCodeAt(0),
-    127397 + second.charCodeAt(0)
-  );
-};
 
 const getTypeLabel = (side: TransactionListItem["side"]) =>
   side === "BUY" ? "Kupno" : "Sprzedaż";
@@ -99,14 +87,13 @@ export function TransactionsTable({ items }: Props) {
                 <div className="flex items-center gap-3">
                   <div className="grid size-8 place-items-center text-base leading-none">
                     {item.instrument.logoUrl ? (
-                      <img
-                        alt=""
-                        className="size-6 rounded-full object-contain"
-                        loading="lazy"
+                      <InstrumentLogoImage
+                        className="size-6"
+                        size={24}
                         src={item.instrument.logoUrl}
                       />
                     ) : (
-                      <span>{getRegionFlag(item.instrument.region)}</span>
+                      <span className="block size-5 rounded-full bg-muted" />
                     )}
                   </div>
                   <div className="flex min-w-0 flex-col">

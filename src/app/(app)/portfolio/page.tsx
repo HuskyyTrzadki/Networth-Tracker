@@ -1,19 +1,71 @@
-import { DashboardEmptyState } from "@/features/portfolio";
+import { cookies } from "next/headers";
+
+import { DashboardEmptyState, PortfolioSwitcher } from "@/features/portfolio";
+import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
+import { createClient } from "@/lib/supabase/server";
+
+type Props = Readonly<{
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}>;
+
+const getFirstParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
+const parsePortfolioId = (
+  searchParams: Readonly<Record<string, string | string[] | undefined>>
+) => {
+  const raw = getFirstParam(searchParams.portfolio)?.trim();
+  if (!raw || raw === "all") return null;
+  return raw;
+};
+
 export const metadata = {
   title: "Portfel",
 };
 
-export default async function PortfolioPage() {
+export default async function PortfolioPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const selectedPortfolioId = parsePortfolioId(params);
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    return (
+      <main className="px-6 py-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
+        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
+          Zaloguj się, aby zobaczyć portfel.
+        </div>
+      </main>
+    );
+  }
+
+  const portfolios = await listPortfolios(supabase, data.user.id);
+
   return (
     <main className="flex min-h-[calc(100vh-120px)] flex-col px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
+          <p className="text-sm text-muted-foreground">
+            Wybierz portfel lub zobacz zbiorcze podsumowanie.
+          </p>
+        </div>
+        <PortfolioSwitcher
+          portfolios={portfolios}
+          selectedId={selectedPortfolioId}
+        />
+      </header>
       <div className="flex flex-1 items-center justify-center py-10">
         <DashboardEmptyState
           title="Twój portfel jest pusty."
           subtitle="Dodaj swoje pierwsze aktywo, aby zobaczyć analizę."
           primaryAction={{
             label: "Dodaj transakcję",
-            href: "/transactions/new",
+            href: selectedPortfolioId
+              ? `/transactions/new?portfolio=${selectedPortfolioId}`
+              : "/transactions/new",
           }}
           secondaryAction={{
             label: "Importuj CSV",

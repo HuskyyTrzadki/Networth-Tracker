@@ -9,7 +9,7 @@ const basePayload = {
   price: "100,00",
   fee: "",
   notes: "Test",
-  portfolioId: "11111111-1111-1111-1111-111111111111",
+  portfolioId: "11111111-1111-4111-8111-111111111111",
   clientRequestId: "2d3d6f6b-8d2d-4a9b-9a7d-9d1c1a1b7b7b",
   instrument: {
     symbol: "AAPL",

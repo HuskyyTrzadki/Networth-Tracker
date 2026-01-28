@@ -80,6 +80,10 @@ export async function listTransactions(
     // Fetch one extra row to detect if another page exists.
     .range(offset, rangeEnd);
 
+  if (filters.portfolioId) {
+    query = query.eq("portfolio_id", filters.portfolioId);
+  }
+
   if (filters.type) {
     query = query.eq("side", filters.type);
   }

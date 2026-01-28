@@ -2,7 +2,7 @@
 
 import debounce from "lodash.debounce";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, useTransition, type ChangeEvent } from "react";
 
 import { Input } from "@/features/design-system/components/ui/input";
 import {
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/features/design-system/components/ui/select";
+import { PortfolioSwitcher } from "@/features/portfolio";
 import { cn } from "@/lib/cn";
 
 import type { TransactionSide, TransactionsSort } from "../server/filters";
@@ -20,6 +21,12 @@ type Props = Readonly<{
   query: string | null;
   type: TransactionSide | null;
   sort: TransactionsSort;
+  portfolios: readonly {
+    id: string;
+    name: string;
+    baseCurrency: string;
+  }[];
+  selectedPortfolioId: string | null;
 }>;
 
 const searchDebounceMs = 300;
@@ -29,12 +36,18 @@ const buildTransactionsUrl = (params: URLSearchParams) => {
   return queryString.length > 0 ? `/transactions?${queryString}` : "/transactions";
 };
 
-export function TransactionsSearchToolbar({ query, type, sort }: Props) {
+export function TransactionsSearchToolbar({
+  query,
+  type,
+  sort,
+  portfolios,
+  selectedPortfolioId,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(query ?? "");
   const [isPending, startTransition] = useTransition();
-  const commitRef = useRef<(value: string) => void>(() => undefined);
+  const searchParamsString = searchParams?.toString() ?? "";
 
   const pushWithUpdates = (updates: Readonly<Record<string, string | null>>) => {
     const params = new URLSearchParams(searchParams?.toString());
@@ -55,19 +68,23 @@ export function TransactionsSearchToolbar({ query, type, sort }: Props) {
     });
   };
 
-  const handleSearchCommit = (value: string) => {
-    const trimmed = value.trim();
-    pushWithUpdates({ q: trimmed.length > 0 ? trimmed : null });
-  };
-
-  commitRef.current = handleSearchCommit;
-
   const debouncedCommit = useMemo(
     () =>
       debounce((value: string) => {
-        commitRef.current(value);
+        const trimmed = value.trim();
+        const params = new URLSearchParams(searchParamsString);
+        if (trimmed.length > 0) {
+          params.set("q", trimmed);
+        } else {
+          params.delete("q");
+        }
+        params.set("page", "1");
+
+        startTransition(() => {
+          router.push(buildTransactionsUrl(params), { scroll: false });
+        });
       }, searchDebounceMs),
-    []
+    [router, searchParamsString, startTransition]
   );
 
   useEffect(() => () => debouncedCommit.cancel(), [debouncedCommit]);
@@ -82,52 +99,62 @@ export function TransactionsSearchToolbar({ query, type, sort }: Props) {
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3",
-        "sm:flex-row sm:items-center sm:gap-4"
+        "flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3"
       )}
     >
-      <div className="flex-1">
-        <Input
-          aria-label="Szukaj instrumentu"
-          className="h-10"
-          onChange={handleSearchChange}
-          placeholder="Szukaj instrumentu..."
-          value={searchValue}
+      <div className="w-full">
+        <PortfolioSwitcher
+          disabled={isPending}
+          portfolios={portfolios}
+          resetPageParam
+          selectedId={selectedPortfolioId}
         />
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Select
-          disabled={isPending}
-          onValueChange={(value) =>
-            pushWithUpdates({ type: value === "all" ? null : value })
-          }
-          value={type ?? "all"}
-        >
-          <SelectTrigger className="h-10 min-w-[160px]">
-            <SelectValue placeholder="Typ" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Wszystkie</SelectItem>
-            <SelectItem value="BUY">Kupno</SelectItem>
-            <SelectItem value="SELL">Sprzedaż</SelectItem>
-          </SelectContent>
-        </Select>
 
-        <Select
-          disabled={isPending}
-          onValueChange={(value) =>
-            pushWithUpdates({ sort: value === "date_desc" ? null : value })
-          }
-          value={sort}
-        >
-          <SelectTrigger className="h-10 min-w-[180px]">
-            <SelectValue placeholder="Sortuj" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="date_desc">Data: Najnowsze</SelectItem>
-            <SelectItem value="date_asc">Data: Najstarsze</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex-1">
+          <Input
+            aria-label="Szukaj instrumentu"
+            className="h-10"
+            onChange={handleSearchChange}
+            placeholder="Szukaj instrumentu..."
+            value={searchValue}
+          />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Select
+            disabled={isPending}
+            onValueChange={(value) =>
+              pushWithUpdates({ type: value === "all" ? null : value })
+            }
+            value={type ?? "all"}
+          >
+            <SelectTrigger className="h-10 min-w-[160px]">
+              <SelectValue placeholder="Typ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Wszystkie</SelectItem>
+              <SelectItem value="BUY">Kupno</SelectItem>
+              <SelectItem value="SELL">Sprzedaż</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            disabled={isPending}
+            onValueChange={(value) =>
+              pushWithUpdates({ sort: value === "date_desc" ? null : value })
+            }
+            value={sort}
+          >
+            <SelectTrigger className="h-10 min-w-[180px]">
+              <SelectValue placeholder="Sortuj" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date_desc">Data: Najnowsze</SelectItem>
+              <SelectItem value="date_asc">Data: Najstarsze</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );

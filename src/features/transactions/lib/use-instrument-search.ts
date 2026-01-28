@@ -13,6 +13,7 @@ type SearchState = Readonly<{
   results: InstrumentSearchResult[];
   status: "idle" | "loading" | "success" | "error";
   error: string | null;
+  requestKey: string;
 }>;
 
 type SearchOptions = Readonly<{
@@ -26,6 +27,7 @@ const initialState: SearchState = {
   results: [],
   status: "idle",
   error: null,
+  requestKey: "",
 };
 
 export function useInstrumentSearch(query: string, options?: SearchOptions) {
@@ -34,21 +36,21 @@ export function useInstrumentSearch(query: string, options?: SearchOptions) {
   const mode = options?.mode;
   const limit = options?.limit;
   const [state, setState] = useState<SearchState>(initialState);
+  const trimmed = query.trim();
+  const requestKey = `${trimmed}|${mode ?? ""}|${limit ?? ""}`;
+  const shouldSearch = trimmed.length >= minQueryLength;
 
   useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed.length < minQueryLength) {
-      setState(initialState);
+    if (!shouldSearch) {
       return;
     }
 
     const controller = new AbortController();
-    setState((current) => ({ ...current, status: "loading", error: null }));
 
     Promise.resolve(client(trimmed, { mode, limit }, controller.signal))
       .then((results) => {
         if (controller.signal.aborted) return;
-        setState({ results, status: "success", error: null });
+        setState({ results, status: "success", error: null, requestKey });
       })
       .catch((error) => {
         if (
@@ -61,20 +63,31 @@ export function useInstrumentSearch(query: string, options?: SearchOptions) {
           error instanceof Error
             ? error.message
             : "Nie udało się pobrać instrumentów.";
-        setState((current) => ({
-          ...current,
+        setState({
+          results: [],
           status: "error",
           error: message,
-        }));
+          requestKey,
+        });
       });
 
     return () => controller.abort();
-  }, [client, limit, minQueryLength, mode, query]);
+  }, [client, limit, mode, requestKey, shouldSearch, trimmed]);
+
+  const isMatchingRequest = state.requestKey === requestKey;
+  const resolvedState: SearchState = shouldSearch
+    ? {
+        results: isMatchingRequest ? state.results : [],
+        status: isMatchingRequest ? state.status : "loading",
+        error: isMatchingRequest ? state.error : null,
+        requestKey,
+      }
+    : initialState;
 
   return {
-    results: state.results,
-    status: state.status,
-    error: state.error,
-    isLoading: state.status === "loading",
+    results: resolvedState.results,
+    status: resolvedState.status,
+    error: resolvedState.error,
+    isLoading: resolvedState.status === "loading",
   };
 }

@@ -24,6 +24,10 @@ const buildTransactionsUrl = (filters: TransactionsFilters, page: number) => {
     params.set("sort", filters.sort);
   }
 
+  if (filters.portfolioId) {
+    params.set("portfolio", filters.portfolioId);
+  }
+
   if (page > 1) {
     params.set("page", String(page));
   }

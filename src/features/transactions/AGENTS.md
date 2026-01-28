@@ -5,10 +5,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transaction add/import UI, list view, and supporting form helpers.
 - Persistence, validation, and server-side services.
 - Transactions always belong to a portfolio (portfolio is created during auth).
+- Transactions list supports portfolio filtering (All vs. single portfolio).
 
 ## Main entrypoints
 - Dialog UI: `src/features/transactions/components/AddTransactionDialog.tsx`
 - Instrument search UI: `src/features/transactions/components/InstrumentCombobox.tsx`
+- Instrument logo: `src/features/transactions/components/InstrumentLogoImage.tsx`
 - Routes: `src/features/transactions/components/AddTransactionDialogRoute.tsx`
 - List UI: `src/features/transactions/components/TransactionsTable.tsx`
 - Filters UI: `src/features/transactions/components/TransactionsSearchToolbar.tsx`
@@ -21,6 +23,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server service: `src/features/transactions/server/create-transaction.ts`
 - Server query: `src/features/transactions/server/list-transactions.ts`
 - Server filters: `src/features/transactions/server/filters.ts`
+- Server helper: `src/features/transactions/server/resolve-portfolio-id.ts`
 - API schema: `src/features/transactions/server/schema.ts`
 - Instrument search service: `src/features/transactions/server/search-instruments.ts`
 - Instrument search API: `src/app/api/instruments/search/route.ts`

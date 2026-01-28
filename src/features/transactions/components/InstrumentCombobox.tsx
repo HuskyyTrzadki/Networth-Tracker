@@ -2,7 +2,7 @@
 
 import debounce from "lodash.debounce";
 import { Bitcoin, CandlestickChart, Check, ChevronsUpDown, Layers2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -24,6 +24,7 @@ import { cn } from "@/lib/cn";
 import type { InstrumentSearchClient } from "../client/search-instruments";
 import type { InstrumentSearchResult, InstrumentType } from "../lib/instrument-search";
 import { useInstrumentSearch } from "../lib/use-instrument-search";
+import { InstrumentLogoImage } from "./InstrumentLogoImage";
 
 type Props = Readonly<{
   value: InstrumentSearchResult | null;
@@ -44,19 +45,6 @@ const instrumentTypeMeta: Record<InstrumentType, { label: string; icon: TypeIcon
   CRYPTOCURRENCY: { label: "Krypto", icon: Bitcoin },
 };
 
-const getRegionFlag = (region?: string | null) => {
-  const raw = region?.trim().toUpperCase();
-  if (!raw) return "🏳️";
-  const normalized = raw === "UK" ? "GB" : raw === "USA" ? "US" : raw;
-  if (normalized === "EU") return "🇪🇺";
-  if (!/^[A-Z]{2}$/.test(normalized)) return "🏳️";
-  const [first, second] = normalized;
-  return String.fromCodePoint(
-    127397 + first.charCodeAt(0),
-    127397 + second.charCodeAt(0)
-  );
-};
-
 const typeFilters: Array<{ value: "all" | InstrumentType; label: string }> = [
   { value: "all", label: "Wszystko" },
   { value: "EQUITY", label: instrumentTypeMeta.EQUITY.label },
@@ -70,15 +58,9 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [activeType, setActiveType] = useState<"all" | InstrumentType>("all");
-  const commitRef = useRef<(nextValue: string) => void>(() => undefined);
-
-  commitRef.current = setDebouncedQuery;
 
   const debouncedCommit = useMemo(
-    () =>
-      debounce((nextValue: string) => {
-        commitRef.current(nextValue);
-      }, DEBOUNCE_MS),
+    () => debounce((nextValue: string) => setDebouncedQuery(nextValue), DEBOUNCE_MS),
     []
   );
 
@@ -231,7 +213,6 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
                 const resolvedType = option.instrumentType ?? "EQUITY";
                 const typeMeta = instrumentTypeMeta[resolvedType];
                 const TypeIcon = typeMeta?.icon ?? CandlestickChart;
-                const flag = getRegionFlag(option.region);
                 return (
                   <CommandItem
                     key={option.id}
@@ -253,17 +234,10 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
                     />
                     <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <span
-                          className="text-base leading-none"
-                          title={option.region ?? ""}
-                        >
-                          {flag}
-                        </span>
                         {option.logoUrl ? (
-                          <img
-                            alt=""
-                            className="size-4 rounded-full object-contain"
-                            loading="lazy"
+                          <InstrumentLogoImage
+                            className="size-4"
+                            size={16}
                             src={option.logoUrl}
                           />
                         ) : (
@@ -276,12 +250,12 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
                       <span className="truncate text-sm text-muted-foreground">
                         {option.name}
                       </span>
-                      {option.exchange || option.region ? (
+                      {option.exchange ? (
                         <Badge
                           className="max-w-[140px] truncate bg-muted text-[10px] text-muted-foreground"
-                          title={option.exchange ?? option.region ?? ""}
+                          title={option.exchange}
                         >
-                          {option.exchange ?? option.region}
+                          {option.exchange}
                         </Badge>
                       ) : null}
                     </div>
