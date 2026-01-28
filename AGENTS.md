@@ -78,7 +78,7 @@ Whenever you ship a new feature or change architecture:
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
 - Storybook + design system stories (colors, typography, finance demo, Recharts charts) with theme toolbars,
 - shadcn/ui primitives live in `src/components/ui` and are re-exported from `src/features/design-system/components/ui/*`
-- App shell navigation (desktop sidebar + mobile bottom nav + “More” sheet)
+- App shell navigation (shadcn sidebar on desktop + mobile bottom nav + “More” sheet)
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
 - Portfolio empty state with CTA actions (Dashboard)
@@ -86,7 +86,7 @@ Whenever you ship a new feature or change architecture:
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
 - Portfolios table + `transactions.portfolio_id` (default portfolio created during auth)
-- Portfolio selection + creation UI with "Wszystkie portfele" view (portfolio switcher)
+- Portfolio selection (switcher) + creation dialog (sidebar + mobile header), with "Wszystkie portfele" view
 - Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
 - `profiles.last_active_at` updates wired into transactions writes
 - Instruments cache stores optional logo URL (for branding in lists)

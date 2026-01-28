@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 
-import { DashboardEmptyState, PortfolioSwitcher } from "@/features/portfolio";
+import {
+  DashboardEmptyState,
+  PortfolioMobileHeaderActions,
+} from "@/features/portfolio";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,8 +31,8 @@ export default async function PortfolioPage({ searchParams }: Props) {
   const selectedPortfolioId = parsePortfolioId(params);
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+  // Server-side: resolve the user from cookies so RLS filters portfolios correctly.
   const { data } = await supabase.auth.getUser();
-
   if (!data.user) {
     return (
       <main className="px-6 py-8">
@@ -45,17 +48,19 @@ export default async function PortfolioPage({ searchParams }: Props) {
 
   return (
     <main className="flex min-h-[calc(100vh-120px)] flex-col px-6 py-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
           <p className="text-sm text-muted-foreground">
             Wybierz portfel lub zobacz zbiorcze podsumowanie.
           </p>
         </div>
-        <PortfolioSwitcher
-          portfolios={portfolios}
-          selectedId={selectedPortfolioId}
-        />
+        <div className="md:hidden">
+          <PortfolioMobileHeaderActions
+            portfolios={portfolios}
+            selectedId={selectedPortfolioId}
+          />
+        </div>
       </header>
       <div className="flex flex-1 items-center justify-center py-10">
         <DashboardEmptyState

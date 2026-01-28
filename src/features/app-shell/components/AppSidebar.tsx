@@ -1,81 +1,165 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { CreatePortfolioDialog } from "@/features/portfolio";
+import { Button } from "@/features/design-system/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/features/design-system/components/ui/collapsible";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/features/design-system/components/ui/sidebar";
 import { cn } from "@/lib/cn";
 
 import { useAppPathname } from "../hooks/useAppPathname";
 import { primaryNavItems, secondaryNavItems } from "../lib/nav-items";
 import { isHrefActive } from "../lib/path";
 
-type Props = Readonly<{ className?: string }>;
+type Props = Readonly<{
+  className?: string;
+  portfolios: readonly {
+    id: string;
+    name: string;
+    baseCurrency: string;
+  }[];
+}>;
 
-export function AppSidebar({ className }: Props) {
+export function AppSidebar({ className, portfolios }: Props) {
   const pathname = useAppPathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activePortfolioId = searchParams?.get("portfolio") ?? null;
 
   return (
-    <aside
+    <Sidebar
+      collapsible="none"
       className={cn(
-        "hidden h-dvh w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
+        "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
         className
       )}
     >
-      <div className="px-4 py-5">
-        <Link href="/" className="block">
-          <div className="text-sm font-semibold tracking-tight">
-            Portfolio Tracker
-          </div>
+      <SidebarHeader className="px-3 py-4">
+        <Link href="/" className="text-sm font-semibold tracking-tight">
+          Portfolio Tracker
         </Link>
-      </div>
+      </SidebarHeader>
 
-      <nav className="px-2">
-        <div className="space-y-1">
-          {primaryNavItems.map((item) => {
-            const active = isHrefActive(pathname, item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
-                  active
-                    ? "border-primary bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {primaryNavItems.map((item) => {
+                const active = isHrefActive(pathname, item.href);
+                const Icon = item.icon;
 
-      <div className="mt-auto px-2 pb-4">
-        <div className="space-y-1">
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton asChild isActive={active}>
+                      <Link href={item.href}>
+                        <Icon aria-hidden="true" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <Collapsible defaultOpen className="group/collapsible">
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center gap-2">
+                <span>Portfele</span>
+                <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenuSub>
+                  {portfolios.map((portfolio) => (
+                    <SidebarMenuSubItem key={portfolio.id}>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={activePortfolioId === portfolio.id}
+                      >
+                        <Link href={`/portfolio?portfolio=${portfolio.id}`}>
+                          <span className="min-w-0 flex-1 truncate">
+                            {portfolio.name}
+                          </span>
+                          <span className="ml-auto text-[11px] text-sidebar-foreground/60 tabular-nums">
+                            {portfolio.baseCurrency}
+                          </span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+                <div className="px-3 pt-1">
+                  <CreatePortfolioDialog
+                    onCreated={(createdId) => {
+                      router.push(`/portfolio?portfolio=${createdId}`, {
+                        scroll: false,
+                      });
+                      router.refresh();
+                    }}
+                    trigger={({ open, disabled }) => (
+                      <Button
+                        className="h-7 w-full justify-start px-2 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                        disabled={disabled}
+                        onClick={open}
+                        type="button"
+                        variant="ghost"
+                      >
+                        Nowy portfel
+                      </Button>
+                    )}
+                  />
+                </div>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
           {secondaryNavItems.map((item) => {
             const active = isHrefActive(pathname, item.href);
             const Icon = item.icon;
+
             return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
-                  active
-                    ? "border-primary bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{item.label}</span>
-              </Link>
+              <SidebarMenuItem key={item.id}>
+                <SidebarMenuButton asChild isActive={active}>
+                  <Link href={item.href}>
+                    <Icon aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             );
           })}
-        </div>
-      </div>
-    </aside>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
