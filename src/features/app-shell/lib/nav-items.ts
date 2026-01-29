@@ -1,6 +1,5 @@
 import {
   ArrowLeftRight,
-  LayoutGrid,
   Plus,
   Search,
   Settings,
@@ -8,7 +7,6 @@ import {
 } from "lucide-react";
 
 export type AppNavId =
-  | "portfolio"
   | "search"
   | "transactions"
   | "add"
@@ -22,12 +20,6 @@ export type AppNavItem = Readonly<{
 }>;
 
 export const primaryNavItems: readonly AppNavItem[] = [
-  {
-    id: "portfolio",
-    href: "/portfolio",
-    icon: LayoutGrid,
-    label: "Portfel",
-  },
   {
     id: "search",
     href: "/search",

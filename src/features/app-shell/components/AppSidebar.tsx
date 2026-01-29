@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -46,12 +46,13 @@ export function AppSidebar({ className, portfolios }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activePortfolioId = searchParams?.get("portfolio") ?? null;
+  const isPortfolioActive = isHrefActive(pathname, "/portfolio");
 
   return (
     <Sidebar
       collapsible="none"
       className={cn(
-        "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+        "h-svh w-[20rem] min-w-[20rem] max-w-[20rem] shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
         className
       )}
     >
@@ -66,6 +67,73 @@ export function AppSidebar({ className, portfolios }: Props) {
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <Collapsible defaultOpen className="group/collapsible">
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton isActive={isPortfolioActive}>
+                      <LayoutGrid aria-hidden="true" />
+                      <span>Portfele</span>
+                      <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={
+                            !activePortfolioId || activePortfolioId === "all"
+                          }
+                        >
+                          <Link href="/portfolio">
+                            <span className="min-w-0 flex-1 truncate">
+                              Wszystkie portfele
+                            </span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      {portfolios.map((portfolio) => (
+                        <SidebarMenuSubItem key={portfolio.id}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={activePortfolioId === portfolio.id}
+                          >
+                            <Link href={`/portfolio?portfolio=${portfolio.id}`}>
+                              <span className="min-w-0 flex-1 truncate">
+                                {portfolio.name}
+                              </span>
+                              <span className="ml-auto text-[11px] text-sidebar-foreground/60 tabular-nums">
+                                {portfolio.baseCurrency}
+                              </span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                    <div className="px-3 pt-1">
+                      <CreatePortfolioDialog
+                        onCreated={(createdId) => {
+                          router.push(`/portfolio?portfolio=${createdId}`, {
+                            scroll: false,
+                          });
+                          router.refresh();
+                        }}
+                        trigger={({ open, disabled }) => (
+                          <Button
+                            className="h-7 w-full justify-start px-2 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                            disabled={disabled}
+                            onClick={open}
+                            type="button"
+                            variant="ghost"
+                          >
+                            Nowy portfel
+                          </Button>
+                        )}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
               {primaryNavItems.map((item) => {
                 const active = isHrefActive(pathname, item.href);
                 const Icon = item.icon;
@@ -84,73 +152,6 @@ export function AppSidebar({ className, portfolios }: Props) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <Collapsible defaultOpen className="group/collapsible">
-          <SidebarGroup>
-            <SidebarGroupLabel asChild>
-              <CollapsibleTrigger className="flex w-full items-center gap-2">
-                <span>Portfele</span>
-                <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      asChild
-                      isActive={!activePortfolioId || activePortfolioId === "all"}
-                    >
-                      <Link href="/portfolio">
-                        <span className="min-w-0 flex-1 truncate">
-                          Wszystkie portfele
-                        </span>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  {portfolios.map((portfolio) => (
-                    <SidebarMenuSubItem key={portfolio.id}>
-                      <SidebarMenuSubButton
-                        asChild
-                        isActive={activePortfolioId === portfolio.id}
-                      >
-                        <Link href={`/portfolio?portfolio=${portfolio.id}`}>
-                          <span className="min-w-0 flex-1 truncate">
-                            {portfolio.name}
-                          </span>
-                          <span className="ml-auto text-[11px] text-sidebar-foreground/60 tabular-nums">
-                            {portfolio.baseCurrency}
-                          </span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-                <div className="px-3 pt-1">
-                  <CreatePortfolioDialog
-                    onCreated={(createdId) => {
-                      router.push(`/portfolio?portfolio=${createdId}`, {
-                        scroll: false,
-                      });
-                      router.refresh();
-                    }}
-                    trigger={({ open, disabled }) => (
-                      <Button
-                        className="h-7 w-full justify-start px-2 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
-                        disabled={disabled}
-                        onClick={open}
-                        type="button"
-                        variant="ghost"
-                      >
-                        Nowy portfel
-                      </Button>
-                    )}
-                  />
-                </div>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
       </SidebarContent>
 
       <SidebarFooter>

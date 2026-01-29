@@ -23,7 +23,7 @@ const parsePortfolioId = (
 };
 
 export const metadata = {
-  title: "Portfel",
+  title: "Portfele",
 };
 
 export default async function PortfolioPage({ searchParams }: Props) {
@@ -36,7 +36,7 @@ export default async function PortfolioPage({ searchParams }: Props) {
   if (!data.user) {
     return (
       <main className="px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby zobaczyć portfel.
         </div>
@@ -58,7 +58,7 @@ export default async function PortfolioPage({ searchParams }: Props) {
     <main className="flex min-h-[calc(100vh-120px)] flex-col px-6 py-8">
       <header className="flex flex-col gap-3">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
           <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <div className="md:hidden">

@@ -1,6 +1,11 @@
 "use client";
 
-import { SidebarInset, SidebarProvider } from "@/features/design-system/components/ui/sidebar";
+import type { CSSProperties } from "react";
+
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/features/design-system/components/ui/sidebar";
 import { cn } from "@/lib/cn";
 
 import { AppSidebar } from "./AppSidebar";
@@ -17,8 +22,13 @@ type Props = Readonly<{
 }>;
 
 export function AppShell({ children, portfolios, className }: Props) {
+  const sidebarStyle = {
+    "--sidebar-width": "20rem",
+    "--sidebar-width-icon": "3.5rem",
+  } as CSSProperties;
+
   return (
-    <SidebarProvider>
+    <SidebarProvider style={sidebarStyle}>
       <AppSidebar portfolios={portfolios} />
       <SidebarInset className={cn("min-h-dvh pb-24 md:pb-0", className)}>
         {children}

@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import { LayoutGrid, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -32,6 +32,12 @@ export function MobileBottomNav({ className }: Props) {
   );
   const isMoreActive = !isAnyPrimaryActive;
   const ActionIcon = mobileActionNavItem.icon;
+  const portfolioSheetItem = {
+    id: "portfolio",
+    href: "/portfolio",
+    icon: LayoutGrid,
+    label: "Portfele",
+  } as const;
 
   return (
     <nav
@@ -43,8 +49,8 @@ export function MobileBottomNav({ className }: Props) {
       )}
       aria-label="Główna nawigacja"
     >
-      <div className="mx-auto grid h-16 max-w-xl grid-cols-5 items-center px-2">
-        {primaryNavItems.slice(0, 2).map((item) => (
+      <div className="mx-auto grid h-16 max-w-xl grid-cols-4 items-center px-2">
+        {primaryNavItems.map((item) => (
           <MobileNavLink key={item.id} item={item} pathname={pathname} />
         ))}
 
@@ -61,11 +67,6 @@ export function MobileBottomNav({ className }: Props) {
             <ActionIcon className="size-5" aria-hidden="true" />
           </Link>
         </div>
-
-        <MobileNavLink
-          item={primaryNavItems[2]}
-          pathname={pathname}
-        />
 
         <Sheet>
           <SheetTrigger asChild>
@@ -106,7 +107,11 @@ export function MobileBottomNav({ className }: Props) {
 
             <SheetBody className="px-2 py-2">
               <div className="space-y-1">
-                {[...primaryNavItems, ...secondaryNavItems].map((item) => {
+                {[
+                  portfolioSheetItem,
+                  ...primaryNavItems,
+                  ...secondaryNavItems,
+                ].map((item) => {
                   const Icon = item.icon;
                   const active = isHrefActive(pathname, item.href);
                   return (
