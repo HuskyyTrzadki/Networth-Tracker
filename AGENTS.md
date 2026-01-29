@@ -33,6 +33,7 @@ Non-goals (MVP):
 -no file bigger than 400 lines. see bigger one? refactor/split.
 - Server-first: prefer Server Components + server-side data prep.
 - Keep business logic owned in-repo (no “logic rental” from SDKs).
+- Every route page should use Suspense for data-heavy sections and provide a `loading.tsx` to show immediate feedback during navigation.
 - Feature-first structure (`features/*`) with explicit public APIs (`index.ts`).
 - No provider-specific shapes leaking to UI: normalize responses.
 - Shared vs feature UI:

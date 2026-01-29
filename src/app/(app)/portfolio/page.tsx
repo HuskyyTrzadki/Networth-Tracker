@@ -1,13 +1,11 @@
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 
-import {
-  DashboardEmptyState,
-  PortfolioDashboard,
-  PortfolioMobileHeaderActions,
-} from "@/features/portfolio";
+import { PortfolioMobileHeaderActions } from "@/features/portfolio";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
-import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
 import { createClient } from "@/lib/supabase/server";
+import PortfolioDashboardSection from "./PortfolioDashboardSection";
+import { PortfolioDashboardSkeleton } from "./PortfolioDashboardSkeleton";
 
 type Props = Readonly<{
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -52,12 +50,6 @@ export default async function PortfolioPage({ searchParams }: Props) {
     : null;
 
   const baseCurrency = selectedPortfolio?.baseCurrency ?? "PLN";
-  const summary = await getPortfolioSummary(supabase, data.user.id, {
-    portfolioId: selectedPortfolioId,
-    baseCurrency,
-  });
-
-  const hasHoldings = summary.holdings.length > 0;
   const subtitle = selectedPortfolio
     ? `Portfel: ${selectedPortfolio.name}`
     : "Wszystkie portfele";
@@ -76,32 +68,16 @@ export default async function PortfolioPage({ searchParams }: Props) {
           />
         </div>
       </header>
-      {hasHoldings ? (
-        <section className="mt-6">
-          <PortfolioDashboard
+      <section className="mt-6">
+        <Suspense fallback={<PortfolioDashboardSkeleton />}>
+          <PortfolioDashboardSection
+            baseCurrency={baseCurrency}
             portfolios={portfolios}
             selectedPortfolioId={selectedPortfolioId}
-            summary={summary}
+            userId={data.user.id}
           />
-        </section>
-      ) : (
-        <div className="flex flex-1 items-center justify-center py-10">
-          <DashboardEmptyState
-            title="Twój portfel jest pusty."
-            subtitle="Dodaj swoje pierwsze aktywo, aby zobaczyć analizę."
-            primaryAction={{
-              label: "Dodaj transakcję",
-              href: selectedPortfolioId
-                ? `/transactions/new?portfolio=${selectedPortfolioId}`
-                : "/transactions/new",
-            }}
-            secondaryAction={{
-              label: "Importuj CSV",
-              href: "/transactions/import",
-            }}
-          />
-        </div>
-      )}
+        </Suspense>
+      </section>
     </main>
   );
 }
