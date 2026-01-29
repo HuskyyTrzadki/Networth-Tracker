@@ -13,8 +13,8 @@ import {
   formatCurrencyString,
   formatCurrencyValue,
   getCurrencyFormatter,
-} from "../lib/format-currency";
-import { multiplyDecimals, parseDecimalString } from "../lib/decimal";
+} from "@/lib/format-currency";
+import { multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 import type { TransactionListItem } from "../server/list-transactions";
 import { InstrumentLogoImage } from "./InstrumentLogoImage";
 import { TransactionsRowActions } from "./TransactionsRowActions";

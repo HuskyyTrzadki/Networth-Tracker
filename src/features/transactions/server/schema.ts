@@ -34,16 +34,26 @@ const optionalNonNegativeDecimalString = z
   }, { message: "Wpisz wartość większą lub równą 0." })
   .transform((value) => (value ? normalizeDecimalInput(value) : "0"));
 
-const instrumentSchema = z.object({
-  provider: z.string().trim().min(1).optional().default("yahoo"),
-  providerKey: z.string().trim().min(1).optional(),
-  symbol: z.string().trim().min(1),
-  name: z.string().trim().min(1),
-  currency: z.string().trim().length(3),
-  exchange: z.string().trim().min(1).optional(),
-  region: z.string().trim().min(1).optional(),
-  logoUrl: z.string().trim().url().optional(),
-});
+const instrumentSchema = z
+  .object({
+    provider: z.string().trim().min(1).optional().default("yahoo"),
+    providerKey: z.string().trim().min(1).optional(),
+    symbol: z.string().trim().min(1),
+    name: z.string().trim().min(1),
+    currency: z.string().trim().length(3),
+    exchange: z.string().trim().min(1).optional(),
+    region: z.string().trim().min(1).optional(),
+    logoUrl: z.string().trim().url().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.provider === "yahoo" && !value.providerKey?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Wybierz instrument z Yahoo.",
+        path: ["providerKey"],
+      });
+    }
+  });
 
 // Server-side request schema for creating a transaction.
 export const createTransactionRequestSchema = z.object({

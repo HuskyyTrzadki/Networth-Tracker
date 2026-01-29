@@ -1,5 +1,5 @@
 # Repository Guidelines
-I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your 100%
+I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your best 102020% otherwise i ll be angry.
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
 We build both for desktop and mobile. styles need to use our patterns and typography and color palette, u are encouraged to use shadcn components we already have in storybook, when u add new component u think its worth to add to storybook , go for it.
 
@@ -96,12 +96,12 @@ Whenever you ship a new feature or change architecture:
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
 - Transactions page.
+- Portfolio dashboard: total value + holdings with partial valuation + as-of timestamp
+- Cache-first quotes + FX with TTL (PLN + USD, direct FX only)
 
 ### Will be built next
-- Portfolio: holdings + transactions
 - Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup
-- Cache-first quotes + FX with TTL (PLN + USD)
-- TODO: add unit/integration tests for normalizers + cache logic (Vitest)
+- TODO: add unit/integration tests for cache hit/miss logic (Vitest)
 
 Keep it short and current. If unsure, add a TODO with rationale.
 
@@ -137,6 +137,7 @@ supabase project is Project (id ayeeksbqwyqkevbpdlef,, region eu-west-1)
 - Common UI: `src/features/common/AGENTS.md`
 - Design system: `src/features/design-system/AGENTS.md`
 - Home/landing: `src/features/home/AGENTS.md`
+- Market data: `src/features/market-data/AGENTS.md`
 - Portfolio: `src/features/portfolio/AGENTS.md`
 - Transactions: `src/features/transactions/AGENTS.md`
 

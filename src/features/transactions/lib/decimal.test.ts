@@ -5,7 +5,7 @@ import {
   multiplyDecimals,
   parseDecimalString,
   toFixedDecimalString,
-} from "./decimal";
+} from "@/lib/decimal";
 
 describe("parseDecimalString", () => {
   it("parses comma decimals and spaces", () => {

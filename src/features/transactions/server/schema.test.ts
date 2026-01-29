@@ -13,6 +13,7 @@ const basePayload = {
   clientRequestId: "2d3d6f6b-8d2d-4a9b-9a7d-9d1c1a1b7b7b",
   instrument: {
     symbol: "AAPL",
+    providerKey: "AAPL",
     name: "Apple Inc.",
     currency: "USD",
   },

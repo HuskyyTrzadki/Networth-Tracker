@@ -96,6 +96,18 @@ export function AppSidebar({ className, portfolios }: Props) {
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      asChild
+                      isActive={!activePortfolioId || activePortfolioId === "all"}
+                    >
+                      <Link href="/portfolio">
+                        <span className="min-w-0 flex-1 truncate">
+                          Wszystkie portfele
+                        </span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
                   {portfolios.map((portfolio) => (
                     <SidebarMenuSubItem key={portfolio.id}>
                       <SidebarMenuSubButton

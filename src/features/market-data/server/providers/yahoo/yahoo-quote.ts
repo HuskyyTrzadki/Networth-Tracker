@@ -1,0 +1,76 @@
+import { yahooFinance } from "./yahoo-client";
+
+type YahooQuote = Readonly<{
+  symbol: string;
+  currency?: string;
+  regularMarketPrice?: number;
+  regularMarketTime?: number;
+}>;
+
+const chunkSymbols = (symbols: string[], size: number) => {
+  const chunks: string[][] = [];
+  for (let i = 0; i < symbols.length; i += size) {
+    chunks.push(symbols.slice(i, i + size));
+  }
+  return chunks;
+};
+
+const toIsoFromSeconds = (seconds?: number) =>
+  typeof seconds === "number" ? new Date(seconds * 1000).toISOString() : null;
+
+export async function fetchYahooQuotes(
+  symbols: string[],
+  timeoutMs: number
+): Promise<Record<string, YahooQuote | undefined>> {
+  // Provider fetch: Yahoo quotes are batched and time-boxed per request.
+  if (symbols.length === 0) return {};
+
+  const batches = chunkSymbols(symbols, 50);
+  const results: Record<string, YahooQuote | undefined> = {};
+
+  for (const batch of batches) {
+    // Yahoo Finance quote docs:
+    // https://jsr.io/@gadicc/yahoo-finance2/doc/modules/quote/~/quote
+    const quotePromise = yahooFinance.quote(batch, {
+      fields: ["symbol", "currency", "regularMarketPrice", "regularMarketTime"],
+      return: "object",
+    });
+
+    const quoteResult = await Promise.race([
+      quotePromise,
+      new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), timeoutMs)
+      ),
+    ]);
+
+    if (!quoteResult) continue;
+
+    Object.entries(quoteResult as Record<string, YahooQuote | undefined>).forEach(
+      ([symbol, quote]) => {
+        results[symbol] = quote;
+      }
+    );
+  }
+
+  return results;
+}
+
+export const normalizeYahooQuote = (symbol: string, quote?: YahooQuote) => {
+  if (quote?.regularMarketPrice === undefined || !quote.currency) return null;
+  return {
+    symbol,
+    currency: quote.currency.toUpperCase(),
+    price: quote.regularMarketPrice.toString(),
+    // If the provider lacks a timestamp, we fall back to "now".
+    asOf: toIsoFromSeconds(quote.regularMarketTime) ?? new Date().toISOString(),
+  };
+};
+
+export const normalizeYahooFxQuote = (symbol: string, quote?: YahooQuote) => {
+  if (quote?.regularMarketPrice === undefined) return null;
+  return {
+    symbol,
+    price: quote.regularMarketPrice.toString(),
+    asOf: toIsoFromSeconds(quote.regularMarketTime) ?? new Date().toISOString(),
+  };
+};

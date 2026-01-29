@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatCurrencyString, getCurrencyFormatter } from "./format-currency";
+import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
 
 describe("formatCurrencyString", () => {
   it("returns null for invalid decimal input", () => {

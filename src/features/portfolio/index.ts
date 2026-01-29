@@ -2,3 +2,4 @@ export { CreatePortfolioDialog } from "./components/CreatePortfolioDialog";
 export { DashboardEmptyState } from "./components/DashboardEmptyState";
 export { PortfolioMobileHeaderActions } from "./components/PortfolioMobileHeaderActions";
 export { PortfolioSwitcher } from "./components/PortfolioSwitcher";
+export { PortfolioDashboard } from "./dashboard";

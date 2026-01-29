@@ -12,8 +12,7 @@ export function parseDecimalString(
 ): DecimalValue | null {
   if (value === null || value === undefined) return null;
 
-  const stringValue =
-    typeof value === "number" ? value.toString() : value;
+  const stringValue = typeof value === "number" ? value.toString() : value;
   if (typeof stringValue !== "string") return null;
 
   const normalized = normalizeDecimalInput(stringValue);

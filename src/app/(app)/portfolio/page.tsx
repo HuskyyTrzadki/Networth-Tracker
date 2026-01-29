@@ -2,9 +2,11 @@ import { cookies } from "next/headers";
 
 import {
   DashboardEmptyState,
+  PortfolioDashboard,
   PortfolioMobileHeaderActions,
 } from "@/features/portfolio";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
+import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
 import { createClient } from "@/lib/supabase/server";
 
 type Props = Readonly<{
@@ -45,15 +47,27 @@ export default async function PortfolioPage({ searchParams }: Props) {
   }
 
   const portfolios = await listPortfolios(supabase, data.user.id);
+  const selectedPortfolio = selectedPortfolioId
+    ? portfolios.find((portfolio) => portfolio.id === selectedPortfolioId) ?? null
+    : null;
+
+  const baseCurrency = selectedPortfolio?.baseCurrency ?? "PLN";
+  const summary = await getPortfolioSummary(supabase, data.user.id, {
+    portfolioId: selectedPortfolioId,
+    baseCurrency,
+  });
+
+  const hasHoldings = summary.holdings.length > 0;
+  const subtitle = selectedPortfolio
+    ? `Portfel: ${selectedPortfolio.name}`
+    : "Wszystkie portfele";
 
   return (
     <main className="flex min-h-[calc(100vh-120px)] flex-col px-6 py-8">
       <header className="flex flex-col gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
-          <p className="text-sm text-muted-foreground">
-            Wybierz portfel lub zobacz zbiorcze podsumowanie.
-          </p>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <div className="md:hidden">
           <PortfolioMobileHeaderActions
@@ -62,22 +76,32 @@ export default async function PortfolioPage({ searchParams }: Props) {
           />
         </div>
       </header>
-      <div className="flex flex-1 items-center justify-center py-10">
-        <DashboardEmptyState
-          title="Twój portfel jest pusty."
-          subtitle="Dodaj swoje pierwsze aktywo, aby zobaczyć analizę."
-          primaryAction={{
-            label: "Dodaj transakcję",
-            href: selectedPortfolioId
-              ? `/transactions/new?portfolio=${selectedPortfolioId}`
-              : "/transactions/new",
-          }}
-          secondaryAction={{
-            label: "Importuj CSV",
-            href: "/transactions/import",
-          }}
-        />
-      </div>
+      {hasHoldings ? (
+        <section className="mt-6">
+          <PortfolioDashboard
+            portfolios={portfolios}
+            selectedPortfolioId={selectedPortfolioId}
+            summary={summary}
+          />
+        </section>
+      ) : (
+        <div className="flex flex-1 items-center justify-center py-10">
+          <DashboardEmptyState
+            title="Twój portfel jest pusty."
+            subtitle="Dodaj swoje pierwsze aktywo, aby zobaczyć analizę."
+            primaryAction={{
+              label: "Dodaj transakcję",
+              href: selectedPortfolioId
+                ? `/transactions/new?portfolio=${selectedPortfolioId}`
+                : "/transactions/new",
+            }}
+            secondaryAction={{
+              label: "Importuj CSV",
+              href: "/transactions/import",
+            }}
+          />
+        </div>
+      )}
     </main>
   );
 }

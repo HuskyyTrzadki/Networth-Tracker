@@ -6,11 +6,11 @@ import {
   multiplyDecimals,
   negateDecimal,
   parseDecimalString,
-} from "../lib/decimal";
+} from "@/lib/decimal";
 import {
   formatCurrencyValue,
   getCurrencyFormatter,
-} from "../lib/format-currency";
+} from "@/lib/format-currency";
 
 type TransactionType = "BUY" | "SELL";
 

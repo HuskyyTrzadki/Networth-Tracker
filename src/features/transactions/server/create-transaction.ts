@@ -57,6 +57,11 @@ export async function createTransaction(
     region,
   });
 
+  // Backend safety: Yahoo instruments must always carry a provider_key.
+  if (provider === "yahoo" && !providerKey) {
+    throw new Error("Instrument Yahoo wymaga provider_key.");
+  }
+
   const now = new Date().toISOString();
   // Persist logo URL (if provided) so lists can render instrument branding later.
   const { data: instrument, error: instrumentError } = await supabase
