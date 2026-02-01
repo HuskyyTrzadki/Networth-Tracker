@@ -2,8 +2,8 @@ import { cn } from "@/lib/cn";
 
 import type { PortfolioSummary } from "../server/valuation";
 import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
+import { AllocationWidget } from "./widgets/AllocationWidget";
 import { HoldingsWidget } from "./widgets/HoldingsWidget";
-import { TotalValueWidget } from "./widgets/TotalValueWidget";
 
 type Props = Readonly<{
   portfolios: readonly {
@@ -31,7 +31,7 @@ export function PortfolioDashboard({
         />
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
-        <TotalValueWidget summary={summary} />
+        <AllocationWidget summary={summary} />
         <HoldingsWidget summary={summary} />
       </div>
     </div>

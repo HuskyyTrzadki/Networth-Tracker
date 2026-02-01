@@ -12,7 +12,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/components/CreatePortfolioDialog.tsx`
 - `src/features/portfolio/components/PortfolioMobileHeaderActions.tsx`
 - `src/features/portfolio/dashboard/PortfolioDashboard.tsx`
-- `src/features/portfolio/dashboard/widgets/TotalValueWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/AllocationWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/HoldingsWidget.tsx`
 - `src/features/portfolio/server/default-portfolio.ts`
 - `src/features/portfolio/server/list-portfolios.ts`

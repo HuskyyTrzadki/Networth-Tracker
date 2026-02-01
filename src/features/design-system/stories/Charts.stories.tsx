@@ -35,6 +35,8 @@ function ChartsStory() {
     id: row.symbol,
     value: row.value,
     color: row.color,
+    tooltipLabel: row.symbol,
+    tooltipValue: formatMoney(locale, { amount: row.value, currency: "USD" }),
   }));
 
   return (
@@ -65,7 +67,12 @@ function ChartsStory() {
               </div>
             }
           >
-          <PortfolioAreaChart data={mockPortfolioValue30d} />
+          <PortfolioAreaChart
+            data={mockPortfolioValue30d}
+            valueFormatter={(value) =>
+              formatMoney(locale, { amount: value, currency: "USD" })
+            }
+          />
           </ChartCard>
 
           <ChartCard

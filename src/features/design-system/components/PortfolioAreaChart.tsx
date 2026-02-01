@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Area,
   AreaChart,
@@ -16,9 +18,21 @@ type Point = Readonly<{
 type Props = Readonly<{
   data: readonly Point[];
   height?: number;
+  valueFormatter?: (value: number) => string;
+  labelFormatter?: (label: string) => string;
 }>;
 
-export function PortfolioAreaChart({ data, height = 240 }: Props) {
+const defaultValueFormatter = (value: number) =>
+  new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 }).format(value);
+
+const defaultLabelFormatter = (label: string) => label;
+
+export function PortfolioAreaChart({
+  data,
+  height = 240,
+  valueFormatter = defaultValueFormatter,
+  labelFormatter = defaultLabelFormatter,
+}: Props) {
   const chartData = [...data];
 
   return (
@@ -58,6 +72,11 @@ export function PortfolioAreaChart({ data, height = 240 }: Props) {
             }}
             labelStyle={{ color: "var(--muted-foreground)" }}
             itemStyle={{ color: "var(--popover-foreground)" }}
+            labelFormatter={(value) => labelFormatter(String(value))}
+            formatter={(value) => [
+              valueFormatter(Number(value)),
+              "Wartość",
+            ]}
           />
           <Area
             type="monotone"

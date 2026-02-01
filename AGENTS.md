@@ -97,7 +97,7 @@ Whenever you ship a new feature or change architecture:
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
 - Transactions page.
-- Portfolio dashboard: total value + holdings with partial valuation + as-of timestamp
+- Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
 - Cache-first quotes + FX with TTL (PLN + USD, direct FX only)
 
 ### Will be built next
