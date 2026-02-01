@@ -10,6 +10,16 @@ export function PortfolioDashboardSkeleton({ className }: Props) {
       <div className="hidden md:block">
         <div className="h-10 w-[260px] rounded-md bg-muted/50" />
       </div>
+      <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2">
+            <div className="h-4 w-28 rounded-md bg-muted/50" />
+            <div className="h-3 w-32 rounded-md bg-muted/40" />
+          </div>
+          <div className="h-8 w-32 rounded-md bg-muted/40" />
+        </div>
+        <div className="mt-6 h-[240px] rounded-md bg-muted/40" />
+      </section>
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
         <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <div className="flex items-start justify-between gap-3">

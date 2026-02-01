@@ -20,7 +20,6 @@ type Input = Readonly<{
 
 export async function getPortfolioSummary(
   supabase: SupabaseServerClient,
-  userId: string,
   input: Input
 ): Promise<PortfolioSummary> {
   // Server helper: fetch holdings, quotes, and FX in one flow for the dashboard.
@@ -35,7 +34,6 @@ export async function getPortfolioSummary(
 
   const quotesByInstrument = await getInstrumentQuotesCached(
     supabase,
-    userId,
     quoteRequests
   );
 
@@ -51,7 +49,7 @@ export async function getPortfolioSummary(
     to: input.baseCurrency,
   })) satisfies FxPair[];
 
-  const fxByPair = await getFxRatesCached(supabase, userId, fxPairs);
+  const fxByPair = await getFxRatesCached(supabase, fxPairs);
 
   return buildPortfolioSummary({
     baseCurrency: input.baseCurrency,

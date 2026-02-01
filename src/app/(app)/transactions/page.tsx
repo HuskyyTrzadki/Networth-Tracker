@@ -40,8 +40,8 @@ export default async function TransactionsPage({ searchParams }: Props) {
   }
 
   const [transactionsPage, portfolios] = await Promise.all([
-    listTransactions(supabase, data.user.id, filters),
-    listPortfolios(supabase, data.user.id),
+    listTransactions(supabase, filters),
+    listPortfolios(supabase),
   ]);
   const transactionCreateHref = filters.portfolioId
     ? `/transactions/new?portfolio=${filters.portfolioId}`

@@ -27,6 +27,16 @@ type TransactionRow = Readonly<{
         logo_url: string | null;
       }>[]
     | null;
+  custom_instrument:
+    | Readonly<{
+        name: string;
+        currency: string;
+      }>
+    | Readonly<{
+        name: string;
+        currency: string;
+      }>[]
+    | null;
 }>;
 
 export type TransactionListItem = Readonly<{
@@ -61,20 +71,18 @@ const normalizeNumeric = (value: string | number | null | undefined) => {
 
 export async function listTransactions(
   supabase: SupabaseServerClient,
-  userId: string,
   filters: TransactionsFilters
 ): Promise<TransactionsPage> {
   const offset = (filters.page - 1) * filters.pageSize;
   const rangeEnd = offset + filters.pageSize;
   const ascending = filters.sort === "date_asc";
 
-  // Query only the current user data, with an inner join on instruments for filtering.
+  // Query only current user data (RLS), with joins for instrument metadata.
   let query = supabase
     .from("transactions")
     .select(
-      "id, trade_date, side, quantity, price, fee, instrument:instruments!inner(symbol, name, currency, region, logo_url)"
+      "id, trade_date, side, quantity, price, fee, instrument:instruments(symbol, name, currency, region, logo_url), custom_instrument:custom_instruments(name, currency)"
     )
-    .eq("user_id", userId)
     .order("trade_date", { ascending })
     .order("created_at", { ascending })
     // Fetch one extra row to detect if another page exists.
@@ -114,10 +122,21 @@ export async function listTransactions(
       const instrument = Array.isArray(row.instrument)
         ? row.instrument[0] ?? null
         : row.instrument;
+      const customInstrument = Array.isArray(row.custom_instrument)
+        ? row.custom_instrument[0] ?? null
+        : row.custom_instrument;
 
-      if (!instrument) {
+      if (!instrument && !customInstrument) {
         throw new Error("Missing instrument data for transaction row.");
       }
+
+      const resolved = instrument ?? {
+        symbol: "CUSTOM",
+        name: customInstrument?.name ?? "Custom asset",
+        currency: customInstrument?.currency ?? "PLN",
+        region: null,
+        logo_url: null,
+      };
 
       return {
         id: row.id,
@@ -127,11 +146,11 @@ export async function listTransactions(
         price: normalizeNumeric(row.price),
         fee: normalizeNumeric(row.fee),
         instrument: {
-          symbol: instrument.symbol,
-          name: instrument.name,
-          currency: instrument.currency,
-          region: instrument.region ?? undefined,
-          logoUrl: instrument.logo_url ?? null,
+          symbol: resolved.symbol,
+          name: resolved.name,
+          currency: resolved.currency,
+          region: resolved.region ?? undefined,
+          logoUrl: resolved.logo_url ?? null,
         },
       };
     }),

@@ -38,15 +38,19 @@ export function getConcentrationWarning(
     }
   }
 
-  if (!top || top.weight <= 0.2) return null;
+  if (!top) return null;
 
   if (top.weight > 0.4) {
     return { ...top, severity: "CRITICAL" };
   }
 
-  if (top.weight > 0.3) {
+  if (top.weight > 0.3 && top.weight < 0.4) {
     return { ...top, severity: "HARD" };
   }
 
-  return top;
+  if (top.weight > 0.2 && top.weight < 0.3) {
+    return top;
+  }
+
+  return null;
 }

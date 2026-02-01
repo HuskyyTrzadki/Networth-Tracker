@@ -1,15 +1,17 @@
-import type { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { decimalOne, divideDecimals, parseDecimalString } from "@/lib/decimal";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 
 import { fetchYahooFxQuotes } from "./providers/yahoo/yahoo-fx";
 import type { FxPair, FxRate } from "./types";
 
-type SupabaseServerClient = ReturnType<typeof createClient>;
+type SupabaseServerClient = SupabaseClient;
 
 const DEFAULT_TTL_MS = 2 * 60 * 60 * 1000;
 const PROVIDER = "yahoo";
 
 type FxCacheRow = Readonly<{
-  user_id?: string;
   base_currency: string;
   quote_currency: string;
   provider: string;
@@ -36,9 +38,41 @@ const buildRate = (
   ...overrides,
 });
 
+const invertRate = (
+  row: FxCacheRow,
+  from: string,
+  to: string,
+  fetchedAtOverride?: string
+): FxRate | null => {
+  const rateDecimal = parseDecimalString(row.rate);
+  if (!rateDecimal) return null;
+  const inverted = divideDecimals(decimalOne(), rateDecimal);
+  return {
+    from,
+    to,
+    rate: inverted.toString(),
+    asOf: row.as_of,
+    fetchedAt: fetchedAtOverride ?? row.fetched_at,
+    source: "inverted",
+  };
+};
+
+const buildCacheRow = (
+  pair: FxPair,
+  rate: string,
+  asOf: string,
+  fetchedAt: string
+): FxCacheRow => ({
+  base_currency: pair.from,
+  quote_currency: pair.to,
+  provider: PROVIDER,
+  rate,
+  as_of: asOf,
+  fetched_at: fetchedAt,
+});
+
 export async function getFxRatesCached(
   supabase: SupabaseServerClient,
-  userId: string,
   pairs: readonly FxPair[],
   options?: Readonly<{ ttlMs?: number }>
 ): Promise<ReadonlyMap<string, FxRate | null>> {
@@ -52,13 +86,14 @@ export async function getFxRatesCached(
   // Step 1: read any cached FX rates for requested pairs.
   const bases = Array.from(new Set(pairs.map((pair) => pair.from)));
   const quotes = Array.from(new Set(pairs.map((pair) => pair.to)));
+  const currencies = Array.from(new Set([...bases, ...quotes]));
 
   const { data, error } = await supabase
     .from("fx_rates_cache")
     .select("base_currency, quote_currency, provider, rate, as_of, fetched_at")
     .eq("provider", PROVIDER)
-    .in("base_currency", bases)
-    .in("quote_currency", quotes);
+    .in("base_currency", currencies)
+    .in("quote_currency", currencies);
 
   if (error) {
     throw new Error(error.message);
@@ -76,56 +111,98 @@ export async function getFxRatesCached(
     const key = `${pair.from}:${pair.to}`;
     const cached = cachedByKey.get(key);
     if (cached && isFresh(cached.fetched_at, ttlMs)) {
-      results.set(key, buildRate(cached));
-    } else {
-      missingPairs.push(pair);
+      results.set(key, buildRate(cached, { source: "direct" }));
+      return;
     }
+
+    const inverseKey = `${pair.to}:${pair.from}`;
+    const inverse = cachedByKey.get(inverseKey);
+    if (inverse && isFresh(inverse.fetched_at, ttlMs)) {
+      const inverted = invertRate(inverse, pair.from, pair.to);
+      if (inverted) {
+        results.set(key, inverted);
+        return;
+      }
+    }
+
+    missingPairs.push(pair);
   });
 
   if (missingPairs.length === 0) {
     return results;
   }
 
-  // Step 3: fetch missing FX quotes from Yahoo.
-  const normalizedQuotes = await fetchYahooFxQuotes(missingPairs, 4000);
+  // Step 3: fetch missing FX quotes from Yahoo (direct + inverse for inversion support).
+  const fetchPairsMap = new Map<string, FxPair>();
+  missingPairs.forEach((pair) => {
+    fetchPairsMap.set(`${pair.from}:${pair.to}`, pair);
+    fetchPairsMap.set(`${pair.to}:${pair.from}`, { from: pair.to, to: pair.from });
+  });
+
+  const normalizedQuotes = await fetchYahooFxQuotes(
+    Array.from(fetchPairsMap.values()),
+    4000
+  );
   const now = new Date().toISOString();
   const upserts: FxCacheRow[] = [];
 
   missingPairs.forEach((pair) => {
     const key = `${pair.from}:${pair.to}`;
-    const normalized = normalizedQuotes.get(key);
+    const normalizedDirect = normalizedQuotes.get(key);
+    if (normalizedDirect) {
+      const row = buildCacheRow(
+        pair,
+        normalizedDirect.price,
+        normalizedDirect.asOf,
+        now
+      );
 
-    if (!normalized) {
-      results.set(key, null);
+      upserts.push(row);
+      results.set(key, buildRate(row, { fetchedAt: now, source: "direct" }));
       return;
     }
 
-    const row: FxCacheRow = {
-      user_id: userId,
-      base_currency: pair.from,
-      quote_currency: pair.to,
-      provider: PROVIDER,
-      rate: normalized.price,
-      as_of: normalized.asOf,
-      fetched_at: now,
-    };
+    const inverseKey = `${pair.to}:${pair.from}`;
+    const normalizedInverse = normalizedQuotes.get(inverseKey);
+    if (normalizedInverse) {
+      const rateDecimal = parseDecimalString(normalizedInverse.price);
+      if (!rateDecimal) {
+        results.set(key, null);
+        return;
+      }
+      const inverted = divideDecimals(decimalOne(), rateDecimal).toString();
+      const row = buildCacheRow(
+        pair,
+        inverted,
+        normalizedInverse.asOf,
+        now
+      );
 
-    upserts.push(row);
-    results.set(key, buildRate(row, { fetchedAt: now }));
+      upserts.push(row);
+      results.set(key, buildRate(row, { fetchedAt: now, source: "inverted" }));
+      return;
+    }
+
+    results.set(key, null);
   });
 
   // Step 4: upsert new FX rates for future requests (per-user cache under RLS).
   if (upserts.length > 0) {
-    const { error: upsertError } = await supabase
-      .from("fx_rates_cache")
-      .upsert(upserts, {
-        onConflict: "user_id,base_currency,quote_currency,provider",
-      });
+    const adminClient = tryCreateAdminClient();
+    if (adminClient) {
+      const { error: upsertError } = await adminClient
+        .from("fx_rates_cache")
+        .upsert(upserts, {
+          onConflict: "base_currency,quote_currency,provider",
+        });
 
-    if (upsertError) {
-      throw new Error(upsertError.message);
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
     }
   }
 
   return results;
 }
+
+export const __test__ = { invertRate };

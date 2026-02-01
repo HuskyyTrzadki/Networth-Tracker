@@ -17,14 +17,12 @@ type PortfolioRow = Readonly<{
 }>;
 
 export async function listPortfolios(
-  supabase: SupabaseServerClient,
-  userId: string
+  supabase: SupabaseServerClient
 ): Promise<readonly PortfolioSummary[]> {
-  // Server helper: list active portfolios for a user in creation order.
+  // Server helper: list active portfolios (RLS enforces ownership).
   const { data, error } = await supabase
     .from("portfolios")
     .select("id, name, base_currency, created_at")
-    .eq("user_id", userId)
     .is("archived_at", null)
     .order("created_at", { ascending: true });
 

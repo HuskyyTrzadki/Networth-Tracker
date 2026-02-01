@@ -30,7 +30,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
     );
   }
 
-  const portfolios = await listPortfolios(supabase, data.user.id);
+  const portfolios = await listPortfolios(supabase);
   const portfolioOptions = portfolios.map((portfolio) => ({
     id: portfolio.id,
     name: portfolio.name,

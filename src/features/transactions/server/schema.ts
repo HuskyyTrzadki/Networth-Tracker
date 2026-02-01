@@ -38,7 +38,7 @@ const optionalNonNegativeDecimalString = z
 const instrumentSchema = z
   .object({
     provider: z.string().trim().min(1).optional().default("yahoo"),
-    providerKey: z.string().trim().min(1).optional(),
+    providerKey: z.string().trim().min(1),
     symbol: z.string().trim().min(1),
     name: z.string().trim().min(1),
     currency: z.string().trim().length(3),
@@ -48,10 +48,10 @@ const instrumentSchema = z
     logoUrl: z.string().trim().url().optional(),
   })
   .superRefine((value, ctx) => {
-    if (value.provider === "yahoo" && !value.providerKey?.trim()) {
+    if (!value.providerKey?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Wybierz instrument z Yahoo.",
+        message: "Wybierz instrument z listy wyszukiwania.",
         path: ["providerKey"],
       });
     }

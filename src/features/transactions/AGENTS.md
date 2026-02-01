@@ -32,8 +32,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI should not depend on provider-specific market data shapes.
 - Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts`.
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
-- Instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
-- Instruments cache stores canonical Yahoo quoteType in `public.instruments.instrument_type` for allocation/grouping.
+- Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
+- Global instruments cache stores canonical Yahoo quoteType in `public.instruments.instrument_type` for allocation/grouping.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

@@ -37,12 +37,20 @@ export function toFixedDecimalString(value: DecimalValue, fractionDigits: number
   return value.toFixed(fractionDigits);
 }
 
+export function divideDecimals(a: DecimalValue, b: DecimalValue): DecimalValue {
+  return a.div(b);
+}
+
 export function negateDecimal(value: DecimalValue): DecimalValue {
   return value.times(-1);
 }
 
 export function decimalZero(): DecimalValue {
   return new Big(0);
+}
+
+export function decimalOne(): DecimalValue {
+  return new Big(1);
 }
 
 export type { DecimalValue };

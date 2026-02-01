@@ -223,8 +223,6 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
             {!isLoading ? <CommandEmpty>{emptyMessage}</CommandEmpty> : null}
             <CommandGroup>
               {filteredResults.map((option) => {
-                const resolvedType = option.instrumentType ?? "EQUITY";
-                const typeMeta = instrumentTypeMeta[resolvedType];
                 return (
                   <CommandItem
                     key={option.id}

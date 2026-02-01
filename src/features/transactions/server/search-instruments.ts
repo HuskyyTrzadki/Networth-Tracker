@@ -245,18 +245,16 @@ const mergeInstrumentResults = (
 
 const searchLocalInstruments = async (
   supabase: SupabaseServerClient,
-  userId: string,
   query: string,
   limit: number
 ): Promise<InstrumentSearchResult[]> => {
-  // Local search keeps UX fast and uses the user's existing instrument cache.
+  // Local search keeps UX fast and uses the global instrument cache.
   const pattern = `%${query}%`;
   const { data, error } = await supabase
     .from("instruments")
     .select(
       "provider, provider_key, symbol, name, currency, exchange, region, logo_url, instrument_type, updated_at"
     )
-    .eq("user_id", userId)
     .or(`provider_key.ilike.${pattern},name.ilike.${pattern},symbol.ilike.${pattern}`)
     .order("updated_at", { ascending: false })
     .limit(limit);
@@ -352,7 +350,6 @@ const searchYahooInstruments = async (
 
 export async function searchInstruments(
   supabase: SupabaseServerClient,
-  userId: string,
   params: Readonly<Partial<SearchParams> & { query: string }>
 ): Promise<InstrumentSearchResponse> {
   // Query validation happens in the route; this keeps the service focused on I/O.
@@ -363,7 +360,6 @@ export async function searchInstruments(
 
   const localResults = await searchLocalInstruments(
     supabase,
-    userId,
     query,
     limit
   );

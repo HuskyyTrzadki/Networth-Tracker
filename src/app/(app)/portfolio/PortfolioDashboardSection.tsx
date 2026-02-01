@@ -5,24 +5,23 @@ import {
   PortfolioDashboard,
 } from "@/features/portfolio";
 import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
+import { getPortfolioSnapshotSeries } from "@/features/portfolio/server/snapshots/get-portfolio-snapshot-series";
 import { createClient } from "@/lib/supabase/server";
 
 type Props = Readonly<{
-  userId: string;
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   selectedPortfolioId: string | null;
   baseCurrency: string;
 }>;
 
 export default async function PortfolioDashboardSection({
-  userId,
   portfolios,
   selectedPortfolioId,
   baseCurrency,
 }: Props) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
-  const summary = await getPortfolioSummary(supabase, userId, {
+  const summary = await getPortfolioSummary(supabase, {
     portfolioId: selectedPortfolioId,
     baseCurrency,
   });
@@ -48,11 +47,19 @@ export default async function PortfolioDashboardSection({
     );
   }
 
+  const snapshotSeries = await getPortfolioSnapshotSeries(
+    supabase,
+    selectedPortfolioId ? "PORTFOLIO" : "ALL",
+    selectedPortfolioId,
+    30
+  );
+
   return (
     <PortfolioDashboard
       portfolios={portfolios}
       selectedPortfolioId={selectedPortfolioId}
       summary={summary}
+      snapshotSeries={snapshotSeries}
     />
   );
 }

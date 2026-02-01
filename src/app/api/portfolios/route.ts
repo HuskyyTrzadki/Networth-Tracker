@@ -17,7 +17,7 @@ export async function GET() {
   }
 
   try {
-    const portfolios = await listPortfolios(supabase, data.user.id);
+    const portfolios = await listPortfolios(supabase);
     return NextResponse.json({ portfolios }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

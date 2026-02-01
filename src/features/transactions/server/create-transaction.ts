@@ -1,10 +1,10 @@
-import type { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { touchProfileLastActive } from "@/features/auth/server/profiles";
 
 import type { CreateTransactionRequest } from "./schema";
 
-type SupabaseServerClient = ReturnType<typeof createClient>;
+type SupabaseServerClient = SupabaseClient;
 
 type CreateTransactionResult = Readonly<{
   transactionId: string;
@@ -19,28 +19,13 @@ const normalizeOptionalText = (value?: string | null) => {
   return trimmed ? trimmed : null;
 };
 
-const buildIdentityKey = (input: Readonly<{
-  provider: string;
-  providerKey: string | null;
-  symbol: string;
-  exchange: string | null;
-  region: string | null;
-}>) => {
-  if (input.providerKey) {
-    return `${input.provider}:${input.providerKey}`;
-  }
-
-  const exchangePart = input.exchange ?? "unknown";
-  const regionPart = input.region ?? "global";
-  return `${input.provider}:${input.symbol}:${exchangePart}:${regionPart}`;
-};
-
 export async function createTransaction(
-  supabase: SupabaseServerClient,
+  supabaseUser: SupabaseServerClient,
+  supabaseAdmin: SupabaseServerClient,
   userId: string,
   input: CreateTransactionRequest
 ): Promise<CreateTransactionResult> {
-  // Normalize and cache the instrument per user for stable identity.
+  // Normalize and cache the instrument globally for stable identity.
   const provider = normalizeRequiredText(input.instrument.provider);
   const providerKey = normalizeOptionalText(input.instrument.providerKey);
   const symbol = normalizeRequiredText(input.instrument.symbol);
@@ -51,25 +36,16 @@ export async function createTransaction(
   const logoUrl = normalizeOptionalText(input.instrument.logoUrl);
   // Persist Yahoo quoteType so we can group holdings by asset class later.
   const instrumentType = input.instrument.instrumentType ?? null;
-  const identityKey = buildIdentityKey({
-    provider,
-    providerKey,
-    symbol,
-    exchange,
-    region,
-  });
 
-  // Backend safety: Yahoo instruments must always carry a provider_key.
-  if (provider === "yahoo" && !providerKey) {
-    throw new Error("Instrument Yahoo wymaga provider_key.");
+  // Backend safety: provider_key is required for global instruments.
+  if (!providerKey) {
+    throw new Error("Instrument wymaga provider_key.");
   }
 
   const now = new Date().toISOString();
   const instrumentPayload = {
-    user_id: userId,
     provider,
     provider_key: providerKey,
-    identity_key: identityKey,
     symbol,
     name,
     currency,
@@ -85,11 +61,11 @@ export async function createTransaction(
     : instrumentPayload;
 
   // Persist logo URL (if provided) so lists can render instrument branding later.
-  const { data: instrument, error: instrumentError } = await supabase
+  const { data: instrument, error: instrumentError } = await supabaseAdmin
     .from("instruments")
     .upsert(
       instrumentPayloadWithType,
-      { onConflict: "user_id,identity_key" }
+      { onConflict: "provider,provider_key" }
     )
     .select("id")
     .single();
@@ -99,7 +75,7 @@ export async function createTransaction(
   }
 
   // Insert the transaction. If the client retries, we return the existing row.
-  const { data: transaction, error: transactionError } = await supabase
+  const { data: transaction, error: transactionError } = await supabaseUser
     .from("transactions")
     .insert({
       user_id: userId,
@@ -119,7 +95,7 @@ export async function createTransaction(
 
   if (transactionError) {
     if (transactionError.code === "23505") {
-      const { data: existing, error: existingError } = await supabase
+      const { data: existing, error: existingError } = await supabaseUser
         .from("transactions")
         .select("id")
         .eq("user_id", userId)
@@ -133,7 +109,7 @@ export async function createTransaction(
       }
 
       // Best-effort profile touch; we do not block the response.
-      await touchProfileLastActive(supabase, userId).catch(() => undefined);
+      await touchProfileLastActive(supabaseUser, userId).catch(() => undefined);
 
       return {
         transactionId: existing.id,
@@ -146,7 +122,7 @@ export async function createTransaction(
   }
 
   // Best-effort profile touch; we do not block the response.
-  await touchProfileLastActive(supabase, userId).catch(() => undefined);
+  await touchProfileLastActive(supabaseUser, userId).catch(() => undefined);
 
   return {
     transactionId: transaction.id,

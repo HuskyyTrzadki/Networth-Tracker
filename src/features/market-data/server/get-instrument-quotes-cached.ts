@@ -1,15 +1,16 @@
-import type { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 
 import { fetchYahooQuotes, normalizeYahooQuote } from "./providers/yahoo/yahoo-quote";
 import type { InstrumentQuote, InstrumentQuoteRequest } from "./types";
 
-type SupabaseServerClient = ReturnType<typeof createClient>;
+type SupabaseServerClient = SupabaseClient;
 
 const DEFAULT_TTL_MS = 15 * 60 * 1000;
 const PROVIDER = "yahoo";
 
 type QuoteCacheRow = Readonly<{
-  user_id?: string;
   instrument_id: string;
   provider: string;
   provider_key: string;
@@ -39,7 +40,6 @@ const buildQuote = (
 
 export async function getInstrumentQuotesCached(
   supabase: SupabaseServerClient,
-  userId: string,
   requests: readonly InstrumentQuoteRequest[],
   options?: Readonly<{ ttlMs?: number }>
 ): Promise<ReadonlyMap<string, InstrumentQuote | null>> {
@@ -58,7 +58,6 @@ export async function getInstrumentQuotesCached(
     .select(
       "instrument_id, provider, provider_key, currency, price, as_of, fetched_at"
     )
-    .eq("user_id", userId)
     .in("instrument_id", instrumentIds)
     .eq("provider", PROVIDER);
 
@@ -108,7 +107,6 @@ export async function getInstrumentQuotesCached(
     }
 
     const row: QuoteCacheRow = {
-      user_id: userId,
       instrument_id: request.instrumentId,
       provider: PROVIDER,
       provider_key: request.providerKey,
@@ -127,14 +125,17 @@ export async function getInstrumentQuotesCached(
 
   // Step 4: upsert new quotes for future requests (per-user cache under RLS).
   if (upserts.length > 0) {
-    const { error: upsertError } = await supabase
-      .from("instrument_quotes_cache")
-      .upsert(upserts, {
-        onConflict: "user_id,instrument_id,provider",
-      });
+    const adminClient = tryCreateAdminClient();
+    if (adminClient) {
+      const { error: upsertError } = await adminClient
+        .from("instrument_quotes_cache")
+        .upsert(upserts, {
+          onConflict: "instrument_id,provider",
+        });
 
-    if (upsertError) {
-      throw new Error(upsertError.message);
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
     }
   }
 

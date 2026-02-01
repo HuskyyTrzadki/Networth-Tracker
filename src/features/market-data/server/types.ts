@@ -25,4 +25,5 @@ export type FxRate = Readonly<{
   rate: string;
   asOf: string;
   fetchedAt: string;
+  source?: "direct" | "inverted";
 }>;

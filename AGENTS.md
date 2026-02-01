@@ -88,10 +88,10 @@ Whenever you ship a new feature or change architecture:
 - Transactions list: table view with search, type filter, and paging in `/transactions`
 - Portfolios table + `transactions.portfolio_id` (default portfolio created during auth)
 - Portfolio selection (switcher) + creation dialog (sidebar + mobile header), with "Wszystkie portfele" view
-- Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
+- Profiles table + RLS applied
 - `profiles.last_active_at` updates wired into transactions writes
-- Instruments cache stores optional logo URL (for branding in lists)
-- Instruments cache stores canonical Yahoo quoteType (`instrument_type`) for allocation/grouping
+- Global instruments cache stores optional logo URL (for branding in lists)
+- Global instruments cache stores canonical Yahoo quoteType (`instrument_type`) for allocation/grouping
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
@@ -99,7 +99,8 @@ Whenever you ship a new feature or change architecture:
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
 - Transactions page.
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
-- Cache-first quotes + FX with TTL (PLN + USD, direct FX only)
+- Cache-first quotes + FX with TTL (global cache, direct FX only + inversion)
+- Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu)
 
 ### Will be built next
 - Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup
@@ -144,8 +145,8 @@ supabase project is Project (id ayeeksbqwyqkevbpdlef,, region eu-west-1)
 - Transactions: `src/features/transactions/AGENTS.md`
 
 ## Transactions MVP decisions (keep aligned)
-- Instruments cache is per-user (`user_id` + RLS); no global instruments for now.
-- Instrument uniqueness: prefer `provider_key`; fallback to `provider + symbol + exchange` (optionally `region/mic`).
+- Instruments cache is global (no `user_id`).
+- Instrument uniqueness: `provider` + `provider_key` (required).
 - Idempotency: `client_request_id` with unique `(user_id, client_request_id)` and conflict-safe insert.
 - Money math in UI: no floats (use big.js or string-safe decimal parsing).
 - Transactions: `side` enum, `quantity > 0` (no negative quantities).

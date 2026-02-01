@@ -44,7 +44,7 @@ export default async function PortfolioPage({ searchParams }: Props) {
     );
   }
 
-  const portfolios = await listPortfolios(supabase, data.user.id);
+  const portfolios = await listPortfolios(supabase);
   const selectedPortfolio = selectedPortfolioId
     ? portfolios.find((portfolio) => portfolio.id === selectedPortfolioId) ?? null
     : null;
@@ -74,7 +74,6 @@ export default async function PortfolioPage({ searchParams }: Props) {
             baseCurrency={baseCurrency}
             portfolios={portfolios}
             selectedPortfolioId={selectedPortfolioId}
-            userId={data.user.id}
           />
         </Suspense>
       </section>

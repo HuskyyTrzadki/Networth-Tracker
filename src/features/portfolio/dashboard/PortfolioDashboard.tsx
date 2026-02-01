@@ -1,9 +1,11 @@
 import { cn } from "@/lib/cn";
 
+import type { SnapshotSeries } from "../server/snapshots/types";
 import type { PortfolioSummary } from "../server/valuation";
 import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
 import { AllocationWidget } from "./widgets/AllocationWidget";
 import { HoldingsWidget } from "./widgets/HoldingsWidget";
+import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
 
 type Props = Readonly<{
   portfolios: readonly {
@@ -13,6 +15,10 @@ type Props = Readonly<{
   }[];
   selectedPortfolioId: string | null;
   summary: PortfolioSummary;
+  snapshotSeries: Readonly<{
+    hasSnapshots: boolean;
+    seriesByCurrency: Readonly<Record<"PLN" | "USD" | "EUR", SnapshotSeries>>;
+  }>;
   className?: string;
 }>;
 
@@ -20,6 +26,7 @@ export function PortfolioDashboard({
   portfolios,
   selectedPortfolioId,
   summary,
+  snapshotSeries,
   className,
 }: Props) {
   return (
@@ -30,6 +37,13 @@ export function PortfolioDashboard({
           selectedId={selectedPortfolioId}
         />
       </div>
+      <PortfolioValueOverTimeWidget
+        selectedPortfolioId={selectedPortfolioId}
+        hasHoldings={summary.holdings.length > 0}
+        hasSnapshots={snapshotSeries.hasSnapshots}
+        seriesByCurrency={snapshotSeries.seriesByCurrency}
+        days={30}
+      />
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
         <AllocationWidget summary={summary} />
         <HoldingsWidget summary={summary} />

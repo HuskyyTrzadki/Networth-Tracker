@@ -53,7 +53,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const results = await searchInstruments(supabase, user.id, {
+    const results = await searchInstruments(supabase, {
       query,
       mode,
       limit,

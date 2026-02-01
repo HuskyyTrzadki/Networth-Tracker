@@ -25,7 +25,7 @@ export default async function AppLayout({ children, modal }: Props) {
   if (data.user) {
     try {
       // Server-side: preload portfolios for the desktop sidebar to avoid client fetches.
-      portfolios = await listPortfolios(supabase, data.user.id);
+      portfolios = await listPortfolios(supabase);
     } catch (error) {
       // Server-side: keep the shell rendering even if data fetch fails.
       console.error("Failed to load portfolios for sidebar", error);
