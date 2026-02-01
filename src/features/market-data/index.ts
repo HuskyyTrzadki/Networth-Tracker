@@ -7,3 +7,5 @@ export type {
   InstrumentQuote,
   InstrumentQuoteRequest,
 } from "./server/types";
+export { instrumentTypes } from "./lib/instrument-types";
+export type { InstrumentType } from "./lib/instrument-types";

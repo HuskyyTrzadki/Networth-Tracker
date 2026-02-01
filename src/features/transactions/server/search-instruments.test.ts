@@ -52,4 +52,22 @@ describe("mergeInstrumentResults", () => {
     expect(merged[0]?.name).toBe("Apple");
     expect(merged[1]?.providerKey).toBe("MSFT");
   });
+
+  it("fills missing instrumentType from Yahoo when local is blank", () => {
+    const local = [
+      baseInstrument({ providerKey: "NFLX", id: "yahoo:NFLX" }),
+    ];
+    const yahoo = [
+      baseInstrument({
+        providerKey: "NFLX",
+        id: "yahoo:NFLX",
+        instrumentType: "EQUITY",
+      }),
+    ];
+
+    const merged = __test__.mergeInstrumentResults(local, yahoo, 10);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]?.instrumentType).toBe("EQUITY");
+  });
 });

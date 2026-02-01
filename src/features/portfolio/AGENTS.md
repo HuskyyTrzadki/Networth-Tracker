@@ -25,6 +25,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - UI plus server helpers; valuation calculations live in `server/valuation.ts`.
+- Holdings data from `get_portfolio_holdings` includes `instrument_type` for concentration warnings.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
 
 ## Tests

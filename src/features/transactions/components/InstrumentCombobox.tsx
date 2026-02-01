@@ -43,9 +43,20 @@ const instrumentTypeMeta: Record<InstrumentType, { label: string; icon: TypeIcon
   EQUITY: { label: "Akcje", icon: CandlestickChart },
   ETF: { label: "ETF", icon: Layers2 },
   CRYPTOCURRENCY: { label: "Krypto", icon: Bitcoin },
+  MUTUALFUND: { label: "Fundusze", icon: Layers2 },
+  CURRENCY: { label: "Waluty", icon: CandlestickChart },
+  INDEX: { label: "Indeksy", icon: CandlestickChart },
+  OPTION: { label: "Opcje", icon: CandlestickChart },
+  FUTURE: { label: "Futures", icon: CandlestickChart },
+  MONEYMARKET: { label: "Money Market", icon: CandlestickChart },
+  ECNQUOTE: { label: "ECN", icon: CandlestickChart },
+  ALTSYMBOL: { label: "Alt", icon: CandlestickChart },
 };
 
-const typeFilters: Array<{ value: "all" | InstrumentType; label: string }> = [
+const filterableTypes = ["EQUITY", "ETF", "CRYPTOCURRENCY"] as const;
+type FilterableType = (typeof filterableTypes)[number];
+
+const typeFilters: Array<{ value: "all" | FilterableType; label: string }> = [
   { value: "all", label: "Wszystko" },
   { value: "EQUITY", label: instrumentTypeMeta.EQUITY.label },
   { value: "ETF", label: instrumentTypeMeta.ETF.label },
@@ -57,7 +68,7 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
-  const [activeType, setActiveType] = useState<"all" | InstrumentType>("all");
+  const [activeType, setActiveType] = useState<"all" | FilterableType>("all");
 
   const debouncedCommit = useMemo(
     () => debounce((nextValue: string) => setDebouncedQuery(nextValue), DEBOUNCE_MS),
@@ -76,10 +87,12 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
   const trimmedQuery = query.trim();
   const hasMinQuery = trimmedQuery.length >= MIN_QUERY_LENGTH;
 
-  const typeCounts = results.reduce(
+  const typeCounts = results.reduce<Record<FilterableType, number>>(
     (acc, option) => {
       const type = option.instrumentType ?? "EQUITY";
-      acc[type] += 1;
+      if (filterableTypes.includes(type as FilterableType)) {
+        acc[type as FilterableType] += 1;
+      }
       return acc;
     },
     { EQUITY: 0, ETF: 0, CRYPTOCURRENCY: 0 }
@@ -212,7 +225,6 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
               {filteredResults.map((option) => {
                 const resolvedType = option.instrumentType ?? "EQUITY";
                 const typeMeta = instrumentTypeMeta[resolvedType];
-                const TypeIcon = typeMeta?.icon ?? CandlestickChart;
                 return (
                   <CommandItem
                     key={option.id}
@@ -234,15 +246,12 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
                     />
                     <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
                       <div className="flex items-center gap-2">
-                        {option.logoUrl ? (
-                          <InstrumentLogoImage
-                            className="size-4"
-                            size={16}
-                            src={option.logoUrl}
-                          />
-                        ) : (
-                          <TypeIcon className="size-4 text-muted-foreground" aria-hidden />
-                        )}
+                        <InstrumentLogoImage
+                          className="size-4"
+                          fallbackText={option.ticker}
+                          size={16}
+                          src={option.logoUrl}
+                        />
                         <span className="font-mono text-sm font-semibold tabular-nums">
                           {option.ticker}
                         </span>

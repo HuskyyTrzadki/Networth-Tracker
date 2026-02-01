@@ -9,6 +9,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Main entrypoints
 - Quotes cache: `src/features/market-data/server/get-instrument-quotes-cached.ts`
 - FX cache: `src/features/market-data/server/get-fx-rates-cached.ts`
+- Shared types: `src/features/market-data/lib/instrument-types.ts`
 - Yahoo provider helpers:
   - `src/features/market-data/server/providers/yahoo/yahoo-quote.ts`
   - `src/features/market-data/server/providers/yahoo/yahoo-fx.ts`

@@ -42,7 +42,7 @@ Non-goals (MVP):
 - API (App Router):
   - HTTP endpoints: `src/app/api/**/route.ts`.
   - Route handlers must stay thin: validate input → call a feature “service” (e.g. `src/features/market-data/server/*`) → return JSON.
-- API integrations: always verify provider interfaces in the official docs before coding, and link to the relevant module docs when adding/adjusting API usage (start here for Yahoo Finance: https://jsr.io/@gadicc/yahoo-finance2/doc/modules).
+- API integrations: always verify provider interfaces in the official docs before coding, and link to the relevant module docs when adding/adjusting API usage (start here for Yahoo Finance: https://github.com/gadicc/yahoo-finance2/blob/2.x/src/modules. for example u can go to quote.ts 
 -use cn() function from cn.ts for classnames.![img.png](img.png)
   
 
@@ -91,6 +91,7 @@ Whenever you ship a new feature or change architecture:
 - Profiles table + RLS applied (`supabase/migrations/20260124_profiles.sql`)
 - `profiles.last_active_at` updates wired into transactions writes
 - Instruments cache stores optional logo URL (for branding in lists)
+- Instruments cache stores canonical Yahoo quoteType (`instrument_type`) for allocation/grouping
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)

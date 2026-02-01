@@ -11,6 +11,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Stories: `src/features/design-system/stories/*`
 - UI primitives (example): `src/components/ui/badge.tsx` re-exported via `src/features/design-system/components/ui/badge.tsx`
 - UI primitives (sidebar, collapsible) re-exported via `src/features/design-system/components/ui/sidebar.tsx` and `src/features/design-system/components/ui/collapsible.tsx`
+- UI primitives (alert, avatar) re-exported via `src/features/design-system/components/ui/alert.tsx` and `src/features/design-system/components/ui/avatar.tsx`
 
 ## Boundaries
 - UI only, no business logic.

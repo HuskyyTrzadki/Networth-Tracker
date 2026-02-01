@@ -1,4 +1,5 @@
 import type { createClient } from "@/lib/supabase/server";
+import type { InstrumentType } from "@/features/market-data";
 
 export type PortfolioHolding = Readonly<{
   instrumentId: string;
@@ -9,6 +10,7 @@ export type PortfolioHolding = Readonly<{
   provider: string;
   providerKey: string;
   logoUrl: string | null;
+  instrumentType: InstrumentType | null;
   quantity: string;
 }>;
 
@@ -23,6 +25,7 @@ type PortfolioHoldingRow = Readonly<{
   provider: string;
   provider_key: string;
   logo_url: string | null;
+  instrument_type: InstrumentType | null;
   quantity: string | number;
 }>;
 
@@ -53,6 +56,7 @@ export async function getPortfolioHoldings(
     provider: row.provider,
     providerKey: row.provider_key,
     logoUrl: row.logo_url ?? null,
+    instrumentType: row.instrument_type ?? null,
     // Supabase numeric values may arrive as string or number depending on runtime.
     quantity: normalizeNumeric(row.quantity),
   }));

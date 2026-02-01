@@ -1,4 +1,5 @@
 import type { TransactionType } from "../lib/add-transaction-form-schema";
+import type { InstrumentType } from "../lib/instrument-search";
 
 export type CreateTransactionPayload = Readonly<{
   type: TransactionType;
@@ -15,6 +16,7 @@ export type CreateTransactionPayload = Readonly<{
     symbol: string;
     name: string;
     currency: string;
+    instrumentType?: InstrumentType;
     exchange?: string;
     region?: string;
     logoUrl?: string | null;

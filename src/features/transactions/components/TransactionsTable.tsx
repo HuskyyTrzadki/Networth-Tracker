@@ -86,15 +86,12 @@ export function TransactionsTable({ items }: Props) {
               <TableCell className="px-4">
                 <div className="flex items-center gap-3">
                   <div className="grid size-8 place-items-center text-base leading-none">
-                    {item.instrument.logoUrl ? (
-                      <InstrumentLogoImage
-                        className="size-6"
-                        size={24}
-                        src={item.instrument.logoUrl}
-                      />
-                    ) : (
-                      <span className="block size-5 rounded-full bg-muted" />
-                    )}
+                    <InstrumentLogoImage
+                      className="size-6"
+                      fallbackText={item.instrument.symbol}
+                      size={24}
+                      src={item.instrument.logoUrl}
+                    />
                   </div>
                   <div className="flex min-w-0 flex-col">
                     <span className="text-sm font-semibold text-foreground">

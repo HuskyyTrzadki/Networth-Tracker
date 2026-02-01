@@ -99,16 +99,13 @@ export function HoldingsWidget({ summary }: Props) {
                 <TableCell className="px-4">
                   <div className="flex items-center gap-3">
                     <div className="grid size-8 place-items-center text-base leading-none">
-                      {row.logoUrl ? (
-                        <InstrumentLogoImage
-                          alt=""
-                          className="size-6"
-                          size={24}
-                          src={row.logoUrl}
-                        />
-                      ) : (
-                        <span className="block size-5 rounded-full bg-muted" />
-                      )}
+                      <InstrumentLogoImage
+                        alt=""
+                        className="size-6"
+                        fallbackText={row.symbol}
+                        size={24}
+                        src={row.logoUrl}
+                      />
                     </div>
                     <div className="flex min-w-0 flex-col">
                       <div className="flex items-center gap-2">

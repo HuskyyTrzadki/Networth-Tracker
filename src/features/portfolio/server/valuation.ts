@@ -5,7 +5,12 @@ import {
   parseDecimalString,
 } from "@/lib/decimal";
 
-import type { CurrencyCode, FxRate, InstrumentQuote } from "@/features/market-data";
+import type {
+  CurrencyCode,
+  FxRate,
+  InstrumentQuote,
+  InstrumentType,
+} from "@/features/market-data";
 import type { PortfolioHolding } from "./get-portfolio-holdings";
 
 export type ValuedHolding = Readonly<{
@@ -15,6 +20,7 @@ export type ValuedHolding = Readonly<{
   exchange: string | null;
   currency: CurrencyCode;
   logoUrl: string | null;
+  instrumentType: InstrumentType | null;
   quantity: string;
   price: string | null;
   valueBase: string | null;
@@ -69,6 +75,7 @@ export function buildPortfolioSummary({
         exchange: holding.exchange,
         currency: holding.currency,
         logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
         quantity: holding.quantity,
         price: null,
         valueBase: null,
@@ -86,6 +93,7 @@ export function buildPortfolioSummary({
         exchange: holding.exchange,
         currency: holding.currency,
         logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
         quantity: holding.quantity,
         price: null,
         valueBase: null,
@@ -105,6 +113,7 @@ export function buildPortfolioSummary({
         exchange: holding.exchange,
         currency: holding.currency,
         logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
         quantity: holding.quantity,
         price: null,
         valueBase: null,
@@ -126,6 +135,7 @@ export function buildPortfolioSummary({
         exchange: holding.exchange,
         currency: holding.currency,
         logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
         quantity: holding.quantity,
         price: quote.price,
         valueBase: valueBase.toString(),
@@ -146,6 +156,7 @@ export function buildPortfolioSummary({
         exchange: holding.exchange,
         currency: holding.currency,
         logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
         quantity: holding.quantity,
         price: quote.price,
         valueBase: null,
@@ -164,6 +175,7 @@ export function buildPortfolioSummary({
         exchange: holding.exchange,
         currency: holding.currency,
         logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
         quantity: holding.quantity,
         price: quote.price,
         valueBase: null,
@@ -187,6 +199,7 @@ export function buildPortfolioSummary({
       exchange: holding.exchange,
       currency: holding.currency,
       logoUrl: holding.logoUrl,
+      instrumentType: holding.instrumentType,
       quantity: holding.quantity,
       price: quote.price,
       valueBase: valueBase.toString(),

@@ -2,6 +2,7 @@ import { isAfter, parseISO } from "date-fns";
 import { z } from "zod";
 
 import { transactionTypes } from "../lib/add-transaction-form-schema";
+import { instrumentTypes } from "../lib/instrument-search";
 import { parseDecimalInput } from "../lib/parse-decimal";
 
 const normalizeDecimalInput = (value: string) =>
@@ -41,6 +42,7 @@ const instrumentSchema = z
     symbol: z.string().trim().min(1),
     name: z.string().trim().min(1),
     currency: z.string().trim().length(3),
+    instrumentType: z.enum(instrumentTypes).optional(),
     exchange: z.string().trim().min(1).optional(),
     region: z.string().trim().min(1).optional(),
     logoUrl: z.string().trim().url().optional(),

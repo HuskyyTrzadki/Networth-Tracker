@@ -49,6 +49,8 @@ export async function createTransaction(
   const exchange = normalizeOptionalText(input.instrument.exchange);
   const region = normalizeOptionalText(input.instrument.region);
   const logoUrl = normalizeOptionalText(input.instrument.logoUrl);
+  // Persist Yahoo quoteType so we can group holdings by asset class later.
+  const instrumentType = input.instrument.instrumentType ?? null;
   const identityKey = buildIdentityKey({
     provider,
     providerKey,
@@ -63,23 +65,30 @@ export async function createTransaction(
   }
 
   const now = new Date().toISOString();
+  const instrumentPayload = {
+    user_id: userId,
+    provider,
+    provider_key: providerKey,
+    identity_key: identityKey,
+    symbol,
+    name,
+    currency,
+    exchange,
+    region,
+    logo_url: logoUrl,
+    updated_at: now,
+  } as const;
+
+  // Avoid overwriting an existing type with null from older clients.
+  const instrumentPayloadWithType = instrumentType
+    ? { ...instrumentPayload, instrument_type: instrumentType }
+    : instrumentPayload;
+
   // Persist logo URL (if provided) so lists can render instrument branding later.
   const { data: instrument, error: instrumentError } = await supabase
     .from("instruments")
     .upsert(
-      {
-        user_id: userId,
-        provider,
-        provider_key: providerKey,
-        identity_key: identityKey,
-        symbol,
-        name,
-        currency,
-        exchange,
-        region,
-        logo_url: logoUrl,
-        updated_at: now,
-      },
+      instrumentPayloadWithType,
       { onConflict: "user_id,identity_key" }
     )
     .select("id")

@@ -155,6 +155,7 @@ export function AddTransactionDialog({
           symbol: selectedInstrument.symbol,
           name: selectedInstrument.name,
           currency: selectedInstrument.currency,
+          instrumentType: selectedInstrument.instrumentType ?? undefined,
           exchange: selectedInstrument.exchange ?? undefined,
           region: selectedInstrument.region ?? undefined,
           logoUrl: selectedInstrument.logoUrl ?? undefined,

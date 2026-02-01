@@ -55,6 +55,14 @@ const ALLOWED_QUOTE_TYPES = new Set<InstrumentType>([
   "EQUITY",
   "ETF",
   "CRYPTOCURRENCY",
+  "MUTUALFUND",
+  "CURRENCY",
+  "INDEX",
+  "OPTION",
+  "FUTURE",
+  "MONEYMARKET",
+  "ECNQUOTE",
+  "ALTSYMBOL",
 ]);
 
 const isAllowedInstrumentType = (value?: string | null): value is InstrumentType =>
@@ -141,6 +149,7 @@ const normalizeLocalInstrument = (
     exchange: string | null;
     region: string | null;
     logo_url: string | null;
+    instrument_type: InstrumentType | null;
   }>
 ): InstrumentSearchResult => {
   const providerKey = row.provider_key ?? row.symbol;
@@ -153,6 +162,7 @@ const normalizeLocalInstrument = (
     ticker: getDisplayTicker(row.symbol, null),
     name: row.name,
     currency: row.currency.toUpperCase(),
+    instrumentType: row.instrument_type ?? undefined,
     exchange: row.exchange ?? undefined,
     region: row.region ?? undefined,
     logoUrl: row.logo_url ?? null,
@@ -219,8 +229,14 @@ const mergeInstrumentResults = (
 
   yahooResults.forEach((item) => {
     const key = buildKey(item);
-    if (!byKey.has(key)) {
+    const existing = byKey.get(key);
+    if (!existing) {
       byKey.set(key, item);
+      return;
+    }
+
+    if (!existing.instrumentType && item.instrumentType) {
+      byKey.set(key, { ...existing, instrumentType: item.instrumentType });
     }
   });
 
@@ -238,7 +254,7 @@ const searchLocalInstruments = async (
   const { data, error } = await supabase
     .from("instruments")
     .select(
-      "provider, provider_key, symbol, name, currency, exchange, region, logo_url, updated_at"
+      "provider, provider_key, symbol, name, currency, exchange, region, logo_url, instrument_type, updated_at"
     )
     .eq("user_id", userId)
     .or(`provider_key.ilike.${pattern},name.ilike.${pattern},symbol.ilike.${pattern}`)
