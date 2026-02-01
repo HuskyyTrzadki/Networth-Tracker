@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components
 import { cn } from "@/lib/cn";
 import { getCurrencyFormatter } from "@/lib/format-currency";
 
+import type { LiveTotals } from "../../server/get-portfolio-live-totals";
 import type { SnapshotCurrency } from "../../server/snapshots/supported-currencies";
 import type { SnapshotScope, SnapshotSeries } from "../../server/snapshots/types";
 
@@ -23,7 +24,24 @@ type Props = Readonly<{
   hasHoldings: boolean;
   hasSnapshots: boolean;
   seriesByCurrency: Readonly<Record<SnapshotCurrency, SnapshotSeries>>;
+  todayBucketDate: string;
+  liveTotalsByCurrency: Readonly<Record<SnapshotCurrency, LiveTotals>>;
 }>;
+
+const mergeLivePoint = (
+  points: readonly { label: string; value: number }[],
+  todayBucketDate: string,
+  liveValue: number | null
+) => {
+  if (liveValue === null) return points;
+  const last = points.at(-1);
+
+  if (last?.label === todayBucketDate) {
+    return [...points.slice(0, -1), { ...last, value: liveValue }];
+  }
+
+  return [...points, { label: todayBucketDate, value: liveValue }];
+};
 
 export function PortfolioValueOverTimeChart({
   scope,
@@ -31,6 +49,8 @@ export function PortfolioValueOverTimeChart({
   hasHoldings,
   hasSnapshots,
   seriesByCurrency,
+  todayBucketDate,
+  liveTotalsByCurrency,
 }: Props) {
   const [currency, setCurrency] = useState<SnapshotCurrency>("PLN");
   const [bootstrapped, setBootstrapped] = useState(false);
@@ -57,8 +77,21 @@ export function PortfolioValueOverTimeChart({
   }, [portfolioId, router, scope, shouldBootstrap]);
 
   const series = seriesByCurrency[currency];
-  const hasPoints = series.points.length > 0;
-  const latestMeta = series.latestMeta;
+  const liveTotals = liveTotalsByCurrency[currency];
+  const effectivePoints = mergeLivePoint(
+    series.points,
+    todayBucketDate,
+    liveTotals.totalValue
+  );
+  const hasPoints = effectivePoints.length > 0;
+  const latestMeta =
+    liveTotals.totalValue !== null
+      ? {
+          isPartial: liveTotals.isPartial,
+          missingQuotes: liveTotals.missingQuotes,
+          missingFx: liveTotals.missingFx,
+        }
+      : series.latestMeta;
   const showPartial = hasPoints && Boolean(latestMeta?.isPartial);
   const formatter = getCurrencyFormatter(currency);
   const valueFormatter = formatter
@@ -91,7 +124,7 @@ export function PortfolioValueOverTimeChart({
       </div>
       {hasPoints ? (
         <PortfolioAreaChart
-          data={series.points}
+          data={effectivePoints}
           height={240}
           valueFormatter={valueFormatter}
           labelFormatter={labelFormatter}

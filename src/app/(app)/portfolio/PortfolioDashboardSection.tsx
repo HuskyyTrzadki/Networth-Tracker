@@ -4,6 +4,7 @@ import {
   DashboardEmptyState,
   PortfolioDashboard,
 } from "@/features/portfolio";
+import { getPortfolioLiveTotals } from "@/features/portfolio/server/get-portfolio-live-totals";
 import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
 import { getPortfolioSnapshotSeries } from "@/features/portfolio/server/snapshots/get-portfolio-snapshot-series";
 import { createClient } from "@/lib/supabase/server";
@@ -53,6 +54,9 @@ export default async function PortfolioDashboardSection({
     selectedPortfolioId,
     30
   );
+  const liveTotals = await getPortfolioLiveTotals(supabase, {
+    portfolioId: selectedPortfolioId,
+  });
 
   return (
     <PortfolioDashboard
@@ -60,6 +64,7 @@ export default async function PortfolioDashboardSection({
       selectedPortfolioId={selectedPortfolioId}
       summary={summary}
       snapshotSeries={snapshotSeries}
+      liveTotals={liveTotals}
     />
   );
 }

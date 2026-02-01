@@ -10,8 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 const DEFAULT_LOCAL_LIMIT = 3;
 const DEFAULT_AUTO_LIMIT = 3;
 const DEFAULT_ALL_LIMIT = 50;
-const DEFAULT_TIMEOUT_MS = 800;
-const ALL_TIMEOUT_MS = 4000;
+const DEFAULT_TIMEOUT_MS = 2000;
+const ALL_TIMEOUT_MS = 5000;
 const MAX_LIMIT = 50;
 
 const parseLimit = (raw: string | null, fallback: number) => {

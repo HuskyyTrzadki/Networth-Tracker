@@ -1,6 +1,5 @@
-import YahooFinance from "yahoo-finance2";
-
 import type { createClient } from "@/lib/supabase/server";
+import { yahooFinance } from "@/lib/yahoo-finance-client";
 
 import type {
   InstrumentProvider,
@@ -44,7 +43,6 @@ type YahooQuote = Readonly<{
   coinImageUrl?: string;
 }>;
 
-const yahooFinance = new YahooFinance();
 const provider: InstrumentProvider = "yahoo";
 
 const DEFAULT_LIMIT = 10;
@@ -274,22 +272,28 @@ const fetchYahooQuotes = async (
 
   // Yahoo Finance quote docs:
   // https://jsr.io/@gadicc/yahoo-finance2/doc/modules/quote/~/quote
-  const quotePromise = yahooFinance.quote(symbols, {
-    fields: [
-      "symbol",
-      "currency",
-      "region",
-      "shortName",
-      "longName",
-      "displayName",
-      "exchange",
-      "fullExchangeName",
-      "logoUrl",
-      "companyLogoUrl",
-      "coinImageUrl",
-    ],
-    return: "object",
-  });
+  const quotePromise = yahooFinance.quote(
+    symbols,
+    {
+      fields: [
+        "symbol",
+        "currency",
+        "region",
+        "shortName",
+        "longName",
+        "displayName",
+        "exchange",
+        "fullExchangeName",
+        "logoUrl",
+        "companyLogoUrl",
+        "coinImageUrl",
+      ],
+      return: "object",
+    },
+    // Yahoo occasionally returns partial data (e.g., futures without full fields).
+    // Skipping strict validation prevents dropping all search results.
+    { validateResult: false }
+  );
 
   const quoteResult = await withTimeout(quotePromise, timeoutMs);
   if (!quoteResult) return {};

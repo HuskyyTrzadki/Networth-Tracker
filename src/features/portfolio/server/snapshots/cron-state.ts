@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getBucketDate } from "./bucket-date";
+
 type CronStateRow = Readonly<{
   job_date: string;
   cursor_user_id: string | null;
@@ -11,13 +13,11 @@ type CronStateResult = Readonly<{
   isNew: boolean;
 }>;
 
-const toBucketDate = (value: Date) => value.toISOString().slice(0, 10);
-
 export async function getOrCreateCronState(
   supabase: SupabaseClient,
   jobDate: Date
 ): Promise<CronStateResult> {
-  const bucketDate = toBucketDate(jobDate);
+  const bucketDate = getBucketDate(jobDate);
 
   const { data, error } = await supabase
     .from("cron_portfolio_snapshots_state")
@@ -60,7 +60,7 @@ export async function updateCronState(
   cursorUserId: string | null,
   done: boolean
 ): Promise<void> {
-  const bucketDate = toBucketDate(jobDate);
+  const bucketDate = getBucketDate(jobDate);
   const { error } = await supabase
     .from("cron_portfolio_snapshots_state")
     .update({

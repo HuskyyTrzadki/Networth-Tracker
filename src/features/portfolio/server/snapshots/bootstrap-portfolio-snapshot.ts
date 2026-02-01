@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { computePortfolioSnapshot } from "./compute-portfolio-snapshot";
 import { upsertPortfolioSnapshot } from "./upsert-portfolio-snapshot";
 import type { SnapshotScope } from "./types";
+import { getBucketDate } from "./bucket-date";
 
 type BootstrapResult = Readonly<{
   status: "ok" | "skipped";
@@ -10,8 +11,6 @@ type BootstrapResult = Readonly<{
 }>;
 
 type PortfolioRow = Readonly<{ id: string }>;
-
-const toBucketDate = (value: Date) => value.toISOString().slice(0, 10);
 
 const ensurePortfolioAccess = async (
   supabase: SupabaseClient,
@@ -61,7 +60,7 @@ export async function bootstrapPortfolioSnapshot(
     }
   }
 
-  const bucketDate = toBucketDate(new Date());
+  const bucketDate = getBucketDate(new Date());
   const result = await computePortfolioSnapshot(
     supabaseAdmin,
     userId,

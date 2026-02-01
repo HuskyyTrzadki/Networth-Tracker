@@ -3,14 +3,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { computePortfolioSnapshot } from "./compute-portfolio-snapshot";
 import { upsertPortfolioSnapshot } from "./upsert-portfolio-snapshot";
 import type { SnapshotScope } from "./types";
+import { getBucketDate } from "./bucket-date";
 
 type PortfolioRow = Readonly<{ id: string }>;
 
 type RunResult = Readonly<{
   processedPortfolios: number;
 }>;
-
-const toBucketDate = (value: Date) => value.toISOString().slice(0, 10);
 
 const runSnapshot = async (
   supabase: SupabaseClient,
@@ -40,7 +39,7 @@ export async function runDailySnapshotsForUser(
   jobDate: Date
 ): Promise<RunResult> {
   // Admin-side batch: snapshot all active portfolios + ALL for a user.
-  const bucketDate = toBucketDate(jobDate);
+  const bucketDate = getBucketDate(jobDate);
   const { data, error } = await supabase
     .from("portfolios")
     .select("id")

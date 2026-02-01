@@ -5,6 +5,7 @@ import {
   type SnapshotCurrency,
 } from "./supported-currencies";
 import type { SnapshotScope, SnapshotSeries } from "./types";
+import { getBucketDate } from "./bucket-date";
 
 type SnapshotRow = Readonly<{
   bucket_date: string;
@@ -91,7 +92,7 @@ export async function getPortfolioSnapshotSeries(
 
   const fromDate = new Date();
   fromDate.setUTCDate(fromDate.getUTCDate() - Math.max(days - 1, 0));
-  const fromBucket = fromDate.toISOString().slice(0, 10);
+  const fromBucket = getBucketDate(fromDate);
 
   let query = supabase
     .from("portfolio_snapshots")

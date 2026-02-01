@@ -1,6 +1,7 @@
 import { ChartCard } from "@/features/design-system";
 import type { SnapshotScope } from "../../server/snapshots/types";
 import type { SnapshotSeries } from "../../server/snapshots/types";
+import type { LiveTotalsResult } from "../../server/get-portfolio-live-totals";
 import { PortfolioValueOverTimeChart } from "./PortfolioValueOverTimeChart";
 
 type Props = Readonly<{
@@ -8,6 +9,7 @@ type Props = Readonly<{
   hasHoldings: boolean;
   hasSnapshots: boolean;
   seriesByCurrency: Readonly<Record<"PLN" | "USD" | "EUR", SnapshotSeries>>;
+  liveTotals: LiveTotalsResult;
   days: number;
 }>;
 
@@ -16,6 +18,7 @@ export async function PortfolioValueOverTimeWidget({
   hasHoldings,
   hasSnapshots,
   seriesByCurrency,
+  liveTotals,
   days,
 }: Props) {
   const scope: SnapshotScope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
@@ -32,6 +35,8 @@ export async function PortfolioValueOverTimeWidget({
         hasHoldings={hasHoldings}
         hasSnapshots={hasSnapshots}
         seriesByCurrency={seriesByCurrency}
+        todayBucketDate={liveTotals.todayBucketDate}
+        liveTotalsByCurrency={liveTotals.totalsByCurrency}
       />
     </ChartCard>
   );

@@ -31,10 +31,15 @@ export async function fetchYahooQuotes(
   for (const batch of batches) {
     // Yahoo Finance quote docs:
     // https://jsr.io/@gadicc/yahoo-finance2/doc/modules/quote/~/quote
-    const quotePromise = yahooFinance.quote(batch, {
-      fields: ["symbol", "currency", "regularMarketPrice", "regularMarketTime"],
-      return: "object",
-    });
+    const quotePromise = yahooFinance.quote(
+      batch,
+      {
+        fields: ["symbol", "currency", "regularMarketPrice", "regularMarketTime"],
+        return: "object",
+      },
+      // Yahoo can respond with partial/invalid entries; avoid failing the whole batch.
+      { validateResult: false }
+    );
 
     const quoteResult = await Promise.race([
       quotePromise,

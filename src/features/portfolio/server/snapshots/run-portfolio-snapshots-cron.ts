@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { runDailySnapshotsForUser } from "./run-daily-snapshots-for-user";
 import { getOrCreateCronState, updateCronState } from "./cron-state";
+import { getBucketDate } from "./bucket-date";
 
 type ActiveUserRow = Readonly<{ user_id: string }>;
 
@@ -18,8 +19,6 @@ type CronRunOptions = Readonly<{
 }>;
 
 const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
-
-const toBucketDate = (value: Date) => value.toISOString().slice(0, 10);
 
 const listActiveUsers = async (
   supabase: SupabaseClient,
@@ -55,7 +54,7 @@ const runRetention = async (
 ) => {
   const cutoff = new Date(jobDate);
   cutoff.setUTCDate(cutoff.getUTCDate() - retentionDays);
-  const cutoffBucket = toBucketDate(cutoff);
+  const cutoffBucket = getBucketDate(cutoff);
 
   const { error } = await supabase
     .from("portfolio_snapshots")
