@@ -11,6 +11,10 @@ type TransactionRow = Readonly<{
   quantity: string | number;
   price: string | number;
   fee: string | number | null;
+  group_id: string;
+  leg_role: "ASSET" | "CASH";
+  leg_key: string;
+  cashflow_type: string | null;
   instrument:
     | Readonly<{
         symbol: string;
@@ -18,6 +22,7 @@ type TransactionRow = Readonly<{
         currency: string;
         region: string | null;
         logo_url: string | null;
+        instrument_type: string | null;
       }>
     | Readonly<{
         symbol: string;
@@ -25,6 +30,7 @@ type TransactionRow = Readonly<{
         currency: string;
         region: string | null;
         logo_url: string | null;
+        instrument_type: string | null;
       }>[]
     | null;
   custom_instrument:
@@ -46,12 +52,17 @@ export type TransactionListItem = Readonly<{
   quantity: string;
   price: string;
   fee: string;
+  groupId: string;
+  legRole: "ASSET" | "CASH";
+  legKey: string;
+  cashflowType: string | null;
   instrument: Readonly<{
     symbol: string;
     name: string;
     currency: string;
     region?: string;
     logoUrl?: string | null;
+    instrumentType?: string | null;
   }>;
 }>;
 
@@ -81,10 +92,11 @@ export async function listTransactions(
   let query = supabase
     .from("transactions")
     .select(
-      "id, trade_date, side, quantity, price, fee, instrument:instruments(symbol, name, currency, region, logo_url), custom_instrument:custom_instruments(name, currency)"
+      "id, trade_date, side, quantity, price, fee, group_id, leg_role, leg_key, cashflow_type, instrument:instruments(symbol, name, currency, region, logo_url, instrument_type), custom_instrument:custom_instruments(name, currency)"
     )
     .order("trade_date", { ascending })
     .order("created_at", { ascending })
+    .order("leg_key", { ascending: true })
     // Fetch one extra row to detect if another page exists.
     .range(offset, rangeEnd);
 
@@ -136,6 +148,7 @@ export async function listTransactions(
         currency: customInstrument?.currency ?? "PLN",
         region: null,
         logo_url: null,
+        instrument_type: null,
       };
 
       return {
@@ -145,12 +158,17 @@ export async function listTransactions(
         quantity: normalizeNumeric(row.quantity),
         price: normalizeNumeric(row.price),
         fee: normalizeNumeric(row.fee),
+        groupId: row.group_id,
+        legRole: row.leg_role,
+        legKey: row.leg_key,
+        cashflowType: row.cashflow_type,
         instrument: {
           symbol: resolved.symbol,
           name: resolved.name,
           currency: resolved.currency,
           region: resolved.region ?? undefined,
           logoUrl: resolved.logo_url ?? null,
+          instrumentType: resolved.instrument_type ?? null,
         },
       };
     }),

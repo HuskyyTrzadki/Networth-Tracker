@@ -8,6 +8,7 @@ import {
   type InstrumentSearchClientOptions,
 } from "../client/search-instruments";
 import type { InstrumentSearchResult } from "./instrument-search";
+import type { InstrumentType } from "./instrument-search";
 
 type SearchState = Readonly<{
   results: InstrumentSearchResult[];
@@ -21,6 +22,7 @@ type SearchOptions = Readonly<{
   searchClient?: InstrumentSearchClient;
   mode?: InstrumentSearchClientOptions["mode"];
   limit?: number;
+  types?: readonly InstrumentType[];
 }>;
 
 const initialState: SearchState = {
@@ -35,9 +37,12 @@ export function useInstrumentSearch(query: string, options?: SearchOptions) {
   const client = options?.searchClient ?? searchInstruments;
   const mode = options?.mode;
   const limit = options?.limit;
+  const types = options?.types;
   const [state, setState] = useState<SearchState>(initialState);
   const trimmed = query.trim();
-  const requestKey = `${trimmed}|${mode ?? ""}|${limit ?? ""}`;
+  const requestKey = `${trimmed}|${mode ?? ""}|${limit ?? ""}|${
+    types?.join(",") ?? ""
+  }`;
   const shouldSearch = trimmed.length >= minQueryLength;
 
   useEffect(() => {
@@ -47,7 +52,7 @@ export function useInstrumentSearch(query: string, options?: SearchOptions) {
 
     const controller = new AbortController();
 
-    Promise.resolve(client(trimmed, { mode, limit }, controller.signal))
+    Promise.resolve(client(trimmed, { mode, limit, types }, controller.signal))
       .then((results) => {
         if (controller.signal.aborted) return;
         setState({ results, status: "success", error: null, requestKey });
@@ -72,7 +77,7 @@ export function useInstrumentSearch(query: string, options?: SearchOptions) {
       });
 
     return () => controller.abort();
-  }, [client, limit, mode, requestKey, shouldSearch, trimmed]);
+  }, [client, limit, mode, requestKey, shouldSearch, trimmed, types]);
 
   const isMatchingRequest = state.requestKey === requestKey;
   const resolvedState: SearchState = shouldSearch

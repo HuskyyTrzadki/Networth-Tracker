@@ -16,6 +16,7 @@ import {
 } from "@/lib/format-currency";
 import { multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 import type { TransactionListItem } from "../server/list-transactions";
+import { cashflowTypeLabels, type CashflowType } from "../lib/cashflow-types";
 import { InstrumentLogoImage } from "./InstrumentLogoImage";
 import { TransactionsRowActions } from "./TransactionsRowActions";
 
@@ -23,8 +24,14 @@ type Props = Readonly<{
   items: readonly TransactionListItem[];
 }>;
 
-const getTypeLabel = (side: TransactionListItem["side"]) =>
-  side === "BUY" ? "Kupno" : "Sprzedaż";
+const getTypeLabel = (item: TransactionListItem) => {
+  if (item.cashflowType) {
+    return (
+      cashflowTypeLabels[item.cashflowType as CashflowType] ?? item.cashflowType
+    );
+  }
+  return item.side === "BUY" ? "Kupno" : "Sprzedaż";
+};
 
 const getTypeBadgeClassName = (side: TransactionListItem["side"]) =>
   side === "BUY"
@@ -54,7 +61,27 @@ const formatValueLabel = (quantity: string, price: string, currency: string) => 
   return formatCurrencyValue(value, formatter);
 };
 
+const groupTransactions = (items: readonly TransactionListItem[]) => {
+  const groups = new Map<string, TransactionListItem[]>();
+  const order: string[] = [];
+
+  items.forEach((item) => {
+    if (!groups.has(item.groupId)) {
+      groups.set(item.groupId, []);
+      order.push(item.groupId);
+    }
+    groups.get(item.groupId)?.push(item);
+  });
+
+  return order.map((groupId) => ({
+    groupId,
+    items: groups.get(groupId) ?? [],
+  }));
+};
+
 export function TransactionsTable({ items }: Props) {
+  const groups = groupTransactions(items);
+
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
       <Table>
@@ -78,66 +105,70 @@ export function TransactionsTable({ items }: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id} className="h-16">
-              <TableCell className="px-4 font-mono text-xs tabular-nums text-muted-foreground">
-                {item.tradeDate}
-              </TableCell>
-              <TableCell className="px-4">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-8 place-items-center text-base leading-none">
-                    <InstrumentLogoImage
-                      className="size-6"
-                      fallbackText={item.instrument.symbol}
-                      size={24}
-                      src={item.instrument.logoUrl}
-                    />
-                  </div>
-                  <div className="flex min-w-0 flex-col">
-                    <span className="text-sm font-semibold text-foreground">
-                      {item.instrument.symbol}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {item.instrument.name}
-                    </span>
-                  </div>
+          {groups.map((group) => (
+            <TableRow key={group.groupId}>
+              <TableCell className="p-3" colSpan={7}>
+                <div className="overflow-hidden rounded-md border border-border">
+                  {group.items.map((item, index) => (
+                    <div
+                      className={cn(
+                        "grid grid-cols-[120px_minmax(0,1fr)_120px_120px_140px_140px_60px] items-center gap-0 px-2 sm:px-4",
+                        index > 0 && "border-t border-border",
+                        "min-h-[56px]"
+                      )}
+                      key={item.id}
+                    >
+                      <div className="font-mono text-xs tabular-nums text-muted-foreground">
+                        {item.tradeDate}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="grid size-8 place-items-center text-base leading-none">
+                          <InstrumentLogoImage
+                            className="size-6"
+                            fallbackText={item.instrument.symbol}
+                            size={24}
+                            src={item.instrument.logoUrl}
+                          />
+                        </div>
+                        <div className="flex min-w-0 flex-col">
+                          <span className="text-sm font-semibold text-foreground">
+                            {item.instrument.symbol}
+                          </span>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {item.instrument.name}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <Badge
+                          className={cn(
+                            "rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                            getTypeBadgeClassName(item.side)
+                          )}
+                          variant="outline"
+                        >
+                          {getTypeLabel(item)}
+                        </Badge>
+                      </div>
+                      <div className="font-mono text-sm tabular-nums text-right">
+                        {item.quantity}
+                      </div>
+                      <div className="font-mono text-sm tabular-nums text-right">
+                        {formatPriceLabel(item.price, item.instrument.currency)}
+                      </div>
+                      <div className="font-mono text-sm font-semibold tabular-nums text-right">
+                        {formatValueLabel(
+                          item.quantity,
+                          item.price,
+                          item.instrument.currency
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <TransactionsRowActions />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </TableCell>
-              <TableCell className="px-4">
-                <Badge
-                  className={cn(
-                    "rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                    getTypeBadgeClassName(item.side)
-                  )}
-                  variant="outline"
-                >
-                  {getTypeLabel(item.side)}
-                </Badge>
-              </TableCell>
-              <TableCell
-                className="px-4 font-mono text-sm tabular-nums"
-                data-align="right"
-              >
-                {item.quantity}
-              </TableCell>
-              <TableCell
-                className="px-4 font-mono text-sm tabular-nums"
-                data-align="right"
-              >
-                {formatPriceLabel(item.price, item.instrument.currency)}
-              </TableCell>
-              <TableCell
-                className="px-4 font-mono text-sm font-semibold tabular-nums"
-                data-align="right"
-              >
-                {formatValueLabel(
-                  item.quantity,
-                  item.price,
-                  item.instrument.currency
-                )}
-              </TableCell>
-              <TableCell className="px-4" data-align="right">
-                <TransactionsRowActions />
               </TableCell>
             </TableRow>
           ))}

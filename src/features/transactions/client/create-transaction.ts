@@ -1,4 +1,5 @@
 import type { TransactionType } from "../lib/add-transaction-form-schema";
+import type { CashflowType } from "../lib/cashflow-types";
 import type { InstrumentType } from "../lib/instrument-search";
 
 export type CreateTransactionPayload = Readonly<{
@@ -7,6 +8,10 @@ export type CreateTransactionPayload = Readonly<{
   quantity: string;
   price: string;
   fee: string;
+  consumeCash?: boolean;
+  cashCurrency?: string;
+  fxFee?: string;
+  cashflowType?: CashflowType;
   notes: string;
   portfolioId: string;
   clientRequestId: string;

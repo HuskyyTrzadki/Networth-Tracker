@@ -2,6 +2,7 @@ import { isAfter, parseISO } from "date-fns";
 import { z } from "zod";
 
 import { parseDecimalInput } from "./parse-decimal";
+import { cashflowTypeUiOptions } from "./cashflow-types";
 
 export type TransactionType = "BUY" | "SELL";
 
@@ -13,6 +14,17 @@ export function createAddTransactionFormSchema() {
     portfolioId: z.string().trim().min(1, { message: "Wybierz portfel." }),
     assetId: z.string().trim().min(1, { message: "Wybierz instrument." }),
     currency: z.string().length(3, { message: "Brak waluty dla instrumentu." }),
+    consumeCash: z.boolean(),
+    cashCurrency: z.string().length(3, { message: "Brak waluty gotówki." }),
+    fxFee: z
+      .string()
+      .transform((value) => value?.trim() ?? "")
+      .refine((value) => {
+        if (!value) return true;
+        const parsed = parseDecimalInput(value);
+        return parsed !== null && parsed >= 0;
+      }, { message: "Wpisz wartość większą lub równą 0." }),
+    cashflowType: z.enum(cashflowTypeUiOptions).optional(),
     date: z.string().refine(
       (value) => {
         const parsed = parseISO(value);

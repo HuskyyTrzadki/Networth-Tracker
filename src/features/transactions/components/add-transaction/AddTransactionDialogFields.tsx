@@ -1,0 +1,397 @@
+"use client";
+
+import { useMemo } from "react";
+import { useWatch, type UseFormReturn } from "react-hook-form";
+
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/features/design-system/components/ui/form";
+import { Label } from "@/features/design-system/components/ui/label";
+import { Input } from "@/features/design-system/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/features/design-system/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
+import { cn } from "@/lib/cn";
+import {
+  addDecimals,
+  multiplyDecimals,
+  negateDecimal,
+  parseDecimalString,
+} from "@/lib/decimal";
+
+import { InstrumentCombobox } from "../InstrumentCombobox";
+import { MoneyInput } from "../MoneyInput";
+import { TransactionDatePicker } from "../TransactionDatePicker";
+import { AddTransactionCashSection } from "./AddTransactionCashSection";
+import { AddTransactionNotesSummary } from "./AddTransactionNotesSummary";
+import type { InstrumentSearchClient } from "../../client/search-instruments";
+import type { InstrumentSearchResult } from "../../lib/instrument-search";
+import {
+  SUPPORTED_CASH_CURRENCIES,
+  buildCashInstrument,
+  isSupportedCashCurrency,
+  type CashCurrency,
+} from "../../lib/system-currencies";
+import { ASSET_TABS, buildEmptyBalances, formatMoney, type AssetTab } from "./constants";
+import type { FormValues } from "../AddTransactionDialogContent";
+
+export function AddTransactionDialogFields({
+  form,
+  selectedInstrument,
+  setSelectedInstrument,
+  activeTab,
+  setActiveTab,
+  searchClient,
+  portfolios,
+  cashBalancesByPortfolio,
+  forcedPortfolioId,
+  initialCashCurrency,
+}: Readonly<{
+  form: UseFormReturn<FormValues>;
+  selectedInstrument: InstrumentSearchResult | null;
+  setSelectedInstrument: (next: InstrumentSearchResult | null) => void;
+  activeTab: AssetTab;
+  setActiveTab: (next: AssetTab) => void;
+  searchClient?: InstrumentSearchClient;
+  portfolios: readonly { id: string; name: string; baseCurrency: string }[];
+  cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  forcedPortfolioId: string | null;
+  initialCashCurrency: CashCurrency;
+}>) {
+  const currency = useWatch({ control: form.control, name: "currency" });
+  const consumeCash = useWatch({ control: form.control, name: "consumeCash" });
+  const cashCurrency = useWatch({ control: form.control, name: "cashCurrency" });
+  const portfolioId = useWatch({ control: form.control, name: "portfolioId" });
+  const type = useWatch({ control: form.control, name: "type" });
+  const quantity = useWatch({ control: form.control, name: "quantity" });
+  const price = useWatch({ control: form.control, name: "price" });
+  const fee = useWatch({ control: form.control, name: "fee" });
+
+  const isCashTab = activeTab === "CASH";
+  const resolvedPortfolioId = forcedPortfolioId ?? portfolioId;
+  const resolvedCashCurrency: CashCurrency =
+    isSupportedCashCurrency(cashCurrency)
+      ? (cashCurrency as CashCurrency)
+      : initialCashCurrency;
+  const cashBalances = cashBalancesByPortfolio[resolvedPortfolioId] ?? buildEmptyBalances();
+  const availableCash = cashBalances[resolvedCashCurrency] ?? "0";
+  const displayCurrency = selectedInstrument?.currency ?? currency ?? "";
+  const isFxMismatch =
+    consumeCash &&
+    Boolean(selectedInstrument) &&
+    resolvedCashCurrency !== (selectedInstrument?.currency ?? "");
+
+  const cashDeltaLabel = useMemo(() => {
+    if (!consumeCash || !selectedInstrument) return null;
+    if (!quantity || !price) return null;
+    const quantityDecimal = parseDecimalString(quantity);
+    const priceDecimal = parseDecimalString(price);
+    const feeDecimal = parseDecimalString(fee) ?? null;
+    if (!quantityDecimal || !priceDecimal || !feeDecimal) return null;
+
+    const gross = multiplyDecimals(quantityDecimal, priceDecimal);
+    const delta =
+      type === "BUY"
+        ? negateDecimal(addDecimals(gross, feeDecimal))
+        : addDecimals(gross, negateDecimal(feeDecimal));
+
+    if (delta.eq(0)) return null;
+
+    const sign = delta.gt(0) ? "+" : "-";
+    return `${sign}${formatMoney(delta.abs().toString(), displayCurrency)}`;
+  }, [consumeCash, displayCurrency, fee, price, quantity, selectedInstrument, type]);
+
+  const handleTabChange = (nextTab: AssetTab) => {
+    setActiveTab(nextTab);
+
+    if (nextTab === "CASH") {
+      const cashInstrument = buildCashInstrument(resolvedCashCurrency);
+      setSelectedInstrument(cashInstrument);
+      form.setValue("assetId", cashInstrument.id, { shouldValidate: true });
+      form.setValue("currency", cashInstrument.currency, { shouldValidate: true });
+      form.setValue("price", "1", { shouldValidate: true });
+      form.setValue("fee", "0", { shouldValidate: true });
+      form.setValue("consumeCash", false, { shouldValidate: true });
+      form.setValue("type", "BUY", { shouldValidate: true });
+      form.setValue("cashflowType", "DEPOSIT", { shouldValidate: true });
+      return;
+    }
+
+    setSelectedInstrument(null);
+    form.setValue("assetId", "", { shouldValidate: true });
+    form.setValue("currency", "", { shouldValidate: true });
+    form.setValue("price", "", { shouldValidate: true });
+    form.setValue("fee", "", { shouldValidate: true });
+    form.setValue("cashflowType", undefined, { shouldValidate: true });
+  };
+
+  const handleCashCurrencyChange = (nextCurrency: string) => {
+    form.setValue("cashCurrency", nextCurrency, { shouldValidate: true });
+
+    if (isCashTab && isSupportedCashCurrency(nextCurrency)) {
+      const cashInstrument = buildCashInstrument(nextCurrency);
+      setSelectedInstrument(cashInstrument);
+      form.setValue("assetId", cashInstrument.id, { shouldValidate: true });
+      form.setValue("currency", cashInstrument.currency, { shouldValidate: true });
+    }
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="space-y-6">
+        <FormField
+          control={form.control}
+          name="portfolioId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Portfel</FormLabel>
+              <Select
+                disabled={Boolean(forcedPortfolioId)}
+                onValueChange={(next) => {
+                  field.onChange(next);
+                  const nextPortfolio = portfolios.find(
+                    (portfolio) => portfolio.id === next
+                  );
+                  if (
+                    nextPortfolio &&
+                    isSupportedCashCurrency(nextPortfolio.baseCurrency)
+                  ) {
+                    form.setValue("cashCurrency", nextPortfolio.baseCurrency, {
+                      shouldValidate: true,
+                    });
+                    if (isCashTab) {
+                      handleCashCurrencyChange(nextPortfolio.baseCurrency);
+                    }
+                  }
+                }}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Wybierz portfel" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {portfolios.map((portfolio) => (
+                    <SelectItem key={portfolio.id} value={portfolio.id}>
+                      {portfolio.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{isCashTab ? "Typ przepływu" : "Typ transakcji"}</FormLabel>
+              <FormControl>
+                <Tabs
+                  onValueChange={(next) => {
+                    field.onChange(next as "BUY" | "SELL");
+                    if (isCashTab) {
+                      form.setValue(
+                        "cashflowType",
+                        next === "BUY" ? "DEPOSIT" : "WITHDRAWAL",
+                        { shouldValidate: true }
+                      );
+                    }
+                  }}
+                  value={field.value}
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger className="w-full" value="BUY">
+                      {isCashTab ? "Wpłata" : "Kupno"}
+                    </TabsTrigger>
+                    <TabsTrigger className="w-full" value="SELL">
+                      {isCashTab ? "Wypłata" : "Sprzedaż"}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div>
+          <Label className="text-sm font-medium">Kategoria instrumentu</Label>
+          <Tabs onValueChange={(next) => handleTabChange(next as AssetTab)} value={activeTab}>
+            <TabsList className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-5">
+              {ASSET_TABS.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="assetId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{isCashTab ? "Waluta" : "Instrument"}</FormLabel>
+              <FormControl>
+                {isCashTab ? (
+                  <Select
+                    onValueChange={handleCashCurrencyChange}
+                    value={resolvedCashCurrency}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Wybierz walutę" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_CASH_CURRENCIES.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {code}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <InstrumentCombobox
+                    allowedTypes={
+                      ASSET_TABS.find((tab) => tab.value === activeTab)?.types ??
+                      undefined
+                    }
+                    onChange={(instrument) => {
+                      setSelectedInstrument(instrument);
+                      field.onChange(instrument.id);
+                      form.setValue("currency", instrument.currency, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      if (!isSupportedCashCurrency(form.getValues("cashCurrency"))) {
+                        form.setValue("cashCurrency", initialCashCurrency, {
+                          shouldValidate: true,
+                        });
+                      }
+                    }}
+                    searchClient={searchClient}
+                    value={selectedInstrument}
+                  />
+                )}
+              </FormControl>
+              {isCashTab ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Dostępne: {formatMoney(availableCash, resolvedCashCurrency)}
+                </p>
+              ) : null}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className={cn("grid gap-4", isCashTab ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{isCashTab ? "Kwota" : "Ilość"}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    className="h-11 font-mono tabular-nums text-right"
+                    inputMode="decimal"
+                    placeholder="np. 1,5"
+                    type="text"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {!isCashTab ? (
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cena jednostkowa</FormLabel>
+                  <FormControl>
+                    <MoneyInput
+                      {...field}
+                      className="h-11"
+                      currency={displayCurrency}
+                      placeholder="np. 100,00"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : null}
+        </div>
+
+        <div className={cn("grid gap-4", isCashTab ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Data transakcji</FormLabel>
+                <FormControl>
+                  <TransactionDatePicker onChange={field.onChange} value={field.value} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {!isCashTab ? (
+            <FormField
+              control={form.control}
+              name="fee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prowizja / opłaty</FormLabel>
+                  <FormControl>
+                    <MoneyInput
+                      {...field}
+                      className="h-11"
+                      currency={displayCurrency}
+                      placeholder="np. 0,00"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : null}
+        </div>
+
+        <AddTransactionCashSection
+          cashCurrency={cashCurrency}
+          cashDeltaLabel={cashDeltaLabel}
+          consumeCash={consumeCash}
+          form={form}
+          handleCashCurrencyChange={handleCashCurrencyChange}
+          isCashTab={isCashTab}
+          isFxMismatch={isFxMismatch}
+          resolvedCashCurrency={resolvedCashCurrency}
+        />
+
+        <AddTransactionNotesSummary
+          displayCurrency={displayCurrency}
+          fee={fee}
+          form={form}
+          price={price}
+          quantity={quantity}
+          type={type}
+        />
+      </div>
+    </div>
+  );
+}

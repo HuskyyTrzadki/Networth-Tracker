@@ -3,10 +3,12 @@ import type {
   InstrumentSearchResponse,
   InstrumentSearchResult,
 } from "../lib/instrument-search";
+import type { InstrumentType } from "../lib/instrument-search";
 
 export type InstrumentSearchClientOptions = Readonly<{
   mode?: InstrumentSearchMode;
   limit?: number;
+  types?: readonly InstrumentType[];
 }>;
 
 export type InstrumentSearchClient = (
@@ -26,6 +28,9 @@ export const searchInstruments: InstrumentSearchClient = async (
   }
   if (typeof options?.limit === "number") {
     params.set("limit", String(options.limit));
+  }
+  if (options?.types && options.types.length > 0) {
+    params.set("types", options.types.join(","));
   }
 
   const response = await fetch(

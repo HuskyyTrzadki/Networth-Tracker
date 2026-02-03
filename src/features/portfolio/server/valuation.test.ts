@@ -113,4 +113,56 @@ describe("buildPortfolioSummary", () => {
     expect(summary.isPartial).toBe(true);
     expect(summary.missingFx).toBe(1);
   });
+
+  it("values cash holdings at 1.0 without quotes", () => {
+    const summary = buildPortfolioSummary({
+      baseCurrency: "PLN",
+      holdings: [
+        {
+          instrumentId: "cash-pln",
+          symbol: "PLN",
+          name: "Gotówka PLN",
+          currency: "PLN",
+          exchange: null,
+          provider: "system",
+          providerKey: "PLN",
+          logoUrl: null,
+          instrumentType: "CURRENCY",
+          quantity: "1000",
+        },
+      ],
+      quotesByInstrument: new Map(),
+      fxByPair: new Map(),
+    });
+
+    expect(summary.totalValueBase).toBe("1000");
+    expect(summary.missingQuotes).toBe(0);
+    expect(summary.missingFx).toBe(0);
+  });
+
+  it("marks partial when cash needs FX", () => {
+    const summary = buildPortfolioSummary({
+      baseCurrency: "PLN",
+      holdings: [
+        {
+          instrumentId: "cash-usd",
+          symbol: "USD",
+          name: "Gotówka USD",
+          currency: "USD",
+          exchange: null,
+          provider: "system",
+          providerKey: "USD",
+          logoUrl: null,
+          instrumentType: "CURRENCY",
+          quantity: "100",
+        },
+      ],
+      quotesByInstrument: new Map(),
+      fxByPair: new Map(),
+    });
+
+    expect(summary.totalValueBase).toBeNull();
+    expect(summary.missingQuotes).toBe(0);
+    expect(summary.missingFx).toBe(1);
+  });
 });

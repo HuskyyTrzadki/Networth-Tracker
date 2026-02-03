@@ -67,9 +67,14 @@ const mockSearchClient: InstrumentSearchClient = async (
 };
 
 const mockPortfolios = [
-  { id: "portfolio-main", name: "Główny" },
-  { id: "portfolio-growth", name: "Rozwój" },
+  { id: "portfolio-main", name: "Główny", baseCurrency: "PLN" },
+  { id: "portfolio-growth", name: "Rozwój", baseCurrency: "USD" },
 ] as const;
+
+const mockCashBalances = {
+  "portfolio-main": { USD: "1200", EUR: "0", PLN: "5400", GBP: "0", CHF: "0" },
+  "portfolio-growth": { USD: "820", EUR: "0", PLN: "0", GBP: "0", CHF: "0" },
+} as const;
 
 const meta: Meta<typeof AddTransactionDialog> = {
   title: "Transactions/Add Transaction Dialog",
@@ -107,6 +112,7 @@ function Demo() {
         open={open}
         searchClient={mockSearchClient}
         portfolios={mockPortfolios}
+        cashBalancesByPortfolio={mockCashBalances}
         initialPortfolioId="portfolio-main"
         forcedPortfolioId={null}
       />
@@ -148,6 +154,7 @@ function FilledDemo() {
         open={open}
         searchClient={mockSearchClient}
         portfolios={mockPortfolios}
+        cashBalancesByPortfolio={mockCashBalances}
         initialPortfolioId="portfolio-main"
         forcedPortfolioId="portfolio-main"
       />

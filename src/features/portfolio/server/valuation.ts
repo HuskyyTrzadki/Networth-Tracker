@@ -64,6 +64,108 @@ export function buildPortfolioSummary({
   const usedTimestamps: string[] = [];
 
   const valuedHoldings: ValuedHolding[] = holdings.map((holding) => {
+    if (holding.instrumentType === "CURRENCY") {
+      const quantityDecimal = parseDecimalString(holding.quantity);
+      if (!quantityDecimal) {
+        missingQuotes += 1;
+        return {
+          instrumentId: holding.instrumentId,
+          symbol: holding.symbol,
+          name: holding.name,
+          exchange: holding.exchange,
+          currency: holding.currency,
+          logoUrl: holding.logoUrl,
+          instrumentType: holding.instrumentType,
+          quantity: holding.quantity,
+          price: null,
+          valueBase: null,
+          weight: null,
+          missingReason: "MISSING_QUOTE",
+        };
+      }
+
+      if (holding.currency === baseCurrency) {
+        const valueBase = quantityDecimal;
+        totalValue = addDecimals(totalValue, valueBase);
+        hasValued = true;
+
+        return {
+          instrumentId: holding.instrumentId,
+          symbol: holding.symbol,
+          name: holding.name,
+          exchange: holding.exchange,
+          currency: holding.currency,
+          logoUrl: holding.logoUrl,
+          instrumentType: holding.instrumentType,
+          quantity: holding.quantity,
+          price: "1",
+          valueBase: valueBase.toString(),
+          weight: null,
+          missingReason: null,
+        };
+      }
+
+      const fxKey = `${holding.currency}:${baseCurrency}`;
+      const fx = fxByPair.get(fxKey) ?? null;
+
+      if (!fx) {
+        missingFx += 1;
+        return {
+          instrumentId: holding.instrumentId,
+          symbol: holding.symbol,
+          name: holding.name,
+          exchange: holding.exchange,
+          currency: holding.currency,
+          logoUrl: holding.logoUrl,
+          instrumentType: holding.instrumentType,
+          quantity: holding.quantity,
+          price: "1",
+          valueBase: null,
+          weight: null,
+          missingReason: "MISSING_FX",
+        };
+      }
+
+      const fxDecimal = parseDecimalString(fx.rate);
+      if (!fxDecimal) {
+        missingFx += 1;
+        return {
+          instrumentId: holding.instrumentId,
+          symbol: holding.symbol,
+          name: holding.name,
+          exchange: holding.exchange,
+          currency: holding.currency,
+          logoUrl: holding.logoUrl,
+          instrumentType: holding.instrumentType,
+          quantity: holding.quantity,
+          price: "1",
+          valueBase: null,
+          weight: null,
+          missingReason: "MISSING_FX",
+        };
+      }
+
+      const valueBase = multiplyDecimals(quantityDecimal, fxDecimal);
+      totalValue = addDecimals(totalValue, valueBase);
+      hasValued = true;
+      usedTimestamps.push(fx.asOf);
+
+      return {
+        instrumentId: holding.instrumentId,
+        symbol: holding.symbol,
+        name: holding.name,
+        exchange: holding.exchange,
+        currency: holding.currency,
+        logoUrl: holding.logoUrl,
+        instrumentType: holding.instrumentType,
+        quantity: holding.quantity,
+        price: "1",
+        valueBase: valueBase.toString(),
+        weight: null,
+        missingReason: null,
+      };
+    }
+
     const quote = quotesByInstrument.get(holding.instrumentId) ?? null;
 
     if (!quote) {

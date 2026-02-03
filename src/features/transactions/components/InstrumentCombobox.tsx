@@ -1,7 +1,7 @@
 "use client";
 
 import debounce from "lodash.debounce";
-import { Bitcoin, CandlestickChart, Check, ChevronsUpDown, Layers2 } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/features/design-system/components/ui/badge";
@@ -30,6 +30,7 @@ type Props = Readonly<{
   value: InstrumentSearchResult | null;
   onChange: (next: InstrumentSearchResult) => void;
   searchClient?: InstrumentSearchClient;
+  allowedTypes?: readonly InstrumentType[];
 }>;
 
 const MIN_QUERY_LENGTH = 2;
@@ -37,38 +38,16 @@ const DEBOUNCE_MS = 280;
 const LOCAL_LIMIT = 3;
 const ALL_RESULTS_LIMIT = 50;
 
-type TypeIcon = typeof CandlestickChart;
-
-const instrumentTypeMeta: Record<InstrumentType, { label: string; icon: TypeIcon }> = {
-  EQUITY: { label: "Akcje", icon: CandlestickChart },
-  ETF: { label: "ETF", icon: Layers2 },
-  CRYPTOCURRENCY: { label: "Krypto", icon: Bitcoin },
-  MUTUALFUND: { label: "Fundusze", icon: Layers2 },
-  CURRENCY: { label: "Waluty", icon: CandlestickChart },
-  INDEX: { label: "Indeksy", icon: CandlestickChart },
-  OPTION: { label: "Opcje", icon: CandlestickChart },
-  FUTURE: { label: "Futures", icon: CandlestickChart },
-  MONEYMARKET: { label: "Money Market", icon: CandlestickChart },
-  ECNQUOTE: { label: "ECN", icon: CandlestickChart },
-  ALTSYMBOL: { label: "Alt", icon: CandlestickChart },
-};
-
-const filterableTypes = ["EQUITY", "ETF", "CRYPTOCURRENCY"] as const;
-type FilterableType = (typeof filterableTypes)[number];
-
-const typeFilters: Array<{ value: "all" | FilterableType; label: string }> = [
-  { value: "all", label: "Wszystko" },
-  { value: "EQUITY", label: instrumentTypeMeta.EQUITY.label },
-  { value: "ETF", label: instrumentTypeMeta.ETF.label },
-  { value: "CRYPTOCURRENCY", label: instrumentTypeMeta.CRYPTOCURRENCY.label },
-];
-
-export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
+export function InstrumentCombobox({
+  value,
+  onChange,
+  searchClient,
+  allowedTypes,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
-  const [activeType, setActiveType] = useState<"all" | FilterableType>("all");
 
   const debouncedCommit = useMemo(
     () => debounce((nextValue: string) => setDebouncedQuery(nextValue), DEBOUNCE_MS),
@@ -82,28 +61,11 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
     searchClient,
     mode: showAll ? "all" : "auto",
     limit: showAll ? ALL_RESULTS_LIMIT : LOCAL_LIMIT,
+    types: allowedTypes,
   });
 
   const trimmedQuery = query.trim();
   const hasMinQuery = trimmedQuery.length >= MIN_QUERY_LENGTH;
-
-  const typeCounts = results.reduce<Record<FilterableType, number>>(
-    (acc, option) => {
-      const type = option.instrumentType ?? "EQUITY";
-      if (filterableTypes.includes(type as FilterableType)) {
-        acc[type as FilterableType] += 1;
-      }
-      return acc;
-    },
-    { EQUITY: 0, ETF: 0, CRYPTOCURRENCY: 0 }
-  );
-
-  const filteredResults =
-    activeType === "all"
-      ? results
-      : results.filter(
-          (option) => (option.instrumentType ?? "EQUITY") === activeType
-        );
 
   const emptyMessage =
     !hasMinQuery
@@ -112,9 +74,7 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
         ? "Szukam instrumentów…"
         : error
           ? "Nie udało się pobrać wyników."
-          : results.length > 0 && filteredResults.length === 0
-            ? "Brak wyników dla wybranego filtra."
-            : "Brak wyników.";
+          : "Brak wyników.";
 
   const showMoreAction =
     !showAll &&
@@ -133,7 +93,6 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
           setDebouncedQuery("");
           debouncedCommit.cancel();
           setShowAll(false);
-          setActiveType("all");
         }
       }}
     >
@@ -192,37 +151,10 @@ export function InstrumentCombobox({ value, onChange, searchClient }: Props) {
               debouncedCommit(nextValue);
             }}
           />
-          {hasMinQuery ? (
-            <div className="flex flex-wrap gap-2 border-b border-border px-3 py-2">
-              {typeFilters.map((filter) => {
-                const isActive = activeType === filter.value;
-                const count =
-                  filter.value === "all"
-                    ? results.length
-                    : typeCounts[filter.value];
-                const isDisabled = filter.value !== "all" && count === 0;
-                return (
-                  <Button
-                    className="h-7 gap-1.5 px-2.5 text-[11px]"
-                    disabled={isDisabled}
-                    key={filter.value}
-                    onClick={() => setActiveType(filter.value)}
-                    size="sm"
-                    variant={isActive ? "secondary" : "outline"}
-                  >
-                    {filter.label}
-                    <span className="text-[10px] text-muted-foreground">
-                      {count}
-                    </span>
-                  </Button>
-                );
-              })}
-            </div>
-          ) : null}
           <CommandList>
             {!isLoading ? <CommandEmpty>{emptyMessage}</CommandEmpty> : null}
             <CommandGroup>
-              {filteredResults.map((option) => {
+              {results.map((option) => {
                 return (
                   <CommandItem
                     key={option.id}

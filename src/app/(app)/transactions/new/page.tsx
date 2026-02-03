@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { AddTransactionDialogStandaloneRoute } from "@/features/transactions";
 import { resolvePortfolioSelection } from "@/features/transactions/server/resolve-portfolio-selection";
+import { getCashBalancesByPortfolio } from "@/features/transactions/server/get-cash-balances";
 import { createClient } from "@/lib/supabase/server";
 
 type Props = Readonly<{
@@ -34,6 +35,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
   const portfolioOptions = portfolios.map((portfolio) => ({
     id: portfolio.id,
     name: portfolio.name,
+    baseCurrency: portfolio.baseCurrency,
   }));
 
   if (portfolioOptions.length === 0) {
@@ -52,9 +54,15 @@ export default async function TransactionNewPage({ searchParams }: Props) {
     portfolios: portfolioOptions,
   });
 
+  const cashBalancesByPortfolio = await getCashBalancesByPortfolio(
+    supabase,
+    portfolioOptions.map((portfolio) => portfolio.id)
+  );
+
   return (
     <AddTransactionDialogStandaloneRoute
       portfolios={portfolioOptions}
+      cashBalancesByPortfolio={cashBalancesByPortfolio}
       initialPortfolioId={selection.initialPortfolioId}
       forcedPortfolioId={selection.forcedPortfolioId}
     />

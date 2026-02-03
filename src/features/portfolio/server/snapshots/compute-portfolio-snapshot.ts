@@ -146,11 +146,13 @@ export async function computePortfolioSnapshot(
   const holdings = buildHoldings(holdingRows);
   const hasHoldings = holdings.length > 0;
 
-  const quoteRequests: InstrumentQuoteRequest[] = holdings.map((holding) => ({
-    instrumentId: holding.instrumentId,
-    provider: "yahoo",
-    providerKey: holding.providerKey,
-  }));
+  const quoteRequests: InstrumentQuoteRequest[] = holdings
+    .filter((holding) => holding.instrumentType !== "CURRENCY")
+    .map((holding) => ({
+      instrumentId: holding.instrumentId,
+      provider: "yahoo",
+      providerKey: holding.providerKey,
+    }));
 
   const quotesByInstrument = await getInstrumentQuotesCached(
     supabase,

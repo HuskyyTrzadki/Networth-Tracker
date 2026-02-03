@@ -1,4 +1,5 @@
 # Repository Guidelines
+its not MVP, do it clean do it good. 
 I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your best 102020% otherwise i ll be angry.
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
 We build both for desktop and mobile. styles need to use our patterns and typography and color palette, u are encouraged to use shadcn components we already have in storybook, when u add new component u think its worth to add to storybook , go for it.
@@ -12,13 +13,13 @@ We build both for desktop and mobile. styles need to use our patterns and typogr
 - 
 ## Project context
 We are building a **server-first Portfolio Tracker** (Next.js App Router).
-MVP scope:
+scope:
 - Search instrument by name/ticker
 - Add to portfolio (holdings/transactions)
 - Show portfolio valuation using **delayed quotes**
 - Multi-currency valuation (at least PLN + USD)
 
-Non-goals (MVP):
+Non-goals ():
 - Screener / discovery filters
 - Fundamentals / DCF / “Qualtrim-level” analytics
 
@@ -86,6 +87,7 @@ Whenever you ship a new feature or change architecture:
 - Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with live instrument search + portfolio select (forced when URL has `?portfolio=...`)
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
+- Cash instruments (system provider) + transaction leg grouping (`group_id`, `leg_role`) with cash settlement + FX at write-time
 - Portfolios table + `transactions.portfolio_id` (default portfolio created during auth)
 - Portfolio selection (switcher) + creation dialog (sidebar + mobile header), with "Wszystkie portfele" view
 - Profiles table + RLS applied
@@ -144,7 +146,7 @@ supabase project is Project (id ayeeksbqwyqkevbpdlef,, region eu-west-1)
 - Portfolio: `src/features/portfolio/AGENTS.md`
 - Transactions: `src/features/transactions/AGENTS.md`
 
-## Transactions MVP decisions (keep aligned)
+## Transactions  decisions (keep aligned)
 - Instruments cache is global (no `user_id`).
 - Instrument uniqueness: `provider` + `provider_key` (required).
 - Idempotency: `client_request_id` with unique `(user_id, client_request_id)` and conflict-safe insert.

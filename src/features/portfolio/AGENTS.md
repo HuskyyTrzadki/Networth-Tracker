@@ -33,6 +33,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI plus server helpers; valuation calculations live in `server/valuation.ts`.
 - Snapshoty dzienne (PLN/USD/EUR) są liczone backendowo i czytane tylko do wykresu.
 - Holdings data from `get_portfolio_holdings` includes `instrument_type` for concentration warnings.
+- Holdings with `instrument_type = CURRENCY` are valued at price 1.0 (no quotes); FX is only needed when base currency differs.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
 
 ## Tests

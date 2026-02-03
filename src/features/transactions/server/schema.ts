@@ -2,6 +2,7 @@ import { isAfter, parseISO } from "date-fns";
 import { z } from "zod";
 
 import { transactionTypes } from "../lib/add-transaction-form-schema";
+import { cashflowTypes } from "../lib/cashflow-types";
 import { instrumentTypes } from "../lib/instrument-search";
 import { parseDecimalInput } from "../lib/parse-decimal";
 
@@ -58,24 +59,62 @@ const instrumentSchema = z
   });
 
 // Server-side request schema for creating a transaction.
-export const createTransactionRequestSchema = z.object({
-  type: z.enum(transactionTypes),
-  date: z.string().refine(
-    (value) => {
-      const parsed = parseISO(value);
-      return !Number.isNaN(parsed.getTime()) && !isAfter(parsed, new Date());
-    },
-    { message: "Nieprawidłowa data." }
-  ),
-  quantity: positiveDecimalString,
-  price: nonNegativeDecimalString,
-  fee: optionalNonNegativeDecimalString,
-  notes: z.string().trim().max(500).optional(),
-  // Required: every transaction must belong to a portfolio.
-  portfolioId: z.string().uuid(),
-  clientRequestId: z.string().uuid(),
-  instrument: instrumentSchema,
-});
+export const createTransactionRequestSchema = z
+  .object({
+    type: z.enum(transactionTypes),
+    date: z.string().refine(
+      (value) => {
+        const parsed = parseISO(value);
+        return !Number.isNaN(parsed.getTime()) && !isAfter(parsed, new Date());
+      },
+      { message: "Nieprawidłowa data." }
+    ),
+    quantity: positiveDecimalString,
+    price: nonNegativeDecimalString,
+    fee: optionalNonNegativeDecimalString,
+    notes: z.string().trim().max(500).optional(),
+    consumeCash: z.boolean().optional().default(false),
+    cashCurrency: z.string().trim().length(3).optional(),
+    fxFee: optionalNonNegativeDecimalString.optional(),
+    cashflowType: z.enum(cashflowTypes).optional(),
+    // Required: every transaction must belong to a portfolio.
+    portfolioId: z.string().uuid(),
+    clientRequestId: z.string().uuid(),
+    instrument: instrumentSchema,
+  })
+  .superRefine((value, ctx) => {
+    if (value.consumeCash && !value.cashCurrency?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Wybierz walutę gotówki.",
+        path: ["cashCurrency"],
+      });
+    }
+
+    if (value.instrument.instrumentType === "CURRENCY") {
+      if (value.consumeCash) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Gotówka nie może być rozliczana przez gotówkę.",
+          path: ["consumeCash"],
+        });
+      }
+
+      if (!value.cashflowType) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Wybierz typ przepływu gotówki.",
+          path: ["cashflowType"],
+        });
+      }
+    } else if (value.cashflowType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Typ przepływu gotówki dotyczy tylko walut.",
+        path: ["cashflowType"],
+      });
+    }
+  });
 
 export type CreateTransactionRequest = z.infer<
   typeof createTransactionRequestSchema

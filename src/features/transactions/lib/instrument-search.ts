@@ -1,6 +1,6 @@
 import { instrumentTypes, type InstrumentType } from "@/features/market-data/lib/instrument-types";
 
-export type InstrumentProvider = "yahoo";
+export type InstrumentProvider = "yahoo" | "system";
 
 export { instrumentTypes, type InstrumentType };
 

@@ -16,6 +16,7 @@ type SearchParams = Readonly<{
   limit: number;
   timeoutMs: number;
   mode: InstrumentSearchMode;
+  types: InstrumentType[];
 }>;
 
 type YahooSearchQuote = Readonly<{
@@ -43,7 +44,7 @@ type YahooQuote = Readonly<{
   coinImageUrl?: string;
 }>;
 
-const provider: InstrumentProvider = "yahoo";
+const yahooProvider: InstrumentProvider = "yahoo";
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
@@ -66,6 +67,15 @@ const ALLOWED_QUOTE_TYPES = new Set<InstrumentType>([
 const isAllowedInstrumentType = (value?: string | null): value is InstrumentType =>
   Boolean(value && ALLOWED_QUOTE_TYPES.has(value as InstrumentType));
 
+const isAllowedByFilter = (
+  value: InstrumentType | null | undefined,
+  allowed?: readonly InstrumentType[] | null
+) => {
+  if (!allowed || allowed.length === 0) return true;
+  if (!value) return false;
+  return allowed.includes(value);
+};
+
 // Timeout guard: if Yahoo is slow, we return whatever we already have.
 const withTimeout = async <T>(
   promise: Promise<T>,
@@ -84,8 +94,10 @@ const withTimeout = async <T>(
       });
   });
 
-const buildInstrumentId = (input: Readonly<{ providerKey: string }>) =>
-  `${provider}:${input.providerKey}`;
+const buildInstrumentId = (input: Readonly<{
+  provider: InstrumentProvider;
+  providerKey: string;
+}>) => `${input.provider}:${input.providerKey}`;
 
 export const getDisplayTicker = (
   symbol: string,
@@ -151,9 +163,10 @@ const normalizeLocalInstrument = (
   }>
 ): InstrumentSearchResult => {
   const providerKey = row.provider_key ?? row.symbol;
+  const provider = row.provider as InstrumentProvider;
 
   return {
-    id: buildInstrumentId({ providerKey }),
+    id: buildInstrumentId({ provider, providerKey }),
     provider,
     providerKey,
     symbol: row.symbol,
@@ -188,8 +201,8 @@ const normalizeYahooInstrument = (
   });
 
   return {
-    id: buildInstrumentId({ providerKey: symbol }),
-    provider,
+    id: buildInstrumentId({ provider: yahooProvider, providerKey: symbol }),
+    provider: yahooProvider,
     providerKey: symbol,
     symbol,
     ticker: getDisplayTicker(symbol, quote.quoteType),
@@ -244,7 +257,8 @@ const mergeInstrumentResults = (
 const searchLocalInstruments = async (
   supabase: SupabaseServerClient,
   query: string,
-  limit: number
+  limit: number,
+  types?: readonly InstrumentType[] | null
 ): Promise<InstrumentSearchResult[]> => {
   // Local search keeps UX fast and uses the global instrument cache.
   const pattern = `%${query}%`;
@@ -261,7 +275,10 @@ const searchLocalInstruments = async (
     return [];
   }
 
-  return data.map(normalizeLocalInstrument);
+  const normalized = data.map(normalizeLocalInstrument);
+  return normalized.filter((item) =>
+    isAllowedByFilter(item.instrumentType ?? null, types)
+  );
 };
 
 const fetchYahooQuotes = async (
@@ -307,7 +324,8 @@ const fetchYahooQuotes = async (
 const searchYahooInstruments = async (
   query: string,
   limit: number,
-  timeoutMs: number
+  timeoutMs: number,
+  types?: readonly InstrumentType[] | null
 ): Promise<InstrumentSearchResult[]> => {
   // Yahoo Finance search docs:
   // https://jsr.io/@gadicc/yahoo-finance2/doc/modules/search/~/search
@@ -330,6 +348,9 @@ const searchYahooInstruments = async (
   const normalizedQuery = query.trim().toUpperCase();
   const rankedQuotes = quotes
     .filter((quote) => isAllowedInstrumentType(quote.quoteType))
+    .filter((quote) =>
+      isAllowedByFilter(quote.quoteType as InstrumentType, types)
+    )
     .sort((a, b) => {
       const aScore = rankQuote(a, normalizedQuery);
       const bScore = rankQuote(b, normalizedQuery);
@@ -361,11 +382,13 @@ export async function searchInstruments(
   const limit = clampLimit(params.limit ?? DEFAULT_LIMIT);
   const timeoutMs = params.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const mode = params.mode ?? "auto";
+  const types = params.types ?? null;
 
   const localResults = await searchLocalInstruments(
     supabase,
     query,
-    limit
+    limit,
+    types
   );
 
   if (mode === "local") {
@@ -387,7 +410,12 @@ export async function searchInstruments(
 
   let yahooResults: InstrumentSearchResult[] = [];
   try {
-    yahooResults = await searchYahooInstruments(query, limit, effectiveTimeoutMs);
+    yahooResults = await searchYahooInstruments(
+      query,
+      limit,
+      effectiveTimeoutMs,
+      types
+    );
   } catch {
     // Yahoo errors should not block returning local matches.
     yahooResults = [];

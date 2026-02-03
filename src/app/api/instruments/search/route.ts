@@ -3,7 +3,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import type { InstrumentSearchMode } from "@/features/transactions/lib/instrument-search";
+import type {
+  InstrumentSearchMode,
+  InstrumentType,
+} from "@/features/transactions/lib/instrument-search";
+import { instrumentTypes } from "@/features/transactions/lib/instrument-search";
 import { searchInstruments, MIN_QUERY_LENGTH } from "@/features/transactions/server/search-instruments";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,6 +23,18 @@ const parseLimit = (raw: string | null, fallback: number) => {
   const parsed = Number.parseInt(raw, 10);
   if (Number.isNaN(parsed)) return fallback;
   return Math.max(1, Math.min(parsed, MAX_LIMIT));
+};
+
+const parseTypes = (raw: string | null): InstrumentType[] | null => {
+  if (!raw) return null;
+  const allowed = new Set(instrumentTypes);
+  const requested = raw
+    .split(",")
+    .map((value) => value.trim().toUpperCase())
+    .filter((value): value is InstrumentType =>
+      allowed.has(value as InstrumentType)
+    );
+  return requested.length > 0 ? requested : null;
 };
 
 export async function GET(request: Request) {
@@ -47,6 +63,7 @@ export async function GET(request: Request) {
         : DEFAULT_AUTO_LIMIT
   );
   const timeoutMs = mode === "all" ? ALL_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+  const types = parseTypes(url.searchParams.get("types"));
 
   if (query.length < MIN_QUERY_LENGTH) {
     return NextResponse.json({ query, results: [] }, { status: 200 });
@@ -58,6 +75,7 @@ export async function GET(request: Request) {
       mode,
       limit,
       timeoutMs,
+      types: types ?? undefined,
     });
     return NextResponse.json(results, { status: 200 });
   } catch (error) {
