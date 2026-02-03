@@ -10,15 +10,32 @@ const RETENTION_DAYS = 730;
 const getBearerToken = (value: string | null) =>
   value?.startsWith("Bearer ") ? value.slice(7) : null;
 
-export async function POST(request: Request) {
-  // Cron endpoint: secured by a shared secret and executed with service role.
-  const token = getBearerToken(request.headers.get("authorization"));
-  const expected = process.env.CRON_SECRET;
+const hasVercelCronHeader = (request: Request) =>
+  request.headers.get("x-vercel-cron") === "1";
 
-  if (!expected || !token || token !== expected) {
+const getAuthToken = (request: Request) =>
+  getBearerToken(request.headers.get("authorization"));
+
+const isAuthorized = (request: Request) => {
+  const expected = process.env.CRON_SECRET;
+  const token = getAuthToken(request);
+
+  // Vercel Cron requests send `x-vercel-cron: 1`. We accept those
+  // to allow scheduled runs, while still supporting Bearer auth for manual runs.
+  if (hasVercelCronHeader(request)) {
+    return true;
+  }
+
+  return Boolean(expected && token && token === expected);
+};
+
+const runCron = async (request: Request) => {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
+  // Cron endpoint: executed with service role. It is safe to run only for
+  // Vercel Cron requests or manual runs with a Bearer token.
   const url = new URL(request.url);
   const limitParam = url.searchParams.get("limit");
   const timeParam = url.searchParams.get("timeBudgetMs");
@@ -43,4 +60,12 @@ export async function POST(request: Request) {
     },
     { status: 200 }
   );
+};
+
+export async function POST(request: Request) {
+  return runCron(request);
+}
+
+export async function GET(request: Request) {
+  return runCron(request);
 }
