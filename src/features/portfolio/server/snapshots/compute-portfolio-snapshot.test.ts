@@ -24,7 +24,9 @@ describe("computePortfolioSnapshot helpers", () => {
       "PORTFOLIO",
       "portfolio-1",
       "2026-02-01",
-      totals
+      totals,
+      { PLN: "0", USD: "0", EUR: "0" },
+      { PLN: "0", USD: "0", EUR: "0" }
     );
 
     expect(row.total_value_pln).toBe("100");
@@ -45,32 +47,7 @@ describe("computePortfolioSnapshot helpers", () => {
   });
 
   it("builds FX pairs for holdings vs. 3 currencies", () => {
-    const pairs = __test__.buildFxPairs([
-      {
-        instrumentId: "inst-1",
-        symbol: "AAA",
-        name: "AAA",
-        currency: "USD",
-        exchange: "NYSE",
-        provider: "yahoo",
-        providerKey: "AAA",
-        logoUrl: null,
-        instrumentType: null,
-        quantity: "1",
-      },
-      {
-        instrumentId: "inst-2",
-        symbol: "BBB",
-        name: "BBB",
-        currency: "PLN",
-        exchange: "GPW",
-        provider: "yahoo",
-        providerKey: "BBB",
-        logoUrl: null,
-        instrumentType: null,
-        quantity: "2",
-      },
-    ]);
+    const pairs = __test__.buildFxPairs(["USD", "PLN"]);
 
     expect(pairs).toEqual(
       expect.arrayContaining([

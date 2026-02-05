@@ -97,12 +97,15 @@ Whenever you ship a new feature or change architecture:
 - Vitest + RTL test harness (`vitest.config.ts`, `src/test/setup.ts`) + first unit tests
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
+- Email/password sign-in + sign-up (API routes + settings UI forms)
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
 - Transactions page.
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
 - Cache-first quotes + FX with TTL (global cache, direct FX only + inversion)
 - Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu)
+- Performance (TWR) na dashboardzie: toggle wartość/performance, daily badge’y, zakresy czasu (bez 1D w performance)
+- Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)
 
 ### Will be built next
 - Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup

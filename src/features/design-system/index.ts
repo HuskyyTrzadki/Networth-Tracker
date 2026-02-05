@@ -2,6 +2,7 @@ export { ChangePill } from "./components/ChangePill";
 export { AllocationDonutChart } from "./components/AllocationDonutChart";
 export { ChartCard } from "./components/ChartCard";
 export { DesignSurface } from "./components/DesignSurface";
+export { DailyReturnsBarChart } from "./components/DailyReturnsBarChart";
 export { HoldingsTable } from "./components/HoldingsTable";
 export { MetricCard } from "./components/MetricCard";
 export { PnlBarChart } from "./components/PnlBarChart";

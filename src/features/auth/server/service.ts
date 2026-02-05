@@ -79,6 +79,67 @@ export async function upgradeToEmailPassword(
   return { userId: user.id } as const;
 }
 
+export async function signInWithEmailPassword(
+  cookieStore: CookieStore,
+  input: Readonly<{ email: string; password: string }>
+) {
+  // Sign in with email/password and keep profile + portfolio in sync.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.signInWithPassword(input);
+
+  if (error) throw new Error(error.message);
+  const user = data?.user;
+  if (!user) throw new Error("Missing user after password sign-in.");
+
+  await ensureProfileExists(supabase, user.id);
+  await ensureDefaultPortfolioExists(supabase, user.id);
+  if (!user.is_anonymous) {
+    await markProfileUpgradedIfNeeded(supabase, user.id);
+  }
+
+  return {
+    userId: user.id,
+    isAnonymous: Boolean(user.is_anonymous),
+  } as const;
+}
+
+export async function signUpWithEmailPassword(
+  cookieStore: CookieStore,
+  input: Readonly<{
+    email: string;
+    password: string;
+    emailRedirectTo?: string;
+  }>
+) {
+  // Sign up with email/password; session may be absent if email confirmation is on.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.signUp({
+    email: input.email,
+    password: input.password,
+    options: input.emailRedirectTo
+      ? { emailRedirectTo: input.emailRedirectTo }
+      : undefined,
+  });
+
+  if (error) throw new Error(error.message);
+  const user = data?.user;
+  if (!user) throw new Error("Missing user after password sign-up.");
+
+  const hasSession = Boolean(data?.session);
+  if (hasSession) {
+    await ensureProfileExists(supabase, user.id);
+    await ensureDefaultPortfolioExists(supabase, user.id);
+    if (!user.is_anonymous) {
+      await markProfileUpgradedIfNeeded(supabase, user.id);
+    }
+  }
+
+  return {
+    userId: user.id,
+    hasSession,
+  } as const;
+}
+
 export async function getAuthUser(cookieStore: CookieStore) {
   // Lightweight helper to read the current user (if any).
   const supabase: SupabaseServerClient = createClient(cookieStore);

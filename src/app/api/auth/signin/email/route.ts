@@ -2,10 +2,10 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { parseEmailPasswordPayload } from "@/features/auth/server/credentials";
-import { upgradeToEmailPassword } from "@/features/auth/server/service";
+import { signInWithEmailPassword } from "@/features/auth/server/service";
 
 export async function POST(request: Request) {
-  // Upgrades the current session by attaching email/password credentials.
+  // Signs in with email/password and sets auth cookies on success.
   let body: unknown;
   try {
     body = await request.json();
@@ -25,14 +25,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await upgradeToEmailPassword(await cookies(), parsed.data);
-    return NextResponse.json(
-      {
-        ...result,
-        nextStep: "email_confirmation_may_be_required",
-      },
-      { status: 200 }
-    );
+    const result = await signInWithEmailPassword(await cookies(), parsed.data);
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ message }, { status: 400 });

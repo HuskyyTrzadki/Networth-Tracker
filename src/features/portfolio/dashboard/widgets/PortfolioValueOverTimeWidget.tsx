@@ -1,32 +1,30 @@
 import { ChartCard } from "@/features/design-system";
 import type { SnapshotScope } from "../../server/snapshots/types";
-import type { SnapshotSeries } from "../../server/snapshots/types";
 import type { LiveTotalsResult } from "../../server/get-portfolio-live-totals";
+import type { SnapshotChartRow } from "../../server/snapshots/types";
 import { PortfolioValueOverTimeChart } from "./PortfolioValueOverTimeChart";
 
 type Props = Readonly<{
   selectedPortfolioId: string | null;
   hasHoldings: boolean;
   hasSnapshots: boolean;
-  seriesByCurrency: Readonly<Record<"PLN" | "USD" | "EUR", SnapshotSeries>>;
+  rows: readonly SnapshotChartRow[];
   liveTotals: LiveTotalsResult;
-  days: number;
 }>;
 
 export async function PortfolioValueOverTimeWidget({
   selectedPortfolioId,
   hasHoldings,
   hasSnapshots,
-  seriesByCurrency,
+  rows,
   liveTotals,
-  days,
 }: Props) {
   const scope: SnapshotScope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
 
   return (
     <ChartCard
-      title="Wartość portfela"
-      subtitle={`Ostatnie ${days} dni`}
+      title="Wartość i performance"
+      subtitle="Na podstawie dziennych snapshotów"
       className="min-h-[320px]"
     >
       <PortfolioValueOverTimeChart
@@ -34,7 +32,7 @@ export async function PortfolioValueOverTimeWidget({
         portfolioId={selectedPortfolioId}
         hasHoldings={hasHoldings}
         hasSnapshots={hasSnapshots}
-        seriesByCurrency={seriesByCurrency}
+        rows={rows}
         todayBucketDate={liveTotals.todayBucketDate}
         liveTotalsByCurrency={liveTotals.totalsByCurrency}
       />

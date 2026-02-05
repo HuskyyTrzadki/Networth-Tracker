@@ -1,8 +1,8 @@
 import { cn } from "@/lib/cn";
 
-import type { SnapshotSeries } from "../server/snapshots/types";
 import type { PortfolioSummary } from "../server/valuation";
 import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";
+import type { SnapshotChartRow } from "../server/snapshots/types";
 import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
 import { AllocationWidget } from "./widgets/AllocationWidget";
 import { HoldingsWidget } from "./widgets/HoldingsWidget";
@@ -16,9 +16,9 @@ type Props = Readonly<{
   }[];
   selectedPortfolioId: string | null;
   summary: PortfolioSummary;
-  snapshotSeries: Readonly<{
+  snapshotRows: Readonly<{
     hasSnapshots: boolean;
-    seriesByCurrency: Readonly<Record<"PLN" | "USD" | "EUR", SnapshotSeries>>;
+    rows: readonly SnapshotChartRow[];
   }>;
   liveTotals: LiveTotalsResult;
   className?: string;
@@ -28,7 +28,7 @@ export function PortfolioDashboard({
   portfolios,
   selectedPortfolioId,
   summary,
-  snapshotSeries,
+  snapshotRows,
   liveTotals,
   className,
 }: Props) {
@@ -43,10 +43,9 @@ export function PortfolioDashboard({
       <PortfolioValueOverTimeWidget
         selectedPortfolioId={selectedPortfolioId}
         hasHoldings={summary.holdings.length > 0}
-        hasSnapshots={snapshotSeries.hasSnapshots}
-        seriesByCurrency={snapshotSeries.seriesByCurrency}
+        hasSnapshots={snapshotRows.hasSnapshots}
+        rows={snapshotRows.rows}
         liveTotals={liveTotals}
-        days={30}
       />
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
         <AllocationWidget summary={summary} />

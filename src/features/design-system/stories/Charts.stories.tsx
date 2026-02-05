@@ -5,6 +5,7 @@ import { AllocationDonutChart } from "../components/AllocationDonutChart";
 import type { DonutSlice } from "../components/AllocationDonutChart";
 import { ChartCard } from "../components/ChartCard";
 import { DesignSurface } from "../components/DesignSurface";
+import { DailyReturnsBarChart } from "../components/DailyReturnsBarChart";
 import { PnlBarChart } from "../components/PnlBarChart";
 import { PortfolioAreaChart } from "../components/PortfolioAreaChart";
 import { mockHoldingsUsd } from "../fixtures/mockPortfolio";
@@ -38,6 +39,16 @@ function ChartsStory() {
     tooltipLabel: row.symbol,
     tooltipValue: formatMoney(locale, { amount: row.value, currency: "USD" }),
   }));
+
+  const dailyReturns7d = [
+    { label: "30 sty", value: 0 },
+    { label: "31 sty", value: 0 },
+    { label: "01 lut", value: 0 },
+    { label: "02 lut", value: -0.0133 },
+    { label: "03 lut", value: 0.0304 },
+    { label: "04 lut", value: 0.0111 },
+    { label: "05 lut", value: 0.0327 },
+  ] as const;
 
   return (
     <DesignSurface className="p-6">
@@ -130,6 +141,13 @@ function ChartsStory() {
           }
         >
           <PnlBarChart data={mockPnl14d} />
+        </ChartCard>
+
+        <ChartCard
+          title="Zwroty dzienne (7D)"
+          subtitle="Mini słupki z zerem jako linią odniesienia."
+        >
+          <DailyReturnsBarChart data={dailyReturns7d} height={140} />
         </ChartCard>
       </Container>
     </DesignSurface>
