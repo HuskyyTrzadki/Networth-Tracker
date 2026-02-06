@@ -51,8 +51,7 @@ export default async function PortfolioDashboardSection({
   const snapshotRows = await getPortfolioSnapshotRows(
     supabase,
     selectedPortfolioId ? "PORTFOLIO" : "ALL",
-    selectedPortfolioId,
-    730
+    selectedPortfolioId
   );
   const liveTotals = await getPortfolioLiveTotals(supabase, {
     portfolioId: selectedPortfolioId,

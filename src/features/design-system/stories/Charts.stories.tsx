@@ -6,8 +6,10 @@ import type { DonutSlice } from "../components/AllocationDonutChart";
 import { ChartCard } from "../components/ChartCard";
 import { DesignSurface } from "../components/DesignSurface";
 import { DailyReturnsBarChart } from "../components/DailyReturnsBarChart";
+import { DailyReturnsLineChart } from "../components/DailyReturnsLineChart";
 import { PnlBarChart } from "../components/PnlBarChart";
 import { PortfolioAreaChart } from "../components/PortfolioAreaChart";
+import { PortfolioComparisonChart } from "../components/PortfolioComparisonChart";
 import { mockHoldingsUsd } from "../fixtures/mockPortfolio";
 import { mockPnl14d, mockPortfolioValue30d } from "../fixtures/mockCharts";
 import { formatMoney, formatNumber, formatPercent } from "../lib/format";
@@ -49,6 +51,19 @@ function ChartsStory() {
     { label: "04 lut", value: 0.0111 },
     { label: "05 lut", value: 0.0327 },
   ] as const;
+
+  const portfolioComparison30d = mockPortfolioValue30d.map((entry, index) => {
+    const baseContributions = 80_000;
+    const step = index >= 8 ? 6_000 : 0;
+    const secondStep = index >= 18 ? 4_000 : 0;
+    const withdrawal = index >= 24 ? -2_000 : 0;
+
+    return {
+      label: entry.label,
+      portfolioValue: entry.value,
+      investedCapital: baseContributions + step + secondStep + withdrawal,
+    };
+  });
 
   return (
     <DesignSurface className="p-6">
@@ -148,6 +163,25 @@ function ChartsStory() {
           subtitle="Mini słupki z zerem jako linią odniesienia."
         >
           <DailyReturnsBarChart data={dailyReturns7d} height={140} />
+        </ChartCard>
+
+        <ChartCard
+          title="Wartość vs zainwestowany kapitał"
+          subtitle="Linia smooth + linia schodkowa (step)."
+        >
+          <PortfolioComparisonChart
+            data={portfolioComparison30d}
+            valueFormatter={(value) =>
+              formatMoney(locale, { amount: value, currency: "USD" })
+            }
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Zwroty dzienne (7D) - linia"
+          subtitle="Wariant liniowy do dashboardu performance."
+        >
+          <DailyReturnsLineChart data={dailyReturns7d} height={140} />
         </ChartCard>
       </Container>
     </DesignSurface>

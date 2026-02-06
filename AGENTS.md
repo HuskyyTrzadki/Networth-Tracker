@@ -1,4 +1,5 @@
 # Repository Guidelines
+write in english pls.
 its not MVP, do it clean do it good. 
 I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your best 102020% otherwise i ll be angry.
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
@@ -103,8 +104,9 @@ Whenever you ship a new feature or change architecture:
 - Transactions page.
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
 - Cache-first quotes + FX with TTL (global cache, direct FX only + inversion)
-- Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu)
-- Performance (TWR) na dashboardzie: toggle wartość/performance, daily badge’y, zakresy czasu (bez 1D w performance)
+- Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu i pełną historią dla zakresu ALL)
+- Dashboard value/performance: toggle wartość/performance, 1D jako badge, zakresy >1D jako wykresy liniowe
+- W trybie wartości (>1D): 2 serie na jednym wykresie (wartość portfela + zainwestowany kapitał jako step)
 - Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)
 
 ### Will be built next
@@ -139,7 +141,7 @@ on all of the backend stuff u add, pls add comments, i m not BE engineer, make i
 --
 supabase project is Project (id ayeeksbqwyqkevbpdlef,, region eu-west-1)
 
-## Feature AGENTS (must stay updated by LLMs, if touched)
+## Feature AGENTS (must stay updated by LLMs, if touched) read when working on them.
 - App shell: `src/features/app-shell/AGENTS.md`
 - Auth: `src/features/auth/AGENTS.md`
 - Common UI: `src/features/common/AGENTS.md`

@@ -17,5 +17,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Boundaries
 - UI only, no business logic.
 - If this folder grows too large, consider moving shared UI to `src/shared/ui/*`.
-- Recharts components (donut/area/bar) are client-side due to browser rendering.
-- Daily returns bar chart lives in `components/DailyReturnsBarChart.tsx` and is showcased in `stories/Charts.stories.tsx`.
+- Recharts components (donut/area/bar/line) are client-side due to browser rendering.
+- Portfolio comparison chart (value vs zainwestowany kapitał) lives in `components/PortfolioComparisonChart.tsx`.
+- Daily returns bar chart (legacy/storybook) lives in `components/DailyReturnsBarChart.tsx`.
+- Daily returns line chart (dashboard) lives in `components/DailyReturnsLineChart.tsx`.
+- Chart stories live in `stories/Charts.stories.tsx`.

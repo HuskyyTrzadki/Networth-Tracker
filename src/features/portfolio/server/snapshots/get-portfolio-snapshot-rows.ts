@@ -35,16 +35,12 @@ export async function getPortfolioSnapshotRows(
   supabase: SupabaseClient,
   scope: SnapshotScope,
   portfolioId: string | null,
-  days: number
+  days?: number
 ): Promise<SnapshotRowsResult> {
   // Server read: return snapshot rows for charting value + performance.
   if (scope === "PORTFOLIO" && !portfolioId) {
     throw new Error("Missing portfolioId for PORTFOLIO scope.");
   }
-
-  const fromDate = new Date();
-  fromDate.setUTCDate(fromDate.getUTCDate() - Math.max(days - 1, 0));
-  const fromBucket = getBucketDate(fromDate);
 
   let query = supabase
     .from("portfolio_snapshots")
@@ -52,8 +48,16 @@ export async function getPortfolioSnapshotRows(
       "bucket_date,total_value_pln,total_value_usd,total_value_eur,net_external_cashflow_pln,net_external_cashflow_usd,net_external_cashflow_eur,net_implicit_transfer_pln,net_implicit_transfer_usd,net_implicit_transfer_eur,is_partial_pln,is_partial_usd,is_partial_eur"
     )
     .eq("scope", scope)
-    .gte("bucket_date", fromBucket)
     .order("bucket_date", { ascending: true });
+
+  if (typeof days === "number") {
+    // Backend filter: keep bounded history for fixed ranges (7D/1M/1Y).
+    // When days is omitted we intentionally return full snapshot history (ALL range).
+    const fromDate = new Date();
+    fromDate.setUTCDate(fromDate.getUTCDate() - Math.max(days - 1, 0));
+    const fromBucket = getBucketDate(fromDate);
+    query = query.gte("bucket_date", fromBucket);
+  }
 
   if (scope === "PORTFOLIO") {
     query = query.eq("portfolio_id", portfolioId);

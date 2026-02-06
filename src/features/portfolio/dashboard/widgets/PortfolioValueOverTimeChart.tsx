@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
-  ChangePill,
-  DailyReturnsBarChart,
-  PortfolioAreaChart,
+  DailyReturnsLineChart,
+  PortfolioComparisonChart,
 } from "@/features/design-system";
 import {
   Tabs,
@@ -35,10 +34,15 @@ import {
   formatRangeLabel,
   getRangeRows,
   getTotalValue,
+  hasRangeCoverage,
   mergeLivePoint,
   rangeOptions,
+  toComparisonChartData,
+  toInvestedCapitalSeries,
   toPerformanceRows,
 } from "../lib/chart-helpers";
+import { PortfolioPerformanceDailySummaryCard } from "./PortfolioPerformanceDailySummaryCard";
+import { PortfolioValueDailySummaryCard } from "./PortfolioValueDailySummaryCard";
 
 const currencyLabels: Record<SnapshotCurrency, string> = {
   PLN: "PLN",
@@ -91,29 +95,6 @@ export function PortfolioValueOverTimeChart({
     });
   }, [portfolioId, router, scope, shouldBootstrap]);
 
-  const hasRangeCoverage = (option: ChartRange) => {
-    if (rows.length < 2) return false;
-    if (option === "ALL" || option === "YTD") return true;
-
-    const last = new Date(`${rows[rows.length - 1].bucketDate}T00:00:00Z`);
-    const first = new Date(`${rows[0].bucketDate}T00:00:00Z`);
-    const spanDays = Math.floor((last.getTime() - first.getTime()) / (24 * 60 * 60 * 1000));
-
-    const rangeLengthDays: Record<ChartRange, number> = {
-      "1D": 1,
-      "7D": 7,
-      "1M": 30,
-      "3M": 90,
-      "1Y": 365,
-      YTD: 0,
-      ALL: 0,
-    };
-    const requiredDaysBack =
-      rangeLengthDays[option] > 0 ? rangeLengthDays[option] - 1 : 0;
-
-    return spanDays >= requiredDaysBack;
-  };
-
   const rangeMeta = getRangeRows(rows, range);
   const valuePoints = rangeMeta.rows
     .map((row) => {
@@ -129,18 +110,34 @@ export function PortfolioValueOverTimeChart({
     todayBucketDate,
     liveTotals.totalValue
   );
+  const investedCapitalSeries = toInvestedCapitalSeries(rangeMeta.rows, currency);
+  const comparisonChartData = toComparisonChartData(
+    effectivePoints,
+    investedCapitalSeries,
+    todayBucketDate
+  );
 
   const performanceRows = toPerformanceRows(rangeMeta.rowsForReturns, currency);
   const dailyReturns = computeDailyReturns(performanceRows);
   const periodReturn = computePeriodReturn(dailyReturns);
-  const dailyChartRows = dailyReturns.filter((entry) => entry.value !== null);
-  const dailyChartData = dailyChartRows.map((entry) => ({
-    label: formatDayLabel(entry.bucketDate),
-    value: entry.value!,
-  }));
+  const dailyChartData = dailyReturns
+    .filter(
+      (entry): entry is (typeof dailyReturns)[number] & { value: number } =>
+        entry.value !== null
+    )
+    .map((entry) => ({
+      label: formatDayLabel(entry.bucketDate),
+      value: entry.value,
+    }));
 
   const hasPerformanceData = dailyChartData.length > 0;
   const hasValuePoints = effectivePoints.length > 0;
+  const hasInvestedCapitalData = comparisonChartData.some(
+    (entry) => entry.investedCapital !== null
+  );
+  const hasInvestedCapitalGaps =
+    hasInvestedCapitalData &&
+    investedCapitalSeries.some((entry) => entry.value === null);
 
   const performancePartial = dailyReturns.some(
     (entry) => entry.value !== null && entry.isPartial
@@ -168,7 +165,7 @@ export function PortfolioValueOverTimeChart({
   const dailyReturnValue = dailyReturn?.value ?? null;
 
   const isRangeDisabled = (option: ChartRange) => {
-    if (!hasRangeCoverage(option)) return true;
+    if (!hasRangeCoverage(rows, option)) return true;
 
     const meta = getRangeRows(rows, option);
     if (mode === "VALUE") {
@@ -229,6 +226,89 @@ export function PortfolioValueOverTimeChart({
     </ToggleGroup>
   );
 
+  const currencyFormatter = getCurrencyFormatter(currency);
+  const formatCurrencyValue = (value: number) =>
+    currencyFormatter?.format(value) ?? value.toString();
+  const emptyStateClassName = cn(
+    "grid h-[240px] place-items-center rounded-lg border border-dashed border-border text-xs text-muted-foreground",
+    shouldBootstrap ? "animate-pulse" : ""
+  );
+
+  const renderEmptyState = (message: string) => (
+    <div className={emptyStateClassName}>{message}</div>
+  );
+
+  const renderValueContent = () => {
+    if (!hasValuePoints) {
+      return renderEmptyState(
+        hasHoldings
+          ? "Tworzymy pierwszy punkt wartości portfela."
+          : "Dodaj transakcje, aby zobaczyć wykres."
+      );
+    }
+
+    if (range === "1D") {
+      return (
+        <PortfolioValueDailySummaryCard
+          currency={currency}
+          latestValue={latestValue}
+          dailyDelta={dailyDelta}
+          dailyDeltaPercent={dailyDeltaPercent}
+        />
+      );
+    }
+
+    return (
+      <PortfolioComparisonChart
+        data={comparisonChartData}
+        height={240}
+        valueFormatter={formatCurrencyValue}
+        labelFormatter={formatDayLabel}
+      />
+    );
+  };
+
+  const renderPerformanceContent = () => {
+    if (!hasPerformanceData) {
+      return renderEmptyState(
+        hasHoldings
+          ? "Brak danych do wyliczenia performance."
+          : "Dodaj transakcje, aby zobaczyć performance."
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div>
+          <div className="text-xs text-muted-foreground">
+            Zwrot za okres ({range})
+          </div>
+          <div
+            className={cn(
+              "text-3xl font-semibold",
+              periodReturn.value !== null && periodReturn.value > 0
+                ? "text-emerald-600"
+                : periodReturn.value !== null && periodReturn.value < 0
+                  ? "text-rose-600"
+                  : "text-foreground"
+            )}
+          >
+            {periodReturn.value !== null
+              ? formatPercent(periodReturn.value)
+              : "—"}
+          </div>
+        </div>
+        {range === "1D" ? (
+          <PortfolioPerformanceDailySummaryCard
+            dailyReturnValue={dailyReturnValue}
+          />
+        ) : (
+          <DailyReturnsLineChart data={dailyChartData} height={140} />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -247,6 +327,11 @@ export function PortfolioValueOverTimeChart({
             brak FX dla {liveTotals.missingFx} pozycji.
           </div>
         ) : null}
+        {mode === "VALUE" && hasInvestedCapitalGaps ? (
+          <div className="text-xs text-muted-foreground">
+            Zainwestowany kapitał ma luki historyczne, bo część dni nie ma danych przepływów lub transferów.
+          </div>
+        ) : null}
       </div>
 
       <Tabs
@@ -262,125 +347,9 @@ export function PortfolioValueOverTimeChart({
         </TabsList>
       </Tabs>
 
-      {mode === "VALUE" ? (
-        hasValuePoints ? (
-          range === "1D" ? (
-            <div className="grid gap-3 rounded-lg border border-border bg-card p-4">
-              <div className="text-xs text-muted-foreground">
-                Zmiana dzienna ({currency})
-              </div>
-              <div className="flex flex-wrap items-baseline gap-2">
-                <div className="text-3xl font-semibold">
-                  {latestValue !== null
-                    ? getCurrencyFormatter(currency)?.format(latestValue) ??
-                      latestValue.toString()
-                    : "—"}
-                </div>
-                {dailyDelta !== null ? (
-                  <ChangePill
-                    value={
-                      getCurrencyFormatter(currency)?.format(dailyDelta) ??
-                      dailyDelta.toString()
-                    }
-                    trend={dailyDelta > 0 ? "up" : dailyDelta < 0 ? "down" : "flat"}
-                  />
-                ) : null}
-                {dailyDeltaPercent !== null ? (
-                  <ChangePill
-                    value={formatPercent(dailyDeltaPercent)}
-                    trend={
-                      dailyDeltaPercent > 0
-                        ? "up"
-                        : dailyDeltaPercent < 0
-                          ? "down"
-                          : "flat"
-                    }
-                  />
-                ) : null}
-              </div>
-            </div>
-          ) : (
-            <PortfolioAreaChart
-              data={effectivePoints}
-              height={240}
-              valueFormatter={(value) =>
-                getCurrencyFormatter(currency)?.format(value) ?? value.toString()
-              }
-              labelFormatter={formatDayLabel}
-            />
-          )
-        ) : (
-          <div
-            className={cn(
-              "grid h-[240px] place-items-center rounded-lg border border-dashed border-border text-xs text-muted-foreground",
-              shouldBootstrap ? "animate-pulse" : ""
-            )}
-          >
-            {hasHoldings
-              ? "Tworzymy pierwszy punkt wartości portfela."
-              : "Dodaj transakcje, aby zobaczyć wykres."}
-          </div>
-        )
-      ) : hasPerformanceData ? (
-        <div className="space-y-4">
-          <div>
-            <div className="text-xs text-muted-foreground">
-              Zwrot za okres ({range})
-            </div>
-            <div
-              className={cn(
-                "text-3xl font-semibold",
-                periodReturn.value !== null && periodReturn.value > 0
-                  ? "text-emerald-600"
-                  : periodReturn.value !== null && periodReturn.value < 0
-                    ? "text-rose-600"
-                    : "text-foreground"
-              )}
-            >
-              {periodReturn.value !== null
-                ? formatPercent(periodReturn.value)
-                : "—"}
-            </div>
-          </div>
-          {range === "1D" ? (
-            <div className="grid gap-3 rounded-lg border border-border bg-card p-4">
-              <div className="text-xs text-muted-foreground">Zwrot dzienny</div>
-              <div className="flex flex-wrap items-baseline gap-2">
-                <div className="text-3xl font-semibold">
-                  {dailyReturnValue !== null
-                    ? formatPercent(dailyReturnValue)
-                    : "—"}
-                </div>
-                {dailyReturnValue !== null ? (
-                  <ChangePill
-                    value={formatPercent(dailyReturnValue)}
-                    trend={
-                      dailyReturnValue > 0
-                        ? "up"
-                        : dailyReturnValue < 0
-                          ? "down"
-                          : "flat"
-                    }
-                  />
-                ) : null}
-              </div>
-            </div>
-          ) : (
-            <DailyReturnsBarChart data={dailyChartData} height={140} />
-          )}
-        </div>
-      ) : (
-        <div
-          className={cn(
-            "grid h-[240px] place-items-center rounded-lg border border-dashed border-border text-xs text-muted-foreground",
-            shouldBootstrap ? "animate-pulse" : ""
-          )}
-        >
-          {hasHoldings
-            ? "Brak danych do wyliczenia performance."
-            : "Dodaj transakcje, aby zobaczyć performance."}
-        </div>
-      )}
+      {mode === "VALUE"
+        ? renderValueContent()
+        : renderPerformanceContent()}
     </div>
   );
 }
