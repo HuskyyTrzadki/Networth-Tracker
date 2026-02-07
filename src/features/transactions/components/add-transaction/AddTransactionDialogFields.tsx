@@ -1,9 +1,9 @@
 "use client";
 
-import { useWatch, type UseFormReturn } from "react-hook-form";
 import { parseISO } from "date-fns";
+import { useWatch, type UseFormReturn } from "react-hook-form";
 
-import { DatePicker } from "@/features/design-system/components/ui/date-picker";
+import { DatePicker } from "@/features/design-system/components/DatePicker";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/features/design-system/components/ui/form";
 import { Label } from "@/features/design-system/components/ui/label";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -30,6 +30,7 @@ import {
   isSupportedCashCurrency,
   type CashCurrency,
 } from "../../lib/system-currencies";
+import { getTradeDateLowerBound } from "../../lib/trade-date";
 import { ASSET_TABS, buildEmptyBalances, formatMoney, type AssetTab } from "./constants";
 import { buildCashDeltaLabel } from "./build-cash-delta-label";
 import {
@@ -37,7 +38,6 @@ import {
   applyCashTabState,
   applyNonCashTabState,
 } from "./tab-state";
-import { getTradeDateLowerBound } from "../../lib/trade-date";
 import type { FormValues } from "../AddTransactionDialogContent";
 
 export function AddTransactionDialogFields({
@@ -63,6 +63,8 @@ export function AddTransactionDialogFields({
   forcedPortfolioId: string | null;
   initialCashCurrency: CashCurrency;
 }>) {
+  const minTradeDate = parseISO(getTradeDateLowerBound());
+  const maxTradeDate = new Date();
   const currency = useWatch({ control: form.control, name: "currency" });
   const consumeCash = useWatch({ control: form.control, name: "consumeCash" });
   const cashCurrency = useWatch({ control: form.control, name: "cashCurrency" });
@@ -81,7 +83,6 @@ export function AddTransactionDialogFields({
   const cashBalances = cashBalancesByPortfolio[resolvedPortfolioId] ?? buildEmptyBalances();
   const availableCash = cashBalances[resolvedCashCurrency] ?? "0";
   const displayCurrency = selectedInstrument?.currency ?? currency ?? "";
-  const minTradeDate = parseISO(getTradeDateLowerBound());
   const isFxMismatch = consumeCash && Boolean(selectedInstrument) &&
     resolvedCashCurrency !== (selectedInstrument?.currency ?? "");
   const historicalPriceAssist = useHistoricalPriceAssist({
@@ -215,6 +216,25 @@ export function AddTransactionDialogFields({
 
         <FormField
           control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data transakcji</FormLabel>
+              <FormControl>
+                <DatePicker
+                  maxDate={maxTradeDate}
+                  minDate={minTradeDate}
+                  onChange={field.onChange}
+                  value={field.value}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="assetId"
           render={({ field }) => (
             <FormItem>
@@ -306,11 +326,6 @@ export function AddTransactionDialogFields({
                       placeholder="np. 100,00"
                     />
                   </FormControl>
-                  <HistoricalPriceAssistHint
-                    currency={displayCurrency}
-                    errorMessage={historicalPriceAssist.errorMessage}
-                    hint={historicalPriceAssist.hint}
-                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -318,53 +333,34 @@ export function AddTransactionDialogFields({
           ) : null}
         </div>
 
-        <div className={cn("grid gap-4", isCashTab ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
+        {!isCashTab ? (
+          <HistoricalPriceAssistHint
+            currency={displayCurrency}
+            errorMessage={historicalPriceAssist.errorMessage}
+            hint={historicalPriceAssist.hint}
+          />
+        ) : null}
+
+        {!isCashTab ? (
           <FormField
             control={form.control}
-            name="date"
+            name="fee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Data transakcji</FormLabel>
+                <FormLabel>Prowizja / opłaty</FormLabel>
                 <FormControl>
-                  <DatePicker
-                    maxDate={new Date()}
-                    minDate={minTradeDate}
-                    onChange={(nextDate) => {
-                      form.setValue("date", nextDate, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      });
-                    }}
-                    value={field.value}
+                  <MoneyInput
+                    {...field}
+                    className="h-11"
+                    currency={displayCurrency}
+                    placeholder="np. 0,00"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          {!isCashTab ? (
-            <FormField
-              control={form.control}
-              name="fee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prowizja / opłaty</FormLabel>
-                  <FormControl>
-                    <MoneyInput
-                      {...field}
-                      className="h-11"
-                      currency={displayCurrency}
-                      placeholder="np. 0,00"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ) : null}
-        </div>
+        ) : null}
 
         <AddTransactionCashSection
           cashCurrency={cashCurrency}

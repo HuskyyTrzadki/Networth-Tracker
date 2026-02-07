@@ -45,7 +45,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Cash settlement uses FX cache at write-time; rate is stored on the cash leg for auditability.
 - Past-date transaction support uses a 5-year cap (UI + backend validation).
 - Add-transaction form fetches Yahoo daily session data (on date/instrument change) to suggest price and show low/high range.
-- Add-transaction form uses shared `DatePicker` from design-system (`src/features/design-system/components/ui/date-picker.tsx`) with fixed-week calendar and no outside days.
+- Add-transaction modal exposes a calendar date picker field with lower bound from `getTradeDateLowerBound()` and upper bound set to `today`.
 - Add-transaction form blocks submit when entered price is outside fetched day-session range (low/high), with inline field error on `price`.
 - On past-dated writes, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state`.
 

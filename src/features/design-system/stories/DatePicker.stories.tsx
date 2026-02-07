@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { subYears } from "date-fns";
+import { parseISO } from "date-fns";
 import { useState } from "react";
 
-import { DatePicker } from "@/features/design-system/components/ui/date-picker";
+import { DatePicker } from "@/features/design-system/components/DatePicker";
 
 const meta: Meta<typeof DatePicker> = {
   title: "Design System/DatePicker",
@@ -17,22 +16,39 @@ export default meta;
 
 type Story = StoryObj<typeof DatePicker>;
 
-function DatePickerExample() {
-  const [value, setValue] = useState("2025-02-14");
+function DefaultDemo() {
+  const [value, setValue] = useState("2026-02-07");
 
   return (
-    <div className="w-[22rem] rounded-lg border border-border bg-card p-4">
+    <div className="w-[320px]">
+      <DatePicker onChange={setValue} value={value} />
+      <p className="mt-2 text-xs text-muted-foreground">ISO: {value}</p>
+    </div>
+  );
+}
+
+function WithRangeDemo() {
+  const [value, setValue] = useState("2026-02-07");
+
+  return (
+    <div className="w-[320px]">
       <DatePicker
-        maxDate={new Date()}
-        minDate={subYears(new Date(), 5)}
+        maxDate={parseISO("2026-02-07")}
+        minDate={parseISO("2021-02-07")}
         onChange={setValue}
         value={value}
       />
+      <p className="mt-2 text-xs text-muted-foreground">
+        Zakres: 2021-02-07 - 2026-02-07
+      </p>
     </div>
   );
 }
 
 export const Default: Story = {
-  render: () => <DatePickerExample />,
+  render: () => <DefaultDemo />,
 };
 
+export const WithRange: Story = {
+  render: () => <WithRangeDemo />,
+};

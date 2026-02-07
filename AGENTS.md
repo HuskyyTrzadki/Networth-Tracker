@@ -106,7 +106,7 @@ Whenever you ship a new feature or change architecture:
 - Cache-first quotes + FX with TTL (global cache, direct FX only + inversion)
 - Historyczne ceny w formularzu transakcji: API `/api/instruments/price-on-date` (Yahoo daily), auto-sugestia ceny + zakres low/high + fallback do ostatniej sesji
 - Limity dat transakcji: brak przyszłych dat + max 5 lat wstecz (UI + backend schema)
-- Shared DatePicker UI (shadcn-based): globalny komponent z dropdown miesiąc/rok, stałą wysokością (`fixedWeeks`) i ukrytymi outside days
+- DatePicker component in design system Storybook + transaction form calendar field for choosing trade date
 - Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu i pełną historią dla zakresu ALL)
 - Dashboard value/performance: toggle wartość/performance, 1D jako badge, zakresy >1D jako wykresy liniowe
 - Performance chart uses cumulative return (TWR) for zakresy >1D; default base line is nominal and comparisons are optional overlays
@@ -150,7 +150,7 @@ Keep it short and current. If unsure, add a TODO with rationale.
 - -remember we use react compiler, so now need for usememo, and usecallback.
 - -------------
 please teach me between the lines, i m not an expert so any tech stuff u do, u can explain more cleanly, why u do it the way u do.
-
+always go for simplicity, keep it all simple. seeing crazy logic? stop. think again is it needed. 
 ## Copy (PL only)
 UI copy is written directly in Polish (no i18n layer).
 ---

@@ -14,7 +14,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI primitives (alert, avatar) re-exported via `src/features/design-system/components/ui/alert.tsx` and `src/features/design-system/components/ui/avatar.tsx`
 - UI primitive `ToggleGroup` re-exported via `src/features/design-system/components/ui/toggle-group.tsx`
 - UI primitive `Checkbox` re-exported via `src/features/design-system/components/ui/checkbox.tsx`
-- UI primitive `DatePicker` (calendar popover + month/year dropdowns) re-exported via `src/features/design-system/components/ui/date-picker.tsx`
+- UI primitive `Calendar` re-exported via `src/features/design-system/components/ui/calendar.tsx`
+- Shared `DatePicker` lives in `src/features/design-system/components/DatePicker.tsx` with stories in `src/features/design-system/stories/DatePicker.stories.tsx`
 
 ## Boundaries
 - UI only, no business logic.

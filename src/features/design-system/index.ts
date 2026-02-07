@@ -1,4 +1,5 @@
 export { ChangePill } from "./components/ChangePill";
+export { DatePicker } from "./components/DatePicker";
 export { AllocationDonutChart } from "./components/AllocationDonutChart";
 export { ChartCard } from "./components/ChartCard";
 export { DesignSurface } from "./components/DesignSurface";
