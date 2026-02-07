@@ -12,8 +12,17 @@ import { getCurrencyFormatter } from "@/lib/format-currency";
 
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { LiveTotals } from "../../server/get-portfolio-live-totals";
-import type { SnapshotCurrency } from "../../server/snapshots/supported-currencies";
+import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { SnapshotScope, SnapshotChartRow } from "../../server/snapshots/types";
+import {
+  BENCHMARK_IDS,
+  benchmarkLineDefinitions,
+  inflationLineDefinition,
+  type BenchmarkId,
+  type ComparisonOptionId,
+  type DashboardBenchmarkSeries,
+} from "../lib/benchmark-config";
+import { toBenchmarkReturnSeriesById } from "../lib/benchmark-performance";
 import {
   computeCumulativeReturns,
   computeDailyReturns,
@@ -33,7 +42,6 @@ import {
   toComparisonChartData,
   toCumulativeInflationSeries,
   toInvestedCapitalSeries,
-  toRealReturnSeries,
 } from "../lib/chart-helpers";
 import { PortfolioPerformanceModeContent } from "./PortfolioPerformanceModeContent";
 import { PortfolioValueModeContent } from "./PortfolioValueModeContent";
@@ -60,6 +68,7 @@ type Props = Readonly<{
   todayBucketDate: string;
   liveTotalsByCurrency: Readonly<Record<SnapshotCurrency, LiveTotals>>;
   polishCpiSeries: readonly PolishCpiPoint[];
+  benchmarkSeries: DashboardBenchmarkSeries;
 }>;
 
 export function PortfolioValueOverTimeChart({
@@ -71,11 +80,24 @@ export function PortfolioValueOverTimeChart({
   todayBucketDate,
   liveTotalsByCurrency,
   polishCpiSeries,
+  benchmarkSeries,
 }: Props) {
   const [currency, setCurrency] = useState<SnapshotCurrency>("PLN");
   const [mode, setMode] = useState<ChartMode>("PERFORMANCE");
   const [range, setRange] = useState<ChartRange>("YTD");
-  const [showNominalWithInflation, setShowNominalWithInflation] = useState(false);
+  const [selectedComparisons, setSelectedComparisons] = useState<ComparisonOptionId[]>([]);
+  const [benchmarkSeriesState, setBenchmarkSeriesState] =
+    useState<DashboardBenchmarkSeries>(benchmarkSeries);
+  const [loadedBenchmarkDatesById, setLoadedBenchmarkDatesById] = useState<
+    Record<BenchmarkId, readonly string[]>
+  >({
+    SP500: [],
+    WIG20: [],
+    MWIG40: [],
+  });
+  const [loadingBenchmarkIds, setLoadingBenchmarkIds] = useState<
+    readonly BenchmarkId[]
+  >([]);
   const [bootstrapped, setBootstrapped] = useState(false);
   const router = useRouter();
 
@@ -117,10 +139,7 @@ export function PortfolioValueOverTimeChart({
   useEffect(() => {
     if (!shouldBootstrap) return;
 
-    const payload =
-      scope === "PORTFOLIO"
-        ? { scope, portfolioId }
-        : { scope };
+    const payload = scope === "PORTFOLIO" ? { scope, portfolioId } : { scope };
 
     void fetch("/api/portfolio-snapshots/bootstrap", {
       method: "POST",
@@ -182,46 +201,58 @@ export function PortfolioValueOverTimeChart({
     }))
   );
 
-  const realReturnSeries = toRealReturnSeries(
-    nominalCumulativeSeries,
-    inflationSeries
+  const hasInflationData = inflationSeries.some((entry) => entry.value !== null);
+
+  const benchmarkReturnsById = toBenchmarkReturnSeriesById(
+    benchmarkSeriesState,
+    currency,
+    rangeMeta.rowsForReturns.map((row) => row.bucketDate)
   );
+
+  const nominalPeriodReturn = computePeriodReturn(dailyReturns).value;
 
   const inflationByDate = new Map(
     inflationSeries.map((entry) => [entry.label, entry.value] as const)
   );
 
-  const nominalPeriodReturn = computePeriodReturn(dailyReturns).value;
-  const inflationPeriodReturn =
-    [...inflationSeries].reverse().find((entry) => entry.value !== null)?.value ?? null;
-  const realPeriodReturn =
-    [...realReturnSeries].reverse().find((entry) => entry.value !== null)?.value ?? null;
+  const benchmarkSeriesByIdAndDate = {
+    SP500: new Map(
+      benchmarkReturnsById.SP500.map((entry) => [entry.label, entry.value] as const)
+    ),
+    WIG20: new Map(
+      benchmarkReturnsById.WIG20.map((entry) => [entry.label, entry.value] as const)
+    ),
+    MWIG40: new Map(
+      benchmarkReturnsById.MWIG40.map((entry) => [entry.label, entry.value] as const)
+    ),
+  };
 
-  const hasInflationData = inflationSeries.some((entry) => entry.value !== null);
-  const hasRealData = realReturnSeries.some((entry) => entry.value !== null);
-  const canUseRealMode = currency === "PLN" && hasInflationData && hasRealData;
-  const showRealSeries = canUseRealMode && !showNominalWithInflation;
-
-  const selectedPerformanceSeries = showRealSeries
-    ? realReturnSeries
-    : nominalCumulativeSeries;
-  const selectedPeriodReturn = showRealSeries
-    ? realPeriodReturn
-    : nominalPeriodReturn;
-
-  const cumulativeChartData = selectedPerformanceSeries
-    .filter(
-      (entry): entry is (typeof selectedPerformanceSeries)[number] & { value: number } =>
-        entry.value !== null
+  const cumulativeChartData = nominalCumulativeSeries
+    .filter((entry): entry is (typeof nominalCumulativeSeries)[number] & { value: number } =>
+      entry.value !== null
     )
-    .map((entry) => ({
-      label: entry.label,
-      value: entry.value,
-      benchmarkValue:
-        showNominalWithInflation && currency === "PLN"
-          ? (inflationByDate.get(entry.label) ?? null)
-          : null,
-    }));
+    .map((entry) => {
+      const comparisons: Record<string, number | null> = {};
+
+      if (selectedComparisons.includes("INFLATION_PL") && currency === "PLN") {
+        comparisons.INFLATION_PL = inflationByDate.get(entry.label) ?? null;
+      }
+
+      BENCHMARK_IDS.forEach((benchmarkId) => {
+        if (!selectedComparisons.includes(benchmarkId)) {
+          return;
+        }
+
+        comparisons[benchmarkId] =
+          benchmarkSeriesByIdAndDate[benchmarkId].get(entry.label) ?? null;
+      });
+
+      return {
+        label: entry.label,
+        value: entry.value,
+        comparisons,
+      };
+    });
 
   const hasPerformanceData = cumulativeChartData.length > 0;
   const hasValuePoints = effectivePoints.length > 0;
@@ -281,19 +312,112 @@ export function PortfolioValueOverTimeChart({
   const formatCurrencyValue = (value: number) =>
     currencyFormatter?.format(value) ?? value.toString();
 
+  const comparisonOptions = [
+    ...(currency === "PLN" && hasInflationData ? [inflationLineDefinition] : []),
+    benchmarkLineDefinitions.SP500,
+    benchmarkLineDefinitions.WIG20,
+    benchmarkLineDefinitions.MWIG40,
+  ];
+
+  const activeComparisonLines = comparisonOptions.filter((option) =>
+    selectedComparisons.includes(option.id)
+  );
+
+  const ensureBenchmarkSeriesLoaded = async (
+    benchmarkId: BenchmarkId,
+    requiredDates: readonly string[]
+  ) => {
+    if (requiredDates.length === 0) return;
+
+    const loadedDates = new Set(loadedBenchmarkDatesById[benchmarkId]);
+    const hasAllRequiredDates = requiredDates.every((date) => loadedDates.has(date));
+    if (hasAllRequiredDates) return;
+
+    setLoadingBenchmarkIds((current) =>
+      current.includes(benchmarkId) ? current : [...current, benchmarkId]
+    );
+
+    try {
+      const response = await fetch("/api/benchmarks/series", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          benchmarkId,
+          bucketDates: requiredDates,
+        }),
+      });
+      if (!response.ok) return;
+
+      const payload = (await response.json()) as {
+        benchmarkId?: BenchmarkId;
+        points?: DashboardBenchmarkSeries["SP500"];
+      };
+      if (payload.benchmarkId !== benchmarkId || !payload.points) return;
+
+      setBenchmarkSeriesState((current) => ({
+        ...current,
+        [benchmarkId]: payload.points ?? [],
+      }));
+      setLoadedBenchmarkDatesById((current) => ({
+        ...current,
+        [benchmarkId]: Array.from(new Set([...current[benchmarkId], ...requiredDates])),
+      }));
+    } catch {
+      // Optional overlay: ignore network failure and keep base chart intact.
+    } finally {
+      setLoadingBenchmarkIds((current) =>
+        current.filter((id) => id !== benchmarkId)
+      );
+    }
+  };
+
+  const handleComparisonChange = (
+    optionId: ComparisonOptionId,
+    enabled: boolean
+  ) => {
+    setSelectedComparisons((current) => {
+      if (enabled) {
+        if (current.includes(optionId)) {
+          return current;
+        }
+
+        return [...current, optionId];
+      }
+
+      return current.filter((id) => id !== optionId);
+    });
+
+    if (enabled && optionId !== "INFLATION_PL") {
+      const requiredDates = rangeMeta.rowsForReturns.map((row) => row.bucketDate);
+      void ensureBenchmarkSeriesLoaded(optionId, requiredDates);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <PortfolioValueOverTimeHeader
         mode={mode}
         onModeChange={setMode}
         range={range}
-        onRangeChange={setRange}
+        onRangeChange={(nextRange) => {
+          setRange(nextRange);
+          const requiredDates = getRangeRows(
+            rowsWithLiveAnchor,
+            nextRange
+          ).rowsForReturns.map((row) => row.bucketDate);
+          selectedComparisons
+            .filter((comparisonId): comparisonId is BenchmarkId =>
+              comparisonId !== "INFLATION_PL"
+            )
+            .forEach((benchmarkId) => {
+              void ensureBenchmarkSeriesLoaded(benchmarkId, requiredDates);
+            });
+        }}
         isRangeDisabled={isRangeDisabled}
-        currency={currency}
-        onNominalWithInflationToggle={setShowNominalWithInflation}
-        hasInflationData={hasInflationData}
-        canUseRealMode={canUseRealMode}
-        showingRealMode={showRealSeries}
+        comparisonOptions={comparisonOptions}
+        selectedComparisons={selectedComparisons}
+        loadingComparisons={loadingBenchmarkIds}
+        onComparisonChange={handleComparisonChange}
         performancePartial={performancePartial}
         valueIsPartial={liveTotals.totalValue !== null && liveTotals.isPartial}
         missingQuotes={liveTotals.missingQuotes}
@@ -341,14 +465,10 @@ export function PortfolioValueOverTimeChart({
           shouldBootstrap={shouldBootstrap}
           hasPerformanceData={hasPerformanceData}
           range={range}
-          showRealSeries={showRealSeries}
-          selectedPeriodReturn={selectedPeriodReturn}
-          currency={currency}
-          hasInflationData={hasInflationData}
-          nominalPeriodReturn={nominalPeriodReturn}
-          inflationPeriodReturn={inflationPeriodReturn}
+          selectedPeriodReturn={nominalPeriodReturn}
           dailyReturnValue={dailyReturnValue}
           cumulativeChartData={cumulativeChartData}
+          comparisonLines={activeComparisonLines}
         />
       )}
     </div>

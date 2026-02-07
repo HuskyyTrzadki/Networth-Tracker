@@ -13,6 +13,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI primitives (sidebar, collapsible) re-exported via `src/features/design-system/components/ui/sidebar.tsx` and `src/features/design-system/components/ui/collapsible.tsx`
 - UI primitives (alert, avatar) re-exported via `src/features/design-system/components/ui/alert.tsx` and `src/features/design-system/components/ui/avatar.tsx`
 - UI primitive `ToggleGroup` re-exported via `src/features/design-system/components/ui/toggle-group.tsx`
+- UI primitive `Checkbox` re-exported via `src/features/design-system/components/ui/checkbox.tsx`
 - UI primitive `DatePicker` (calendar popover + month/year dropdowns) re-exported via `src/features/design-system/components/ui/date-picker.tsx`
 
 ## Boundaries
@@ -22,6 +23,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio comparison chart (value vs zainwestowany kapitał) lives in `components/PortfolioComparisonChart.tsx`.
 - Daily returns bar chart (legacy/storybook) lives in `components/DailyReturnsBarChart.tsx`.
 - Daily returns line chart (dashboard) lives in `components/DailyReturnsLineChart.tsx`.
-- Daily returns line chart supports optional benchmark overlay (second line) for comparisons (e.g. CPI).
+- Daily returns line chart supports multiple optional comparison overlays with configurable labels/colors/line styles (used by CPI + benchmarks).
 - Chart Y axes use adaptive padded domains (`lib/chart-domain.ts`) to reduce "flat line" effect on narrow-value ranges.
 - Chart stories live in `stories/Charts.stories.tsx`.

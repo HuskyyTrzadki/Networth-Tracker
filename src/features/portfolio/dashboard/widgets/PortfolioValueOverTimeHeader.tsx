@@ -1,9 +1,13 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
+
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/features/design-system/components/ui/toggle-group";
+import { Checkbox } from "@/features/design-system/components/ui/checkbox";
+import type { ComparisonLineDefinition, ComparisonOptionId } from "../lib/benchmark-config";
 
 import { type ChartMode, type ChartRange, formatRangeLabel, rangeOptions } from "../lib/chart-helpers";
 
@@ -13,11 +17,13 @@ type Props = Readonly<{
   range: ChartRange;
   onRangeChange: (range: ChartRange) => void;
   isRangeDisabled: (range: ChartRange) => boolean;
-  currency: "PLN" | "USD" | "EUR";
-  onNominalWithInflationToggle: (enabled: boolean) => void;
-  hasInflationData: boolean;
-  canUseRealMode: boolean;
-  showingRealMode: boolean;
+  comparisonOptions: readonly ComparisonLineDefinition[];
+  selectedComparisons: readonly ComparisonOptionId[];
+  loadingComparisons?: readonly ComparisonOptionId[];
+  onComparisonChange: (
+    optionId: ComparisonOptionId,
+    enabled: boolean
+  ) => void;
   performancePartial: boolean;
   valueIsPartial: boolean;
   missingQuotes: number;
@@ -35,11 +41,10 @@ export function PortfolioValueOverTimeHeader({
   range,
   onRangeChange,
   isRangeDisabled,
-  currency,
-  onNominalWithInflationToggle,
-  hasInflationData,
-  canUseRealMode,
-  showingRealMode,
+  comparisonOptions = [],
+  selectedComparisons = [],
+  loadingComparisons = [],
+  onComparisonChange,
   performancePartial,
   valueIsPartial,
   missingQuotes,
@@ -97,24 +102,31 @@ export function PortfolioValueOverTimeHeader({
         </div>
       ) : null}
 
-      {mode === "PERFORMANCE" && currency === "PLN" && hasInflationData ? (
-        <ToggleGroup
-          type="single"
-          value={showingRealMode ? "REAL" : "NOMINAL_WITH_INFLATION"}
-          onValueChange={(value) =>
-            onNominalWithInflationToggle(value === "NOMINAL_WITH_INFLATION")
-          }
-        >
-          <ToggleGroupItem
-            value="REAL"
-            disabled={!canUseRealMode}
-          >
-            Realny (po CPI)
-          </ToggleGroupItem>
-          <ToggleGroupItem value="NOMINAL_WITH_INFLATION">
-            Nominalny + inflacja
-          </ToggleGroupItem>
-        </ToggleGroup>
+      {mode === "PERFORMANCE" && range !== "1D" && comparisonOptions.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-3">
+          {comparisonOptions.map((option) => {
+            const checked = selectedComparisons.includes(option.id);
+            const isLoading = loadingComparisons.includes(option.id);
+
+            return (
+              <label
+                key={option.id}
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+              >
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(enabled) =>
+                    onComparisonChange(option.id, enabled === true)
+                  }
+                />
+                <span>{option.label}</span>
+                {isLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                ) : null}
+              </label>
+            );
+          })}
+        </div>
       ) : null}
 
       {mode === "VALUE" && valueIsPartial ? (

@@ -2,6 +2,7 @@
 
 import { PortfolioComparisonChart } from "@/features/design-system";
 
+import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ComparisonChartPoint, NullableSeriesPoint } from "../lib/chart-helpers";
 import type { ChartRange } from "../lib/chart-helpers";
 import { PortfolioValueDailySummaryCard } from "./PortfolioValueDailySummaryCard";
@@ -12,7 +13,7 @@ type Props = Readonly<{
   shouldBootstrap: boolean;
   hasValuePoints: boolean;
   range: ChartRange;
-  currency: "PLN" | "USD" | "EUR";
+  currency: SnapshotCurrency;
   latestValue: number | null;
   dailyDelta: number | null;
   dailyDeltaPercent: number | null;

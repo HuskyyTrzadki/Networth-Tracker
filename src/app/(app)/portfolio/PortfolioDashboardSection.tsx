@@ -5,6 +5,7 @@ import {
   PortfolioDashboard,
 } from "@/features/portfolio";
 import { getPolishCpiSeriesCached } from "@/features/market-data";
+import { emptyDashboardBenchmarkSeries } from "@/features/portfolio/dashboard/lib/benchmark-config";
 import { getPortfolioLiveTotals } from "@/features/portfolio/server/get-portfolio-live-totals";
 import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
 import { getPortfolioSnapshotRows } from "@/features/portfolio/server/snapshots/get-portfolio-snapshot-rows";
@@ -61,6 +62,9 @@ export default async function PortfolioDashboardSection({
     firstSnapshotDate && lastSnapshotDate
       ? await getPolishCpiSeriesCached(supabase, firstSnapshotDate, lastSnapshotDate)
       : [];
+  const benchmarkSeries = emptyDashboardBenchmarkSeries(
+    snapshotRows.rows.map((row) => row.bucketDate)
+  );
   const liveTotals = await getPortfolioLiveTotals(supabase, {
     portfolioId: selectedPortfolioId,
   });
@@ -73,6 +77,7 @@ export default async function PortfolioDashboardSection({
       snapshotRows={snapshotRows}
       liveTotals={liveTotals}
       polishCpiSeries={polishCpiSeries}
+      benchmarkSeries={benchmarkSeries}
     />
   );
 }

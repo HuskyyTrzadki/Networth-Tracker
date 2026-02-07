@@ -3,6 +3,7 @@ import type { PolishCpiPoint } from "@/features/market-data";
 import type { SnapshotScope } from "../../server/snapshots/types";
 import type { LiveTotalsResult } from "../../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../../server/snapshots/types";
+import type { DashboardBenchmarkSeries } from "../lib/benchmark-config";
 import { PortfolioValueOverTimeChart } from "./PortfolioValueOverTimeChart";
 
 type Props = Readonly<{
@@ -12,6 +13,7 @@ type Props = Readonly<{
   rows: readonly SnapshotChartRow[];
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
+  benchmarkSeries: DashboardBenchmarkSeries;
 }>;
 
 export async function PortfolioValueOverTimeWidget({
@@ -21,6 +23,7 @@ export async function PortfolioValueOverTimeWidget({
   rows,
   liveTotals,
   polishCpiSeries,
+  benchmarkSeries,
 }: Props) {
   const scope: SnapshotScope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
 
@@ -39,6 +42,7 @@ export async function PortfolioValueOverTimeWidget({
         todayBucketDate={liveTotals.todayBucketDate}
         liveTotalsByCurrency={liveTotals.totalsByCurrency}
         polishCpiSeries={polishCpiSeries}
+        benchmarkSeries={benchmarkSeries}
       />
     </ChartCard>
   );

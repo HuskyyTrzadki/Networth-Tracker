@@ -1,5 +1,5 @@
 import type { LiveTotals } from "../../server/get-portfolio-live-totals";
-import type { SnapshotCurrency } from "../../server/snapshots/supported-currencies";
+import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { SnapshotChartRow } from "../../server/snapshots/types";
 import type { PerformanceInputRow } from "../lib/twr";
 import {

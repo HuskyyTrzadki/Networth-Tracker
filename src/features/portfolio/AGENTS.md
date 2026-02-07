@@ -21,12 +21,17 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioPerformanceDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/lib/twr.ts`
 - `src/features/portfolio/dashboard/lib/chart-helpers.ts`
+- `src/features/portfolio/dashboard/lib/benchmark-config.ts`
+- `src/features/portfolio/dashboard/lib/benchmark-performance.ts`
 - `src/features/portfolio/server/default-portfolio.ts`
 - `src/features/portfolio/server/list-portfolios.ts`
 - `src/features/portfolio/server/create-portfolio.ts`
 - `src/features/portfolio/server/get-portfolio-holdings.ts`
 - `src/features/portfolio/server/get-portfolio-summary.ts`
 - `src/features/portfolio/server/valuation.ts`
+- `src/features/portfolio/server/get-dashboard-benchmark-series.ts`
+- `src/features/portfolio/server/benchmark-series-helpers.ts`
+- `src/app/api/benchmarks/series/route.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.ts`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.ts`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-series.ts`
@@ -53,7 +58,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - TWR liczy zwrot dzienny: (V_D - CF_D - V_{D-1}) / V_{D-1}, z restartem serii przy brakach.
 - W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
-- Dla PLN w trybie performance domyślnie pokazujemy realny zwrot skumulowany (nominal skorygowany o skumulowaną inflację CPI), a opcjonalnie można przełączyć na widok nominalny + linia skumulowanej inflacji.
+- W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
+- Benchmarki są przygotowywane po stronie serwera i przeliczane do waluty aktywnej zakładki (PLN/USD/EUR) z użyciem dziennych kursów FX (as-of, cache-first).
+- Benchmark overlay jest ładowany leniwie po zaznaczeniu checkboxa i tylko dla wybranego benchmarku + aktywnego zakresu dat (API `/api/benchmarks/series`), aby nie spowalniać bazowego renderu dashboardu.
 - Zakres 1D pokazuje widgety (zmiana dzienna / zwrot dzienny) zamiast pełnych wykresów.
 - Zakres `ALL` czyta pełną historię snapshotów (bez limitu 730 dni).
 - Zainwestowany kapitał liczymy jako kumulację: `net_external_cashflow + net_implicit_transfer`.

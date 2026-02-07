@@ -1,7 +1,7 @@
 import { ChangePill } from "@/features/design-system";
 import { getCurrencyFormatter } from "@/lib/format-currency";
 
-import type { SnapshotCurrency } from "../../server/snapshots/supported-currencies";
+import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import { formatPercent } from "../lib/chart-helpers";
 
 type Props = Readonly<{

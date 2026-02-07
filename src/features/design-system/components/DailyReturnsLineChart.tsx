@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  CartesianGrid,
   Line,
   LineChart,
+  Legend,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -15,13 +17,20 @@ import { buildPaddedDomain } from "../lib/chart-domain";
 type Point = Readonly<{
   label: string;
   value: number;
-  benchmarkValue?: number | null;
+  comparisons?: Readonly<Record<string, number | null | undefined>>;
+}>;
+
+type ComparisonLine = Readonly<{
+  id: string;
+  label: string;
+  color: string;
+  strokeStyle?: "monotone" | "stepAfter";
 }>;
 
 type Props = Readonly<{
   data: readonly Point[];
   height?: number;
-  benchmarkLabel?: string;
+  comparisonLines?: readonly ComparisonLine[];
 }>;
 
 const formatPercent = (value: number) =>
@@ -48,20 +57,24 @@ const formatTooltipDate = (value: string) =>
 export function DailyReturnsLineChart({
   data,
   height = 140,
-  benchmarkLabel = "Benchmark",
+  comparisonLines = [],
 }: Props) {
   const chartData = [...data];
+  const activeComparisonLines = comparisonLines.filter((line) =>
+    chartData.some((entry) => {
+      const value = entry.comparisons?.[line.id];
+      return typeof value === "number" && Number.isFinite(value);
+    })
+  );
   const yDomain = buildPaddedDomain(
-    chartData.flatMap((entry) => [entry.value, entry.benchmarkValue]),
+    chartData.flatMap((entry) => [
+      entry.value,
+      ...activeComparisonLines.map((line) => entry.comparisons?.[line.id] ?? null),
+    ]),
     {
       paddingRatio: 0.15,
       minAbsolutePadding: 0.0025,
     }
-  );
-  const hasBenchmark = chartData.some(
-    (entry) =>
-      typeof entry.benchmarkValue === "number" &&
-      Number.isFinite(entry.benchmarkValue)
   );
   const count = chartData.length;
   const shouldShowTicks = count <= 16;
@@ -71,12 +84,13 @@ export function DailyReturnsLineChart({
   const interval = shouldShowTicks ? 0 : Math.ceil(count / 8);
 
   return (
-    <div className="w-full" style={{ height }}>
-      <ResponsiveContainer>
+    <div className="min-w-0 w-full" style={{ height }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <LineChart
           data={chartData}
           margin={{ top: 12, right: 8, bottom: 0, left: 8 }}
         >
+          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="label"
             tickFormatter={(value) => formatXAxisDate(String(value))}
@@ -92,7 +106,9 @@ export function DailyReturnsLineChart({
             labelFormatter={(value) => formatTooltipDate(String(value))}
             formatter={(value, name) => [
               formatPercent(Number(value)),
-              name === "benchmarkValue" ? benchmarkLabel : "Zwrot skumulowany",
+              name === "value"
+                ? "Zwrot skumulowany"
+                : activeComparisonLines.find((line) => line.id === name)?.label ?? String(name),
             ]}
             contentStyle={{
               background: "var(--popover)",
@@ -112,15 +128,29 @@ export function DailyReturnsLineChart({
             dot={false}
             activeDot={{ r: 3, fill: "var(--chart-1)" }}
           />
-          {hasBenchmark ? (
+          {activeComparisonLines.map((line) => (
             <Line
-              type="stepAfter"
-              dataKey="benchmarkValue"
-              stroke="var(--chart-3)"
+              key={line.id}
+              type={line.strokeStyle ?? "monotone"}
+              dataKey={(entry) => entry.comparisons?.[line.id] ?? null}
+              name={line.id}
+              stroke={line.color}
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 3, fill: "var(--chart-3)" }}
+              activeDot={{ r: 3, fill: line.color }}
               connectNulls={false}
+            />
+          ))}
+          {activeComparisonLines.length > 0 ? (
+            <Legend
+              verticalAlign="top"
+              align="left"
+              wrapperStyle={{ fontSize: 11, color: "var(--muted-foreground)" }}
+              formatter={(value) =>
+                value === "value"
+                  ? "Zwrot skumulowany"
+                  : (activeComparisonLines.find((line) => line.id === value)?.label ?? value)
+              }
             />
           ) : null}
         </LineChart>

@@ -129,8 +129,8 @@ export function PortfolioComparisonChart({
   );
 
   return (
-    <div className="w-full" style={{ height }}>
-      <ResponsiveContainer>
+    <div className="min-w-0 w-full" style={{ height }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <LineChart
           data={chartData}
           margin={{ top: 12, right: 8, bottom: 0, left: 0 }}

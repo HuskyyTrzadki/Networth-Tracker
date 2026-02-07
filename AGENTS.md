@@ -109,7 +109,10 @@ Whenever you ship a new feature or change architecture:
 - Shared DatePicker UI (shadcn-based): globalny komponent z dropdown miesiąc/rok, stałą wysokością (`fixedWeeks`) i ukrytymi outside days
 - Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu i pełną historią dla zakresu ALL)
 - Dashboard value/performance: toggle wartość/performance, 1D jako badge, zakresy >1D jako wykresy liniowe
-- Performance chart uses cumulative return (TWR) for zakresy >1D; for PLN it now defaults to real return (nominal skorygowany o skumulowaną inflację HICP) with optional nominal+inflation comparison mode
+- Performance chart uses cumulative return (TWR) for zakresy >1D; default base line is nominal and comparisons are optional overlays
+- Performance chart for zakresy >1D now uses nominal cumulative return as the base line, with checkbox overlays for comparisons: inflacja skumulowana (PL), S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR)
+- Benchmark overlays are server-prepared and currency-aware for PLN/USD/EUR tabs (daily close converted with cache-first daily FX as-of lookup)
+- Benchmark overlays are now loaded lazily per selected benchmark and per active range dates (not all benchmarks at once), so `/portfolio` render path is not blocked by optional benchmark provider fetches
 - W trybie wartości (>1D): 2 serie na jednym wykresie (wartość portfela + zainwestowany kapitał jako step)
 - Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)
 - Dirty-range rebuild snapshotów po backdate: stan rebuild (`portfolio_snapshot_rebuild_state`), chunked runner (`/api/portfolio-snapshots/rebuild`) i status/loading na dashboardzie

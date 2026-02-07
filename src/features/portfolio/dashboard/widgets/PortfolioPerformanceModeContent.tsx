@@ -10,7 +10,14 @@ import { PortfolioPerformanceDailySummaryCard } from "./PortfolioPerformanceDail
 type Point = Readonly<{
   label: string;
   value: number;
-  benchmarkValue: number | null;
+  comparisons?: Readonly<Record<string, number | null | undefined>>;
+}>;
+
+type ComparisonLine = Readonly<{
+  id: string;
+  label: string;
+  color: string;
+  strokeStyle?: "monotone" | "stepAfter";
 }>;
 
 type Props = Readonly<{
@@ -19,14 +26,10 @@ type Props = Readonly<{
   shouldBootstrap: boolean;
   hasPerformanceData: boolean;
   range: ChartRange;
-  showRealSeries: boolean;
   selectedPeriodReturn: number | null;
-  currency: "PLN" | "USD" | "EUR";
-  hasInflationData: boolean;
-  nominalPeriodReturn: number | null;
-  inflationPeriodReturn: number | null;
   dailyReturnValue: number | null;
   cumulativeChartData: readonly Point[];
+  comparisonLines: readonly ComparisonLine[];
 }>;
 
 export function PortfolioPerformanceModeContent({
@@ -35,14 +38,10 @@ export function PortfolioPerformanceModeContent({
   shouldBootstrap,
   hasPerformanceData,
   range,
-  showRealSeries,
   selectedPeriodReturn,
-  currency,
-  hasInflationData,
-  nominalPeriodReturn,
-  inflationPeriodReturn,
   dailyReturnValue,
   cumulativeChartData,
+  comparisonLines,
 }: Props) {
   if (rebuildMessage) {
     return (
@@ -65,11 +64,7 @@ export function PortfolioPerformanceModeContent({
   return (
     <div className="space-y-4">
       <div>
-        <div className="text-xs text-muted-foreground">
-          {showRealSeries
-            ? `Realny zwrot za okres (${range})`
-            : `Zwrot za okres (${range})`}
-        </div>
+        <div className="text-xs text-muted-foreground">{`Zwrot za okres (${range})`}</div>
         <div
           className={cn(
             "text-3xl font-semibold",
@@ -84,18 +79,6 @@ export function PortfolioPerformanceModeContent({
             ? formatPercent(selectedPeriodReturn)
             : "—"}
         </div>
-        {currency === "PLN" && hasInflationData ? (
-          <div className="mt-1 text-xs text-muted-foreground">
-            Nominalnie:{" "}
-            {nominalPeriodReturn !== null
-              ? formatPercent(nominalPeriodReturn)
-              : "—"}{" "}
-            · Inflacja od początku:{" "}
-            {inflationPeriodReturn !== null
-              ? formatPercent(inflationPeriodReturn)
-              : "—"}
-          </div>
-        ) : null}
       </div>
 
       {range === "1D" ? (
@@ -106,7 +89,7 @@ export function PortfolioPerformanceModeContent({
         <DailyReturnsLineChart
           data={cumulativeChartData}
           height={140}
-          benchmarkLabel="Inflacja skumulowana (PL)"
+          comparisonLines={comparisonLines}
         />
       )}
     </div>

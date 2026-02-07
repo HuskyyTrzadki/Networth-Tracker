@@ -12,7 +12,7 @@ import { getBucketDate } from "./snapshots/bucket-date";
 import {
   SNAPSHOT_CURRENCIES,
   type SnapshotCurrency,
-} from "./snapshots/supported-currencies";
+} from "../lib/supported-currencies";
 import { getPortfolioHoldings } from "./get-portfolio-holdings";
 import { buildPortfolioSummary } from "./valuation";
 
