@@ -40,12 +40,14 @@ export function PortfolioDashboard({
 }: Props) {
   return (
     <div className={cn("space-y-6", className)}>
-      <div className="hidden md:block">
-        <PortfolioSwitcher
-          portfolios={portfolios}
-          selectedId={selectedPortfolioId}
-        />
-      </div>
+      {selectedPortfolioId === null ? (
+        <div className="hidden md:block">
+          <PortfolioSwitcher
+            portfolios={portfolios}
+            selectedId={selectedPortfolioId}
+          />
+        </div>
+      ) : null}
       <PortfolioValueOverTimeWidget
         selectedPortfolioId={selectedPortfolioId}
         hasHoldings={summary.holdings.length > 0}
@@ -55,7 +57,7 @@ export function PortfolioDashboard({
         polishCpiSeries={polishCpiSeries}
         benchmarkSeries={benchmarkSeries}
       />
-      <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
+      <div className="grid gap-4 lg:grid-cols-2">
         <AllocationWidget summary={summary} />
         <HoldingsWidget summary={summary} />
       </div>

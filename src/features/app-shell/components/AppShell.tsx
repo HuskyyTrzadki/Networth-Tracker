@@ -23,7 +23,7 @@ type Props = Readonly<{
 
 export function AppShell({ children, portfolios, className }: Props) {
   const sidebarStyle = {
-    "--sidebar-width": "20rem",
+    "--sidebar-width": "24rem",
     "--sidebar-width-icon": "3.5rem",
   } as CSSProperties;
 

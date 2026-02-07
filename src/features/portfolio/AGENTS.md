@@ -59,6 +59,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
+- Dashboard widgets `Alokacja` i `Pozycje` używają teraz spójnego card shell (`ChartCard`) i układu 50/50 na desktopie, żeby typografia/spacing nie rozjeżdżały się między sekcjami.
+- `AllocationWidget` renderuje donut jako pełną szerokość widgetu (bez stałej kolumny 220px), a legenda udziałów ma czytelniejsze kafelki z paskiem udziału.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Paleta linii porównań jest rozdzielona tak, aby nie mylić bazowej linii zwrotu z inflacją (większy kontrast kolorów między seriami).
 - Benchmarki są przygotowywane po stronie serwera i przeliczane do waluty aktywnej zakładki (PLN/USD/EUR) z użyciem dziennych kursów FX (as-of, cache-first).
@@ -70,6 +72,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Holdings data from `get_portfolio_holdings` includes `instrument_type` for concentration warnings.
 - Holdings with `instrument_type = CURRENCY` are valued at price 1.0 (no quotes); FX is only needed when base currency differs.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
+- Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio` or `?portfolio=all`), and hidden in single-portfolio view (`?portfolio=<id>`).
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.

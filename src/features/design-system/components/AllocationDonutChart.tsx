@@ -13,9 +13,16 @@ export type DonutSlice = Readonly<{
 type Props = Readonly<{
   data: readonly DonutSlice[];
   height?: number;
+  innerRadius?: number | string;
+  outerRadius?: number | string;
 }>;
 
-export function AllocationDonutChart({ data, height = 240 }: Props) {
+export function AllocationDonutChart({
+  data,
+  height = 240,
+  innerRadius = "62%",
+  outerRadius = "88%",
+}: Props) {
   const chartData = [...data];
 
   return (
@@ -26,8 +33,8 @@ export function AllocationDonutChart({ data, height = 240 }: Props) {
             data={chartData}
             dataKey="value"
             nameKey="id"
-            innerRadius={60}
-            outerRadius={90}
+            innerRadius={innerRadius}
+            outerRadius={outerRadius}
             paddingAngle={2}
             isAnimationActive
             animationDuration={650}
@@ -53,11 +60,11 @@ export function AllocationDonutChart({ data, height = 240 }: Props) {
 
               return (
                 <div
-                  className="rounded-md border border-border bg-popover px-3 py-2 text-xs shadow-sm"
+                  className="rounded-md border border-border bg-popover px-3 py-2 text-[12px] shadow-sm"
                   style={{ transform: "translate(12px, -12px)" }}
                 >
                   <div className="font-medium text-foreground">{label}</div>
-                  <div className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+                  <div className="mt-1 font-mono text-[12px] tabular-nums text-muted-foreground">
                     {value}
                   </div>
                 </div>

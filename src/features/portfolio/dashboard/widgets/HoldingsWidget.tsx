@@ -1,4 +1,5 @@
 import { Badge } from "@/features/design-system/components/ui/badge";
+import { ChartCard } from "@/features/design-system";
 import {
   Table,
   TableBody,
@@ -46,24 +47,43 @@ export function HoldingsWidget({ summary }: Props) {
   });
 
   return (
-    <section className="rounded-lg border border-border bg-card shadow-sm">
-      <header className="flex items-center justify-between px-4 py-3">
-        <div className="text-sm font-semibold">Pozycje</div>
-      </header>
-      <Table>
+    <ChartCard
+      title="Pozycje"
+      subtitle="Aktualny skład portfela"
+      right={
+        <div className="font-mono text-[12px] tabular-nums text-muted-foreground">
+          {rows.length} poz.
+        </div>
+      }
+    >
+      <Table className="min-w-[760px]">
         <TableHeader>
-          <TableRow className="bg-muted/40">
-            <TableHead className="px-4">Instrument</TableHead>
-            <TableHead className="px-4" data-align="right">
+          <TableRow className="bg-muted/25">
+            <TableHead className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90">
+              Instrument
+            </TableHead>
+            <TableHead
+              className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
+              data-align="right"
+            >
               Ilość
             </TableHead>
-            <TableHead className="px-4" data-align="right">
+            <TableHead
+              className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
+              data-align="right"
+            >
               Cena
             </TableHead>
-            <TableHead className="px-4" data-align="right">
+            <TableHead
+              className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
+              data-align="right"
+            >
               Wartość
             </TableHead>
-            <TableHead className="px-4" data-align="right">
+            <TableHead
+              className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
+              data-align="right"
+            >
               Udział
             </TableHead>
           </TableRow>
@@ -95,7 +115,7 @@ export function HoldingsWidget({ summary }: Props) {
               typeof row.weight === "number" ? formatPercent(row.weight) : "—";
 
             return (
-              <TableRow key={row.instrumentId} className="h-16">
+              <TableRow key={row.instrumentId} className="h-[68px]">
                 <TableCell className="px-4">
                   <div className="flex items-center gap-3">
                     <div className="grid size-8 place-items-center text-base leading-none">
@@ -109,33 +129,33 @@ export function HoldingsWidget({ summary }: Props) {
                     </div>
                     <div className="flex min-w-0 flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-[13px] font-semibold text-foreground">
                           {row.symbol}
                         </span>
                         {row.exchange ? (
                           <Badge
-                            className="rounded-full px-2 py-0.5 text-[10px]"
+                            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
                             variant="outline"
                           >
                             {row.exchange}
                           </Badge>
                         ) : null}
                       </div>
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="truncate text-[12px] text-muted-foreground">
                         {row.name}
                       </span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell
-                  className="px-4 font-mono text-sm tabular-nums"
+                  className="px-4 font-mono text-[13px] tabular-nums text-foreground"
                   data-align="right"
                 >
                   {row.quantity}
                 </TableCell>
                 <TableCell
                   className={cn(
-                    "px-4 font-mono text-sm tabular-nums",
+                    "px-4 font-mono text-[13px] tabular-nums",
                     row.missingReason ? "text-muted-foreground" : ""
                   )}
                   data-align="right"
@@ -144,14 +164,17 @@ export function HoldingsWidget({ summary }: Props) {
                 </TableCell>
                 <TableCell
                   className={cn(
-                    "px-4 font-mono text-sm tabular-nums",
+                    "px-4 font-mono text-[13px] tabular-nums",
                     row.missingReason ? "text-muted-foreground" : ""
                   )}
                   data-align="right"
                 >
                   {valueLabel}
                 </TableCell>
-                <TableCell className="px-4 text-sm" data-align="right">
+                <TableCell
+                  className="px-4 font-mono text-[13px] tabular-nums text-foreground"
+                  data-align="right"
+                >
                   {weightLabel}
                 </TableCell>
               </TableRow>
@@ -159,6 +182,6 @@ export function HoldingsWidget({ summary }: Props) {
           })}
         </TableBody>
       </Table>
-    </section>
+    </ChartCard>
   );
 }

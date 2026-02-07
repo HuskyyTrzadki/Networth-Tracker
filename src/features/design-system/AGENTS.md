@@ -29,4 +29,5 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Shared Recharts axis/grid visual config used by dashboard charts lives in `components/chart-styles.ts` to keep value/performance charts visually consistent.
 - Shared time-axis tick strategy in `components/chart-styles.ts` switches to 3-month ticks on longer ranges and adds year on year-boundary labels; reused by both dashboard charts.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
+- `AllocationDonutChart` supports responsive radius values (`innerRadius`/`outerRadius` as percent) so feature widgets can use full-width chart areas without hardcoded pixel donuts.
 - Chart stories live in `stories/Charts.stories.tsx`.

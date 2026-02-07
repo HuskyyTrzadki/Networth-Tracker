@@ -61,12 +61,14 @@ export default async function PortfolioPage({ searchParams }: Props) {
           <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
           <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
-        <div className="md:hidden">
-          <PortfolioMobileHeaderActions
-            portfolios={portfolios}
-            selectedId={selectedPortfolioId}
-          />
-        </div>
+        {selectedPortfolioId === null ? (
+          <div className="md:hidden">
+            <PortfolioMobileHeaderActions
+              portfolios={portfolios}
+              selectedId={selectedPortfolioId}
+            />
+          </div>
+        ) : null}
       </header>
       <section className="mt-6">
         <Suspense fallback={<PortfolioDashboardSkeleton />}>

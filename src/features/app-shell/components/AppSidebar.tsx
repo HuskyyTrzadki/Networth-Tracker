@@ -1,16 +1,11 @@
 "use client";
 
-import { ChevronDown, LayoutGrid } from "lucide-react";
+import { BriefcaseBusiness, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { CreatePortfolioDialog } from "@/features/portfolio";
 import { Button } from "@/features/design-system/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/features/design-system/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -47,100 +42,56 @@ export function AppSidebar({ className, portfolios }: Props) {
   const searchParams = useSearchParams();
   const activePortfolioId = searchParams?.get("portfolio") ?? null;
   const isPortfolioActive = isHrefActive(pathname, "/portfolio");
+  const isOverviewActive =
+    isPortfolioActive && (!activePortfolioId || activePortfolioId === "all");
 
   return (
     <Sidebar
       collapsible="none"
       className={cn(
-        "h-svh w-[20rem] min-w-[20rem] max-w-[20rem] shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+        "h-svh w-[24rem] min-w-[24rem] max-w-[24rem] shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
         className
       )}
     >
-      <SidebarHeader className="px-3 py-4">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
+      <SidebarHeader className="px-4 py-5">
+        <Link
+          href="/portfolio?portfolio=all"
+          className="flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold tracking-tight text-sidebar-foreground"
+        >
+          <span className="inline-flex size-8 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent/40">
+            <BriefcaseBusiness className="size-[18px] text-primary" aria-hidden="true" />
+          </span>
           Portfolio Tracker
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+      <SidebarContent className="px-3 pb-3">
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-3 text-sm font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/55">
+            Nawigacja
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <Collapsible defaultOpen className="group/collapsible">
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton isActive={isPortfolioActive}>
-                      <LayoutGrid aria-hidden="true" />
-                      <span>Portfele</span>
-                      <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          asChild
-                          isActive={
-                            !activePortfolioId || activePortfolioId === "all"
-                          }
-                        >
-                          <Link href="/portfolio">
-                            <span className="min-w-0 flex-1 truncate">
-                              Wszystkie portfele
-                            </span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      {portfolios.map((portfolio) => (
-                        <SidebarMenuSubItem key={portfolio.id}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={activePortfolioId === portfolio.id}
-                          >
-                            <Link href={`/portfolio?portfolio=${portfolio.id}`}>
-                              <span className="min-w-0 flex-1 truncate">
-                                {portfolio.name}
-                              </span>
-                              <span className="ml-auto text-[11px] text-sidebar-foreground/60 tabular-nums">
-                                {portfolio.baseCurrency}
-                              </span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                    <div className="px-3 pt-1">
-                      <CreatePortfolioDialog
-                        onCreated={(createdId) => {
-                          router.push(`/portfolio?portfolio=${createdId}`, {
-                            scroll: false,
-                          });
-                          router.refresh();
-                        }}
-                        trigger={({ open, disabled }) => (
-                          <Button
-                            className="h-7 w-full justify-start px-2 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
-                            disabled={disabled}
-                            onClick={open}
-                            type="button"
-                            variant="ghost"
-                          >
-                            Nowy portfel
-                          </Button>
-                        )}
-                      />
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarMenuItem>
               {primaryNavItems.map((item) => {
-                const active = isHrefActive(pathname, item.href);
+                const active =
+                  item.id === "overview"
+                    ? isOverviewActive
+                    : isHrefActive(pathname, item.href);
                 const Icon = item.icon;
 
                 return (
                   <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton asChild isActive={active}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      className={cn(
+                        "h-12 rounded-lg px-4 text-base font-medium text-sidebar-foreground/90",
+                        "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
+                        "data-[active=true]:bg-primary/15 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
+                        "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.38)]",
+                        "[&[data-active=true]>svg]:text-primary"
+                      )}
+                    >
                       <Link href={item.href}>
                         <Icon aria-hidden="true" />
                         <span>{item.label}</span>
@@ -150,6 +101,58 @@ export function AppSidebar({ className, portfolios }: Props) {
                 );
               })}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-3 text-sm font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/55">
+            Portfele
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenuSub className="mx-0 translate-x-0 border-l-0 px-1 py-1">
+              {portfolios.map((portfolio) => (
+                <SidebarMenuSubItem key={portfolio.id}>
+                  <SidebarMenuSubButton
+                    asChild
+                    isActive={activePortfolioId === portfolio.id}
+                    className={cn(
+                      "h-12 rounded-lg px-4 text-base font-medium text-sidebar-foreground/85",
+                      "data-[active=true]:bg-primary/15 data-[active=true]:font-semibold data-[active=true]:text-sidebar-foreground",
+                      "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.38)]"
+                    )}
+                  >
+                    <Link href={`/portfolio?portfolio=${portfolio.id}`}>
+                      <span className="min-w-0 flex-1 truncate">{portfolio.name}</span>
+                      <span className="ml-auto font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
+                        {portfolio.baseCurrency}
+                      </span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+              <SidebarMenuSubItem>
+                <CreatePortfolioDialog
+                  onCreated={(createdId) => {
+                    router.push(`/portfolio?portfolio=${createdId}`, {
+                      scroll: false,
+                    });
+                    router.refresh();
+                  }}
+                  trigger={({ open, disabled }) => (
+                    <Button
+                      className="h-12 w-full justify-start gap-2 rounded-lg border border-primary/35 bg-primary/10 px-4 text-base font-semibold text-primary hover:bg-primary/15 hover:text-primary"
+                      disabled={disabled}
+                      onClick={open}
+                      type="button"
+                      variant="ghost"
+                    >
+                      <Plus className="size-[18px]" aria-hidden="true" />
+                      Nowy portfel
+                    </Button>
+                  )}
+                />
+              </SidebarMenuSubItem>
+            </SidebarMenuSub>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -162,7 +165,17 @@ export function AppSidebar({ className, portfolios }: Props) {
 
             return (
               <SidebarMenuItem key={item.id}>
-                <SidebarMenuButton asChild isActive={active}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={active}
+                  className={cn(
+                    "h-12 rounded-lg px-4 text-base font-medium text-sidebar-foreground/85",
+                    "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
+                    "data-[active=true]:bg-primary/15 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
+                    "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.38)]",
+                    "[&[data-active=true]>svg]:text-primary"
+                  )}
+                >
                   <Link href={item.href}>
                     <Icon aria-hidden="true" />
                     <span>{item.label}</span>

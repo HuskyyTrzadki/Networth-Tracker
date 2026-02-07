@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -32,12 +32,6 @@ export function MobileBottomNav({ className }: Props) {
   );
   const isMoreActive = !isAnyPrimaryActive;
   const ActionIcon = mobileActionNavItem.icon;
-  const portfolioSheetItem = {
-    id: "portfolio",
-    href: "/portfolio",
-    icon: LayoutGrid,
-    label: "Portfele",
-  } as const;
 
   return (
     <nav
@@ -107,11 +101,7 @@ export function MobileBottomNav({ className }: Props) {
 
             <SheetBody className="px-2 py-2">
               <div className="space-y-1">
-                {[
-                  portfolioSheetItem,
-                  ...primaryNavItems,
-                  ...secondaryNavItems,
-                ].map((item) => {
+                {[...primaryNavItems, ...secondaryNavItems].map((item) => {
                   const Icon = item.icon;
                   const active = isHrefActive(pathname, item.href);
                   return (

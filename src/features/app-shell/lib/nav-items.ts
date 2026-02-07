@@ -1,13 +1,13 @@
 import {
   ArrowLeftRight,
+  House,
   Plus,
-  Search,
   Settings,
   type LucideIcon,
 } from "lucide-react";
 
 export type AppNavId =
-  | "search"
+  | "overview"
   | "transactions"
   | "add"
   | "settings";
@@ -21,10 +21,10 @@ export type AppNavItem = Readonly<{
 
 export const primaryNavItems: readonly AppNavItem[] = [
   {
-    id: "search",
-    href: "/search",
-    icon: Search,
-    label: "Szukaj",
+    id: "overview",
+    href: "/portfolio?portfolio=all",
+    icon: House,
+    label: "Przegląd",
   },
   {
     id: "transactions",

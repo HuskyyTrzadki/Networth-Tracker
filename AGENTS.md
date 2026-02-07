@@ -82,6 +82,7 @@ Whenever you ship a new feature or change architecture:
 - Storybook + design system stories (colors, typography, finance demo, Recharts charts) with theme toolbars,
 - shadcn/ui primitives live in `src/components/ui` and are re-exported from `src/features/design-system/components/ui/*`
 - App shell navigation (shadcn sidebar on desktop + mobile bottom nav + “More” sheet)
+- Sidebar IA refresh: app-level nav (`Przegląd`, `Transakcje`) separated from portfolio assets (`Portfele`), with stronger active states and quieter currency labels
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
 - Portfolio empty state with CTA actions (Dashboard)
@@ -117,6 +118,7 @@ Whenever you ship a new feature or change architecture:
 - Wartość/performance chart layout is now shared in one widget layout module (same chart height, same empty-state sizing, same card min-height), so style cannot drift between modes
 - Long-range X axis for value/performance charts now uses 3-month ticks (instead of every month) and includes year labels when the year changes
 - Value/performance chart visuals are now harmonized via shared chart style tokens (axis typography, margins, line widths), and comparison line colors are mapped for stronger contrast vs base return
+- Dashboard row with `Alokacja` + `Pozycje` now uses equal 50/50 columns on desktop, with unified card chrome/typography and improved readability; allocation donut is full-width inside the widget
 - Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)
 - Dirty-range rebuild snapshotów po backdate: stan rebuild (`portfolio_snapshot_rebuild_state`), chunked runner (`/api/portfolio-snapshots/rebuild`) i status/loading na dashboardzie
 - Smart polling rebuild statusu: polling tylko dla `queued/running`, backoff 2s→5s→10s, `nextPollAfterMs` z API + pola postępu (`fromDate`, `toDate`, `processedUntil`) do progress bara
