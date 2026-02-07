@@ -32,7 +32,7 @@ export const benchmarkLineDefinitions: Readonly<Record<BenchmarkId, ComparisonLi
   WIG20: {
     id: "WIG20",
     label: "WIG20 (ETFBW20TR)",
-    color: "var(--chart-4)",
+    color: "var(--chart-3)",
   },
   MWIG40: {
     id: "MWIG40",
@@ -44,7 +44,7 @@ export const benchmarkLineDefinitions: Readonly<Record<BenchmarkId, ComparisonLi
 export const inflationLineDefinition: ComparisonLineDefinition = {
   id: "INFLATION_PL",
   label: "Inflacja skumulowana (PL)",
-  color: "var(--chart-3)",
+  color: "var(--chart-4)",
   strokeStyle: "stepAfter",
 };
 

@@ -58,7 +58,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - TWR liczy zwrot dzienny: (V_D - CF_D - V_{D-1}) / V_{D-1}, z restartem serii przy brakach.
 - W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
+- Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
+- Paleta linii porównań jest rozdzielona tak, aby nie mylić bazowej linii zwrotu z inflacją (większy kontrast kolorów między seriami).
 - Benchmarki są przygotowywane po stronie serwera i przeliczane do waluty aktywnej zakładki (PLN/USD/EUR) z użyciem dziennych kursów FX (as-of, cache-first).
 - Benchmark overlay jest ładowany leniwie po zaznaczeniu checkboxa i tylko dla wybranego benchmarku + aktywnego zakresu dat (API `/api/benchmarks/series`), aby nie spowalniać bazowego renderu dashboardu.
 - Zakres 1D pokazuje widgety (zmiana dzienna / zwrot dzienny) zamiast pełnych wykresów.

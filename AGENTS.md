@@ -114,6 +114,9 @@ Whenever you ship a new feature or change architecture:
 - Benchmark overlays are server-prepared and currency-aware for PLN/USD/EUR tabs (daily close converted with cache-first daily FX as-of lookup)
 - Benchmark overlays are now loaded lazily per selected benchmark and per active range dates (not all benchmarks at once), so `/portfolio` render path is not blocked by optional benchmark provider fetches
 - W trybie wartości (>1D): 2 serie na jednym wykresie (wartość portfela + zainwestowany kapitał jako step)
+- Wartość/performance chart layout is now shared in one widget layout module (same chart height, same empty-state sizing, same card min-height), so style cannot drift between modes
+- Long-range X axis for value/performance charts now uses 3-month ticks (instead of every month) and includes year labels when the year changes
+- Value/performance chart visuals are now harmonized via shared chart style tokens (axis typography, margins, line widths), and comparison line colors are mapped for stronger contrast vs base return
 - Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)
 - Dirty-range rebuild snapshotów po backdate: stan rebuild (`portfolio_snapshot_rebuild_state`), chunked runner (`/api/portfolio-snapshots/rebuild`) i status/loading na dashboardzie
 - Smart polling rebuild statusu: polling tylko dla `queued/running`, backoff 2s→5s→10s, `nextPollAfterMs` z API + pola postępu (`fromDate`, `toDate`, `processedUntil`) do progress bara

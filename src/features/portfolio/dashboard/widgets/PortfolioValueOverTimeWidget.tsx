@@ -4,6 +4,7 @@ import type { SnapshotScope } from "../../server/snapshots/types";
 import type { LiveTotalsResult } from "../../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../../server/snapshots/types";
 import type { DashboardBenchmarkSeries } from "../lib/benchmark-config";
+import { SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS } from "./portfolio-value-over-time-chart-layout";
 import { PortfolioValueOverTimeChart } from "./PortfolioValueOverTimeChart";
 
 type Props = Readonly<{
@@ -31,7 +32,7 @@ export async function PortfolioValueOverTimeWidget({
     <ChartCard
       title="Wartość i performance"
       subtitle="Na podstawie dziennych snapshotów"
-      className="min-h-[320px]"
+      className={SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS}
     >
       <PortfolioValueOverTimeChart
         scope={scope}

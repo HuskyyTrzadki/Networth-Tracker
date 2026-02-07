@@ -11,6 +11,17 @@ import {
 } from "recharts";
 
 import { buildPaddedDomain } from "../lib/chart-domain";
+import {
+  createSharedTimeAxisConfig,
+  SHARED_CHART_AXIS_LINE,
+  SHARED_CHART_AXIS_TICK,
+  SHARED_CHART_AXIS_WIDTH,
+  SHARED_CHART_GRID_PROPS,
+  SHARED_CHART_MARGIN,
+  SHARED_CHART_PRIMARY_LINE_WIDTH,
+  SHARED_CHART_SECONDARY_LINE_WIDTH,
+  SHARED_CHART_TICK_LINE,
+} from "./chart-styles";
 
 type Point = Readonly<{
   label: string;
@@ -31,9 +42,8 @@ const defaultValueFormatter = (value: number) =>
 const defaultLabelFormatter = (label: string) => label;
 const axisValueFormatter = (value: number) =>
   new Intl.NumberFormat("pl-PL", {
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(value);
-
 function ComparisonTooltip({
   active,
   payload,
@@ -64,8 +74,8 @@ function ComparisonTooltip({
       : null;
 
   return (
-    <div className="space-y-2 rounded-md border border-border bg-popover p-3 text-xs text-popover-foreground shadow-sm">
-      <div className="text-muted-foreground">
+    <div className="space-y-2 rounded-md border border-border bg-popover p-3 text-[12px] text-popover-foreground shadow-sm">
+      <div className="text-muted-foreground/90">
         {label ? labelFormatter(label) : "—"}
       </div>
       <div className="space-y-1">
@@ -120,6 +130,9 @@ export function PortfolioComparisonChart({
   const hasInvestedCapital = chartData.some(
     (entry) => entry.investedCapital !== null
   );
+  const timeAxisConfig = createSharedTimeAxisConfig(
+    chartData.map((entry) => entry.label)
+  );
   const yDomain = buildPaddedDomain(
     chartData.flatMap((entry) => [entry.portfolioValue, entry.investedCapital]),
     {
@@ -133,22 +146,26 @@ export function PortfolioComparisonChart({
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <LineChart
           data={chartData}
-          margin={{ top: 12, right: 8, bottom: 0, left: 0 }}
+          margin={SHARED_CHART_MARGIN}
         >
-          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid {...SHARED_CHART_GRID_PROPS} />
           <XAxis
             dataKey="label"
-            tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
-            tickLine={{ stroke: "var(--border)" }}
+            tickFormatter={(value) => timeAxisConfig.tickFormatter(String(value))}
+            ticks={timeAxisConfig.ticks}
+            tick={SHARED_CHART_AXIS_TICK}
+            interval={timeAxisConfig.interval}
+            minTickGap={timeAxisConfig.minTickGap}
+            axisLine={SHARED_CHART_AXIS_LINE}
+            tickLine={SHARED_CHART_TICK_LINE}
           />
           <YAxis
             domain={yDomain ?? ["auto", "auto"]}
             tickFormatter={axisValueFormatter}
-            tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
-            tickLine={{ stroke: "var(--border)" }}
-            width={56}
+            tick={SHARED_CHART_AXIS_TICK}
+            axisLine={SHARED_CHART_AXIS_LINE}
+            tickLine={SHARED_CHART_TICK_LINE}
+            width={SHARED_CHART_AXIS_WIDTH}
           />
           <Tooltip
             cursor={{ stroke: "var(--ring)" }}
@@ -163,7 +180,7 @@ export function PortfolioComparisonChart({
             type="monotone"
             dataKey="portfolioValue"
             stroke="var(--profit)"
-            strokeWidth={2.5}
+            strokeWidth={SHARED_CHART_PRIMARY_LINE_WIDTH}
             dot={false}
             connectNulls={false}
           />
@@ -172,7 +189,7 @@ export function PortfolioComparisonChart({
               type="stepAfter"
               dataKey="investedCapital"
               stroke="var(--chart-1)"
-              strokeWidth={2}
+              strokeWidth={SHARED_CHART_SECONDARY_LINE_WIDTH}
               dot={false}
               connectNulls={false}
             />

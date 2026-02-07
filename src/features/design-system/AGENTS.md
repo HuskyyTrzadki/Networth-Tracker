@@ -26,4 +26,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Daily returns line chart (dashboard) lives in `components/DailyReturnsLineChart.tsx`.
 - Daily returns line chart supports multiple optional comparison overlays with configurable labels/colors/line styles (used by CPI + benchmarks).
 - Chart Y axes use adaptive padded domains (`lib/chart-domain.ts`) to reduce "flat line" effect on narrow-value ranges.
+- Shared Recharts axis/grid visual config used by dashboard charts lives in `components/chart-styles.ts` to keep value/performance charts visually consistent.
+- Shared time-axis tick strategy in `components/chart-styles.ts` switches to 3-month ticks on longer ranges and adds year on year-boundary labels; reused by both dashboard charts.
+- Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
 - Chart stories live in `stories/Charts.stories.tsx`.

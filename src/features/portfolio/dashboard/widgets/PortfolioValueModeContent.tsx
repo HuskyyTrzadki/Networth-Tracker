@@ -6,6 +6,10 @@ import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ComparisonChartPoint, NullableSeriesPoint } from "../lib/chart-helpers";
 import type { ChartRange } from "../lib/chart-helpers";
 import { PortfolioValueDailySummaryCard } from "./PortfolioValueDailySummaryCard";
+import {
+  getPortfolioChartEmptyStateClassName,
+  SHARED_PORTFOLIO_CHART_HEIGHT,
+} from "./portfolio-value-over-time-chart-layout";
 
 type Props = Readonly<{
   rebuildMessage: string | null;
@@ -40,7 +44,7 @@ export function PortfolioValueModeContent({
 }: Props) {
   if (rebuildMessage) {
     return (
-      <div className={getEmptyStateClassName(shouldBootstrap)}>
+      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
         {rebuildMessage}
       </div>
     );
@@ -48,7 +52,7 @@ export function PortfolioValueModeContent({
 
   if (!hasValuePoints) {
     return (
-      <div className={getEmptyStateClassName(shouldBootstrap)}>
+      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
         {hasHoldings
           ? "Tworzymy pierwszy punkt wartości portfela."
           : "Dodaj transakcje, aby zobaczyć wykres."}
@@ -75,10 +79,10 @@ export function PortfolioValueModeContent({
     investedCapitalSeries.some((entry) => entry.value === null);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <PortfolioComparisonChart
         data={comparisonChartData}
-        height={240}
+        height={SHARED_PORTFOLIO_CHART_HEIGHT}
         valueFormatter={formatCurrencyValue}
         labelFormatter={formatDayLabelWithYear}
       />
@@ -91,11 +95,3 @@ export function PortfolioValueModeContent({
     </div>
   );
 }
-
-const getEmptyStateClassName = (shouldBootstrap: boolean) =>
-  [
-    "grid h-[240px] place-items-center rounded-lg border border-dashed border-border text-xs text-muted-foreground",
-    shouldBootstrap ? "animate-pulse" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");

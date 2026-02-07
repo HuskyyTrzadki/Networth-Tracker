@@ -6,6 +6,10 @@ import { cn } from "@/lib/cn";
 import type { ChartRange } from "../lib/chart-helpers";
 import { formatPercent } from "../lib/chart-helpers";
 import { PortfolioPerformanceDailySummaryCard } from "./PortfolioPerformanceDailySummaryCard";
+import {
+  getPortfolioChartEmptyStateClassName,
+  SHARED_PORTFOLIO_CHART_HEIGHT,
+} from "./portfolio-value-over-time-chart-layout";
 
 type Point = Readonly<{
   label: string;
@@ -45,7 +49,7 @@ export function PortfolioPerformanceModeContent({
 }: Props) {
   if (rebuildMessage) {
     return (
-      <div className={getEmptyStateClassName(shouldBootstrap)}>
+      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
         {rebuildMessage}
       </div>
     );
@@ -53,7 +57,7 @@ export function PortfolioPerformanceModeContent({
 
   if (!hasPerformanceData) {
     return (
-      <div className={getEmptyStateClassName(shouldBootstrap)}>
+      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
         {hasHoldings
           ? "Brak danych do wyliczenia performance."
           : "Dodaj transakcje, aby zobaczyć performance."}
@@ -88,18 +92,10 @@ export function PortfolioPerformanceModeContent({
       ) : (
         <DailyReturnsLineChart
           data={cumulativeChartData}
-          height={140}
+          height={SHARED_PORTFOLIO_CHART_HEIGHT}
           comparisonLines={comparisonLines}
         />
       )}
     </div>
   );
 }
-
-const getEmptyStateClassName = (shouldBootstrap: boolean) =>
-  [
-    "grid h-[240px] place-items-center rounded-lg border border-dashed border-border text-xs text-muted-foreground",
-    shouldBootstrap ? "animate-pulse" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
