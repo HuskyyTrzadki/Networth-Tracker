@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
+import { parseISO } from "date-fns";
 
+import { DatePicker } from "@/features/design-system/components/ui/date-picker";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/features/design-system/components/ui/form";
 import { Label } from "@/features/design-system/components/ui/label";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -15,27 +16,28 @@ import {
 } from "@/features/design-system/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
 import { cn } from "@/lib/cn";
-import {
-  addDecimals,
-  multiplyDecimals,
-  negateDecimal,
-  parseDecimalString,
-} from "@/lib/decimal";
 
 import { InstrumentCombobox } from "../InstrumentCombobox";
 import { MoneyInput } from "../MoneyInput";
-import { TransactionDatePicker } from "../TransactionDatePicker";
 import { AddTransactionCashSection } from "./AddTransactionCashSection";
 import { AddTransactionNotesSummary } from "./AddTransactionNotesSummary";
+import { HistoricalPriceAssistHint } from "./HistoricalPriceAssistHint";
+import { useHistoricalPriceAssist } from "./useHistoricalPriceAssist";
 import type { InstrumentSearchClient } from "../../client/search-instruments";
 import type { InstrumentSearchResult } from "../../lib/instrument-search";
 import {
   SUPPORTED_CASH_CURRENCIES,
-  buildCashInstrument,
   isSupportedCashCurrency,
   type CashCurrency,
 } from "../../lib/system-currencies";
 import { ASSET_TABS, buildEmptyBalances, formatMoney, type AssetTab } from "./constants";
+import { buildCashDeltaLabel } from "./build-cash-delta-label";
+import {
+  applyCashCurrencyChange,
+  applyCashTabState,
+  applyNonCashTabState,
+} from "./tab-state";
+import { getTradeDateLowerBound } from "../../lib/trade-date";
 import type { FormValues } from "../AddTransactionDialogContent";
 
 export function AddTransactionDialogFields({
@@ -69,74 +71,50 @@ export function AddTransactionDialogFields({
   const quantity = useWatch({ control: form.control, name: "quantity" });
   const price = useWatch({ control: form.control, name: "price" });
   const fee = useWatch({ control: form.control, name: "fee" });
+  const date = useWatch({ control: form.control, name: "date" });
 
   const isCashTab = activeTab === "CASH";
   const resolvedPortfolioId = forcedPortfolioId ?? portfolioId;
-  const resolvedCashCurrency: CashCurrency =
-    isSupportedCashCurrency(cashCurrency)
-      ? (cashCurrency as CashCurrency)
-      : initialCashCurrency;
+  const resolvedCashCurrency: CashCurrency = isSupportedCashCurrency(cashCurrency)
+    ? (cashCurrency as CashCurrency)
+    : initialCashCurrency;
   const cashBalances = cashBalancesByPortfolio[resolvedPortfolioId] ?? buildEmptyBalances();
   const availableCash = cashBalances[resolvedCashCurrency] ?? "0";
   const displayCurrency = selectedInstrument?.currency ?? currency ?? "";
-  const isFxMismatch =
-    consumeCash &&
-    Boolean(selectedInstrument) &&
+  const minTradeDate = parseISO(getTradeDateLowerBound());
+  const isFxMismatch = consumeCash && Boolean(selectedInstrument) &&
     resolvedCashCurrency !== (selectedInstrument?.currency ?? "");
-
-  const cashDeltaLabel = useMemo(() => {
-    if (!consumeCash || !selectedInstrument) return null;
-    if (!quantity || !price) return null;
-    const quantityDecimal = parseDecimalString(quantity);
-    const priceDecimal = parseDecimalString(price);
-    const feeDecimal = parseDecimalString(fee) ?? null;
-    if (!quantityDecimal || !priceDecimal || !feeDecimal) return null;
-
-    const gross = multiplyDecimals(quantityDecimal, priceDecimal);
-    const delta =
-      type === "BUY"
-        ? negateDecimal(addDecimals(gross, feeDecimal))
-        : addDecimals(gross, negateDecimal(feeDecimal));
-
-    if (delta.eq(0)) return null;
-
-    const sign = delta.gt(0) ? "+" : "-";
-    return `${sign}${formatMoney(delta.abs().toString(), displayCurrency)}`;
-  }, [consumeCash, displayCurrency, fee, price, quantity, selectedInstrument, type]);
+  const historicalPriceAssist = useHistoricalPriceAssist({
+    enabled: !isCashTab,
+    form,
+    provider: selectedInstrument?.provider ?? null,
+    providerKey: selectedInstrument?.providerKey ?? null,
+    date,
+    price,
+  });
+  const cashDeltaLabel = buildCashDeltaLabel({
+    consumeCash,
+    hasInstrument: Boolean(selectedInstrument),
+    quantity,
+    price,
+    fee,
+    type,
+    displayCurrency,
+  });
 
   const handleTabChange = (nextTab: AssetTab) => {
     setActiveTab(nextTab);
 
     if (nextTab === "CASH") {
-      const cashInstrument = buildCashInstrument(resolvedCashCurrency);
-      setSelectedInstrument(cashInstrument);
-      form.setValue("assetId", cashInstrument.id, { shouldValidate: true });
-      form.setValue("currency", cashInstrument.currency, { shouldValidate: true });
-      form.setValue("price", "1", { shouldValidate: true });
-      form.setValue("fee", "0", { shouldValidate: true });
-      form.setValue("consumeCash", false, { shouldValidate: true });
-      form.setValue("type", "BUY", { shouldValidate: true });
-      form.setValue("cashflowType", "DEPOSIT", { shouldValidate: true });
+      applyCashTabState(form, setSelectedInstrument, resolvedCashCurrency);
       return;
     }
 
-    setSelectedInstrument(null);
-    form.setValue("assetId", "", { shouldValidate: true });
-    form.setValue("currency", "", { shouldValidate: true });
-    form.setValue("price", "", { shouldValidate: true });
-    form.setValue("fee", "", { shouldValidate: true });
-    form.setValue("cashflowType", undefined, { shouldValidate: true });
+    applyNonCashTabState(form, setSelectedInstrument);
   };
 
   const handleCashCurrencyChange = (nextCurrency: string) => {
-    form.setValue("cashCurrency", nextCurrency, { shouldValidate: true });
-
-    if (isCashTab && isSupportedCashCurrency(nextCurrency)) {
-      const cashInstrument = buildCashInstrument(nextCurrency);
-      setSelectedInstrument(cashInstrument);
-      form.setValue("assetId", cashInstrument.id, { shouldValidate: true });
-      form.setValue("currency", cashInstrument.currency, { shouldValidate: true });
-    }
+    applyCashCurrencyChange(form, setSelectedInstrument, nextCurrency, isCashTab);
   };
 
   return (
@@ -328,6 +306,11 @@ export function AddTransactionDialogFields({
                       placeholder="np. 100,00"
                     />
                   </FormControl>
+                  <HistoricalPriceAssistHint
+                    currency={displayCurrency}
+                    errorMessage={historicalPriceAssist.errorMessage}
+                    hint={historicalPriceAssist.hint}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -343,7 +326,18 @@ export function AddTransactionDialogFields({
               <FormItem>
                 <FormLabel>Data transakcji</FormLabel>
                 <FormControl>
-                  <TransactionDatePicker onChange={field.onChange} value={field.value} />
+                  <DatePicker
+                    maxDate={new Date()}
+                    minDate={minTradeDate}
+                    onChange={(nextDate) => {
+                      form.setValue("date", nextDate, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      });
+                    }}
+                    value={field.value}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

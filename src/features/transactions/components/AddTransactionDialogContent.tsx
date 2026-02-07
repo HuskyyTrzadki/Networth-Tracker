@@ -52,6 +52,45 @@ export type FormValues = Readonly<{
   notes: string;
 }>;
 
+type SubmitPayloadFields = Readonly<{
+  price: string;
+  fee: string;
+  consumeCash: boolean;
+  cashCurrency?: string;
+  fxFee?: string;
+  cashflowType?: CashflowTypeUi;
+}>;
+
+const buildSubmitPayloadFields = (
+  values: FormValues,
+  isCashTab: boolean
+): SubmitPayloadFields => {
+  if (isCashTab) {
+    return {
+      price: "1",
+      fee: "0",
+      consumeCash: false,
+      cashflowType: values.cashflowType,
+    };
+  }
+
+  if (!values.consumeCash) {
+    return {
+      price: values.price,
+      fee: values.fee,
+      consumeCash: false,
+    };
+  }
+
+  return {
+    price: values.price,
+    fee: values.fee,
+    consumeCash: true,
+    cashCurrency: values.cashCurrency,
+    fxFee: values.fxFee,
+  };
+};
+
 export function AddTransactionDialogContent({
   initialValues,
   initialInstrument,
@@ -143,18 +182,12 @@ export function AddTransactionDialogContent({
 
     try {
       const resolvedPortfolioId = forcedPortfolioId ?? values.portfolioId;
-      const payloadPrice = isCashTab ? "1" : values.price;
-      const payloadFee = isCashTab ? "0" : values.fee;
+      const payloadFields = buildSubmitPayloadFields(values, isCashTab);
       await createTransaction({
         type: values.type,
         date: values.date,
         quantity: values.quantity,
-        price: payloadPrice,
-        fee: payloadFee,
-        consumeCash: !isCashTab && values.consumeCash,
-        cashCurrency: !isCashTab && values.consumeCash ? values.cashCurrency : undefined,
-        fxFee: !isCashTab && values.consumeCash ? values.fxFee : undefined,
-        cashflowType: isCashTab ? values.cashflowType : undefined,
+        ...payloadFields,
         notes: values.notes,
         portfolioId: resolvedPortfolioId,
         clientRequestId: crypto.randomUUID(),

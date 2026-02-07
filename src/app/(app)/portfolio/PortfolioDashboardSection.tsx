@@ -4,6 +4,7 @@ import {
   DashboardEmptyState,
   PortfolioDashboard,
 } from "@/features/portfolio";
+import { getPolishCpiSeriesCached } from "@/features/market-data";
 import { getPortfolioLiveTotals } from "@/features/portfolio/server/get-portfolio-live-totals";
 import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
 import { getPortfolioSnapshotRows } from "@/features/portfolio/server/snapshots/get-portfolio-snapshot-rows";
@@ -53,6 +54,13 @@ export default async function PortfolioDashboardSection({
     selectedPortfolioId ? "PORTFOLIO" : "ALL",
     selectedPortfolioId
   );
+  const firstSnapshotDate = snapshotRows.rows[0]?.bucketDate ?? null;
+  const lastSnapshotDate =
+    snapshotRows.rows[snapshotRows.rows.length - 1]?.bucketDate ?? null;
+  const polishCpiSeries =
+    firstSnapshotDate && lastSnapshotDate
+      ? await getPolishCpiSeriesCached(supabase, firstSnapshotDate, lastSnapshotDate)
+      : [];
   const liveTotals = await getPortfolioLiveTotals(supabase, {
     portfolioId: selectedPortfolioId,
   });
@@ -64,6 +72,7 @@ export default async function PortfolioDashboardSection({
       summary={summary}
       snapshotRows={snapshotRows}
       liveTotals={liveTotals}
+      polishCpiSeries={polishCpiSeries}
     />
   );
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { subYears, subDays, format } from "date-fns";
 
 import { createTransactionRequestSchema } from "./schema";
 
@@ -42,6 +43,16 @@ describe("createTransactionRequestSchema", () => {
     const result = createTransactionRequestSchema.safeParse({
       ...basePayload,
       date: "2999-01-01",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects dates older than 5 years", () => {
+    const tooOld = format(subDays(subYears(new Date(), 5), 1), "yyyy-MM-dd");
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      date: tooOld,
     });
 
     expect(result.success).toBe(false);

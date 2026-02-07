@@ -10,6 +10,8 @@ import {
   YAxis,
 } from "recharts";
 
+import { buildPaddedDomain } from "../lib/chart-domain";
+
 type Point = Readonly<{
   label: string;
   portfolioValue: number | null;
@@ -27,6 +29,10 @@ const defaultValueFormatter = (value: number) =>
   new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 }).format(value);
 
 const defaultLabelFormatter = (label: string) => label;
+const axisValueFormatter = (value: number) =>
+  new Intl.NumberFormat("pl-PL", {
+    maximumFractionDigits: 2,
+  }).format(value);
 
 function ComparisonTooltip({
   active,
@@ -114,6 +120,13 @@ export function PortfolioComparisonChart({
   const hasInvestedCapital = chartData.some(
     (entry) => entry.investedCapital !== null
   );
+  const yDomain = buildPaddedDomain(
+    chartData.flatMap((entry) => [entry.portfolioValue, entry.investedCapital]),
+    {
+      paddingRatio: 0.12,
+      minAbsolutePadding: 1,
+    }
+  );
 
   return (
     <div className="w-full" style={{ height }}>
@@ -130,6 +143,8 @@ export function PortfolioComparisonChart({
             tickLine={{ stroke: "var(--border)" }}
           />
           <YAxis
+            domain={yDomain ?? ["auto", "auto"]}
+            tickFormatter={axisValueFormatter}
             tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
             axisLine={{ stroke: "var(--border)" }}
             tickLine={{ stroke: "var(--border)" }}

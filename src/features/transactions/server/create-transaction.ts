@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { touchProfileLastActive } from "@/features/auth/server/profiles";
 import { getFxRatesCached } from "@/features/market-data";
 import type { FxRate } from "@/features/market-data";
+import { getBucketDate } from "@/features/portfolio/server/snapshots/bucket-date";
+import { markSnapshotRebuildDirty } from "@/features/portfolio/server/snapshots/rebuild-state";
 import {
   buildCashInstrument,
   isSupportedCashCurrency,
@@ -37,6 +39,34 @@ const resolveFxRate = (fx: FxRate | null) =>
         provider: "yahoo",
       }
     : null;
+
+const markSnapshotHistoryDirty = async (
+  supabaseAdmin: SupabaseServerClient,
+  userId: string,
+  portfolioId: string,
+  tradeDate: string
+) => {
+  // Past-dated writes need historical snapshot recompute from the earliest affected day.
+  const todayBucket = getBucketDate(new Date());
+  if (tradeDate >= todayBucket) {
+    return;
+  }
+
+  await Promise.all([
+    markSnapshotRebuildDirty(supabaseAdmin, {
+      userId,
+      scope: "PORTFOLIO",
+      portfolioId,
+      dirtyFrom: tradeDate,
+    }),
+    markSnapshotRebuildDirty(supabaseAdmin, {
+      userId,
+      scope: "ALL",
+      portfolioId: null,
+      dirtyFrom: tradeDate,
+    }),
+  ]);
+};
 
 export async function createTransaction(
   supabaseUser: SupabaseServerClient,
@@ -243,6 +273,13 @@ export async function createTransaction(
 
   // Best-effort profile touch; we do not block the response.
   await touchProfileLastActive(supabaseUser, userId).catch(() => undefined);
+  // Best-effort rebuild mark for past-dated transactions; no response blocking.
+  await markSnapshotHistoryDirty(
+    supabaseAdmin,
+    userId,
+    input.portfolioId,
+    input.date
+  ).catch(() => undefined);
 
   return {
     transactionId: assetRow.id,

@@ -104,14 +104,28 @@ Whenever you ship a new feature or change architecture:
 - Transactions page.
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
 - Cache-first quotes + FX with TTL (global cache, direct FX only + inversion)
+- Historyczne ceny w formularzu transakcji: API `/api/instruments/price-on-date` (Yahoo daily), auto-sugestia ceny + zakres low/high + fallback do ostatniej sesji
+- Limity dat transakcji: brak przyszłych dat + max 5 lat wstecz (UI + backend schema)
+- Shared DatePicker UI (shadcn-based): globalny komponent z dropdown miesiąc/rok, stałą wysokością (`fixedWeeks`) i ukrytymi outside days
 - Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu i pełną historią dla zakresu ALL)
 - Dashboard value/performance: toggle wartość/performance, 1D jako badge, zakresy >1D jako wykresy liniowe
+- Performance chart uses cumulative return (TWR) for zakresy >1D; for PLN it now defaults to real return (nominal skorygowany o skumulowaną inflację HICP) with optional nominal+inflation comparison mode
 - W trybie wartości (>1D): 2 serie na jednym wykresie (wartość portfela + zainwestowany kapitał jako step)
 - Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)
+- Dirty-range rebuild snapshotów po backdate: stan rebuild (`portfolio_snapshot_rebuild_state`), chunked runner (`/api/portfolio-snapshots/rebuild`) i status/loading na dashboardzie
+- Smart polling rebuild statusu: polling tylko dla `queued/running`, backoff 2s→5s→10s, `nextPollAfterMs` z API + pola postępu (`fromDate`, `toDate`, `processedUntil`) do progress bara
+- Progress przebudowy liczony po stronie backendu (`progressPercent`), a wycena historyczna używa as-of lookup (`<= bucket_date`) dla daily prices i daily FX
+- Rebuild snapshotów używa range-batch compute (transakcje + ceny dzienne + FX ładowane hurtowo, potem pętla dzienna w pamięci), co redukuje koszt zapytań per dzień
+- Rebuild snapshotów jest adaptacyjny: jeden `POST /api/portfolio-snapshots/rebuild` może przetworzyć wiele chunków w ramach budżetu czasu (`timeBudgetMs`), zamiast sztywno jednego chunku na request
+- W obrębie jednego runa chunki współdzielą preloaded session (transakcje + daily prices + daily FX ładowane raz i używane wielokrotnie), co usuwa koszt ponownego fetchowania danych per chunk
+- Preload cache cen/FX waliduje jakość pokrycia zakresu (początek, koniec i maksymalna luka wewnętrzna), więc „dziurawe” serie są dociągane z providera zamiast tworzyć długie płaskie odcinki
+- Dzienne cache historyczne (globalne, realne sesje): `instrument_daily_prices_cache` i `fx_daily_rates_cache` (bez zapisywania syntetycznych weekendów)
+- Cache CPI PL (Eurostat HICP index level): miesięczne dane makro w `macro_cpi_pl_cache` do wyliczania skumulowanej inflacji i real return na wykresie performance
 
 ### Will be built next
 - Wire `profiles.last_active_at` updates into portfolio writes for 60-day retention cleanup
 - TODO: add unit/integration tests for cache hit/miss logic (Vitest)
+- TODO: dodać testy integracyjne dla rebuild runnera snapshotów (chunking, merge dirty_from, status transitions)
 
 Keep it short and current. If unsure, add a TODO with rationale.
 

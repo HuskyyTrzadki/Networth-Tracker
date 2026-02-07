@@ -21,12 +21,15 @@ type QueryResult = {
   error: { message: string } | null;
 };
 
-const createSupabaseStub = (result: QueryResult) => {
+const createSupabaseStub = (results: QueryResult[]) => {
   const calls = {
     gte: [] as string[],
     eq: [] as string[],
     is: [] as string[],
+    ranges: [] as Array<{ from: number; to: number }>,
   };
+
+  let currentResultIndex = 0;
 
   const query = {
     select: () => query,
@@ -39,11 +42,24 @@ const createSupabaseStub = (result: QueryResult) => {
       return query;
     },
     order: () => query,
+    range: (from: number, to: number) => {
+      calls.ranges.push({ from, to });
+      return query;
+    },
     is: (column: string) => {
       calls.is.push(column);
       return query;
     },
-    then: (resolve: (value: QueryResult) => unknown) => resolve(result),
+    then: (resolve: (value: QueryResult) => unknown) => {
+      const next =
+        results[currentResultIndex] ??
+        ({
+          data: [],
+          error: null,
+        } satisfies QueryResult);
+      currentResultIndex += 1;
+      return resolve(next);
+    },
   };
 
   const supabase = {
@@ -71,10 +87,12 @@ const baseRow = {
 
 describe("getPortfolioSnapshotRows", () => {
   it("applies date filter when days is provided", async () => {
-    const { supabase, calls } = createSupabaseStub({
-      data: [baseRow],
-      error: null,
-    });
+    const { supabase, calls } = createSupabaseStub([
+      {
+        data: [baseRow],
+        error: null,
+      },
+    ]);
 
     const result = await getPortfolioSnapshotRows(
       supabase as never,
@@ -88,10 +106,12 @@ describe("getPortfolioSnapshotRows", () => {
   });
 
   it("does not apply date filter when days is omitted", async () => {
-    const { supabase, calls } = createSupabaseStub({
-      data: [baseRow],
-      error: null,
-    });
+    const { supabase, calls } = createSupabaseStub([
+      {
+        data: [baseRow],
+        error: null,
+      },
+    ]);
 
     await getPortfolioSnapshotRows(supabase as never, "ALL", null);
 
@@ -99,10 +119,12 @@ describe("getPortfolioSnapshotRows", () => {
   });
 
   it("filters by selected portfolio for portfolio scope", async () => {
-    const { supabase, calls } = createSupabaseStub({
-      data: [baseRow],
-      error: null,
-    });
+    const { supabase, calls } = createSupabaseStub([
+      {
+        data: [baseRow],
+        error: null,
+      },
+    ]);
 
     await getPortfolioSnapshotRows(
       supabase as never,
@@ -116,14 +138,41 @@ describe("getPortfolioSnapshotRows", () => {
   });
 
   it("filters by null portfolio for ALL scope", async () => {
-    const { supabase, calls } = createSupabaseStub({
-      data: [baseRow],
-      error: null,
-    });
+    const { supabase, calls } = createSupabaseStub([
+      {
+        data: [baseRow],
+        error: null,
+      },
+    ]);
 
     await getPortfolioSnapshotRows(supabase as never, "ALL", null, 7);
 
     expect(calls.eq).toEqual(["scope"]);
     expect(calls.is).toEqual(["portfolio_id"]);
+  });
+
+  it("paginates when more than 1000 rows are available", async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      ...baseRow,
+      bucket_date: `2026-01-${String((index % 28) + 1).padStart(2, "0")}`,
+    }));
+    const secondPage = [
+      {
+        ...baseRow,
+        bucket_date: "2026-02-06",
+      },
+    ];
+    const { supabase, calls } = createSupabaseStub([
+      { data: firstPage, error: null },
+      { data: secondPage, error: null },
+    ]);
+
+    const result = await getPortfolioSnapshotRows(supabase as never, "ALL", null);
+
+    expect(calls.ranges).toEqual([
+      { from: 0, to: 999 },
+      { from: 1000, to: 1999 },
+    ]);
+    expect(result.rows).toHaveLength(1001);
   });
 });

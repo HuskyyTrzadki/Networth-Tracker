@@ -1,5 +1,6 @@
 import { cn } from "@/lib/cn";
 
+import type { PolishCpiPoint } from "@/features/market-data";
 import type { PortfolioSummary } from "../server/valuation";
 import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../server/snapshots/types";
@@ -21,6 +22,7 @@ type Props = Readonly<{
     rows: readonly SnapshotChartRow[];
   }>;
   liveTotals: LiveTotalsResult;
+  polishCpiSeries: readonly PolishCpiPoint[];
   className?: string;
 }>;
 
@@ -30,6 +32,7 @@ export function PortfolioDashboard({
   summary,
   snapshotRows,
   liveTotals,
+  polishCpiSeries,
   className,
 }: Props) {
   return (
@@ -46,6 +49,7 @@ export function PortfolioDashboard({
         hasSnapshots={snapshotRows.hasSnapshots}
         rows={snapshotRows.rows}
         liveTotals={liveTotals}
+        polishCpiSeries={polishCpiSeries}
       />
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
         <AllocationWidget summary={summary} />

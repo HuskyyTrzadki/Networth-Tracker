@@ -15,6 +15,11 @@ export type NullableSeriesPoint = Readonly<{
   value: number | null;
 }>;
 
+export type InflationSeriesPoint = Readonly<{
+  periodDate: string;
+  value: number;
+}>;
+
 export type ComparisonChartPoint = Readonly<{
   label: string;
   portfolioValue: number;
@@ -33,6 +38,13 @@ export const rangeOptions: readonly RangeOption[] = [
 
 const parseBucketDate = (value: string) =>
   new Date(`${value}T00:00:00Z`);
+
+const dayDiff = (later: Date, earlier: Date) =>
+  Math.floor((later.getTime() - earlier.getTime()) / (24 * 60 * 60 * 1000));
+
+// If the "previous row" is too old versus range start, using it would create
+// misleading returns over a long data gap (e.g. 2024 -> 2026 jump).
+const MAX_PREVIOUS_ROW_GAP_DAYS = 7;
 
 const rangeLengthDays: Record<ChartRange, number> = {
   "1D": 1,
@@ -87,10 +99,21 @@ export const getRangeRows = (
 
   const rangeRows = rows.slice(startIndex);
   const previousRow = startIndex > 0 ? rows[startIndex - 1] : null;
+  const firstRangeRow = rangeRows[0] ?? null;
+
+  const shouldIncludePreviousRow =
+    previousRow !== null &&
+    firstRangeRow !== null &&
+    dayDiff(
+      parseBucketDate(firstRangeRow.bucketDate),
+      parseBucketDate(previousRow.bucketDate)
+    ) <= MAX_PREVIOUS_ROW_GAP_DAYS;
 
   return {
     rows: rangeRows,
-    rowsForReturns: previousRow ? [previousRow, ...rangeRows] : rangeRows,
+    rowsForReturns: shouldIncludePreviousRow
+      ? [previousRow, ...rangeRows]
+      : rangeRows,
   };
 };
 
@@ -98,8 +121,10 @@ export const hasRangeCoverage = (
   rows: readonly SnapshotChartRow[],
   range: ChartRange
 ) => {
+  if (rows.length === 0) return false;
+  if (range === "ALL") return true;
+  if (range === "YTD") return rows.length > 0;
   if (rows.length < 2) return false;
-  if (range === "ALL" || range === "YTD") return true;
 
   const last = parseBucketDate(rows[rows.length - 1].bucketDate);
   const first = parseBucketDate(rows[0].bucketDate);
@@ -188,6 +213,96 @@ export const toInvestedCapitalSeries = (
   });
 };
 
+export const projectSeriesToRows = (
+  rows: readonly SnapshotChartRow[],
+  series: readonly NullableSeriesPoint[]
+): NullableSeriesPoint[] => {
+  const seriesByLabel = new Map(
+    series.map((point) => [point.label, point.value] as const)
+  );
+
+  return rows.map((row) => ({
+    label: row.bucketDate,
+    value: seriesByLabel.get(row.bucketDate) ?? null,
+  }));
+};
+
+export const toCumulativeInflationSeries = (
+  bucketDates: readonly string[],
+  inflationPoints: readonly InflationSeriesPoint[]
+): NullableSeriesPoint[] => {
+  if (bucketDates.length === 0 || inflationPoints.length === 0) {
+    return bucketDates.map((bucketDate) => ({ label: bucketDate, value: null }));
+  }
+
+  const sortedPoints = [...inflationPoints].sort((a, b) =>
+    a.periodDate.localeCompare(b.periodDate)
+  );
+  let inflationIndex = 0;
+  let latestKnownIndex: InflationSeriesPoint | null = null;
+  let baseIndex: number | null = null;
+
+  return bucketDates.map((bucketDate) => {
+    while (
+      inflationIndex < sortedPoints.length &&
+      sortedPoints[inflationIndex].periodDate <= bucketDate
+    ) {
+      latestKnownIndex = sortedPoints[inflationIndex];
+      inflationIndex += 1;
+    }
+
+    if (!latestKnownIndex) {
+      return { label: bucketDate, value: null };
+    }
+
+    if (baseIndex === null) {
+      baseIndex = latestKnownIndex.value;
+    }
+
+    if (!baseIndex || baseIndex <= 0) {
+      return { label: bucketDate, value: null };
+    }
+
+    return {
+      label: bucketDate,
+      value: latestKnownIndex.value / baseIndex - 1,
+    };
+  });
+};
+
+export const toRealReturnSeries = (
+  nominalReturns: readonly NullableSeriesPoint[],
+  cumulativeInflation: readonly NullableSeriesPoint[]
+): NullableSeriesPoint[] => {
+  const inflationByLabel = new Map(
+    cumulativeInflation.map((entry) => [entry.label, entry.value] as const)
+  );
+
+  return nominalReturns.map((nominalEntry) => {
+    const inflationValue = inflationByLabel.get(nominalEntry.label) ?? null;
+
+    if (nominalEntry.value === null || inflationValue === null) {
+      return {
+        label: nominalEntry.label,
+        value: null,
+      };
+    }
+
+    const denominator = 1 + inflationValue;
+    if (denominator <= 0) {
+      return {
+        label: nominalEntry.label,
+        value: null,
+      };
+    }
+
+    return {
+      label: nominalEntry.label,
+      value: (1 + nominalEntry.value) / denominator - 1,
+    };
+  });
+};
+
 export const toComparisonChartData = (
   valuePoints: readonly { label: string; value: number }[],
   investedCapitalSeries: readonly NullableSeriesPoint[],
@@ -265,4 +380,11 @@ export const formatDayLabel = (label: string) =>
   new Intl.DateTimeFormat("pl-PL", {
     day: "2-digit",
     month: "short",
+  }).format(new Date(label));
+
+export const formatDayLabelWithYear = (label: string) =>
+  new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   }).format(new Date(label));

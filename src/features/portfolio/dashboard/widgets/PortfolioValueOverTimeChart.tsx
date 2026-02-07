@@ -4,45 +4,46 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
-  DailyReturnsLineChart,
-  PortfolioComparisonChart,
-} from "@/features/design-system";
-import {
   Tabs,
   TabsList,
   TabsTrigger,
 } from "@/features/design-system/components/ui/tabs";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/features/design-system/components/ui/toggle-group";
-import { cn } from "@/lib/cn";
 import { getCurrencyFormatter } from "@/lib/format-currency";
 
+import type { PolishCpiPoint } from "@/features/market-data";
 import type { LiveTotals } from "../../server/get-portfolio-live-totals";
 import type { SnapshotCurrency } from "../../server/snapshots/supported-currencies";
 import type { SnapshotScope, SnapshotChartRow } from "../../server/snapshots/types";
 import {
+  computeCumulativeReturns,
   computeDailyReturns,
   computePeriodReturn,
 } from "../lib/twr";
+import { useSnapshotRebuild } from "../hooks/useSnapshotRebuild";
 import {
   type ChartMode,
   type ChartRange,
-  formatDayLabel,
-  formatPercent,
-  formatRangeLabel,
+  type NullableSeriesPoint,
+  formatDayLabelWithYear,
   getRangeRows,
   getTotalValue,
   hasRangeCoverage,
   mergeLivePoint,
-  rangeOptions,
+  projectSeriesToRows,
   toComparisonChartData,
+  toCumulativeInflationSeries,
   toInvestedCapitalSeries,
-  toPerformanceRows,
+  toRealReturnSeries,
 } from "../lib/chart-helpers";
-import { PortfolioPerformanceDailySummaryCard } from "./PortfolioPerformanceDailySummaryCard";
-import { PortfolioValueDailySummaryCard } from "./PortfolioValueDailySummaryCard";
+import { PortfolioPerformanceModeContent } from "./PortfolioPerformanceModeContent";
+import { PortfolioValueModeContent } from "./PortfolioValueModeContent";
+import { PortfolioValueOverTimeHeader } from "./PortfolioValueOverTimeHeader";
+import {
+  MAX_LIVE_ANCHOR_GAP_DAYS,
+  toIsoDayMs,
+  toLiveSnapshotRow,
+  toPerformanceRows,
+} from "./portfolio-value-over-time-chart-helpers";
 
 const currencyLabels: Record<SnapshotCurrency, string> = {
   PLN: "PLN",
@@ -58,6 +59,7 @@ type Props = Readonly<{
   rows: readonly SnapshotChartRow[];
   todayBucketDate: string;
   liveTotalsByCurrency: Readonly<Record<SnapshotCurrency, LiveTotals>>;
+  polishCpiSeries: readonly PolishCpiPoint[];
 }>;
 
 export function PortfolioValueOverTimeChart({
@@ -68,14 +70,49 @@ export function PortfolioValueOverTimeChart({
   rows,
   todayBucketDate,
   liveTotalsByCurrency,
+  polishCpiSeries,
 }: Props) {
   const [currency, setCurrency] = useState<SnapshotCurrency>("PLN");
   const [mode, setMode] = useState<ChartMode>("PERFORMANCE");
   const [range, setRange] = useState<ChartRange>("YTD");
+  const [showNominalWithInflation, setShowNominalWithInflation] = useState(false);
   const [bootstrapped, setBootstrapped] = useState(false);
   const router = useRouter();
 
   const shouldBootstrap = hasHoldings && !hasSnapshots && !bootstrapped;
+  const rebuild = useSnapshotRebuild(scope, portfolioId, hasHoldings);
+  const rebuildStartDate = rebuild.fromDate ?? rebuild.dirtyFrom;
+  const rebuildMessage = rebuild.isBusy
+    ? `Aktualizujemy historię ${
+        rebuildStartDate ? `od ${rebuildStartDate}` : "portfela"
+      }.`
+    : null;
+
+  const liveTotals = liveTotalsByCurrency[currency];
+
+  const lastValuationBucketDate =
+    [...rows].reverse().find((row) => getTotalValue(row, currency) !== null)
+      ?.bucketDate ?? null;
+
+  const lastSnapshotMs = toIsoDayMs(lastValuationBucketDate);
+  const todayBucketMs = toIsoDayMs(todayBucketDate);
+  const gapDaysFromSnapshotToToday =
+    Number.isFinite(lastSnapshotMs) && Number.isFinite(todayBucketMs)
+      ? Math.max(0, Math.floor((todayBucketMs - lastSnapshotMs) / 86_400_000))
+      : null;
+
+  const canUseLiveEndpoint =
+    liveTotals.totalValue !== null &&
+    (lastValuationBucketDate === null ||
+      (gapDaysFromSnapshotToToday !== null &&
+        gapDaysFromSnapshotToToday <= MAX_LIVE_ANCHOR_GAP_DAYS));
+
+  const shouldAppendLiveAnchorRow =
+    canUseLiveEndpoint && !rows.some((row) => row.bucketDate === todayBucketDate);
+
+  const rowsWithLiveAnchor = shouldAppendLiveAnchorRow
+    ? [...rows, toLiveSnapshotRow(currency, todayBucketDate, liveTotals)]
+    : rows;
 
   useEffect(() => {
     if (!shouldBootstrap) return;
@@ -95,7 +132,8 @@ export function PortfolioValueOverTimeChart({
     });
   }, [portfolioId, router, scope, shouldBootstrap]);
 
-  const rangeMeta = getRangeRows(rows, range);
+  const rangeMeta = getRangeRows(rowsWithLiveAnchor, range);
+
   const valuePoints = rangeMeta.rows
     .map((row) => {
       const value = getTotalValue(row, currency);
@@ -104,55 +142,104 @@ export function PortfolioValueOverTimeChart({
     })
     .filter((point): point is NonNullable<typeof point> => Boolean(point));
 
-  const liveTotals = liveTotalsByCurrency[currency];
   const effectivePoints = mergeLivePoint(
     valuePoints,
     todayBucketDate,
-    liveTotals.totalValue
+    canUseLiveEndpoint ? liveTotals.totalValue : null
   );
-  const investedCapitalSeries = toInvestedCapitalSeries(rangeMeta.rows, currency);
+
+  const fullInvestedCapitalSeries = toInvestedCapitalSeries(rowsWithLiveAnchor, currency);
+  const investedCapitalSeries = projectSeriesToRows(
+    rangeMeta.rows,
+    fullInvestedCapitalSeries
+  );
   const comparisonChartData = toComparisonChartData(
     effectivePoints,
     investedCapitalSeries,
     todayBucketDate
   );
 
-  const performanceRows = toPerformanceRows(rangeMeta.rowsForReturns, currency);
+  const performanceRows = toPerformanceRows(
+    rangeMeta.rowsForReturns,
+    currency,
+    todayBucketDate,
+    liveTotals,
+    canUseLiveEndpoint
+  );
+
   const dailyReturns = computeDailyReturns(performanceRows);
-  const periodReturn = computePeriodReturn(dailyReturns);
-  const dailyChartData = dailyReturns
+  const cumulativeReturns = computeCumulativeReturns(dailyReturns);
+  const nominalCumulativeSeries: NullableSeriesPoint[] = cumulativeReturns.map((entry) => ({
+    label: entry.bucketDate,
+    value: entry.value,
+  }));
+
+  const inflationSeries = toCumulativeInflationSeries(
+    cumulativeReturns.map((entry) => entry.bucketDate),
+    polishCpiSeries.map((point) => ({
+      periodDate: point.periodDate,
+      value: point.value,
+    }))
+  );
+
+  const realReturnSeries = toRealReturnSeries(
+    nominalCumulativeSeries,
+    inflationSeries
+  );
+
+  const inflationByDate = new Map(
+    inflationSeries.map((entry) => [entry.label, entry.value] as const)
+  );
+
+  const nominalPeriodReturn = computePeriodReturn(dailyReturns).value;
+  const inflationPeriodReturn =
+    [...inflationSeries].reverse().find((entry) => entry.value !== null)?.value ?? null;
+  const realPeriodReturn =
+    [...realReturnSeries].reverse().find((entry) => entry.value !== null)?.value ?? null;
+
+  const hasInflationData = inflationSeries.some((entry) => entry.value !== null);
+  const hasRealData = realReturnSeries.some((entry) => entry.value !== null);
+  const canUseRealMode = currency === "PLN" && hasInflationData && hasRealData;
+  const showRealSeries = canUseRealMode && !showNominalWithInflation;
+
+  const selectedPerformanceSeries = showRealSeries
+    ? realReturnSeries
+    : nominalCumulativeSeries;
+  const selectedPeriodReturn = showRealSeries
+    ? realPeriodReturn
+    : nominalPeriodReturn;
+
+  const cumulativeChartData = selectedPerformanceSeries
     .filter(
-      (entry): entry is (typeof dailyReturns)[number] & { value: number } =>
+      (entry): entry is (typeof selectedPerformanceSeries)[number] & { value: number } =>
         entry.value !== null
     )
     .map((entry) => ({
-      label: formatDayLabel(entry.bucketDate),
+      label: entry.label,
       value: entry.value,
+      benchmarkValue:
+        showNominalWithInflation && currency === "PLN"
+          ? (inflationByDate.get(entry.label) ?? null)
+          : null,
     }));
 
-  const hasPerformanceData = dailyChartData.length > 0;
+  const hasPerformanceData = cumulativeChartData.length > 0;
   const hasValuePoints = effectivePoints.length > 0;
-  const hasInvestedCapitalData = comparisonChartData.some(
-    (entry) => entry.investedCapital !== null
-  );
-  const hasInvestedCapitalGaps =
-    hasInvestedCapitalData &&
-    investedCapitalSeries.some((entry) => entry.value === null);
 
   const performancePartial = dailyReturns.some(
     (entry) => entry.value !== null && entry.isPartial
   );
 
-  const latestValueRow =
-    rangeMeta.rowsForReturns[rangeMeta.rowsForReturns.length - 1] ?? null;
-  const previousValueRow =
-    rangeMeta.rowsForReturns[rangeMeta.rowsForReturns.length - 2] ?? null;
-  const latestValue = latestValueRow
-    ? getTotalValue(latestValueRow, currency)
+  const valuedRowsForSummary = rangeMeta.rowsForReturns.filter(
+    (row) => getTotalValue(row, currency) !== null
+  );
+  const latestValue = valuedRowsForSummary.length
+    ? getTotalValue(valuedRowsForSummary[valuedRowsForSummary.length - 1], currency)
     : null;
-  const previousValue = previousValueRow
-    ? getTotalValue(previousValueRow, currency)
+  const previousValue = valuedRowsForSummary.length > 1
+    ? getTotalValue(valuedRowsForSummary[valuedRowsForSummary.length - 2], currency)
     : null;
+
   const dailyDelta =
     latestValue !== null && previousValue !== null
       ? latestValue - previousValue
@@ -161,178 +248,62 @@ export function PortfolioValueOverTimeChart({
     dailyDelta !== null && previousValue && previousValue !== 0
       ? dailyDelta / previousValue
       : null;
+
   const dailyReturn = dailyReturns[dailyReturns.length - 1] ?? null;
   const dailyReturnValue = dailyReturn?.value ?? null;
 
   const isRangeDisabled = (option: ChartRange) => {
-    if (!hasRangeCoverage(rows, option)) return true;
+    if (!hasRangeCoverage(rowsWithLiveAnchor, option)) return true;
 
-    const meta = getRangeRows(rows, option);
+    const meta = getRangeRows(rowsWithLiveAnchor, option);
     if (mode === "VALUE") {
       const valueRows = option === "1D" ? meta.rowsForReturns : meta.rows;
       const count = valueRows.filter(
         (row) => getTotalValue(row, currency) !== null
       ).length;
-      const minRequired = option === "1D" ? 2 : 1;
+      const minRequired = option === "ALL" ? 1 : 2;
       return count < minRequired;
     }
 
-    const perfRows = toPerformanceRows(meta.rowsForReturns, currency);
-    const returns = computeDailyReturns(perfRows);
+    const optionPerformanceRows = toPerformanceRows(
+      meta.rowsForReturns,
+      currency,
+      todayBucketDate,
+      liveTotals,
+      canUseLiveEndpoint
+    );
+    const returns = computeDailyReturns(optionPerformanceRows);
     const validReturns = returns.filter((entry) => entry.value !== null).length;
     return validReturns < 1;
   };
 
-  const modeOptions = (
-    <ToggleGroup
-      type="single"
-      value={mode}
-      onValueChange={(value) => {
-        if (value === "VALUE" || value === "PERFORMANCE") {
-          setMode(value);
-        }
-      }}
-      className="flex flex-wrap gap-2"
-    >
-      <ToggleGroupItem value="PERFORMANCE">Performance</ToggleGroupItem>
-      <ToggleGroupItem value="VALUE">Wartość</ToggleGroupItem>
-    </ToggleGroup>
-  );
-
-  const rangeOptionsUi = (
-    <ToggleGroup
-      type="single"
-      value={range}
-      onValueChange={(value) => {
-        const next = value as ChartRange;
-        if (!next) return;
-        setRange(next);
-      }}
-      className="flex flex-wrap gap-2"
-    >
-      {rangeOptions.map((option) => {
-        const isDisabled = isRangeDisabled(option.value);
-
-        return (
-          <ToggleGroupItem
-            key={option.value}
-            value={option.value}
-            disabled={isDisabled}
-          >
-            {formatRangeLabel(option.label)}
-          </ToggleGroupItem>
-        );
-      })}
-    </ToggleGroup>
-  );
-
   const currencyFormatter = getCurrencyFormatter(currency);
   const formatCurrencyValue = (value: number) =>
     currencyFormatter?.format(value) ?? value.toString();
-  const emptyStateClassName = cn(
-    "grid h-[240px] place-items-center rounded-lg border border-dashed border-border text-xs text-muted-foreground",
-    shouldBootstrap ? "animate-pulse" : ""
-  );
-
-  const renderEmptyState = (message: string) => (
-    <div className={emptyStateClassName}>{message}</div>
-  );
-
-  const renderValueContent = () => {
-    if (!hasValuePoints) {
-      return renderEmptyState(
-        hasHoldings
-          ? "Tworzymy pierwszy punkt wartości portfela."
-          : "Dodaj transakcje, aby zobaczyć wykres."
-      );
-    }
-
-    if (range === "1D") {
-      return (
-        <PortfolioValueDailySummaryCard
-          currency={currency}
-          latestValue={latestValue}
-          dailyDelta={dailyDelta}
-          dailyDeltaPercent={dailyDeltaPercent}
-        />
-      );
-    }
-
-    return (
-      <PortfolioComparisonChart
-        data={comparisonChartData}
-        height={240}
-        valueFormatter={formatCurrencyValue}
-        labelFormatter={formatDayLabel}
-      />
-    );
-  };
-
-  const renderPerformanceContent = () => {
-    if (!hasPerformanceData) {
-      return renderEmptyState(
-        hasHoldings
-          ? "Brak danych do wyliczenia performance."
-          : "Dodaj transakcje, aby zobaczyć performance."
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <div>
-          <div className="text-xs text-muted-foreground">
-            Zwrot za okres ({range})
-          </div>
-          <div
-            className={cn(
-              "text-3xl font-semibold",
-              periodReturn.value !== null && periodReturn.value > 0
-                ? "text-emerald-600"
-                : periodReturn.value !== null && periodReturn.value < 0
-                  ? "text-rose-600"
-                  : "text-foreground"
-            )}
-          >
-            {periodReturn.value !== null
-              ? formatPercent(periodReturn.value)
-              : "—"}
-          </div>
-        </div>
-        {range === "1D" ? (
-          <PortfolioPerformanceDailySummaryCard
-            dailyReturnValue={dailyReturnValue}
-          />
-        ) : (
-          <DailyReturnsLineChart data={dailyChartData} height={140} />
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          {modeOptions}
-          {rangeOptionsUi}
-        </div>
-        {mode === "PERFORMANCE" && performancePartial ? (
-          <div className="text-xs text-muted-foreground">
-            Częściowe dane: performance może być przybliżone.
-          </div>
-        ) : null}
-        {mode === "VALUE" && liveTotals.totalValue !== null && liveTotals.isPartial ? (
-          <div className="text-xs text-muted-foreground">
-            Częściowa wycena: brak cen dla {liveTotals.missingQuotes} pozycji,
-            brak FX dla {liveTotals.missingFx} pozycji.
-          </div>
-        ) : null}
-        {mode === "VALUE" && hasInvestedCapitalGaps ? (
-          <div className="text-xs text-muted-foreground">
-            Zainwestowany kapitał ma luki historyczne, bo część dni nie ma danych przepływów lub transferów.
-          </div>
-        ) : null}
-      </div>
+      <PortfolioValueOverTimeHeader
+        mode={mode}
+        onModeChange={setMode}
+        range={range}
+        onRangeChange={setRange}
+        isRangeDisabled={isRangeDisabled}
+        currency={currency}
+        onNominalWithInflationToggle={setShowNominalWithInflation}
+        hasInflationData={hasInflationData}
+        canUseRealMode={canUseRealMode}
+        showingRealMode={showRealSeries}
+        performancePartial={performancePartial}
+        valueIsPartial={liveTotals.totalValue !== null && liveTotals.isPartial}
+        missingQuotes={liveTotals.missingQuotes}
+        missingFx={liveTotals.missingFx}
+        rebuildStatus={rebuild.status}
+        rebuildFromDate={rebuildStartDate}
+        rebuildToDate={rebuild.toDate}
+        rebuildProgressPercent={rebuild.progressPercent}
+        rebuildMessage={rebuild.message}
+      />
 
       <Tabs
         value={currency}
@@ -347,9 +318,39 @@ export function PortfolioValueOverTimeChart({
         </TabsList>
       </Tabs>
 
-      {mode === "VALUE"
-        ? renderValueContent()
-        : renderPerformanceContent()}
+      {mode === "VALUE" ? (
+        <PortfolioValueModeContent
+          rebuildMessage={rebuildMessage}
+          hasHoldings={hasHoldings}
+          shouldBootstrap={shouldBootstrap}
+          hasValuePoints={hasValuePoints}
+          range={range}
+          currency={currency}
+          latestValue={latestValue}
+          dailyDelta={dailyDelta}
+          dailyDeltaPercent={dailyDeltaPercent}
+          comparisonChartData={comparisonChartData}
+          investedCapitalSeries={investedCapitalSeries}
+          formatCurrencyValue={formatCurrencyValue}
+          formatDayLabelWithYear={formatDayLabelWithYear}
+        />
+      ) : (
+        <PortfolioPerformanceModeContent
+          rebuildMessage={rebuildMessage}
+          hasHoldings={hasHoldings}
+          shouldBootstrap={shouldBootstrap}
+          hasPerformanceData={hasPerformanceData}
+          range={range}
+          showRealSeries={showRealSeries}
+          selectedPeriodReturn={selectedPeriodReturn}
+          currency={currency}
+          hasInflationData={hasInflationData}
+          nominalPeriodReturn={nominalPeriodReturn}
+          inflationPeriodReturn={inflationPeriodReturn}
+          dailyReturnValue={dailyReturnValue}
+          cumulativeChartData={cumulativeChartData}
+        />
+      )}
     </div>
   );
 }

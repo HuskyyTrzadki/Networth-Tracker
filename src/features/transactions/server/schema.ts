@@ -1,10 +1,13 @@
-import { isAfter, parseISO } from "date-fns";
 import { z } from "zod";
 
 import { transactionTypes } from "../lib/add-transaction-form-schema";
 import { cashflowTypes } from "../lib/cashflow-types";
 import { instrumentTypes } from "../lib/instrument-search";
 import { parseDecimalInput } from "../lib/parse-decimal";
+import {
+  isValidTradeDate,
+  tradeDateValidationMessage,
+} from "../lib/trade-date";
 
 const normalizeDecimalInput = (value: string) =>
   value.trim().replace(/\s+/g, "").replace(",", ".");
@@ -62,13 +65,9 @@ const instrumentSchema = z
 export const createTransactionRequestSchema = z
   .object({
     type: z.enum(transactionTypes),
-    date: z.string().refine(
-      (value) => {
-        const parsed = parseISO(value);
-        return !Number.isNaN(parsed.getTime()) && !isAfter(parsed, new Date());
-      },
-      { message: "Nieprawidłowa data." }
-    ),
+    date: z.string().refine((value) => isValidTradeDate(value), {
+      message: tradeDateValidationMessage,
+    }),
     quantity: positiveDecimalString,
     price: nonNegativeDecimalString,
     fee: optionalNonNegativeDecimalString,

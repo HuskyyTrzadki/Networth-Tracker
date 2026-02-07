@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { computeDailyReturns, computePeriodReturn } from "./twr";
+import {
+  computeCumulativeReturns,
+  computeDailyReturns,
+  computePeriodReturn,
+} from "./twr";
 
 const row = (
   bucketDate: string,
@@ -66,6 +70,20 @@ describe("computeDailyReturns", () => {
     const [day] = computeDailyReturns(rows);
     expect(day.value).toBeNull();
   });
+
+  it("carries flows across missing valuation days until next known valuation", () => {
+    const rows = [
+      row("2026-01-01", 100, 0, 0),
+      row("2026-01-02", null, 10, 0),
+      row("2026-01-03", 120, 5, 0),
+    ];
+
+    const daily = computeDailyReturns(rows);
+    expect(daily).toEqual([
+      { bucketDate: "2026-01-02", value: null, isPartial: false },
+      { bucketDate: "2026-01-03", value: 0.05, isPartial: false },
+    ]);
+  });
 });
 
 describe("computePeriodReturn", () => {
@@ -91,5 +109,28 @@ describe("computePeriodReturn", () => {
     const daily = computeDailyReturns(rows);
     const period = computePeriodReturn(daily);
     expect(period.value).toBeCloseTo((121 - 0 - 110) / 110);
+  });
+});
+
+describe("computeCumulativeReturns", () => {
+  it("builds compounded cumulative return series for charting", () => {
+    const rows = [
+      row("2026-01-01", 100, 0, 0),
+      row("2026-01-02", 110, 0, 0),
+      row("2026-01-03", 121, 0, 0),
+    ];
+
+    const daily = computeDailyReturns(rows);
+    const cumulative = computeCumulativeReturns(daily);
+
+    expect(cumulative).toHaveLength(2);
+    expect(cumulative[0]).toEqual({
+      bucketDate: "2026-01-02",
+      value: 0.1,
+      isPartial: false,
+    });
+    expect(cumulative[1]?.bucketDate).toBe("2026-01-03");
+    expect(cumulative[1]?.isPartial).toBe(false);
+    expect(cumulative[1]?.value).toBeCloseTo(0.21);
   });
 });

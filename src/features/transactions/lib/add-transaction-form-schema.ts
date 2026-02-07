@@ -1,8 +1,11 @@
-import { isAfter, parseISO } from "date-fns";
 import { z } from "zod";
 
 import { parseDecimalInput } from "./parse-decimal";
 import { cashflowTypeUiOptions } from "./cashflow-types";
+import {
+  isValidTradeDate,
+  tradeDateValidationMessage,
+} from "./trade-date";
 
 export type TransactionType = "BUY" | "SELL";
 
@@ -25,13 +28,9 @@ export function createAddTransactionFormSchema() {
         return parsed !== null && parsed >= 0;
       }, { message: "Wpisz wartość większą lub równą 0." }),
     cashflowType: z.enum(cashflowTypeUiOptions).optional(),
-    date: z.string().refine(
-      (value) => {
-        const parsed = parseISO(value);
-        return !Number.isNaN(parsed.getTime()) && !isAfter(parsed, new Date());
-      },
-      { message: "Nieprawidłowa data." }
-    ),
+    date: z.string().refine((value) => isValidTradeDate(value), {
+      message: tradeDateValidationMessage,
+    }),
     quantity: z.string().refine(
       (value) => {
         const parsed = parseDecimalInput(value);
