@@ -111,6 +111,7 @@ Whenever you ship a new feature or change architecture:
 - Supabase connection helpers (env + browser/server/middleware clients)
 - Guest-first auth scaffolding: anonymous → Google primary, email/password secondary (`src/app/api/auth/*`, `src/features/auth/*`, Settings UI)
 - Email/password sign-in + sign-up (API routes + settings UI forms)
+- Rejestracja e-mail kieruje na `/onboarding`, gdzie użytkownik tworzy pierwszy portfel (bez auto-tworzenia `Główny`)
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
 - Transactions page.

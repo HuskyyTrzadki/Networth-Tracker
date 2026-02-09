@@ -194,7 +194,7 @@ export function AuthActions({ mode, nextPath, userEmail }: Props) {
           kind: "success",
           message: "Konto utworzone i zalogowano.",
         });
-        router.refresh();
+        router.push("/onboarding");
         return;
       }
 

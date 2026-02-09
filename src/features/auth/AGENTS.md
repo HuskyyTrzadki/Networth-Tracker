@@ -19,6 +19,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Notes
 - `profiles.last_active_at` is touched by write actions (e.g. transactions) via `touchProfileLastActive`.
+- Email/password sign-up uses callback `next=/onboarding`, so confirmed registrations continue through onboarding before portfolio work.
 
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.

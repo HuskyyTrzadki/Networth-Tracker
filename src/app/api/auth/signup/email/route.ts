@@ -8,7 +8,8 @@ const buildEmailRedirectTo = (requestUrl: string) => {
   // Redirect email confirmations back into the app auth callback flow.
   const baseUrl = new URL(requestUrl);
   const url = new URL("/api/auth/callback", baseUrl.origin);
-  url.searchParams.set("next", "/settings");
+  // New accounts should continue from onboarding after confirmation.
+  url.searchParams.set("next", "/onboarding");
   return url.toString();
 };
 

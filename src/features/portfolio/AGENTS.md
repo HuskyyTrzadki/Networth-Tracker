@@ -11,6 +11,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/components/PortfolioDashboardSkeleton.tsx`
 - `src/features/portfolio/components/PortfolioSwitcher.tsx`
 - `src/features/portfolio/components/CreatePortfolioDialog.tsx`
+- `src/features/portfolio/components/CreateFirstPortfolioAction.tsx`
 - `src/features/portfolio/components/PortfolioMobileHeaderActions.tsx`
 - `src/features/portfolio/dashboard/PortfolioDashboard.tsx`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.tsx`
@@ -84,6 +85,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
 - Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio` or `?portfolio=all`), and hidden in single-portfolio view (`?portfolio=<id>`).
 - Single-portfolio view (`/portfolio?portfolio=<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
+- Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to `/portfolio?portfolio=<id>`.
 - Strona `/portfolio` normalizuje brak parametru `portfolio` do `?portfolio=all`, żeby domyślny widok zbiorczy był zawsze jawny w URL.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
