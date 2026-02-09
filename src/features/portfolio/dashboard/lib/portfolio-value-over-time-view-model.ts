@@ -191,6 +191,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
   const rangeValuedRows = rangeMeta.rows.filter(
     (row) => getTotalValue(row, currency) !== null
   );
+  const hasSelectedPeriodComparison = rangeValuedRows.length >= 2;
   const rangeStartValue = rangeValuedRows.length
     ? getTotalValue(rangeValuedRows[0], currency)
     : null;
@@ -199,10 +200,13 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     : null;
 
   const selectedPeriodAbsoluteChange =
-    rangeStartValue !== null && rangeEndValue !== null
+    hasSelectedPeriodComparison &&
+    rangeStartValue !== null &&
+    rangeEndValue !== null
       ? rangeEndValue - rangeStartValue
       : null;
   const selectedPeriodChangePercent =
+    hasSelectedPeriodComparison &&
     rangeStartValue !== null &&
     rangeStartValue !== 0 &&
     selectedPeriodAbsoluteChange !== null

@@ -27,6 +27,7 @@ import { PortfolioValueModeContent } from "./PortfolioValueModeContent";
 import { PortfolioValueOverTimeHeader } from "./PortfolioValueOverTimeHeader";
 import {
   MAX_LIVE_ANCHOR_GAP_DAYS,
+  resolveInitialChartRange,
   resolveInitialChartMode,
   toIsoDayMs,
   toLiveSnapshotRow,
@@ -59,7 +60,7 @@ export function PortfolioValueOverTimeChart({
 }: Props) {
   const [currency, setCurrency] = useState<SnapshotCurrency>("PLN");
   const [mode, setMode] = useState<ChartMode>(() => resolveInitialChartMode(rows));
-  const [range, setRange] = useState<ChartRange>("YTD");
+  const [range, setRange] = useState<ChartRange>(() => resolveInitialChartRange(rows));
   const [selectedComparisons, setSelectedComparisons] = useState<ComparisonOptionId[]>([]);
   const [benchmarkSeriesState, setBenchmarkSeriesState] =
     useState<DashboardBenchmarkSeries>(benchmarkSeries);

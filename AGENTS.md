@@ -123,6 +123,7 @@ Whenever you ship a new feature or change architecture:
 - DatePicker component in design system Storybook + transaction form calendar field for choosing trade date
 - Portfolio snapshots (daily, PLN/USD/EUR) + Vercel cron + wykres wartości portfela na dashboardzie (z bootstrapem pierwszego punktu i pełną historią dla zakresu ALL)
 - Dashboard value/performance: toggle wartość/performance, 1D jako badge, zakresy >1D jako wykresy liniowe
+- Dla portfeli z <2 punktami historii wykres domyślnie wybiera zakres `ALL` (nie disabled), a metryka `Zmiana za okres` pokazuje `—` zamiast mylącego `0,00`
 - Performance chart uses cumulative return (TWR) for zakresy >1D; default base line is nominal and comparisons are optional overlays
 - Performance chart for zakresy >1D now uses nominal cumulative return as the base line, with checkbox overlays for comparisons: inflacja skumulowana (PL), S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR)
 - Benchmark overlays are server-prepared and currency-aware for PLN/USD/EUR tabs (daily close converted with cache-first daily FX as-of lookup)

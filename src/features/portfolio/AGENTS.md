@@ -90,6 +90,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
 - Tryb wartości dla zakresów >1D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
+- Dla historii z jednym punktem domyślny zakres wykresu to `ALL` (zamiast disabled `YTD`), a `Zmiana za okres` pozostaje pusta (`—`) do czasu pojawienia się co najmniej 2 punktów.
 - Tabela `Pozycje` używa nagłówków kolumn z walutą bazową i pokazuje liczby bez powtarzania symbolu waluty w każdym wierszu.
 - Tabela `Pozycje` pokazuje też `Śr. cena zakupu` (weighted average buy cost) liczona po transakcjach `ASSET`; wartość jest przeliczana do waluty bazowej tym samym FX co wycena.
 - Dashboard aggregate view wraps portfolio selector in a dedicated control surface (subtle bordered card) to separate filters from data widgets.
@@ -126,8 +127,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.test.ts`
 - `src/features/portfolio/dashboard/lib/twr.test.ts`
 - `src/features/portfolio/dashboard/lib/chart-helpers.test.ts`
+- `src/features/portfolio/dashboard/lib/portfolio-value-over-time-view-model.test.ts`
 - `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.test.ts`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueModeContent.test.tsx`
+- `src/features/portfolio/dashboard/widgets/portfolio-value-over-time-chart-helpers.test.ts`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.test.tsx`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.test.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.test.ts`

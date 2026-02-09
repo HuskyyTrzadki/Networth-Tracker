@@ -2,7 +2,7 @@ import type { LiveTotals } from "../../server/get-portfolio-live-totals";
 import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { SnapshotChartRow } from "../../server/snapshots/types";
 import type { PerformanceInputRow } from "../lib/twr";
-import type { ChartMode } from "../lib/chart-helpers";
+import type { ChartMode, ChartRange } from "../lib/chart-helpers";
 import {
   getExternalCashflow,
   getImplicitTransfer,
@@ -15,6 +15,10 @@ export const MAX_LIVE_ANCHOR_GAP_DAYS = 7;
 export const resolveInitialChartMode = (
   rows: readonly SnapshotChartRow[]
 ): ChartMode => (rows.length < 2 ? "VALUE" : "PERFORMANCE");
+
+export const resolveInitialChartRange = (
+  rows: readonly SnapshotChartRow[]
+): ChartRange => (rows.length < 2 ? "ALL" : "YTD");
 
 export const toIsoDayMs = (value: string | null) =>
   value ? Date.parse(`${value}T00:00:00Z`) : Number.NaN;
