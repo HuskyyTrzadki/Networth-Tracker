@@ -4,6 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { SnapshotScope } from "../../server/snapshots/types";
+import { computeRebuildProgressPercent } from "../../lib/rebuild-progress";
+import {
+  isSnapshotRebuildEventRelevant,
+  parseSnapshotRebuildTriggeredDetail,
+  SNAPSHOT_REBUILD_TRIGGERED_EVENT,
+} from "../../lib/snapshot-rebuild-events";
+import {
+  getFallbackPollDelayMs,
+  isStaleRunningRebuildState,
+  resolveNextPollSchedule,
+} from "./snapshot-rebuild-polling";
 
 type RebuildStateResponse = Readonly<{
   status: "idle" | "queued" | "running" | "failed";
@@ -29,9 +40,7 @@ type Result = Readonly<{
   isBusy: boolean;
 }>;
 
-const QUEUED_POLL_MS = 2_000;
-const RUNNING_STALE_AFTER_MS = 90_000;
-const RUNNING_BACKOFF_STEPS_MS = [2_000, 5_000, 10_000] as const;
+export type SnapshotRebuildStatus = Result;
 
 const toQuery = (scope: SnapshotScope, portfolioId: string | null) => {
   const params = new URLSearchParams({ scope });
@@ -41,67 +50,19 @@ const toQuery = (scope: SnapshotScope, portfolioId: string | null) => {
   return params.toString();
 };
 
-const toIsoDayTimestamp = (value: string) => Date.parse(`${value}T00:00:00Z`);
-
-const computeProgressPercent = (
-  fromDate: string | null,
-  toDate: string | null,
-  processedUntil: string | null
-) => {
-  if (!fromDate || !toDate) {
-    return null;
-  }
-
-  const fromMs = toIsoDayTimestamp(fromDate);
-  const toMs = toIsoDayTimestamp(toDate);
-  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs) || fromMs > toMs) {
-    return null;
-  }
-
-  const totalDays = Math.floor((toMs - fromMs) / 86_400_000) + 1;
-  if (totalDays <= 0) {
-    return null;
-  }
-
-  if (!processedUntil) {
-    return 0;
-  }
-
-  const processedMs = toIsoDayTimestamp(processedUntil);
-  if (!Number.isFinite(processedMs) || processedMs < fromMs) {
-    return 0;
-  }
-
-  const clampedProcessedMs = Math.min(processedMs, toMs);
-  const processedDays = Math.floor((clampedProcessedMs - fromMs) / 86_400_000) + 1;
-  return Math.max(0, Math.min(100, (processedDays / totalDays) * 100));
-};
-
 export function useSnapshotRebuild(
   scope: SnapshotScope,
   portfolioId: string | null,
-  hasHoldings: boolean
+  enabled: boolean
 ): Result {
   const router = useRouter();
   const [state, setState] = useState<RebuildStateResponse | null>(null);
+  const [reloadVersion, setReloadVersion] = useState(0);
   const isRunInFlightRef = useRef(false);
   const pollTimerRef = useRef<number | null>(null);
   const runningBackoffIndexRef = useRef(0);
   const previousStatusRef = useRef<RebuildStateResponse["status"] | null>(null);
   const failedRetryAttemptedRef = useRef(false);
-
-  const isStaleRunningState = (currentState: RebuildStateResponse) => {
-    if (currentState.status !== "running" || !currentState.updatedAt) {
-      return false;
-    }
-
-    const updatedAtMs = Date.parse(currentState.updatedAt);
-    if (!Number.isFinite(updatedAtMs)) {
-      return true;
-    }
-
-    return Date.now() - updatedAtMs > RUNNING_STALE_AFTER_MS;
-  };
 
   const clearPollTimer = () => {
     if (pollTimerRef.current !== null) {
@@ -111,7 +72,34 @@ export function useSnapshotRebuild(
   };
 
   useEffect(() => {
-    if (!hasHoldings) {
+    const handleTriggeredRebuild = (event: Event) => {
+      const detail = parseSnapshotRebuildTriggeredDetail(event);
+      if (!detail) {
+        return;
+      }
+
+      if (!isSnapshotRebuildEventRelevant(detail, scope, portfolioId)) {
+        return;
+      }
+
+      setReloadVersion((current) => current + 1);
+    };
+
+    window.addEventListener(
+      SNAPSHOT_REBUILD_TRIGGERED_EVENT,
+      handleTriggeredRebuild
+    );
+
+    return () => {
+      window.removeEventListener(
+        SNAPSHOT_REBUILD_TRIGGERED_EVENT,
+        handleTriggeredRebuild
+      );
+    };
+  }, [portfolioId, scope]);
+
+  useEffect(() => {
+    if (!enabled) {
       clearPollTimer();
       runningBackoffIndexRef.current = 0;
       previousStatusRef.current = null;
@@ -128,7 +116,7 @@ export function useSnapshotRebuild(
       clearPollTimer();
       pollTimerRef.current = window.setTimeout(() => {
         void loadState().catch(() => {
-          scheduleNextPoll(RUNNING_BACKOFF_STEPS_MS.at(-1) ?? 10_000);
+          scheduleNextPoll(getFallbackPollDelayMs());
         });
       }, delayMs);
     };
@@ -138,7 +126,7 @@ export function useSnapshotRebuild(
       try {
         response = await fetch(`/api/portfolio-snapshots/rebuild?${query}`);
       } catch {
-        scheduleNextPoll(RUNNING_BACKOFF_STEPS_MS.at(-1) ?? 10_000);
+        scheduleNextPoll(getFallbackPollDelayMs());
         return;
       }
 
@@ -149,7 +137,7 @@ export function useSnapshotRebuild(
       }
 
       if (!response.ok || !payload) {
-        scheduleNextPoll(RUNNING_BACKOFF_STEPS_MS.at(-1) ?? 10_000);
+        scheduleNextPoll(getFallbackPollDelayMs());
         return;
       }
 
@@ -173,60 +161,40 @@ export function useSnapshotRebuild(
         return;
       }
 
-      let nextDelay = payload.nextPollAfterMs;
-      if (!nextDelay) {
-        if (payload.status === "queued") {
-          runningBackoffIndexRef.current = 0;
-          nextDelay = QUEUED_POLL_MS;
-        } else {
-          const stepIndex = Math.min(
-            runningBackoffIndexRef.current,
-            RUNNING_BACKOFF_STEPS_MS.length - 1
-          );
-          nextDelay = RUNNING_BACKOFF_STEPS_MS[stepIndex];
-          runningBackoffIndexRef.current = Math.min(
-            runningBackoffIndexRef.current + 1,
-            RUNNING_BACKOFF_STEPS_MS.length - 1
-          );
-        }
-      } else if (payload.status === "queued") {
-        runningBackoffIndexRef.current = 0;
-      } else if (payload.status === "running") {
-        const serverDelay = nextDelay ?? RUNNING_BACKOFF_STEPS_MS.at(-1) ?? 10_000;
-        const matchedIndex = RUNNING_BACKOFF_STEPS_MS.findIndex(
-          (value) => value >= serverDelay
-        );
-        runningBackoffIndexRef.current =
-          matchedIndex === -1 ? RUNNING_BACKOFF_STEPS_MS.length - 1 : matchedIndex;
-      }
-
-      const resolvedDelay =
-        nextDelay ?? (payload.status === "queued" ? QUEUED_POLL_MS : 10_000);
-
-      scheduleNextPoll(resolvedDelay);
+      const schedule = resolveNextPollSchedule({
+        status: payload.status,
+        nextPollAfterMs: payload.nextPollAfterMs,
+        runningBackoffIndex: runningBackoffIndexRef.current,
+      });
+      runningBackoffIndexRef.current = schedule.nextRunningBackoffIndex;
+      scheduleNextPoll(schedule.delayMs);
     };
 
     void loadState().catch(() => {
-      scheduleNextPoll(RUNNING_BACKOFF_STEPS_MS.at(-1) ?? 10_000);
+      scheduleNextPoll(getFallbackPollDelayMs());
     });
 
     return () => {
       cancelled = true;
       clearPollTimer();
       runningBackoffIndexRef.current = 0;
-      previousStatusRef.current = null;
     };
-  }, [hasHoldings, portfolioId, router, scope]);
+  }, [enabled, portfolioId, reloadVersion, router, scope]);
 
   useEffect(() => {
-    const shouldRecoverStaleRunning = state ? isStaleRunningState(state) : false;
+    const shouldRecoverStaleRunning = state
+      ? isStaleRunningRebuildState({
+          status: state.status,
+          updatedAt: state.updatedAt,
+        })
+      : false;
     const shouldRetryFailedState =
       state?.status === "failed" &&
       Boolean(state.dirtyFrom) &&
       !failedRetryAttemptedRef.current;
 
     if (
-      !hasHoldings ||
+      !enabled ||
       !state ||
       (state.status !== "queued" &&
         !shouldRecoverStaleRunning &&
@@ -261,6 +229,14 @@ export function useSnapshotRebuild(
           return;
         }
 
+        const previousStatus = previousStatusRef.current;
+        if (
+          payload.status === "idle" &&
+          (previousStatus === "queued" || previousStatus === "running")
+        ) {
+          router.refresh();
+        }
+
         if (payload.status === "idle" || payload.status === "failed") {
           clearPollTimer();
           runningBackoffIndexRef.current = 0;
@@ -271,7 +247,6 @@ export function useSnapshotRebuild(
 
         previousStatusRef.current = payload.status;
         setState(payload);
-        router.refresh();
       })
       .catch(() => undefined)
       .finally(() => {
@@ -282,10 +257,10 @@ export function useSnapshotRebuild(
     return () => {
       cancelled = true;
     };
-  }, [hasHoldings, portfolioId, router, scope, state]);
+  }, [enabled, portfolioId, router, scope, state]);
 
   return useMemo(() => {
-    if (!hasHoldings) {
+    if (!enabled) {
       return {
         status: "idle",
         dirtyFrom: null,
@@ -310,9 +285,13 @@ export function useSnapshotRebuild(
       processedUntil,
       progressPercent:
         state?.progressPercent ??
-        computeProgressPercent(fromDate, toDate, processedUntil),
+        computeRebuildProgressPercent({
+          fromDate,
+          toDate,
+          processedUntil,
+        }),
       message: state?.message ?? null,
       isBusy: state?.status === "queued" || state?.status === "running",
     } satisfies Result;
-  }, [hasHoldings, state]);
+  }, [enabled, state]);
 }

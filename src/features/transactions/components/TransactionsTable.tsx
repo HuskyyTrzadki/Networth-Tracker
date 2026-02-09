@@ -1,11 +1,3 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/features/design-system/components/ui/table";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { cn } from "@/lib/cn";
 
@@ -24,6 +16,19 @@ type Props = Readonly<{
   items: readonly TransactionListItem[];
 }>;
 
+const GRID_TEMPLATE = "120px minmax(0,1fr) 120px 120px 140px 140px 60px";
+const GROUP_ACCENT_BASE_CLASS = "border-l-2";
+const GROUP_TONE_BY_SIDE = {
+  BUY: {
+    accentClassName: "border-l-primary/35 dark:border-l-primary/45",
+    cashRowClassName: "bg-primary/[0.04] dark:bg-primary/[0.08]",
+  },
+  SELL: {
+    accentClassName: "border-l-rose-300/80 dark:border-l-rose-400/35",
+    cashRowClassName: "bg-rose-500/[0.04] dark:bg-rose-500/[0.08]",
+  },
+} as const;
+
 const getTypeLabel = (item: TransactionListItem) => {
   if (item.cashflowType) {
     return (
@@ -37,6 +42,30 @@ const getTypeBadgeClassName = (side: TransactionListItem["side"]) =>
   side === "BUY"
     ? "border-primary/20 bg-primary/5 text-primary"
     : "border-rose-200 bg-rose-50 text-rose-600";
+
+const getRowBadgeClassName = (item: TransactionListItem) => {
+  if (item.legRole !== "CASH") {
+    return getTypeBadgeClassName(item.side);
+  }
+
+  return "border-border bg-muted/35 text-muted-foreground";
+};
+
+const getInstrumentSubtitle = (item: TransactionListItem) => {
+  if (item.legRole !== "CASH") {
+    return item.instrument.name;
+  }
+
+  if (item.legKey === "CASH_SETTLEMENT") {
+    return "Rozliczenie gotówki";
+  }
+
+  if (item.legKey === "CASH_FX_FEE") {
+    return "Opłata FX";
+  }
+
+  return item.instrument.name;
+};
 
 const formatPriceLabel = (price: string, currency: string) => {
   const formatter = getCurrencyFormatter(currency);
@@ -61,6 +90,13 @@ const formatValueLabel = (quantity: string, price: string, currency: string) => 
   return formatCurrencyValue(value, formatter);
 };
 
+const sortGroupItems = (items: readonly TransactionListItem[]) =>
+  [...items].sort((a, b) => {
+    if (a.legRole === b.legRole) return 0;
+    if (a.legRole === "ASSET") return -1;
+    return 1;
+  });
+
 const groupTransactions = (items: readonly TransactionListItem[]) => {
   const groups = new Map<string, TransactionListItem[]>();
   const order: string[] = [];
@@ -73,10 +109,16 @@ const groupTransactions = (items: readonly TransactionListItem[]) => {
     groups.get(item.groupId)?.push(item);
   });
 
-  return order.map((groupId) => ({
-    groupId,
-    items: groups.get(groupId) ?? [],
-  }));
+  return order.map((groupId) => {
+    const sortedItems = sortGroupItems(groups.get(groupId) ?? []);
+    const primaryItem = sortedItems.find((item) => item.legRole === "ASSET");
+
+    return {
+      groupId,
+      items: sortedItems,
+      primarySide: primaryItem?.side ?? sortedItems[0]?.side ?? "BUY",
+    };
+  });
 };
 
 export function TransactionsTable({ items }: Props) {
@@ -84,96 +126,107 @@ export function TransactionsTable({ items }: Props) {
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/40">
-            <TableHead className="px-4">Data</TableHead>
-            <TableHead className="px-4">Instrument</TableHead>
-            <TableHead className="px-4">Typ</TableHead>
-            <TableHead className="px-4" data-align="right">
+      <div className="overflow-x-auto">
+        <div className="min-w-[820px]">
+          <div
+            className="grid items-center bg-muted/40 px-2 py-3 sm:px-4"
+            style={{ gridTemplateColumns: GRID_TEMPLATE }}
+          >
+            <div className="px-2 text-sm font-medium text-muted-foreground">Data</div>
+            <div className="px-2 text-sm font-medium text-muted-foreground">
+              Instrument
+            </div>
+            <div className="px-2 text-sm font-medium text-muted-foreground">Typ</div>
+            <div className="px-2 text-right text-sm font-medium text-muted-foreground">
               Ilość
-            </TableHead>
-            <TableHead className="px-4" data-align="right">
+            </div>
+            <div className="px-2 text-right text-sm font-medium text-muted-foreground">
               Cena
-            </TableHead>
-            <TableHead className="px-4" data-align="right">
+            </div>
+            <div className="px-2 text-right text-sm font-medium text-muted-foreground">
               Wartość
-            </TableHead>
-            <TableHead className="px-4" data-align="right">
+            </div>
+            <div className="px-2 text-right text-sm font-medium text-muted-foreground">
               Akcje
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {groups.map((group) => (
-            <TableRow key={group.groupId}>
-              <TableCell className="p-3" colSpan={7}>
-                <div className="overflow-hidden rounded-md border border-border">
-                  {group.items.map((item, index) => (
-                    <div
-                      className={cn(
-                        "grid grid-cols-[120px_minmax(0,1fr)_120px_120px_140px_140px_60px] items-center gap-0 px-2 sm:px-4",
-                        index > 0 && "border-t border-border",
-                        "min-h-[56px]"
-                      )}
-                      key={item.id}
-                    >
-                      <div className="font-mono text-xs tabular-nums text-muted-foreground">
-                        {item.tradeDate}
+            </div>
+          </div>
+          <div className="space-y-3 p-3">
+            {groups.map((group) => (
+              <div
+                key={group.groupId}
+                className={cn(
+                  "overflow-hidden rounded-md border border-border",
+                  GROUP_ACCENT_BASE_CLASS,
+                  GROUP_TONE_BY_SIDE[group.primarySide].accentClassName
+                )}
+              >
+                {group.items.map((item, index) => (
+                  // First row is the primary action (asset leg); cash legs are details.
+                  <div
+                    className={cn(
+                      "grid min-h-[56px] items-center px-2 sm:px-4",
+                      index > 0 && "border-t border-border",
+                      item.legRole === "CASH" &&
+                        GROUP_TONE_BY_SIDE[group.primarySide].cashRowClassName
+                    )}
+                    key={item.id}
+                    style={{ gridTemplateColumns: GRID_TEMPLATE }}
+                  >
+                    <div className="px-2 font-mono text-xs tabular-nums text-muted-foreground">
+                      {item.tradeDate}
+                    </div>
+                    <div className="flex min-w-0 items-center gap-3 px-2">
+                      <div className="grid size-8 place-items-center text-base leading-none">
+                        <InstrumentLogoImage
+                          className="size-6"
+                          fallbackText={item.instrument.symbol}
+                          size={24}
+                          src={item.instrument.logoUrl}
+                        />
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="grid size-8 place-items-center text-base leading-none">
-                          <InstrumentLogoImage
-                            className="size-6"
-                            fallbackText={item.instrument.symbol}
-                            size={24}
-                            src={item.instrument.logoUrl}
-                          />
-                        </div>
-                        <div className="flex min-w-0 flex-col">
-                          <span className="text-sm font-semibold text-foreground">
-                            {item.instrument.symbol}
-                          </span>
-                          <span className="truncate text-xs text-muted-foreground">
-                            {item.instrument.name}
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <Badge
-                          className={cn(
-                            "rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                            getTypeBadgeClassName(item.side)
-                          )}
-                          variant="outline"
-                        >
-                          {getTypeLabel(item)}
-                        </Badge>
-                      </div>
-                      <div className="font-mono text-sm tabular-nums text-right">
-                        {item.quantity}
-                      </div>
-                      <div className="font-mono text-sm tabular-nums text-right">
-                        {formatPriceLabel(item.price, item.instrument.currency)}
-                      </div>
-                      <div className="font-mono text-sm font-semibold tabular-nums text-right">
-                        {formatValueLabel(
-                          item.quantity,
-                          item.price,
-                          item.instrument.currency
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <TransactionsRowActions />
+                      <div className="flex min-w-0 flex-col">
+                        <span className="text-sm font-semibold text-foreground">
+                          {item.instrument.symbol}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {getInstrumentSubtitle(item)}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                    <div className="px-2">
+                      <Badge
+                        className={cn(
+                          "rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                          getRowBadgeClassName(item)
+                        )}
+                        variant="outline"
+                      >
+                        {getTypeLabel(item)}
+                      </Badge>
+                    </div>
+                    <div className="px-2 text-right font-mono text-sm tabular-nums">
+                      {item.quantity}
+                    </div>
+                    <div className="px-2 text-right font-mono text-sm tabular-nums">
+                      {formatPriceLabel(item.price, item.instrument.currency)}
+                    </div>
+                    <div className="px-2 text-right font-mono text-sm font-semibold tabular-nums">
+                      {formatValueLabel(
+                        item.quantity,
+                        item.price,
+                        item.instrument.currency
+                      )}
+                    </div>
+                    <div className="px-2 text-right">
+                      <TransactionsRowActions />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

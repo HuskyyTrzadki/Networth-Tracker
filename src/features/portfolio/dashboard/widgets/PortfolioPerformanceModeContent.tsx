@@ -3,8 +3,10 @@
 import { DailyReturnsLineChart } from "@/features/design-system";
 import { cn } from "@/lib/cn";
 
+import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ChartRange } from "../lib/chart-helpers";
 import { formatPercent } from "../lib/chart-helpers";
+import { PortfolioSnapshotRebuildChartLoader } from "./PortfolioSnapshotRebuildChartLoader";
 import { PortfolioPerformanceDailySummaryCard } from "./PortfolioPerformanceDailySummaryCard";
 import {
   getPortfolioChartEmptyStateClassName,
@@ -25,33 +27,49 @@ type ComparisonLine = Readonly<{
 }>;
 
 type Props = Readonly<{
-  rebuildMessage: string | null;
+  rebuildStatus: "idle" | "queued" | "running" | "failed";
+  rebuildFromDate: string | null;
+  rebuildToDate: string | null;
+  rebuildProgressPercent: number | null;
   hasHoldings: boolean;
   shouldBootstrap: boolean;
   hasPerformanceData: boolean;
   range: ChartRange;
   selectedPeriodReturn: number | null;
+  selectedPeriodAbsoluteChange: number | null;
+  currency: SnapshotCurrency;
   dailyReturnValue: number | null;
   cumulativeChartData: readonly Point[];
   comparisonLines: readonly ComparisonLine[];
+  formatCurrencyValue: (value: number) => string;
 }>;
 
 export function PortfolioPerformanceModeContent({
-  rebuildMessage,
+  rebuildStatus,
+  rebuildFromDate,
+  rebuildToDate,
+  rebuildProgressPercent,
   hasHoldings,
   shouldBootstrap,
   hasPerformanceData,
   range,
   selectedPeriodReturn,
+  selectedPeriodAbsoluteChange,
+  currency,
   dailyReturnValue,
   cumulativeChartData,
   comparisonLines,
+  formatCurrencyValue,
 }: Props) {
-  if (rebuildMessage) {
+  const isRebuildBusy = rebuildStatus === "queued" || rebuildStatus === "running";
+
+  if (isRebuildBusy) {
     return (
-      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
-        {rebuildMessage}
-      </div>
+      <PortfolioSnapshotRebuildChartLoader
+        fromDate={rebuildFromDate}
+        toDate={rebuildToDate}
+        progressPercent={rebuildProgressPercent}
+      />
     );
   }
 
@@ -59,7 +77,9 @@ export function PortfolioPerformanceModeContent({
     return (
       <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
         {hasHoldings
-          ? "Brak danych do wyliczenia performance."
+          ? shouldBootstrap
+            ? "Tworzymy pierwszy punkt wartości portfela."
+            : "Performance będzie dostępny po co najmniej 2 dniach danych."
           : "Dodaj transakcje, aby zobaczyć performance."}
       </div>
     );
@@ -69,19 +89,38 @@ export function PortfolioPerformanceModeContent({
     <div className="space-y-4">
       <div>
         <div className="text-xs text-muted-foreground">{`Zwrot za okres (${range})`}</div>
-        <div
-          className={cn(
-            "text-3xl font-semibold",
-            selectedPeriodReturn !== null && selectedPeriodReturn > 0
-              ? "text-emerald-600"
-              : selectedPeriodReturn !== null && selectedPeriodReturn < 0
-                ? "text-rose-600"
-                : "text-foreground"
-          )}
-        >
-          {selectedPeriodReturn !== null
-            ? formatPercent(selectedPeriodReturn)
-            : "—"}
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <div
+            className={cn(
+              "text-4xl font-semibold",
+              selectedPeriodReturn !== null && selectedPeriodReturn > 0
+                ? "text-emerald-600"
+                : selectedPeriodReturn !== null && selectedPeriodReturn < 0
+                  ? "text-rose-600"
+                  : "text-foreground"
+            )}
+          >
+            {selectedPeriodReturn !== null
+              ? formatPercent(selectedPeriodReturn)
+              : "—"}
+          </div>
+          <div
+            className={cn(
+              "font-mono text-sm tabular-nums",
+              selectedPeriodAbsoluteChange !== null && selectedPeriodAbsoluteChange > 0
+                ? "text-emerald-600"
+                : selectedPeriodAbsoluteChange !== null &&
+                    selectedPeriodAbsoluteChange < 0
+                  ? "text-rose-600"
+                  : "text-muted-foreground"
+            )}
+          >
+            {selectedPeriodAbsoluteChange !== null
+              ? `${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
+                  selectedPeriodAbsoluteChange
+                )} ${currency}`
+              : "—"}
+          </div>
         </div>
       </div>
 

@@ -22,6 +22,7 @@ export type ValuedHolding = Readonly<{
   logoUrl: string | null;
   instrumentType: InstrumentType | null;
   quantity: string;
+  averageBuyPriceBase?: string | null;
   price: string | null;
   valueBase: string | null;
   weight: number | null;
@@ -43,6 +44,7 @@ type ValuationInput = Readonly<{
   holdings: readonly PortfolioHolding[];
   quotesByInstrument: ReadonlyMap<string, InstrumentQuote | null>;
   fxByPair: ReadonlyMap<string, FxRate | null>;
+  averageBuyPriceByInstrument?: ReadonlyMap<string, string>;
 }>;
 
 const minIso = (values: string[]) =>
@@ -55,6 +57,7 @@ export function buildPortfolioSummary({
   holdings,
   quotesByInstrument,
   fxByPair,
+  averageBuyPriceByInstrument = new Map<string, string>(),
 }: ValuationInput): PortfolioSummary {
   // Server-side valuation: compute totals only for holdings with price + FX.
   let totalValue = decimalZero();
@@ -77,6 +80,7 @@ export function buildPortfolioSummary({
           logoUrl: holding.logoUrl,
           instrumentType: holding.instrumentType,
           quantity: holding.quantity,
+          averageBuyPriceBase: null,
           price: null,
           valueBase: null,
           weight: null,
@@ -98,6 +102,7 @@ export function buildPortfolioSummary({
           logoUrl: holding.logoUrl,
           instrumentType: holding.instrumentType,
           quantity: holding.quantity,
+          averageBuyPriceBase: null,
           price: "1",
           valueBase: valueBase.toString(),
           weight: null,
@@ -119,6 +124,7 @@ export function buildPortfolioSummary({
           logoUrl: holding.logoUrl,
           instrumentType: holding.instrumentType,
           quantity: holding.quantity,
+          averageBuyPriceBase: null,
           price: "1",
           valueBase: null,
           weight: null,
@@ -138,6 +144,7 @@ export function buildPortfolioSummary({
           logoUrl: holding.logoUrl,
           instrumentType: holding.instrumentType,
           quantity: holding.quantity,
+          averageBuyPriceBase: null,
           price: "1",
           valueBase: null,
           weight: null,
@@ -159,6 +166,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase: null,
         price: "1",
         valueBase: valueBase.toString(),
         weight: null,
@@ -167,6 +175,13 @@ export function buildPortfolioSummary({
     }
 
     const quote = quotesByInstrument.get(holding.instrumentId) ?? null;
+    const averageBuyPrice = averageBuyPriceByInstrument.get(holding.instrumentId);
+    const averageBuyPriceBase = toBasePriceOrNull({
+      price: averageBuyPrice,
+      fromCurrency: holding.currency,
+      baseCurrency,
+      fxByPair,
+    });
 
     if (!quote) {
       missingQuotes += 1;
@@ -179,6 +194,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase,
         price: null,
         valueBase: null,
         weight: null,
@@ -197,6 +213,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase,
         price: null,
         valueBase: null,
         weight: null,
@@ -217,6 +234,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase,
         price: null,
         valueBase: null,
         weight: null,
@@ -239,6 +257,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase,
         price: quote.price,
         valueBase: valueBase.toString(),
         weight: null,
@@ -260,6 +279,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase,
         price: quote.price,
         valueBase: null,
         weight: null,
@@ -279,6 +299,7 @@ export function buildPortfolioSummary({
         logoUrl: holding.logoUrl,
         instrumentType: holding.instrumentType,
         quantity: holding.quantity,
+        averageBuyPriceBase,
         price: quote.price,
         valueBase: null,
         weight: null,
@@ -303,6 +324,7 @@ export function buildPortfolioSummary({
       logoUrl: holding.logoUrl,
       instrumentType: holding.instrumentType,
       quantity: holding.quantity,
+      averageBuyPriceBase,
       price: quote.price,
       valueBase: valueBase.toString(),
       weight: null,
@@ -335,4 +357,30 @@ export function buildPortfolioSummary({
     asOf,
     holdings: holdingsWithWeights,
   };
+}
+
+type ToBasePriceInput = Readonly<{
+  price: string | undefined;
+  fromCurrency: CurrencyCode;
+  baseCurrency: CurrencyCode;
+  fxByPair: ReadonlyMap<string, FxRate | null>;
+}>;
+
+function toBasePriceOrNull(input: ToBasePriceInput): string | null {
+  if (!input.price) return null;
+
+  const priceDecimal = parseDecimalString(input.price);
+  if (!priceDecimal) return null;
+
+  if (input.fromCurrency === input.baseCurrency) {
+    return priceDecimal.toString();
+  }
+
+  const fx = input.fxByPair.get(`${input.fromCurrency}:${input.baseCurrency}`);
+  if (!fx) return null;
+
+  const fxDecimal = parseDecimalString(fx.rate);
+  if (!fxDecimal) return null;
+
+  return multiplyDecimals(priceDecimal, fxDecimal).toString();
 }

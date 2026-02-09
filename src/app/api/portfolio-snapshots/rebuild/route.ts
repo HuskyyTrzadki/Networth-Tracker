@@ -3,134 +3,19 @@ import { NextResponse } from "next/server";
 
 import {
   getSnapshotRebuildState,
-  type SnapshotRebuildState,
 } from "@/features/portfolio/server/snapshots/rebuild-state";
+import {
+  buildRebuildResponsePayload,
+  ensureScopeAccess,
+  parseMaxDays,
+  parsePortfolioId,
+  parseScope,
+  parseTimeBudgetMs,
+  withRebuildPollingHeaders,
+} from "@/features/portfolio/server/snapshots/rebuild-route-service";
 import { runSnapshotRebuild } from "@/features/portfolio/server/snapshots/run-snapshot-rebuild";
-import type { SnapshotScope } from "@/features/portfolio/server/snapshots/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-
-const parseScope = (value: unknown): SnapshotScope | null => {
-  if (value === "ALL" || value === "PORTFOLIO") return value;
-  return null;
-};
-
-const parsePortfolioId = (value: unknown) => {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
-
-const parseMaxDays = (value: unknown) => {
-  if (typeof value !== "number") return 90;
-  if (!Number.isFinite(value)) return 90;
-  return Math.max(1, Math.min(Math.floor(value), 120));
-};
-
-const parseTimeBudgetMs = (value: unknown) => {
-  if (typeof value !== "number") return 9_000;
-  if (!Number.isFinite(value)) return 9_000;
-  return Math.max(1_000, Math.min(Math.floor(value), 20_000));
-};
-
-const nextPollByAge = (updatedAt: string | null) => {
-  if (!updatedAt) return 2_000;
-
-  const updatedAtMs = Date.parse(updatedAt);
-  if (!Number.isFinite(updatedAtMs)) return 10_000;
-
-  const ageMs = Date.now() - updatedAtMs;
-  if (ageMs < 15_000) return 2_000;
-  if (ageMs < 60_000) return 5_000;
-  return 10_000;
-};
-
-const resolveNextPollAfterMs = (
-  status: "idle" | "queued" | "running" | "failed",
-  updatedAt: string | null
-) => {
-  if (status === "queued") return 2_000;
-  if (status === "running") return nextPollByAge(updatedAt);
-  return null;
-};
-
-const toIsoDayTimestamp = (value: string) => Date.parse(`${value}T00:00:00Z`);
-
-const computeProgressPercent = (state: SnapshotRebuildState | null) => {
-  const fromDate = state?.fromDate ?? null;
-  const toDate = state?.toDate ?? null;
-  const processedUntil = state?.processedUntil ?? null;
-
-  if (!fromDate || !toDate) {
-    return null;
-  }
-
-  const fromMs = toIsoDayTimestamp(fromDate);
-  const toMs = toIsoDayTimestamp(toDate);
-  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs) || fromMs > toMs) {
-    return null;
-  }
-
-  const totalDays = Math.floor((toMs - fromMs) / 86_400_000) + 1;
-  if (totalDays <= 0) {
-    return null;
-  }
-
-  if (!processedUntil) {
-    return 0;
-  }
-
-  const processedMs = toIsoDayTimestamp(processedUntil);
-  if (!Number.isFinite(processedMs) || processedMs < fromMs) {
-    return 0;
-  }
-
-  const clampedProcessedMs = Math.min(processedMs, toMs);
-  const processedDays = Math.floor((clampedProcessedMs - fromMs) / 86_400_000) + 1;
-  return Math.max(0, Math.min(100, (processedDays / totalDays) * 100));
-};
-
-const buildResponsePayload = (
-  state: SnapshotRebuildState | null
-): Readonly<{
-  status: "idle" | "queued" | "running" | "failed";
-  dirtyFrom: string | null;
-  fromDate: string | null;
-  toDate: string | null;
-  processedUntil: string | null;
-  progressPercent: number | null;
-  message: string | null;
-  updatedAt: string | null;
-  nextPollAfterMs: number | null;
-}> => {
-  const status = state?.status ?? "idle";
-  const updatedAt = state?.updatedAt ?? null;
-
-  return {
-    status,
-    dirtyFrom: state?.dirtyFrom ?? null,
-    fromDate: state?.fromDate ?? null,
-    toDate: state?.toDate ?? null,
-    processedUntil: state?.processedUntil ?? null,
-    progressPercent: computeProgressPercent(state),
-    message: state?.message ?? null,
-    updatedAt,
-    nextPollAfterMs: resolveNextPollAfterMs(status, updatedAt),
-  };
-};
-
-const withPollingHeaders = (
-  payload: ReturnType<typeof buildResponsePayload>
-) => {
-  const headers = new Headers();
-  if (payload.nextPollAfterMs !== null) {
-    headers.set(
-      "Retry-After",
-      Math.max(1, Math.ceil(payload.nextPollAfterMs / 1_000)).toString()
-    );
-  }
-  return headers;
-};
 
 const logRebuildEvent = (
   event: string,
@@ -143,38 +28,6 @@ const logRebuildEvent = (
   console.info(`[snapshot-rebuild] ${event}`, details);
 };
 
-const ensureScopeAccess = async (
-  supabaseUser: ReturnType<typeof createClient>,
-  userId: string,
-  scope: SnapshotScope,
-  portfolioId: string | null
-) => {
-  if (scope === "ALL") {
-    return { ok: true as const, portfolioId: null };
-  }
-
-  if (!portfolioId) {
-    return { ok: false as const, message: "Missing portfolioId for PORTFOLIO scope." };
-  }
-
-  const { data, error } = await supabaseUser
-    .from("portfolios")
-    .select("id")
-    .eq("id", portfolioId)
-    .eq("user_id", userId)
-    .is("archived_at", null)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!data) {
-    return { ok: false as const, message: "Portfolio not found." };
-  }
-
-  return { ok: true as const, portfolioId };
-};
 
 export async function GET(request: Request) {
   // Route handler: return current rebuild status for selected snapshot scope.
@@ -212,11 +65,11 @@ export async function GET(request: Request) {
     access.portfolioId
   );
 
-  const responsePayload = buildResponsePayload(state);
+  const responsePayload = buildRebuildResponsePayload(state);
 
   return NextResponse.json(
     responsePayload,
-    { status: 200, headers: withPollingHeaders(responsePayload) }
+    { status: 200, headers: withRebuildPollingHeaders(responsePayload) }
   );
 }
 
@@ -284,13 +137,13 @@ export async function POST(request: Request) {
     });
 
     const responsePayload = {
-      ...buildResponsePayload(result.state),
+      ...buildRebuildResponsePayload(result.state),
       processedDays: result.processedDays,
     };
 
     return NextResponse.json(
       responsePayload,
-      { status: 200, headers: withPollingHeaders(responsePayload) }
+      { status: 200, headers: withRebuildPollingHeaders(responsePayload) }
     );
   } catch (runError) {
     const message =

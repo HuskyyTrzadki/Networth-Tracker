@@ -12,6 +12,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Main entrypoints
 - Dialog UI: `src/features/transactions/components/AddTransactionDialog.tsx`
 - Dialog content/fields: `src/features/transactions/components/AddTransactionDialogContent.tsx`
+- Dialog field sections:
+  - `src/features/transactions/components/add-transaction/AddTransactionDialogFields.tsx`
+  - `src/features/transactions/components/add-transaction/AddTransactionInstrumentSection.tsx`
+  - `src/features/transactions/components/add-transaction/AddTransactionTradeFields.tsx`
+  - `src/features/transactions/components/add-transaction/AddTransactionSidebarSummary.tsx`
+  - `src/features/transactions/components/add-transaction/form-derivations.ts`
 - Instrument search UI: `src/features/transactions/components/InstrumentCombobox.tsx`
 - Instrument logo: `src/features/transactions/components/InstrumentLogoImage.tsx`
 - Routes: `src/features/transactions/components/AddTransactionDialogRoute.tsx`
@@ -23,15 +29,29 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Decimal helpers: `src/lib/decimal.ts`
 - Currency formatting: `src/lib/format-currency.ts`
 - Client API: `src/features/transactions/client/create-transaction.ts`
+- Client FX preview API: `src/features/transactions/client/get-fx-preview.ts`
+- Client cash as-of API: `src/features/transactions/client/get-cash-balance-on-date.ts`
 - Server service: `src/features/transactions/server/create-transaction.ts`
+- Server guards: `src/features/transactions/server/transaction-guards.ts`
+- Server intent mapping: `src/features/transactions/server/transaction-intent.ts`
 - Server settlement logic: `src/features/transactions/server/settlement.ts`
 - Cash balances helper: `src/features/transactions/server/get-cash-balances.ts`
+- Asset balances helper: `src/features/transactions/server/get-asset-balances.ts`
 - Server query: `src/features/transactions/server/list-transactions.ts`
 - Server filters: `src/features/transactions/server/filters.ts`
 - Server helper: `src/features/transactions/server/resolve-portfolio-selection.ts`
 - API schema: `src/features/transactions/server/schema.ts`
+- FX preview API: `src/app/api/transactions/fx-preview/route.ts`
+- Cash balance as-of API: `src/app/api/transactions/cash-balance-on-date/route.ts`
 - Trade date rules: `src/features/transactions/lib/trade-date.ts`
 - Instrument search service: `src/features/transactions/server/search-instruments.ts`
+- Instrument search internals:
+  - `src/features/transactions/server/search/search-types.ts`
+  - `src/features/transactions/server/search/search-utils.ts`
+  - `src/features/transactions/server/search/search-normalize.ts`
+  - `src/features/transactions/server/search/local-search.ts`
+  - `src/features/transactions/server/search/yahoo-search.ts`
+  - `src/features/transactions/server/search/merge-results.ts`
 - Instrument search API: `src/app/api/instruments/search/route.ts`
 - Historical price assist service: `src/features/transactions/server/get-instrument-price-on-date.ts`
 - Historical price assist API: `src/app/api/instruments/price-on-date/route.ts`
@@ -43,11 +63,27 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
 - Global instruments cache stores canonical Yahoo quoteType in `public.instruments.instrument_type` for allocation/grouping.
 - Cash settlement uses FX cache at write-time; rate is stored on the cash leg for auditability.
+- Cash settlement for `consumeCash=true` uses daily FX as-of `trade_date` (with previous-session carry-forward) so backdated writes stay historically correct.
+- Create-transaction guards enforce no oversell (asset/cash withdrawals) and prevent negative cash after settlement as-of `trade_date`.
 - Past-date transaction support uses a 5-year cap (UI + backend validation).
 - Add-transaction form fetches Yahoo daily session data (on date/instrument change) to suggest price and show low/high range.
+- Add-transaction async client requests use shared keyed resource hook (`use-keyed-async-resource`) to avoid duplicated stale-request/loading logic.
 - Add-transaction modal exposes a calendar date picker field with lower bound from `getTradeDateLowerBound()` and upper bound set to `today`.
 - Add-transaction form blocks submit when entered price is outside fetched day-session range (low/high), with inline field error on `price`.
-- On past-dated writes, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state`.
+- On writes with `trade_date <= today`, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state` (`PORTFOLIO` + `ALL`), so both same-day and past-dated changes use one rebuild flow.
+- Add-transaction modal uses a wider desktop layout with two-pane composition (main form + side summary/cash panel), plus explicit loading states for both historical price assist and submit action.
+- Add-transaction modal shows live cash impact preview (`dostępne / zmiana / po transakcji`) with FX preview for mismatched currencies and inline insufficient-cash warning.
+- Add-transaction modal also shows cash balance on selected trade date (API as-of lookup) alongside current balance, and uses the as-of value for projected post-trade cash.
+- Same-day guidance in cash section clarifies operational ordering: when date is equal, add cash deposit first, then asset buy.
+- Instrument upsert does not overwrite an existing `logo_url` unless a non-empty value is provided by the client.
+- Yahoo search debug logs are disabled by default and can be enabled with `DEBUG_YAHOO_SEARCH=1` (non-production only).
+- Add-transaction modal shows "Dostępne do sprzedaży (na teraz)" hints for selected sell instrument per portfolio.
+- After successful save in the intercepted portfolio modal route, dialog closes immediately; empty-dashboard refresh/loader is handled by portfolio-side rebuild status UI.
+- Non-portfolio routes still rely on rebuild kickoff + client event flow and do not force a generic full-page refresh.
+- After successful save, modal also triggers rebuild run kickoff (`/api/portfolio-snapshots/rebuild`) + dispatches `portfolio:snapshot-rebuild-triggered` client events for `PORTFOLIO` and `ALL`, so rebuild status/loader starts immediately without manual refresh.
+- Transactions list type filter (`Wszystkie/Kupno/Sprzedaż`) uses a segmented toggle control instead of dropdown for faster switching and better mobile ergonomics.
+- Transactions table visually separates cash settlement legs from primary asset action rows inside each `group_id`.
+- Transactions table now adds a shared group accent (left border + subtle background tone by BUY/SELL) so asset and cash settlement legs are visually linked as one operation.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

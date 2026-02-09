@@ -1,9 +1,9 @@
 "use client";
 
-import debounce from "lodash.debounce";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition, type ChangeEvent } from "react";
+import { useState, useTransition, type ChangeEvent } from "react";
 
+import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Input } from "@/features/design-system/components/ui/input";
 import {
   Select,
@@ -12,6 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/features/design-system/components/ui/select";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/features/design-system/components/ui/toggle-group";
 import { PortfolioSwitcher } from "@/features/portfolio";
 import { cn } from "@/lib/cn";
 
@@ -68,26 +72,20 @@ export function TransactionsSearchToolbar({
     });
   };
 
-  const debouncedCommit = useMemo(
-    () =>
-      debounce((value: string) => {
-        const trimmed = value.trim();
-        const params = new URLSearchParams(searchParamsString);
-        if (trimmed.length > 0) {
-          params.set("q", trimmed);
-        } else {
-          params.delete("q");
-        }
-        params.set("page", "1");
+  const debouncedCommit = useDebouncedCallback((value: string) => {
+    const trimmed = value.trim();
+    const params = new URLSearchParams(searchParamsString);
+    if (trimmed.length > 0) {
+      params.set("q", trimmed);
+    } else {
+      params.delete("q");
+    }
+    params.set("page", "1");
 
-        startTransition(() => {
-          router.push(buildTransactionsUrl(params), { scroll: false });
-        });
-      }, searchDebounceMs),
-    [router, searchParamsString, startTransition]
-  );
-
-  useEffect(() => () => debouncedCommit.cancel(), [debouncedCommit]);
+    startTransition(() => {
+      router.push(buildTransactionsUrl(params), { scroll: false });
+    });
+  }, searchDebounceMs);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value;
@@ -122,22 +120,39 @@ export function TransactionsSearchToolbar({
           />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Select
-            disabled={isPending}
-            onValueChange={(value) =>
-              pushWithUpdates({ type: value === "all" ? null : value })
-            }
-            value={type ?? "all"}
-          >
-            <SelectTrigger className="h-10 min-w-[160px]">
-              <SelectValue placeholder="Typ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Wszystkie</SelectItem>
-              <SelectItem value="BUY">Kupno</SelectItem>
-              <SelectItem value="SELL">Sprzedaż</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="rounded-md border border-input bg-muted/50 p-1">
+            <ToggleGroup
+              aria-label="Typ transakcji"
+              className="grid grid-cols-3 gap-1"
+              onValueChange={(value) =>
+                pushWithUpdates({ type: value === "all" ? null : value })
+              }
+              type="single"
+              value={type ?? "all"}
+            >
+              <ToggleGroupItem
+                className="h-10 w-full rounded-sm px-2 text-sm"
+                disabled={isPending}
+                value="all"
+              >
+                Wszystkie
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                className="h-10 w-full rounded-sm px-2 text-sm"
+                disabled={isPending}
+                value="BUY"
+              >
+                Kupno
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                className="h-10 w-full rounded-sm px-2 text-sm"
+                disabled={isPending}
+                value="SELL"
+              >
+                Sprzedaż
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
 
           <Select
             disabled={isPending}

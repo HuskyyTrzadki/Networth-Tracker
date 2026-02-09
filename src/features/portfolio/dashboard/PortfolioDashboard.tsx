@@ -5,10 +5,10 @@ import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
 import type { PortfolioSummary } from "../server/valuation";
 import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../server/snapshots/types";
+import type { TransactionListItem } from "@/features/transactions/server/list-transactions";
 import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
-import { AllocationWidget } from "./widgets/AllocationWidget";
-import { HoldingsWidget } from "./widgets/HoldingsWidget";
-import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
+import { PortfolioDashboardClientWidgets } from "./PortfolioDashboardClientWidgets";
+import { PortfolioNetValueHero } from "./PortfolioNetValueHero";
 
 type Props = Readonly<{
   portfolios: readonly {
@@ -25,6 +25,7 @@ type Props = Readonly<{
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
+  recentTransactions: readonly TransactionListItem[];
   className?: string;
 }>;
 
@@ -36,31 +37,45 @@ export function PortfolioDashboard({
   liveTotals,
   polishCpiSeries,
   benchmarkSeries,
+  recentTransactions,
   className,
 }: Props) {
+  const selectedPortfolioName = selectedPortfolioId
+    ? portfolios.find((portfolio) => portfolio.id === selectedPortfolioId)?.name ?? "—"
+    : "Wszystkie portfele";
+
+  const portfolioLabel = selectedPortfolioId
+    ? `Portfel: ${selectedPortfolioName}`
+    : "Portfel: Wszystkie portfele";
+
   return (
     <div className={cn("space-y-6", className)}>
+      <PortfolioNetValueHero
+        portfolioLabel={portfolioLabel}
+        baseCurrency={summary.baseCurrency}
+        totalValueBase={summary.totalValueBase}
+        isPartial={summary.isPartial}
+      />
       {selectedPortfolioId === null ? (
         <div className="hidden md:block">
-          <PortfolioSwitcher
-            portfolios={portfolios}
-            selectedId={selectedPortfolioId}
-          />
+          <div className="inline-flex rounded-lg border border-black/5 bg-card p-2 shadow-sm dark:border-white/10">
+            <PortfolioSwitcher
+              className="sm:gap-2.5"
+              portfolios={portfolios}
+              selectedId={selectedPortfolioId}
+            />
+          </div>
         </div>
       ) : null}
-      <PortfolioValueOverTimeWidget
+      <PortfolioDashboardClientWidgets
         selectedPortfolioId={selectedPortfolioId}
-        hasHoldings={summary.holdings.length > 0}
-        hasSnapshots={snapshotRows.hasSnapshots}
-        rows={snapshotRows.rows}
+        summary={summary}
+        snapshotRows={snapshotRows}
         liveTotals={liveTotals}
         polishCpiSeries={polishCpiSeries}
         benchmarkSeries={benchmarkSeries}
+        recentTransactions={recentTransactions}
       />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <AllocationWidget summary={summary} />
-        <HoldingsWidget summary={summary} />
-      </div>
     </div>
   );
 }

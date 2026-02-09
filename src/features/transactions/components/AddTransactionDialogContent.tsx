@@ -2,9 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { X } from "lucide-react";
+import { LoaderCircle, X } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -13,6 +12,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
+import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/snapshot-rebuild-events";
 import {
   Form,
 } from "@/features/design-system/components/ui/form";
@@ -91,14 +91,34 @@ const buildSubmitPayloadFields = (
   };
 };
 
+const triggerSnapshotRebuild = (
+  scope: "PORTFOLIO" | "ALL",
+  portfolioId: string | null
+) => {
+  // Client kickoff: start a rebuild run immediately after transaction save
+  // so portfolio widgets show queued/running state without manual reload.
+  void fetch("/api/portfolio-snapshots/rebuild", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      scope,
+      portfolioId,
+      maxDaysPerRun: 90,
+      timeBudgetMs: 1_000,
+    }),
+  }).catch(() => undefined);
+};
+
 export function AddTransactionDialogContent({
   initialValues,
   initialInstrument,
   searchClient,
   portfolios,
   cashBalancesByPortfolio,
+  assetBalancesByPortfolio,
   initialPortfolioId,
   forcedPortfolioId,
+  onSubmitSuccess,
   onClose,
 }: Readonly<{
   initialValues?: Partial<FormValues>;
@@ -106,12 +126,13 @@ export function AddTransactionDialogContent({
   searchClient?: InstrumentSearchClient;
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
+  onSubmitSuccess?: () => void;
   onClose: () => void;
 }>) {
   const schema = createAddTransactionFormSchema();
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentSearchResult | null>(initialInstrument ?? null);
@@ -204,8 +225,22 @@ export function AddTransactionDialogContent({
         },
       });
 
+      dispatchSnapshotRebuildTriggeredEvent({
+        scope: "PORTFOLIO",
+        portfolioId: resolvedPortfolioId,
+      });
+      dispatchSnapshotRebuildTriggeredEvent({
+        scope: "ALL",
+        portfolioId: null,
+      });
+
+      triggerSnapshotRebuild("PORTFOLIO", resolvedPortfolioId);
+      triggerSnapshotRebuild("ALL", null);
+
+      onSubmitSuccess?.();
+
+      // Close dialog after submit side effects are scheduled.
       onClose();
-      router.refresh();
     } catch (error) {
       const message =
         error instanceof Error
@@ -222,14 +257,14 @@ export function AddTransactionDialogContent({
   return (
     <Form {...form}>
       <form
-        className="flex max-h-[90dvh] flex-col"
+        className="flex max-h-[92dvh] flex-col"
         onSubmit={submitTransaction}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
+        <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-6 py-5">
           <div className="min-w-0">
             <DialogTitle className="truncate">Dodaj transakcję</DialogTitle>
             <DialogDescription className="mt-1">
-              Wprowadź szczegóły transakcji.
+              Uzupełnij dane i zapisz transakcję w portfelu.
             </DialogDescription>
           </div>
           <DialogClose asChild>
@@ -238,6 +273,7 @@ export function AddTransactionDialogContent({
               className="h-9 w-9 p-0"
               type="button"
               variant="ghost"
+              disabled={isSubmitting}
             >
               <X className="size-5 opacity-70" aria-hidden />
             </Button>
@@ -246,6 +282,7 @@ export function AddTransactionDialogContent({
 
         <AddTransactionDialogFields
           activeTab={activeTab}
+          assetBalancesByPortfolio={assetBalancesByPortfolio}
           cashBalancesByPortfolio={cashBalancesByPortfolio}
           forcedPortfolioId={forcedPortfolioId}
           form={form}
@@ -257,7 +294,7 @@ export function AddTransactionDialogContent({
           setSelectedInstrument={setSelectedInstrument}
         />
 
-        <footer className="border-t border-border px-6 py-5">
+        <footer className="border-t border-border/70 bg-background px-6 py-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-h-5 text-sm text-destructive">
               {rootError ?? ""}
@@ -268,14 +305,23 @@ export function AddTransactionDialogContent({
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
+                className="h-12 px-8 text-lg"
               >
                 Anuluj
               </Button>
               <Button
                 disabled={!isSubmittable || isSubmitting}
                 type="submit"
+                className="h-12 min-w-40 px-8 text-lg"
               >
-                Zapisz
+                {isSubmitting ? (
+                  <>
+                    <LoaderCircle className="size-4 animate-spin" aria-hidden />
+                    Zapisywanie...
+                  </>
+                ) : (
+                  "Zapisz"
+                )}
               </Button>
             </div>
           </div>

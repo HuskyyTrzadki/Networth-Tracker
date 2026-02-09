@@ -18,8 +18,10 @@ export function AddTransactionDialog({
   searchClient,
   portfolios,
   cashBalancesByPortfolio,
+  assetBalancesByPortfolio,
   initialPortfolioId,
   forcedPortfolioId,
+  onSubmitSuccess,
   open,
   onOpenChange,
 }: Readonly<{
@@ -28,20 +30,24 @@ export function AddTransactionDialog({
   searchClient?: InstrumentSearchClient;
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
+  onSubmitSuccess?: () => void;
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
 }>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90dvh] p-0 sm:max-w-xl">
+      <DialogContent className="max-h-[92dvh] overflow-hidden rounded-2xl border-border/70 p-0 sm:max-w-[1080px]">
         <AddTransactionDialogContent
+          assetBalancesByPortfolio={assetBalancesByPortfolio}
           cashBalancesByPortfolio={cashBalancesByPortfolio}
           forcedPortfolioId={forcedPortfolioId}
           initialInstrument={initialInstrument}
           initialPortfolioId={initialPortfolioId}
           initialValues={initialValues}
+          onSubmitSuccess={onSubmitSuccess}
           onClose={() => onOpenChange(false)}
           portfolios={portfolios}
           searchClient={searchClient}

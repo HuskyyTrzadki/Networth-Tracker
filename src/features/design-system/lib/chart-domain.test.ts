@@ -24,4 +24,24 @@ describe("buildPaddedDomain", () => {
   it("returns null when no finite values exist", () => {
     expect(buildPaddedDomain([null, undefined])).toBeNull();
   });
+
+  it("extends positive-only domain down to zero when requested", () => {
+    expect(
+      buildPaddedDomain([100, 110], {
+        paddingRatio: 0.1,
+        minAbsolutePadding: 0,
+        includeZero: true,
+      })
+    ).toEqual([0, 111]);
+  });
+
+  it("extends negative-only domain up to zero when requested", () => {
+    expect(
+      buildPaddedDomain([-110, -100], {
+        paddingRatio: 0.1,
+        minAbsolutePadding: 0,
+        includeZero: true,
+      })
+    ).toEqual([-111, 0]);
+  });
 });

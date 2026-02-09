@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { AddTransactionDialogRoute } from "@/features/transactions";
+import { getAssetBalancesByPortfolio } from "@/features/transactions/server/get-asset-balances";
 import { resolvePortfolioSelection } from "@/features/transactions/server/resolve-portfolio-selection";
 import { getCashBalancesByPortfolio } from "@/features/transactions/server/get-cash-balances";
 import { createClient } from "@/lib/supabase/server";
@@ -38,15 +39,17 @@ export default async function AddTransactionModalPage({
     portfolios: portfolioOptions,
   });
 
-  const cashBalancesByPortfolio = await getCashBalancesByPortfolio(
-    supabase,
-    portfolioOptions.map((portfolio) => portfolio.id)
-  );
+  const portfolioIds = portfolioOptions.map((portfolio) => portfolio.id);
+  const [cashBalancesByPortfolio, assetBalancesByPortfolio] = await Promise.all([
+    getCashBalancesByPortfolio(supabase, portfolioIds),
+    getAssetBalancesByPortfolio(supabase, portfolioIds),
+  ]);
 
   return (
     <AddTransactionDialogRoute
       portfolios={portfolioOptions}
       cashBalancesByPortfolio={cashBalancesByPortfolio}
+      assetBalancesByPortfolio={assetBalancesByPortfolio}
       initialPortfolioId={selection.initialPortfolioId}
       forcedPortfolioId={selection.forcedPortfolioId}
     />

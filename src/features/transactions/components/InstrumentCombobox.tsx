@@ -1,9 +1,9 @@
 "use client";
 
-import debounce from "lodash.debounce";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
+import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
@@ -48,13 +48,10 @@ export function InstrumentCombobox({
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
-
-  const debouncedCommit = useMemo(
-    () => debounce((nextValue: string) => setDebouncedQuery(nextValue), DEBOUNCE_MS),
-    []
+  const debouncedCommit = useDebouncedCallback(
+    (nextValue: string) => setDebouncedQuery(nextValue),
+    DEBOUNCE_MS
   );
-
-  useEffect(() => () => debouncedCommit.cancel(), [debouncedCommit]);
 
   const { results, isLoading, error } = useInstrumentSearch(debouncedQuery, {
     minQueryLength: MIN_QUERY_LENGTH,
@@ -100,7 +97,7 @@ export function InstrumentCombobox({
         <Button
           aria-expanded={open}
           className={cn(
-            "h-11 w-full justify-between gap-3 px-3",
+            "h-14 w-full justify-between gap-3 px-4",
             !value && "text-muted-foreground"
           )}
           role="combobox"
@@ -109,22 +106,22 @@ export function InstrumentCombobox({
           <span className="flex min-w-0 items-center gap-3">
             {value ? (
               <>
-                <span className="font-mono text-sm tabular-nums">
+                <span className="font-mono text-base font-semibold tabular-nums sm:text-lg">
                   {value.ticker}
                 </span>
-                <span className="truncate text-sm text-foreground">
+                <span className="truncate text-base text-foreground sm:text-lg">
                   {value.name}
                 </span>
               </>
             ) : (
-              <span className="text-sm">
+              <span className="text-base">
                 Wybierz instrument…
               </span>
             )}
           </span>
           <span className="flex items-center gap-2">
             {value ? (
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="font-mono text-sm text-muted-foreground">
                 {value.currency}
               </span>
             ) : null}
@@ -138,6 +135,7 @@ export function InstrumentCombobox({
       >
         <Command shouldFilter={false}>
           <CommandInput
+            className="h-11 text-base"
             placeholder="Szukaj (np. Apple, BTC, XTB)"
             value={query}
             onValueChange={(nextValue) => {
@@ -151,14 +149,14 @@ export function InstrumentCombobox({
               debouncedCommit(nextValue);
             }}
           />
-          <CommandList>
+          <CommandList className="max-h-[360px]">
             {!isLoading ? <CommandEmpty>{emptyMessage}</CommandEmpty> : null}
             <CommandGroup>
               {results.map((option) => {
                 return (
                   <CommandItem
                     key={option.id}
-                    className="w-full"
+                    className="min-h-11 w-full py-2"
                     onSelect={() => {
                       onChange(option);
                       setQuery("");
@@ -204,7 +202,7 @@ export function InstrumentCombobox({
               {isLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
                     <div
-                      className="flex items-center gap-3 px-3 py-2"
+                      className="flex min-h-11 items-center gap-3 px-3 py-2"
                       key={`loading-${index}`}
                     >
                       <div className="size-6 animate-pulse rounded-full bg-muted" />

@@ -1,10 +1,13 @@
 "use client";
 
 import { PortfolioComparisonChart } from "@/features/design-system";
+import { cn } from "@/lib/cn";
 
 import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ComparisonChartPoint, NullableSeriesPoint } from "../lib/chart-helpers";
 import type { ChartRange } from "../lib/chart-helpers";
+import { formatPercent } from "../lib/chart-helpers";
+import { PortfolioSnapshotRebuildChartLoader } from "./PortfolioSnapshotRebuildChartLoader";
 import { PortfolioValueDailySummaryCard } from "./PortfolioValueDailySummaryCard";
 import {
   getPortfolioChartEmptyStateClassName,
@@ -12,7 +15,10 @@ import {
 } from "./portfolio-value-over-time-chart-layout";
 
 type Props = Readonly<{
-  rebuildMessage: string | null;
+  rebuildStatus: "idle" | "queued" | "running" | "failed";
+  rebuildFromDate: string | null;
+  rebuildToDate: string | null;
+  rebuildProgressPercent: number | null;
   hasHoldings: boolean;
   shouldBootstrap: boolean;
   hasValuePoints: boolean;
@@ -21,6 +27,8 @@ type Props = Readonly<{
   latestValue: number | null;
   dailyDelta: number | null;
   dailyDeltaPercent: number | null;
+  selectedPeriodAbsoluteChange: number | null;
+  selectedPeriodChangePercent: number | null;
   comparisonChartData: readonly ComparisonChartPoint[];
   investedCapitalSeries: readonly NullableSeriesPoint[];
   formatCurrencyValue: (value: number) => string;
@@ -28,7 +36,10 @@ type Props = Readonly<{
 }>;
 
 export function PortfolioValueModeContent({
-  rebuildMessage,
+  rebuildStatus,
+  rebuildFromDate,
+  rebuildToDate,
+  rebuildProgressPercent,
   hasHoldings,
   shouldBootstrap,
   hasValuePoints,
@@ -37,16 +48,22 @@ export function PortfolioValueModeContent({
   latestValue,
   dailyDelta,
   dailyDeltaPercent,
+  selectedPeriodAbsoluteChange,
+  selectedPeriodChangePercent,
   comparisonChartData,
   investedCapitalSeries,
   formatCurrencyValue,
   formatDayLabelWithYear,
 }: Props) {
-  if (rebuildMessage) {
+  const isRebuildBusy = rebuildStatus === "queued" || rebuildStatus === "running";
+
+  if (isRebuildBusy) {
     return (
-      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
-        {rebuildMessage}
-      </div>
+      <PortfolioSnapshotRebuildChartLoader
+        fromDate={rebuildFromDate}
+        toDate={rebuildToDate}
+        progressPercent={rebuildProgressPercent}
+      />
     );
   }
 
@@ -80,6 +97,42 @@ export function PortfolioValueModeContent({
 
   return (
     <div className="space-y-4">
+      <div>
+        <div className="text-xs text-muted-foreground">{`Zmiana za okres (${range})`}</div>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <div
+            className={cn(
+              "text-4xl font-semibold",
+              selectedPeriodAbsoluteChange !== null && selectedPeriodAbsoluteChange > 0
+                ? "text-emerald-600"
+                : selectedPeriodAbsoluteChange !== null &&
+                    selectedPeriodAbsoluteChange < 0
+                  ? "text-rose-600"
+                  : "text-foreground"
+            )}
+          >
+            {selectedPeriodAbsoluteChange !== null
+              ? `${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
+                  selectedPeriodAbsoluteChange
+                )} ${currency}`
+              : "—"}
+          </div>
+          <div
+            className={cn(
+              "font-mono text-sm tabular-nums",
+              selectedPeriodChangePercent !== null && selectedPeriodChangePercent > 0
+                ? "text-emerald-600"
+                : selectedPeriodChangePercent !== null && selectedPeriodChangePercent < 0
+                  ? "text-rose-600"
+                  : "text-muted-foreground"
+            )}
+          >
+            {selectedPeriodChangePercent !== null
+              ? formatPercent(selectedPeriodChangePercent)
+              : "—"}
+          </div>
+        </div>
+      </div>
       <PortfolioComparisonChart
         data={comparisonChartData}
         height={SHARED_PORTFOLIO_CHART_HEIGHT}

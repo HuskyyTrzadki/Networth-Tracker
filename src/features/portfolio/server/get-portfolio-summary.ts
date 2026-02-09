@@ -8,6 +8,7 @@ import {
   type InstrumentQuoteRequest,
 } from "@/features/market-data";
 
+import { getPortfolioAverageBuyPrices } from "./get-portfolio-average-buy-prices";
 import { getPortfolioHoldings } from "./get-portfolio-holdings";
 import { buildPortfolioSummary, type PortfolioSummary } from "./valuation";
 
@@ -24,6 +25,10 @@ export async function getPortfolioSummary(
 ): Promise<PortfolioSummary> {
   // Server helper: fetch holdings, quotes, and FX in one flow for the dashboard.
   const holdings = await getPortfolioHoldings(supabase, input.portfolioId);
+  const averageBuyPriceByInstrument = await getPortfolioAverageBuyPrices(
+    supabase,
+    input.portfolioId
+  );
 
   // For every holding we need a quote in its native currency.
   const quoteRequests: InstrumentQuoteRequest[] = holdings.map((holding) => ({
@@ -56,5 +61,6 @@ export async function getPortfolioSummary(
     holdings,
     quotesByInstrument,
     fxByPair,
+    averageBuyPriceByInstrument,
   });
 }

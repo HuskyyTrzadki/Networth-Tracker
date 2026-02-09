@@ -1,21 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import type { UseFormReturn } from "react-hook-form";
+
+import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 
 import { getInstrumentPriceOnDate, type InstrumentPriceOnDateResponse } from "../../client/get-instrument-price-on-date";
 import { isPriceWithinSessionRange } from "../../lib/price-range";
 import type { FormValues } from "../AddTransactionDialogContent";
-import type { UseFormReturn } from "react-hook-form";
 
 type Result = Readonly<{
   hint: InstrumentPriceOnDateResponse | null;
   errorMessage: string | null;
-}>;
-
-type AsyncState = Readonly<{
-  requestKey: string | null;
-  hint: InstrumentPriceOnDateResponse | null;
-  errorMessage: string | null;
+  isLoading: boolean;
 }>;
 
 type Params = Readonly<{
@@ -35,77 +32,53 @@ export function useHistoricalPriceAssist(
   const requestKey = shouldFetch && provider && providerKey && date
     ? `${provider}:${providerKey}:${date}`
     : null;
-  const [state, setState] = useState<AsyncState>({
-    requestKey: null,
-    hint: null,
-    errorMessage: null,
+  const resource = useKeyedAsyncResource<InstrumentPriceOnDateResponse>({
+    requestKey,
+    load: () => {
+      if (!provider || !providerKey || !date) {
+        return Promise.reject(new Error("Brak danych instrumentu."));
+      }
+
+      return getInstrumentPriceOnDate({
+        provider,
+        providerKey,
+        date,
+      });
+    },
+    getErrorMessage: (error) =>
+      error instanceof Error
+        ? error.message
+        : "Nie udało się pobrać ceny historycznej.",
   });
   const lastAutoPriceRef = useRef<string | null>(null);
-  const visibleHint = state.requestKey === requestKey ? state.hint : null;
-  const visibleErrorMessage =
-    state.requestKey === requestKey ? state.errorMessage : null;
+  const visibleHint = resource.data;
+  const visibleErrorMessage = resource.errorMessage;
+  const visibleIsLoading = resource.isLoading;
 
   useEffect(() => {
-    if (!shouldFetch || !provider || !providerKey || !date || !requestKey) {
+    if (!shouldFetch) {
       lastAutoPriceRef.current = null;
+    }
+  }, [shouldFetch]);
+
+  useEffect(() => {
+    if (!shouldFetch || !visibleHint) {
       return;
     }
 
-    const controller = new AbortController();
+    const currentPrice = form.getValues("price").trim();
+    const isAutoValue =
+      currentPrice.length > 0 && currentPrice === lastAutoPriceRef.current;
+    const shouldAutoFill = currentPrice.length === 0 || isAutoValue;
 
-    void getInstrumentPriceOnDate({
-      provider,
-      providerKey,
-      date,
-    })
-      .then((response) => {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setState({
-          requestKey,
-          hint: response,
-          errorMessage: null,
-        });
-
-        const currentPrice = form.getValues("price").trim();
-        const isAutoValue =
-          currentPrice.length > 0 && currentPrice === lastAutoPriceRef.current;
-        const shouldAutoFill = currentPrice.length === 0 || isAutoValue;
-
-        if (response.suggestedPrice && shouldAutoFill) {
-          form.setValue("price", response.suggestedPrice, {
-            shouldDirty: false,
-            shouldValidate: true,
-          });
-          lastAutoPriceRef.current = response.suggestedPrice;
-        }
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setState({
-          requestKey,
-          hint: null,
-          errorMessage:
-            error instanceof Error
-              ? error.message
-              : "Nie udało się pobrać ceny historycznej.",
-        });
-      })
-      .finally(() => {
-        if (controller.signal.aborted) {
-          return;
-        }
+    if (visibleHint.suggestedPrice && shouldAutoFill) {
+      form.setValue("price", visibleHint.suggestedPrice, {
+        shouldDirty: false,
+        shouldValidate: true,
       });
-
-    return () => {
-      controller.abort();
-    };
-  }, [date, form, provider, providerKey, requestKey, shouldFetch]);
+      lastAutoPriceRef.current = visibleHint.suggestedPrice;
+    }
+  }, [form, shouldFetch, visibleHint]);
 
   useEffect(() => {
     const currentErrorType = form.getFieldState("price").error?.type;
@@ -139,8 +112,12 @@ export function useHistoricalPriceAssist(
   }, [form, price, shouldFetch, visibleErrorMessage, visibleHint?.range]);
 
   if (!shouldFetch) {
-    return { hint: null, errorMessage: null };
+    return { hint: null, errorMessage: null, isLoading: false };
   }
 
-  return { hint: visibleHint, errorMessage: visibleErrorMessage };
+  return {
+    hint: visibleHint,
+    errorMessage: visibleErrorMessage,
+    isLoading: visibleIsLoading,
+  };
 }

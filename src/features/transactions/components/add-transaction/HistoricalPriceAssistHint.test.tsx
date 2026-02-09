@@ -7,8 +7,8 @@ describe("HistoricalPriceAssistHint", () => {
   it("shows warning even when session range is unavailable", () => {
     render(
       <HistoricalPriceAssistHint
-        currency="USD"
         errorMessage={null}
+        isLoading={false}
         hint={{
           selectedDate: "2026-02-07",
           ohlc: null,

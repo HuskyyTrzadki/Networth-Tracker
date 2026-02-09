@@ -54,7 +54,7 @@ export function TransactionLiveSummary({
   if (value === null || total === null || !formatter || signedFee === null) {
     return (
       <div className="rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-6">
           <span className="text-sm text-muted-foreground">
             {type === "BUY" ? "Łącznie (koszt)" : "Łącznie (przychód netto)"}
           </span>
@@ -68,20 +68,20 @@ export function TransactionLiveSummary({
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <div className="grid gap-2">
-        <div className="flex items-center justify-between gap-4 text-sm">
+      <div className="grid gap-3">
+        <div className="flex items-center justify-between gap-6 text-sm">
           <span className="text-muted-foreground">Wartość</span>
           <span className="font-mono tabular-nums text-foreground">
             {formatCurrencyValue(value, formatter)}
           </span>
         </div>
-        <div className="flex items-center justify-between gap-4 text-sm">
+        <div className="flex items-center justify-between gap-6 text-sm">
           <span className="text-muted-foreground">Prowizja</span>
           <span className="font-mono tabular-nums text-foreground">
             {formatCurrencyValue(signedFee, formatter)}
           </span>
         </div>
-        <div className="mt-1 flex items-baseline justify-between gap-4 border-t border-border pt-3">
+        <div className="mt-1 flex items-baseline justify-between gap-6 border-t border-border pt-3">
           <span className="text-sm font-medium text-foreground">
             {type === "BUY" ? "Łącznie (koszt)" : "Łącznie (przychód netto)"}
           </span>

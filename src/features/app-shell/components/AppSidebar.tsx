@@ -26,6 +26,7 @@ import { cn } from "@/lib/cn";
 import { useAppPathname } from "../hooks/useAppPathname";
 import { primaryNavItems, secondaryNavItems } from "../lib/nav-items";
 import { isHrefActive } from "../lib/path";
+import { ThemeSwitch } from "./ThemeSwitch";
 
 type Props = Readonly<{
   className?: string;
@@ -105,8 +106,8 @@ export function AppSidebar({ className, portfolios }: Props) {
         </SidebarGroup>
 
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 text-sm font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/55">
-            Portfele
+          <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50">
+            Twoje portfele
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenuSub className="mx-0 translate-x-0 border-l-0 px-1 py-1">
@@ -130,34 +131,37 @@ export function AppSidebar({ className, portfolios }: Props) {
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               ))}
-              <SidebarMenuSubItem>
-                <CreatePortfolioDialog
-                  onCreated={(createdId) => {
-                    router.push(`/portfolio?portfolio=${createdId}`, {
-                      scroll: false,
-                    });
-                    router.refresh();
-                  }}
-                  trigger={({ open, disabled }) => (
-                    <Button
-                      className="h-12 w-full justify-start gap-2 rounded-lg border border-primary/35 bg-primary/10 px-4 text-base font-semibold text-primary hover:bg-primary/15 hover:text-primary"
-                      disabled={disabled}
-                      onClick={open}
-                      type="button"
-                      variant="ghost"
-                    >
-                      <Plus className="size-[18px]" aria-hidden="true" />
-                      Nowy portfel
-                    </Button>
-                  )}
-                />
-              </SidebarMenuSubItem>
             </SidebarMenuSub>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
+        <div className="px-2 pt-2">
+          <CreatePortfolioDialog
+            onCreated={(createdId) => {
+              router.push(`/portfolio?portfolio=${createdId}`, {
+                scroll: false,
+              });
+              router.refresh();
+            }}
+            trigger={({ open, disabled }) => (
+              <Button
+                className="h-10 w-full justify-start gap-2 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground"
+                disabled={disabled}
+                onClick={open}
+                type="button"
+                variant="ghost"
+              >
+                <Plus className="size-[18px]" aria-hidden="true" />
+                Nowy portfel
+              </Button>
+            )}
+          />
+        </div>
+        <div className="px-2 pb-2">
+          <ThemeSwitch />
+        </div>
         <SidebarMenu>
           {secondaryNavItems.map((item) => {
             const active = isHrefActive(pathname, item.href);

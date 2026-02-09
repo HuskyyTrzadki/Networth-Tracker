@@ -108,6 +108,7 @@ export function DailyReturnsLineChart({
     {
       paddingRatio: 0.15,
       minAbsolutePadding: 0.0025,
+      includeZero: true,
     }
   );
   const yTicks = buildYAxisTicks(yDomain);

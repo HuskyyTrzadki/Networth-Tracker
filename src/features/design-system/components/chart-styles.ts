@@ -41,6 +41,9 @@ const formatMonthOnly = new Intl.DateTimeFormat("pl-PL", {
   month: "short",
 });
 
+const capitalizeFirst = (value: string) =>
+  value.length > 0 ? `${value[0].toUpperCase()}${value.slice(1)}` : value;
+
 const toTimeMs = (value: string) => {
   const ms = Date.parse(value);
   return Number.isFinite(ms) ? ms : NaN;
@@ -95,7 +98,7 @@ const createQuarterlyTickLabels = (ticks: readonly string[]) => {
     }
 
     const year = date.getFullYear();
-    const month = formatMonthOnly.format(date);
+    const month = capitalizeFirst(formatMonthOnly.format(date));
     const shouldShowYear = index === 0 || previousYear !== year;
     labelsByTick.set(tick, shouldShowYear ? `${month} ${year}` : month);
     previousYear = year;
@@ -111,7 +114,8 @@ export const createSharedTimeAxisConfig = (
 
   if (!useMonthTicks) {
     return {
-      tickFormatter: (value: string) => formatDayMonth.format(new Date(value)),
+      tickFormatter: (value: string) =>
+        capitalizeFirst(formatDayMonth.format(new Date(value))),
       interval: "preserveStartEnd",
       minTickGap: 20,
     };
@@ -122,7 +126,8 @@ export const createSharedTimeAxisConfig = (
 
   return {
     tickFormatter: (value: string) =>
-      labelsByTick.get(value) ?? formatMonthOnly.format(new Date(value)),
+      labelsByTick.get(value) ??
+      capitalizeFirst(formatMonthOnly.format(new Date(value))),
     ticks,
     interval: 0,
     minTickGap: 32,

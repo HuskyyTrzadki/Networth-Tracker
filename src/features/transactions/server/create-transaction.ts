@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { touchProfileLastActive } from "@/features/auth/server/profiles";
-import { getFxRatesCached } from "@/features/market-data";
-import type { FxRate } from "@/features/market-data";
+import { getFxDailyRatesCached } from "@/features/market-data";
+import type { FxDailyRate } from "@/features/market-data";
 import { getBucketDate } from "@/features/portfolio/server/snapshots/bucket-date";
 import { markSnapshotRebuildDirty } from "@/features/portfolio/server/snapshots/rebuild-state";
 import {
@@ -12,6 +12,8 @@ import {
 
 import type { CreateTransactionRequest } from "./schema";
 import { buildSettlementLegs } from "./settlement";
+import { resolveTransactionIntent } from "./transaction-intent";
+import { validateTransactionGuards } from "./transaction-guards";
 
 type SupabaseServerClient = SupabaseClient;
 
@@ -31,7 +33,7 @@ const normalizeOptionalText = (value?: string | null) => {
 const normalizeCurrency = (value: string) =>
   normalizeRequiredText(value).toUpperCase();
 
-const resolveFxRate = (fx: FxRate | null) =>
+const resolveFxRate = (fx: FxDailyRate | null) =>
   fx
     ? {
         rate: fx.rate,
@@ -40,29 +42,34 @@ const resolveFxRate = (fx: FxRate | null) =>
       }
     : null;
 
-const markSnapshotHistoryDirty = async (
+const shouldMarkSnapshotHistoryDirty = (tradeDate: string, todayBucket: string) =>
+  tradeDate <= todayBucket;
+
+const markSnapshotDirtyAfterTransaction = async (
   supabaseAdmin: SupabaseServerClient,
   userId: string,
   portfolioId: string,
   tradeDate: string
 ) => {
-  // Past-dated writes need historical snapshot recompute from the earliest affected day.
+  // Unified rule: every write dated today or earlier is rebuilt through
+  // the dirty-range pipeline so UI state/progress is consistent.
   const todayBucket = getBucketDate(new Date());
-  if (tradeDate >= todayBucket) {
+  if (!shouldMarkSnapshotHistoryDirty(tradeDate, todayBucket)) {
     return;
   }
 
+  // For today, dirty_from = today, so the queued rebuild is a one-day range.
   await Promise.all([
     markSnapshotRebuildDirty(supabaseAdmin, {
       userId,
-      scope: "PORTFOLIO",
       portfolioId,
+      scope: "PORTFOLIO",
       dirtyFrom: tradeDate,
     }),
     markSnapshotRebuildDirty(supabaseAdmin, {
       userId,
-      scope: "ALL",
       portfolioId: null,
+      scope: "ALL",
       dirtyFrom: tradeDate,
     }),
   ]);
@@ -93,6 +100,10 @@ export async function createTransaction(
 
   const isCashInstrument =
     instrumentType === "CURRENCY" || provider.toLowerCase() === "system";
+  const intent = resolveTransactionIntent({
+    isCashInstrument,
+    side: input.type,
+  });
   const cashflowType = input.cashflowType ?? null;
 
   if (isCashInstrument && !cashflowType) {
@@ -101,7 +112,7 @@ export async function createTransaction(
 
   const groupId = crypto.randomUUID();
   const now = new Date().toISOString();
-  const instrumentPayload = {
+  const instrumentPayloadBase = {
     provider,
     provider_key: providerKey,
     symbol,
@@ -109,14 +120,18 @@ export async function createTransaction(
     currency,
     exchange,
     region,
-    logo_url: logoUrl,
     updated_at: now,
   } as const;
 
+  // Avoid wiping an existing cached logo when the client sends no logo URL.
+  const instrumentPayloadWithLogo = logoUrl
+    ? { ...instrumentPayloadBase, logo_url: logoUrl }
+    : instrumentPayloadBase;
+
   // Avoid overwriting an existing type with null from older clients.
   const instrumentPayloadWithType = instrumentType
-    ? { ...instrumentPayload, instrument_type: instrumentType }
-    : instrumentPayload;
+    ? { ...instrumentPayloadWithLogo, instrument_type: instrumentType }
+    : instrumentPayloadWithLogo;
 
   // Persist logo URL (if provided) so lists can render instrument branding later.
   const { data: instrument, error: instrumentError } = await supabaseAdmin
@@ -151,9 +166,12 @@ export async function createTransaction(
   } as const;
 
   const legs: Array<Record<string, string | null>> = [assetLeg];
+  let settlementLegs = [] as ReturnType<typeof buildSettlementLegs>;
+  let requestedCashCurrencyForGuard: string | undefined;
 
   if (!isCashInstrument && input.consumeCash) {
     const requestedCashCurrency = normalizeCurrency(input.cashCurrency ?? "");
+    requestedCashCurrencyForGuard = requestedCashCurrency;
     if (!isSupportedCashCurrency(requestedCashCurrency)) {
       throw new Error("Nieobsługiwana waluta gotówki.");
     }
@@ -187,17 +205,26 @@ export async function createTransaction(
     let fxMeta: { rate: string; asOf: string; provider: string } | null = null;
 
     if (requestedCashCurrency !== currency) {
-      // FX is computed once at write-time and stored for auditability.
-      const fxByPair = await getFxRatesCached(supabaseUser, [
-        { from: currency, to: requestedCashCurrency },
-      ]);
-      fxMeta = resolveFxRate(fxByPair.get(`${currency}:${requestedCashCurrency}`) ?? null);
-      if (!fxMeta) {
-        throw new Error("Brak kursu FX do rozliczenia gotówki.");
+      // Historical settlement uses FX as-of trade date (with previous-session fill).
+      const fxByPair = await getFxDailyRatesCached(
+        supabaseUser,
+        [
+          { from: currency, to: requestedCashCurrency },
+        ],
+        input.date
+      );
+      const resolvedFx = resolveFxRate(
+        fxByPair.get(`${currency}:${requestedCashCurrency}`) ?? null
+      );
+      if (!resolvedFx) {
+        throw new Error(
+          `Brak kursu FX (${currency}/${requestedCashCurrency}) na dzień ${input.date}.`
+        );
       }
+      fxMeta = resolvedFx;
     }
 
-    const settlementLegs = buildSettlementLegs({
+    settlementLegs = buildSettlementLegs({
       type: input.type,
       quantity: input.quantity,
       price: input.price,
@@ -231,6 +258,23 @@ export async function createTransaction(
     });
   }
 
+  // Server-side guardrails: prevent oversell and negative cash from settlement.
+  await validateTransactionGuards({
+    supabaseAdmin,
+    userId,
+    portfolioId: input.portfolioId,
+    tradeDate: input.date,
+    intent,
+    isCashInstrument,
+    assetInstrumentId: instrument.id,
+    requestedAssetQuantity: input.quantity,
+    consumeCash: input.consumeCash ?? false,
+    cashCurrency:
+      requestedCashCurrencyForGuard ??
+      (isCashInstrument ? currency : undefined),
+    settlementLegs,
+  });
+
   // Insert the legs. If the client retries, we return the existing asset leg.
   const { data: inserted, error: transactionError } = await supabaseUser
     .from("transactions")
@@ -255,6 +299,13 @@ export async function createTransaction(
 
       // Best-effort profile touch; we do not block the response.
       await touchProfileLastActive(supabaseUser, userId).catch(() => undefined);
+      // Best-effort snapshot sync for idempotent retries.
+      await markSnapshotDirtyAfterTransaction(
+        supabaseAdmin,
+        userId,
+        input.portfolioId,
+        input.date
+      ).catch(() => undefined);
 
       return {
         transactionId: existing.id,
@@ -273,8 +324,8 @@ export async function createTransaction(
 
   // Best-effort profile touch; we do not block the response.
   await touchProfileLastActive(supabaseUser, userId).catch(() => undefined);
-  // Best-effort rebuild mark for past-dated transactions; no response blocking.
-  await markSnapshotHistoryDirty(
+  // Best-effort snapshot sync after write; no response blocking.
+  await markSnapshotDirtyAfterTransaction(
     supabaseAdmin,
     userId,
     input.portfolioId,
@@ -287,3 +338,7 @@ export async function createTransaction(
     deduped: false,
   };
 }
+
+export const __test__ = {
+  shouldMarkSnapshotHistoryDirty,
+};

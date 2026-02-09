@@ -8,25 +8,31 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Main entrypoints
 - `src/features/portfolio/components/DashboardEmptyState.tsx`
+- `src/features/portfolio/components/PortfolioDashboardSkeleton.tsx`
 - `src/features/portfolio/components/PortfolioSwitcher.tsx`
 - `src/features/portfolio/components/CreatePortfolioDialog.tsx`
 - `src/features/portfolio/components/PortfolioMobileHeaderActions.tsx`
 - `src/features/portfolio/dashboard/PortfolioDashboard.tsx`
-- `src/features/portfolio/dashboard/widgets/AllocationWidget.tsx`
-- `src/features/portfolio/dashboard/widgets/HoldingsWidget.tsx`
+- `src/features/portfolio/dashboard/PortfolioNetValueHero.tsx`
+- `src/features/portfolio/dashboard/widgets/AllocationHoldingsWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeChart.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeHeader.tsx`
+- `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioPerformanceDailySummaryCard.tsx`
+- `src/features/portfolio/dashboard/widgets/PortfolioRecentTransactionsWidget.tsx`
 - `src/features/portfolio/dashboard/lib/twr.ts`
 - `src/features/portfolio/dashboard/lib/chart-helpers.ts`
+- `src/features/portfolio/dashboard/lib/portfolio-value-over-time-view-model.ts`
 - `src/features/portfolio/dashboard/lib/benchmark-config.ts`
 - `src/features/portfolio/dashboard/lib/benchmark-performance.ts`
 - `src/features/portfolio/server/default-portfolio.ts`
 - `src/features/portfolio/server/list-portfolios.ts`
 - `src/features/portfolio/server/create-portfolio.ts`
 - `src/features/portfolio/server/get-portfolio-holdings.ts`
+- `src/features/portfolio/server/get-portfolio-average-buy-prices.ts`
+- `src/features/portfolio/server/average-buy-price.ts`
 - `src/features/portfolio/server/get-portfolio-summary.ts`
 - `src/features/portfolio/server/valuation.ts`
 - `src/features/portfolio/server/get-dashboard-benchmark-series.ts`
@@ -46,10 +52,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/snapshots/rebuild-chunk-window.ts`
 - `src/features/portfolio/server/snapshots/snapshot-rebuild-range-session.ts`
 - `src/features/portfolio/server/snapshots/run-snapshot-rebuild.ts`
+- `src/features/portfolio/server/snapshots/rebuild-route-service.ts`
 - `src/app/api/portfolio-snapshots/rebuild/route.ts`
 - `src/features/portfolio/dashboard/hooks/useSnapshotRebuild.ts`
+- `src/features/portfolio/dashboard/hooks/snapshot-rebuild-polling.ts`
+- `src/features/portfolio/lib/snapshot-rebuild-events.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.ts`
 - `src/features/portfolio/lib/portfolio-url.ts`
+- `src/features/portfolio/lib/rebuild-progress.ts`
 
 ## Boundaries
 - UI plus server helpers; valuation calculations live in `server/valuation.ts`.
@@ -59,9 +69,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
-- Dashboard widgets `Alokacja` i `Pozycje` używają teraz spójnego card shell (`ChartCard`) i układu 50/50 na desktopie, żeby typografia/spacing nie rozjeżdżały się między sekcjami.
-- `AllocationWidget` renderuje donut jako pełną szerokość widgetu (bez stałej kolumny 220px), a legenda udziałów ma czytelniejsze kafelki z paskiem udziału.
+- Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Koło/Tabela` (domyślnie `Koło`), zamiast dwóch osobnych kart 50/50.
+- Widok `Koło` renderuje donut jako pełną szerokość widgetu (bez stałej kolumny 220px), a legenda udziałów ma czytelniejsze kafelki z paskiem udziału.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
+- Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.
 - Paleta linii porównań jest rozdzielona tak, aby nie mylić bazowej linii zwrotu z inflacją (większy kontrast kolorów między seriami).
 - Benchmarki są przygotowywane po stronie serwera i przeliczane do waluty aktywnej zakładki (PLN/USD/EUR) z użyciem dziennych kursów FX (as-of, cache-first).
 - Benchmark overlay jest ładowany leniwie po zaznaczeniu checkboxa i tylko dla wybranego benchmarku + aktywnego zakresu dat (API `/api/benchmarks/series`), aby nie spowalniać bazowego renderu dashboardu.
@@ -73,16 +84,36 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Holdings with `instrument_type = CURRENCY` are valued at price 1.0 (no quotes); FX is only needed when base currency differs.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
 - Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio` or `?portfolio=all`), and hidden in single-portfolio view (`?portfolio=<id>`).
+- Single-portfolio view (`/portfolio?portfolio=<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
+- Strona `/portfolio` normalizuje brak parametru `portfolio` do `?portfolio=all`, żeby domyślny widok zbiorczy był zawsze jawny w URL.
+- Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
+- Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
+- Tryb wartości dla zakresów >1D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
+- Tabela `Pozycje` używa nagłówków kolumn z walutą bazową i pokazuje liczby bez powtarzania symbolu waluty w każdym wierszu.
+- Tabela `Pozycje` pokazuje też `Śr. cena zakupu` (weighted average buy cost) liczona po transakcjach `ASSET`; wartość jest przeliczana do waluty bazowej tym samym FX co wycena.
+- Dashboard aggregate view wraps portfolio selector in a dedicated control surface (subtle bordered card) to separate filters from data widgets.
+- Dashboard renders `Ostatnie transakcje` below `Alokacja i pozycje`, reusing the transactions table view and fetching newest rows (`date_desc`) with portfolio scope.
+- Portfolio page header adds small context eyebrow (`Dashboard`) and uses centered max-width layout for cleaner visual rhythm on large screens.
+- Dashboard content starts with a dedicated net-value hero (`Portfel: ...` + `Wartość netto`) rendered from `summary.totalValueBase` in the selected portfolio base currency.
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.
 - Rebuild status hook polls only while `queued/running`, uses server-guided `nextPollAfterMs` (fallback backoff 2s→5s→10s), retries stale `running` states (>90s), and exposes progress fields (`fromDate`, `toDate`, `processedUntil`) for UI progress.
+- Rebuild status hook can be nudged from client events (`portfolio:snapshot-rebuild-triggered`) to re-fetch state immediately even from idle, so loader appears without hard refresh after transaction writes.
+- Rebuild progress percent math is shared (`lib/rebuild-progress.ts`) between API and client hook to avoid drift in UI vs backend progress interpretation.
+- Rebuild polling/backoff decisions are isolated in `dashboard/hooks/snapshot-rebuild-polling.ts` so hook side effects stay easier to read.
+- Empty holdings state uses the same dashboard widgets as non-empty portfolios; rebuild loaders are rendered inside widgets based on snapshot rebuild status.
+- While rebuild is busy (`queued/running`), value chart disables live endpoint override and stays snapshot-based so `Wartość` and `Zainwestowany kapitał` move in one pipeline.
+- Rebuild loading state is rendered directly in chart area via `PortfolioSnapshotRebuildChartLoader` (cool-tone, chart-shaped skeleton), replacing the old top progress bar.
+- Rebuild loading state is also shown in `Alokacja i pozycje` (same `queued/running` source, with percent + date range), so allocation/holdings does not look stale during rebuild.
 - Rebuild status API also returns backend-computed `progressPercent` derived from (`fromDate`, `toDate`, `processedUntil`) so UI does not own progress math.
 - Rebuild API `POST /api/portfolio-snapshots/rebuild` logs chunk lifecycle (`post-start`, `post-finish`, `post-error`) for operational debugging.
+- Rebuild route (`/api/portfolio-snapshots/rebuild`) keeps handler thin and delegates parse/access/response-shaping helpers to `server/snapshots/rebuild-route-service.ts`.
 - Rebuild worker merges concurrent `dirty_from` updates at chunk finalize (prevents losing backdated writes that arrive during an active rebuild run).
 - Rebuild worker is adaptive per request: one POST can process multiple internal chunks under a server time budget (`timeBudgetMs`) with per-chunk day cap (`maxDaysPerRun`), reducing end-to-end rebuild latency.
 - Internal chunks in one run now share a single preloaded rebuild session (transactions + daily prices + daily FX loaded once, then reused in-memory across chunks), eliminating repeated DB/provider reads per chunk.
 - Daily cache preload validates range coverage quality (start/end + max internal gap), so sparse cache fragments trigger provider refetch instead of creating long flat carry-forward segments.
+- Portfolio value/performance chart compute is split into a dedicated view-model builder (`dashboard/lib/portfolio-value-over-time-view-model.ts`) so the widget component stays focused on orchestration and rendering.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`
@@ -91,10 +122,15 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/list-portfolios.test.ts`
 - `src/features/portfolio/server/create-portfolio.test.ts`
 - `src/features/portfolio/server/valuation.test.ts`
+- `src/features/portfolio/server/average-buy-price.test.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.test.ts`
 - `src/features/portfolio/dashboard/lib/twr.test.ts`
 - `src/features/portfolio/dashboard/lib/chart-helpers.test.ts`
+- `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.test.ts`
+- `src/features/portfolio/dashboard/widgets/PortfolioValueModeContent.test.tsx`
+- `src/features/portfolio/dashboard/PortfolioNetValueHero.test.tsx`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.test.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.test.ts`
 - `src/features/portfolio/lib/portfolio-url.test.ts`
+- `src/features/portfolio/lib/snapshot-rebuild-events.test.ts`
 - TODO: extend snapshot rebuild tests beyond pure merge helpers (session lifecycle + concurrent dirty update integration) and add tests for as-of compute (`compute-portfolio-snapshot-at-date.ts`).

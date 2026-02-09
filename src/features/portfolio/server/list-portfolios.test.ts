@@ -36,7 +36,7 @@ describe("listPortfolios", () => {
       })
     );
 
-    expect(listPortfolios(supabase as never)).resolves.toEqual([
+    await expect(listPortfolios(supabase as never)).resolves.toEqual([
       {
         id: "p1",
         name: "Główny",
@@ -54,8 +54,6 @@ describe("listPortfolios", () => {
       })
     );
 
-    expect(listPortfolios(supabase as never)).rejects.toThrow(
-        "boom"
-    );
+    await expect(listPortfolios(supabase as never)).rejects.toThrow("boom");
   });
 });

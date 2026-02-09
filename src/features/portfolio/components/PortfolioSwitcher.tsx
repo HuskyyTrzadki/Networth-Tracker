@@ -59,18 +59,20 @@ export function PortfolioSwitcher({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3",
+        "flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2",
         className
       )}
     >
-      <span className="text-xs font-medium text-muted-foreground">Portfel</span>
+      <span className="px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
+        Portfel
+      </span>
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Select
           disabled={disabled}
           onValueChange={handlePortfolioChange}
           value={currentValue}
         >
-          <SelectTrigger className="inline-flex h-10 min-w-[220px] justify-between whitespace-nowrap">
+          <SelectTrigger className="inline-flex h-9 min-w-[220px] justify-between whitespace-nowrap border-black/5 bg-background/70 dark:border-white/10">
             <SelectValue placeholder="Wszystkie portfele" />
           </SelectTrigger>
           <SelectContent>

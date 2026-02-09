@@ -76,6 +76,16 @@ const mockCashBalances = {
   "portfolio-growth": { USD: "820", EUR: "0", PLN: "0", GBP: "0", CHF: "0" },
 } as const;
 
+const mockAssetBalances = {
+  "portfolio-main": {
+    "yahoo:AAPL": "12",
+    "yahoo:XTB.WA": "40",
+  },
+  "portfolio-growth": {
+    "yahoo:BTC-USD": "0.18",
+  },
+} as const;
+
 const meta: Meta<typeof AddTransactionDialog> = {
   title: "Transactions/Add Transaction Dialog",
   component: AddTransactionDialog,
@@ -113,6 +123,7 @@ function Demo() {
         searchClient={mockSearchClient}
         portfolios={mockPortfolios}
         cashBalancesByPortfolio={mockCashBalances}
+        assetBalancesByPortfolio={mockAssetBalances}
         initialPortfolioId="portfolio-main"
         forcedPortfolioId={null}
       />
@@ -155,6 +166,7 @@ function FilledDemo() {
         searchClient={mockSearchClient}
         portfolios={mockPortfolios}
         cashBalancesByPortfolio={mockCashBalances}
+        assetBalancesByPortfolio={mockAssetBalances}
         initialPortfolioId="portfolio-main"
         forcedPortfolioId="portfolio-main"
       />

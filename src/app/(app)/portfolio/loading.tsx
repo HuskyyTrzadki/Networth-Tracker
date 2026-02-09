@@ -1,4 +1,4 @@
-import { PortfolioDashboardSkeleton } from "./PortfolioDashboardSkeleton";
+import { PortfolioDashboardSkeleton } from "@/features/portfolio";
 
 export default function PortfolioLoading() {
   return (

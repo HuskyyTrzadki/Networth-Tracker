@@ -24,7 +24,7 @@ export function AddTransactionNotesSummary({
   type: TransactionType;
 }>) {
   return (
-    <>
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="notes"
@@ -50,6 +50,6 @@ export function AddTransactionNotesSummary({
         quantity={quantity}
         type={type}
       />
-    </>
+    </div>
   );
 }

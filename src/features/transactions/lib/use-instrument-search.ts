@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 
 import {
   searchInstruments,
@@ -38,53 +38,27 @@ export function useInstrumentSearch(query: string, options?: SearchOptions) {
   const mode = options?.mode;
   const limit = options?.limit;
   const types = options?.types;
-  const [state, setState] = useState<SearchState>(initialState);
   const trimmed = query.trim();
   const requestKey = `${trimmed}|${mode ?? ""}|${limit ?? ""}|${
     types?.join(",") ?? ""
   }`;
   const shouldSearch = trimmed.length >= minQueryLength;
+  const resource = useKeyedAsyncResource<InstrumentSearchResult[]>({
+    requestKey: shouldSearch ? requestKey : null,
+    load: (signal) =>
+      Promise.resolve(client(trimmed, { mode, limit, types }, signal)),
+    getErrorMessage: (error) =>
+      error instanceof Error ? error.message : "Nie udało się pobrać instrumentów.",
+  });
 
-  useEffect(() => {
-    if (!shouldSearch) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    Promise.resolve(client(trimmed, { mode, limit, types }, controller.signal))
-      .then((results) => {
-        if (controller.signal.aborted) return;
-        setState({ results, status: "success", error: null, requestKey });
-      })
-      .catch((error) => {
-        if (
-          controller.signal.aborted ||
-          (error instanceof DOMException && error.name === "AbortError")
-        ) {
-          return;
-        }
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Nie udało się pobrać instrumentów.";
-        setState({
-          results: [],
-          status: "error",
-          error: message,
-          requestKey,
-        });
-      });
-
-    return () => controller.abort();
-  }, [client, limit, mode, requestKey, shouldSearch, trimmed, types]);
-
-  const isMatchingRequest = state.requestKey === requestKey;
   const resolvedState: SearchState = shouldSearch
     ? {
-        results: isMatchingRequest ? state.results : [],
-        status: isMatchingRequest ? state.status : "loading",
-        error: isMatchingRequest ? state.error : null,
+        results: resource.data ?? [],
+        status:
+          resource.status === "idle" || resource.status === "loading"
+            ? "loading"
+            : resource.status,
+        error: resource.errorMessage,
         requestKey,
       }
     : initialState;

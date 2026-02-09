@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import "./globals.css";
 
@@ -14,7 +15,23 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Props) {
   return (
     <html lang="pl">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <Script id="theme-preference-init" strategy="beforeInteractive">
+          {`(() => {
+            try {
+              const key = "portfolio-theme";
+              const stored = window.localStorage.getItem(key);
+              const isStoredTheme = stored === "light" || stored === "dark";
+              if (isStoredTheme) {
+                document.documentElement.dataset.theme = stored;
+              }
+            } catch {
+              // Ignore read failures and keep CSS default/fallback behavior.
+            }
+          })();`}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }

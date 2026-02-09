@@ -21,6 +21,7 @@ import {
   secondaryNavItems,
 } from "../lib/nav-items";
 import { isHrefActive } from "../lib/path";
+import { ThemeSwitch } from "./ThemeSwitch";
 
 type Props = Readonly<{ className?: string }>;
 
@@ -121,6 +122,9 @@ export function MobileBottomNav({ className }: Props) {
                     </SheetClose>
                   );
                 })}
+              </div>
+              <div className="mt-3 border-t border-border/70 pt-3">
+                <ThemeSwitch className="border-border/70 bg-muted/30" />
               </div>
             </SheetBody>
           </SheetContent>

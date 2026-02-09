@@ -4,6 +4,7 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -138,6 +139,7 @@ export function PortfolioComparisonChart({
     {
       paddingRatio: 0.12,
       minAbsolutePadding: 1,
+      includeZero: true,
     }
   );
 
@@ -166,6 +168,13 @@ export function PortfolioComparisonChart({
             axisLine={SHARED_CHART_AXIS_LINE}
             tickLine={SHARED_CHART_TICK_LINE}
             width={SHARED_CHART_AXIS_WIDTH}
+          />
+          <ReferenceLine
+            y={0}
+            stroke="var(--foreground)"
+            strokeOpacity={0.35}
+            strokeWidth={1.25}
+            strokeDasharray="4 3"
           />
           <Tooltip
             cursor={{ stroke: "var(--ring)" }}

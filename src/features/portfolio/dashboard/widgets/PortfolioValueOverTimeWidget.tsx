@@ -1,13 +1,17 @@
+"use client";
+
 import { ChartCard } from "@/features/design-system";
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { SnapshotScope } from "../../server/snapshots/types";
 import type { LiveTotalsResult } from "../../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../../server/snapshots/types";
+import type { SnapshotRebuildStatus } from "../hooks/useSnapshotRebuild";
 import type { DashboardBenchmarkSeries } from "../lib/benchmark-config";
 import { SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS } from "./portfolio-value-over-time-chart-layout";
 import { PortfolioValueOverTimeChart } from "./PortfolioValueOverTimeChart";
 
 type Props = Readonly<{
+  scope: SnapshotScope;
   selectedPortfolioId: string | null;
   hasHoldings: boolean;
   hasSnapshots: boolean;
@@ -15,9 +19,11 @@ type Props = Readonly<{
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
+  rebuild: SnapshotRebuildStatus;
 }>;
 
-export async function PortfolioValueOverTimeWidget({
+export function PortfolioValueOverTimeWidget({
+  scope,
   selectedPortfolioId,
   hasHoldings,
   hasSnapshots,
@@ -25,9 +31,8 @@ export async function PortfolioValueOverTimeWidget({
   liveTotals,
   polishCpiSeries,
   benchmarkSeries,
+  rebuild,
 }: Props) {
-  const scope: SnapshotScope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
-
   return (
     <ChartCard
       title="Wartość i performance"
@@ -44,6 +49,7 @@ export async function PortfolioValueOverTimeWidget({
         liveTotalsByCurrency={liveTotals.totalsByCurrency}
         polishCpiSeries={polishCpiSeries}
         benchmarkSeries={benchmarkSeries}
+        rebuild={rebuild}
       />
     </ChartCard>
   );
