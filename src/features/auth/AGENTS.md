@@ -4,7 +4,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Purpose
 - Guest-first auth flows and settings UI.
 - Server helpers for auth-related actions and profile updates.
-- Auth flow ensures a default portfolio exists for every user.
+- Auth flow ensures profile availability; portfolio creation is user-driven.
 - Email/password sign-up and sign-in (routes + settings UI).
 
 ## Main entrypoints

@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { cookies } from "next/headers";
 
-import { ensureDefaultPortfolioExists } from "@/features/portfolio/server/default-portfolio";
 import { ensureProfileExists, markProfileUpgradedIfNeeded } from "./profiles";
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -18,8 +17,6 @@ export async function signInAnonymously(cookieStore: CookieStore) {
   if (!user) throw new Error("Missing user after anonymous sign-in.");
 
   await ensureProfileExists(supabase, user.id);
-  // Guarantee a first portfolio for every new session (anon or signed-in).
-  await ensureDefaultPortfolioExists(supabase, user.id);
 
   return {
     userId: user.id,
@@ -40,8 +37,6 @@ export async function exchangeOAuthCodeForSession(
   if (!user) throw new Error("Missing user after OAuth callback.");
 
   await ensureProfileExists(supabase, user.id);
-  // Ensure portfolio exists for users coming from OAuth.
-  await ensureDefaultPortfolioExists(supabase, user.id);
   if (!user.is_anonymous) {
     await markProfileUpgradedIfNeeded(supabase, user.id);
   }
@@ -72,8 +67,6 @@ export async function upgradeToEmailPassword(
   if (!user) throw new Error("Missing user after email/password upgrade.");
 
   await ensureProfileExists(supabase, user.id);
-  // Users upgrading from anonymous already have a portfolio, but we keep it safe.
-  await ensureDefaultPortfolioExists(supabase, user.id);
   await markProfileUpgradedIfNeeded(supabase, user.id);
 
   return { userId: user.id } as const;
@@ -92,7 +85,6 @@ export async function signInWithEmailPassword(
   if (!user) throw new Error("Missing user after password sign-in.");
 
   await ensureProfileExists(supabase, user.id);
-  await ensureDefaultPortfolioExists(supabase, user.id);
   if (!user.is_anonymous) {
     await markProfileUpgradedIfNeeded(supabase, user.id);
   }
@@ -128,7 +120,6 @@ export async function signUpWithEmailPassword(
   const hasSession = Boolean(data?.session);
   if (hasSession) {
     await ensureProfileExists(supabase, user.id);
-    await ensureDefaultPortfolioExists(supabase, user.id);
     if (!user.is_anonymous) {
       await markProfileUpgradedIfNeeded(supabase, user.id);
     }

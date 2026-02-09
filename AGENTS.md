@@ -100,7 +100,7 @@ Whenever you ship a new feature or change architecture:
 - Transactions list: table view with search, type filter, and paging in `/transactions`
 - Transactions table groups now visually separate primary asset action from cash settlement detail legs
 - Cash instruments (system provider) + transaction leg grouping (`group_id`, `leg_role`) with cash settlement + FX at write-time
-- Portfolios table + `transactions.portfolio_id` (default portfolio created during auth)
+- Portfolios table + `transactions.portfolio_id` (no auto-created default portfolio during auth)
 - Portfolio selection (switcher) + creation dialog (sidebar + mobile header), with "Wszystkie portfele" view
 - Widok pojedynczego portfela (`/portfolio?portfolio=<id>`) ma duży CTA `Dodaj transakcję`, który otwiera modal `/transactions/new?portfolio=<id>` z wymuszonym wyborem tego portfela
 - Profiles table + RLS applied

@@ -4,7 +4,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Purpose
 - Transaction add/import UI, list view, and supporting form helpers.
 - Persistence, validation, and server-side services.
-- Transactions always belong to a portfolio (portfolio is created during auth).
+- Transactions always belong to a portfolio (user must create at least one portfolio).
 - Transactions list supports portfolio filtering (All vs. single portfolio).
 - Transactions are grouped by `group_id`, with legs labeled by `leg_role` and `leg_key`.
 - Cash instruments are `provider=system`, `instrument_type=CURRENCY`, used for settlement and cashflows.

@@ -4,7 +4,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Purpose
 - Portfolio UI states (empty state + dashboard with holdings summary).
 - Portfolio selection + creation UI for multi-portfolio support.
-- Server helpers for ensuring default portfolios, holdings, and portfolio summaries.
+- Server helpers for holdings and portfolio summaries.
 
 ## Main entrypoints
 - `src/features/portfolio/components/DashboardEmptyState.tsx`
@@ -27,7 +27,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/lib/portfolio-value-over-time-view-model.ts`
 - `src/features/portfolio/dashboard/lib/benchmark-config.ts`
 - `src/features/portfolio/dashboard/lib/benchmark-performance.ts`
-- `src/features/portfolio/server/default-portfolio.ts`
 - `src/features/portfolio/server/list-portfolios.ts`
 - `src/features/portfolio/server/create-portfolio.ts`
 - `src/features/portfolio/server/get-portfolio-holdings.ts`
@@ -118,7 +117,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`
 - `src/features/portfolio/components/CreatePortfolioDialog.test.tsx`
-- `src/features/portfolio/server/default-portfolio.test.ts`
 - `src/features/portfolio/server/list-portfolios.test.ts`
 - `src/features/portfolio/server/create-portfolio.test.ts`
 - `src/features/portfolio/server/valuation.test.ts`
