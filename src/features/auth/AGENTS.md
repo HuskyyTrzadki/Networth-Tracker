@@ -9,6 +9,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Main entrypoints
 - Server: `src/features/auth/server/service.ts`
+- Server: `src/features/auth/server/request-origin.ts`
 - Profiles: `src/features/auth/server/profiles.ts`
 - UI: `src/features/auth/ui/AuthSettingsSection.tsx`
 - Routes: `src/app/api/auth/signin/email/route.ts`, `src/app/api/auth/signup/email/route.ts`
@@ -25,6 +26,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `guest`: minimal upgrade actions (Google/email) + short 60-day retention note.
   - `signedIn`: compact account status + sign-out, without guest messaging.
 - Signed-in Google CTA semantics were corrected: no more "Kontynuuj z Google" when already logged in; signed-in users can only see Google linking action when not linked.
+- Auth callback and signup confirmation redirects now resolve origin via forwarded headers (`x-forwarded-host/proto`) to avoid accidental localhost redirects behind proxies.
 
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.

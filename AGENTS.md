@@ -116,6 +116,7 @@ Whenever you ship a new feature or change architecture:
 - Email/password sign-in + sign-up (API routes + settings UI forms)
 - Settings/account view was redesigned from mockup into production layout: state-aware account messaging, polished login/register panel, and guest-only retention warning (no guest copy shown for signed-in users)
 - Settings/account view v2: reduced copy and visual noise (single compact account card, concise status/actions, minimal auth forms per state)
+- Auth redirect hardening: callback/signup routes now derive public origin from forwarded headers to prevent localhost redirects in production behind proxy/CDN setups
 - Rejestracja e-mail kieruje na `/onboarding`, gdzie użytkownik tworzy pierwszy portfel (bez auto-tworzenia `Główny`)
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)

@@ -2,12 +2,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { parseEmailPasswordPayload } from "@/features/auth/server/credentials";
+import { getRequestOrigin } from "@/features/auth/server/request-origin";
 import { signUpWithEmailPassword } from "@/features/auth/server/service";
 
-const buildEmailRedirectTo = (requestUrl: string) => {
+const buildEmailRedirectTo = (request: Request) => {
   // Redirect email confirmations back into the app auth callback flow.
-  const baseUrl = new URL(requestUrl);
-  const url = new URL("/api/auth/callback", baseUrl.origin);
+  const url = new URL("/api/auth/callback", getRequestOrigin(request));
   // New accounts should continue from onboarding after confirmation.
   url.searchParams.set("next", "/onboarding");
   return url.toString();
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const emailRedirectTo = buildEmailRedirectTo(request.url);
+  const emailRedirectTo = buildEmailRedirectTo(request);
 
   try {
     const result = await signUpWithEmailPassword(await cookies(), {
