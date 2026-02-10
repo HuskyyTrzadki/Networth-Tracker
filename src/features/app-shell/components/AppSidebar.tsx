@@ -50,7 +50,7 @@ export function AppSidebar({ className, portfolios }: Props) {
     <Sidebar
       collapsible="none"
       className={cn(
-        "h-svh w-[24rem] min-w-[24rem] max-w-[24rem] shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+        "sticky top-0 h-svh w-[24rem] min-w-[24rem] max-w-[24rem] shrink-0 border-r border-sidebar-border/85 bg-sidebar text-sidebar-foreground",
         className
       )}
     >
@@ -59,7 +59,7 @@ export function AppSidebar({ className, portfolios }: Props) {
           href="/portfolio?portfolio=all"
           className="flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold tracking-tight text-sidebar-foreground"
         >
-          <span className="inline-flex size-8 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent/40">
+          <span className="inline-flex size-8 items-center justify-center rounded-md border border-sidebar-border/80 bg-sidebar-accent/55">
             <BriefcaseBusiness className="size-[18px] text-primary" aria-hidden="true" />
           </span>
           Portfolio Tracker
@@ -68,7 +68,7 @@ export function AppSidebar({ className, portfolios }: Props) {
 
       <SidebarContent className="px-3 pb-3">
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 text-sm font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/55">
+          <SidebarGroupLabel className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/55">
             Nawigacja
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -86,10 +86,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                       asChild
                       isActive={active}
                       className={cn(
-                        "h-12 rounded-lg px-4 text-base font-medium text-sidebar-foreground/90",
+                        "h-11 rounded-lg px-4 text-[15px] font-medium text-sidebar-foreground/90",
                         "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
-                        "data-[active=true]:bg-primary/15 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
-                        "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.38)]",
+                        "data-[active=true]:bg-primary/14 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
+                        "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]",
                         "[&[data-active=true]>svg]:text-primary"
                       )}
                     >
@@ -106,7 +106,7 @@ export function AppSidebar({ className, portfolios }: Props) {
         </SidebarGroup>
 
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50">
+          <SidebarGroupLabel className="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50">
             Twoje portfele
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -117,9 +117,9 @@ export function AppSidebar({ className, portfolios }: Props) {
                     asChild
                     isActive={activePortfolioId === portfolio.id}
                     className={cn(
-                      "h-12 rounded-lg px-4 text-base font-medium text-sidebar-foreground/85",
-                      "data-[active=true]:bg-primary/15 data-[active=true]:font-semibold data-[active=true]:text-sidebar-foreground",
-                      "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.38)]"
+                      "h-11 rounded-lg px-4 text-[15px] font-medium text-sidebar-foreground/85",
+                      "data-[active=true]:bg-primary/14 data-[active=true]:font-semibold data-[active=true]:text-sidebar-foreground",
+                      "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]"
                     )}
                   >
                     <Link href={`/portfolio?portfolio=${portfolio.id}`}>
@@ -131,6 +131,28 @@ export function AppSidebar({ className, portfolios }: Props) {
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               ))}
+              <SidebarMenuSubItem>
+                <CreatePortfolioDialog
+                  onCreated={(createdId) => {
+                    router.push(`/portfolio?portfolio=${createdId}`, {
+                      scroll: false,
+                    });
+                    router.refresh();
+                  }}
+                  trigger={({ open, disabled }) => (
+                    <Button
+                      className="mt-1 h-10 w-full justify-start gap-2 rounded-lg border border-primary/35 bg-primary/12 px-4 text-[13px] font-semibold text-primary hover:bg-primary/18"
+                      disabled={disabled}
+                      onClick={open}
+                      type="button"
+                      variant="ghost"
+                    >
+                      <Plus className="size-[16px]" aria-hidden="true" />
+                      Nowy portfel
+                    </Button>
+                  )}
+                />
+              </SidebarMenuSubItem>
             </SidebarMenuSub>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -138,28 +160,6 @@ export function AppSidebar({ className, portfolios }: Props) {
 
       <SidebarFooter>
         <div className="px-2 pt-2">
-          <CreatePortfolioDialog
-            onCreated={(createdId) => {
-              router.push(`/portfolio?portfolio=${createdId}`, {
-                scroll: false,
-              });
-              router.refresh();
-            }}
-            trigger={({ open, disabled }) => (
-              <Button
-                className="h-10 w-full justify-start gap-2 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground"
-                disabled={disabled}
-                onClick={open}
-                type="button"
-                variant="ghost"
-              >
-                <Plus className="size-[18px]" aria-hidden="true" />
-                Nowy portfel
-              </Button>
-            )}
-          />
-        </div>
-        <div className="px-2 pb-2">
           <ThemeSwitch />
         </div>
         <SidebarMenu>
@@ -173,10 +173,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                   asChild
                   isActive={active}
                   className={cn(
-                    "h-12 rounded-lg px-4 text-base font-medium text-sidebar-foreground/85",
+                    "h-11 rounded-lg px-4 text-[15px] font-medium text-sidebar-foreground/85",
                     "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
-                    "data-[active=true]:bg-primary/15 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
-                    "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.38)]",
+                    "data-[active=true]:bg-primary/14 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
+                    "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]",
                     "[&[data-active=true]>svg]:text-primary"
                   )}
                 >

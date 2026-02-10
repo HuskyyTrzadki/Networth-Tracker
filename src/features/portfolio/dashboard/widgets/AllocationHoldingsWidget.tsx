@@ -77,9 +77,9 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
     concentrationWarning?.severity === "CRITICAL"
       ? "text-destructive bg-destructive/10"
       : concentrationWarning?.severity === "HARD"
-        ? "text-rose-600 bg-rose-50"
+        ? "text-rose-700 bg-rose-50/80 dark:bg-rose-500/10"
         : concentrationWarning
-          ? "text-amber-700 bg-amber-50"
+          ? "text-amber-700 bg-amber-50/85 dark:bg-amber-500/10"
           : "";
   const totalLabel =
     formatter && summary.totalValueBase
@@ -109,21 +109,22 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
 
   return (
     <ChartCard
+      surface="subtle"
       title={
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span>Alokacja i pozycje</span>
           <ToggleGroup
-            className="rounded-md border border-border/60 p-0.5"
+            className="rounded-lg border border-border/70 bg-muted/45 p-0.5"
             onValueChange={(value) => {
               if (value === "ALLOCATION" || value === "HOLDINGS") setMode(value);
             }}
             type="single"
             value={mode}
           >
-            <ToggleGroupItem className="h-9 px-3 text-sm" value="ALLOCATION">
+            <ToggleGroupItem className="h-8 px-3 text-sm" value="ALLOCATION">
               Koło
             </ToggleGroupItem>
-            <ToggleGroupItem className="h-9 px-3 text-sm" value="HOLDINGS">
+            <ToggleGroupItem className="h-8 px-3 text-sm" value="HOLDINGS">
               Tabela
             </ToggleGroupItem>
           </ToggleGroup>
@@ -144,9 +145,9 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
     >
       <div className="h-[460px] lg:h-[560px]">
         {isRebuildBusy ? (
-          <div className="grid h-full place-items-center rounded-lg border border-border/70 bg-muted/10 p-6 text-center">
+          <div className="grid h-full place-items-center rounded-xl border border-border/70 bg-muted/10 p-6 text-center">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-600/25 bg-cyan-600/10 px-3 py-1.5 text-[12px] font-medium text-cyan-800 dark:text-cyan-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[12px] font-medium text-primary">
                 <Loader2 className="size-4 animate-spin" aria-hidden />
                 Przebudowa historii snapshotów
               </div>
@@ -160,14 +161,14 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
           </div>
         ) : mode === "ALLOCATION" ? (
           <div className="flex h-full flex-col gap-5 overflow-y-auto pr-1">
-            <div className="rounded-lg border border-border/70 bg-muted/10 p-3">
+            <div className="rounded-xl border border-border/70 bg-muted/10 p-3">
               <div className="relative w-full">
                 {hasAllocation ? (
                   <AllocationDonutChart data={slices} height={300} />
                 ) : (
-                  <div className="grid h-[300px] w-full place-items-center rounded-md border border-dashed border-border text-[12px] text-muted-foreground">
-                    Brak danych do alokacji
-                  </div>
+                    <div className="grid h-[300px] w-full place-items-center rounded-lg border border-dashed border-border text-[12px] text-muted-foreground">
+                      Brak danych do alokacji
+                    </div>
                 )}
                 <div className="pointer-events-none absolute inset-0 grid place-items-center">
                   <div className="text-center">
@@ -195,7 +196,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
                   return (
                     <div
                       key={row.id}
-                      className="rounded-md border border-border/70 bg-card p-3"
+                      className="rounded-lg border border-border/70 bg-card p-3 shadow-[var(--shadow)]"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-2">
@@ -232,12 +233,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               </div>
             ) : null}
             {concentrationWarning ? (
-              <Alert
-                className={cn(
-                  "flex items-start gap-2 border-none px-2 py-1.5 text-[13px] shadow-none",
-                  warningTone
-                )}
-              >
+              <Alert className={cn("flex items-start gap-2 border-none px-2 py-1.5 text-[13px] shadow-none", warningTone)}>
                 <AlertTriangle className="mt-0.5 size-4" aria-hidden />
                 <span className="text-inherit">
                   {concentrationWarning.symbol} stanowi{" "}
@@ -251,31 +247,19 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
             <Table className="min-w-[820px]">
               <TableHeader>
                 <TableRow className="bg-muted/25">
-                  <TableHead className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90">
+                  <TableHead className="px-4">
                     Instrument
                   </TableHead>
-                  <TableHead
-                    className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
-                    data-align="right"
-                  >
+                  <TableHead className="px-4" data-align="right">
                     Ilość
                   </TableHead>
-                  <TableHead
-                    className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
-                    data-align="right"
-                  >
+                  <TableHead className="px-4" data-align="right">
                     Śr. cena zakupu ({summary.baseCurrency})
                   </TableHead>
-                  <TableHead
-                    className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
-                    data-align="right"
-                  >
+                  <TableHead className="px-4" data-align="right">
                     Wartość ({summary.baseCurrency})
                   </TableHead>
-                  <TableHead
-                    className="px-4 text-[11px] uppercase tracking-[0.04em] text-muted-foreground/90"
-                    data-align="right"
-                  >
+                  <TableHead className="px-4" data-align="right">
                     Udział
                   </TableHead>
                 </TableRow>

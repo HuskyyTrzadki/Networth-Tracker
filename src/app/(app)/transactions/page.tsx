@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import { AnimatedReveal } from "@/features/design-system";
 import { createClient } from "@/lib/supabase/server";
 import {
   TransactionsEmptyState,
@@ -48,8 +49,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
     : "/transactions/new";
 
   return (
-    <main className="px-6 py-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <main className="px-5 py-6 sm:px-6 sm:py-8">
+      <AnimatedReveal>
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">
             Historia transakcji
@@ -61,9 +63,10 @@ export default async function TransactionsPage({ searchParams }: Props) {
         <Button asChild size="lg">
           <Link href={transactionCreateHref}>Dodaj transakcję</Link>
         </Button>
-      </header>
+        </header>
+      </AnimatedReveal>
 
-      <section className="mt-6">
+      <AnimatedReveal className="mt-6" delay={0.05}>
         <TransactionsSearchToolbar
           key={`${filters.query ?? ""}:${filters.type ?? "all"}:${
             filters.sort
@@ -74,20 +77,22 @@ export default async function TransactionsPage({ searchParams }: Props) {
           sort={filters.sort}
           type={filters.type}
         />
-      </section>
+      </AnimatedReveal>
 
-      <section className="mt-4">
+      <AnimatedReveal className="mt-4" delay={0.08}>
         {transactionsPage.items.length > 0 ? (
           <TransactionsTable items={transactionsPage.items} />
         ) : (
           <TransactionsEmptyState query={filters.query} />
         )}
-      </section>
+      </AnimatedReveal>
 
-      <TransactionsPagination
-        filters={filters}
-        hasNextPage={transactionsPage.hasNextPage}
-      />
+      <AnimatedReveal delay={0.1}>
+        <TransactionsPagination
+          filters={filters}
+          hasNextPage={transactionsPage.hasNextPage}
+        />
+      </AnimatedReveal>
     </main>
   );
 }

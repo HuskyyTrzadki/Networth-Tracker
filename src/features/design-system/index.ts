@@ -1,6 +1,7 @@
 export { ChangePill } from "./components/ChangePill";
 export { DatePicker } from "./components/DatePicker";
 export { AllocationDonutChart } from "./components/AllocationDonutChart";
+export { AnimatedReveal } from "./components/AnimatedReveal";
 export { ChartCard } from "./components/ChartCard";
 export { DesignSurface } from "./components/DesignSurface";
 export { DailyReturnsBarChart } from "./components/DailyReturnsBarChart";

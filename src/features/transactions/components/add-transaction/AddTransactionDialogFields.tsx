@@ -162,9 +162,9 @@ export function AddTransactionDialogFields({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-muted/15 px-4 py-4 sm:px-6 sm:py-5">
+    <div className="flex-1 overflow-y-auto bg-muted/12 px-4 py-4 sm:px-6 sm:py-5">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <section className="space-y-6 rounded-xl border border-border/70 bg-background p-4 sm:p-5">
+        <section className="space-y-6 rounded-xl border border-border/75 bg-background p-4 shadow-[var(--shadow)] sm:p-5">
           <AddTransactionInstrumentSection
             form={form}
             forcedPortfolioId={forcedPortfolioId}

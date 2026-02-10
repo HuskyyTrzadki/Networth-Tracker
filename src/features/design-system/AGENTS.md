@@ -30,8 +30,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Shared time-axis tick strategy in `components/chart-styles.ts` switches to 3-month ticks on longer ranges and adds year on year-boundary labels; reused by both dashboard charts.
 - Time-axis labels are capitalized for Polish month/day formatting (`Lut`, `Maj`) to keep dashboard typography consistent.
 - Visual layering uses stronger background/card separation via theme tokens (`--background` vs `--card`) plus crisp card borders (`black/5` light, `white/10` dark) and subtle ambient shadows in `ChartCard`.
+- Design system now exposes shared motion presets in `lib/motion.ts` and reusable client reveal wrapper `components/AnimatedReveal.tsx` (subtle 150-220ms easing, reduced-motion safe).
 - Global tokens were tuned toward a cooler finance palette (blue/slate) with stronger dark-mode legibility and clearer semantic contrast for primary/action states.
+- Global tokens and controls were refreshed to a warmer neutral palette with muted teal accent, border-led depth, and consistent rounded-`lg` control chrome.
 - `ChartCard` uses symmetrical `p-4` spacing and a single internal rhythm (`header` + `content`) so widget chrome remains consistent across portfolio sections.
+- `ChartCard` now supports `surface` variants (`default`/`subtle`) for consistent visual hierarchy between primary and secondary dashboard cards.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
 - `AllocationDonutChart` supports responsive radius values (`innerRadius`/`outerRadius` as percent) so feature widgets can use full-width chart areas without hardcoded pixel donuts.
 - Chart stories live in `stories/Charts.stories.tsx`.

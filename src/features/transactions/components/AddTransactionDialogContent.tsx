@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import { AnimatedReveal } from "@/features/design-system";
 import {
   DialogClose,
   DialogDescription,
@@ -256,14 +257,15 @@ export function AddTransactionDialogContent({
 
   return (
     <Form {...form}>
-      <form
-        className="flex max-h-[92dvh] flex-col"
-        onSubmit={submitTransaction}
-      >
-        <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-6 py-5">
+      <AnimatedReveal y={8}>
+        <form
+          className="flex max-h-[92dvh] flex-col"
+          onSubmit={submitTransaction}
+        >
+          <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-6 py-5">
           <div className="min-w-0">
             <DialogTitle className="truncate">Dodaj transakcję</DialogTitle>
-            <DialogDescription className="mt-1">
+            <DialogDescription className="mt-1 text-[13px]">
               Uzupełnij dane i zapisz transakcję w portfelu.
             </DialogDescription>
           </div>
@@ -280,53 +282,54 @@ export function AddTransactionDialogContent({
           </DialogClose>
         </header>
 
-        <AddTransactionDialogFields
-          activeTab={activeTab}
-          assetBalancesByPortfolio={assetBalancesByPortfolio}
-          cashBalancesByPortfolio={cashBalancesByPortfolio}
-          forcedPortfolioId={forcedPortfolioId}
-          form={form}
-          initialCashCurrency={initialCashCurrency}
-          portfolios={portfolios}
-          searchClient={searchClient}
-          selectedInstrument={selectedInstrument}
-          setActiveTab={setActiveTab}
-          setSelectedInstrument={setSelectedInstrument}
-        />
+          <AddTransactionDialogFields
+            activeTab={activeTab}
+            assetBalancesByPortfolio={assetBalancesByPortfolio}
+            cashBalancesByPortfolio={cashBalancesByPortfolio}
+            forcedPortfolioId={forcedPortfolioId}
+            form={form}
+            initialCashCurrency={initialCashCurrency}
+            portfolios={portfolios}
+            searchClient={searchClient}
+            selectedInstrument={selectedInstrument}
+            setActiveTab={setActiveTab}
+            setSelectedInstrument={setSelectedInstrument}
+          />
 
-        <footer className="border-t border-border/70 bg-background px-6 py-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-h-5 text-sm text-destructive">
-              {rootError ?? ""}
+          <footer className="border-t border-border/70 bg-background px-6 py-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-h-5 text-sm text-destructive">
+                {rootError ?? ""}
+              </div>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button
+                  onClick={onClose}
+                  type="button"
+                  variant="outline"
+                  disabled={isSubmitting}
+                  className="h-11 px-7"
+                >
+                  Anuluj
+                </Button>
+                <Button
+                  disabled={!isSubmittable || isSubmitting}
+                  type="submit"
+                  className="h-11 min-w-36 px-7"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle className="size-4 animate-spin" aria-hidden />
+                      Zapisywanie...
+                    </>
+                  ) : (
+                    "Zapisz"
+                  )}
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button
-                onClick={onClose}
-                type="button"
-                variant="outline"
-                disabled={isSubmitting}
-                className="h-12 px-8 text-lg"
-              >
-                Anuluj
-              </Button>
-              <Button
-                disabled={!isSubmittable || isSubmitting}
-                type="submit"
-                className="h-12 min-w-40 px-8 text-lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <LoaderCircle className="size-4 animate-spin" aria-hidden />
-                    Zapisywanie...
-                  </>
-                ) : (
-                  "Zapisz"
-                )}
-              </Button>
-            </div>
-          </div>
-        </footer>
-      </form>
+          </footer>
+        </form>
+      </AnimatedReveal>
     </Form>
   );
 }

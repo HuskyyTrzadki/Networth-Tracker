@@ -41,15 +41,15 @@ const getTypeLabel = (item: TransactionListItem) => {
 
 const getTypeBadgeClassName = (side: TransactionListItem["side"]) =>
   side === "BUY"
-    ? "border-primary/20 bg-primary/5 text-primary"
-    : "border-rose-200 bg-rose-50 text-rose-600";
+    ? "border-primary/25 bg-primary/10 text-primary"
+    : "border-rose-200 bg-rose-50/80 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300";
 
 const getRowBadgeClassName = (item: TransactionListItem) => {
   if (item.legRole !== "CASH") {
     return getTypeBadgeClassName(item.side);
   }
 
-  return "border-border bg-muted/35 text-muted-foreground";
+  return "border-border/90 bg-muted/45 text-muted-foreground";
 };
 
 const getInstrumentSubtitle = (item: TransactionListItem) => {
@@ -149,28 +149,28 @@ export function TransactionsTable({ items }: Props) {
   const groups = groupTransactions(items);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
+    <div className="overflow-hidden rounded-xl border border-border/85 bg-card shadow-[var(--shadow)]">
       <div className="overflow-x-auto">
         <div className="min-w-[860px]">
           <div
-            className="grid items-center bg-muted/40 px-2 py-3 sm:px-4"
+            className="grid items-center bg-muted/35 px-2 py-3 sm:px-4"
             style={{ gridTemplateColumns: GRID_TEMPLATE }}
           >
-            <div className="px-2 text-sm font-medium text-muted-foreground">Data</div>
-            <div className="px-2 text-sm font-medium text-muted-foreground">
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">Data</div>
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
               Instrument
             </div>
-            <div className="px-2 text-sm font-medium text-muted-foreground">Typ</div>
-            <div className="px-2 text-sm font-medium text-muted-foreground">
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">Typ</div>
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
               Ilość
             </div>
-            <div className="px-2 text-sm font-medium text-muted-foreground">
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
               Cena
             </div>
-            <div className="px-2 text-sm font-medium text-muted-foreground">
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
               Wartość
             </div>
-            <div className="px-2 text-sm font-medium text-muted-foreground">
+            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
               Akcje
             </div>
           </div>
@@ -179,7 +179,7 @@ export function TransactionsTable({ items }: Props) {
               <div
                 key={group.groupId}
                 className={cn(
-                  "overflow-hidden rounded-md border border-border",
+                  "overflow-hidden rounded-lg border border-border/80 bg-background/45",
                   GROUP_ACCENT_BASE_CLASS,
                   GROUP_TONE_BY_SIDE[group.primarySide].accentClassName
                 )}
@@ -188,7 +188,7 @@ export function TransactionsTable({ items }: Props) {
                   // First row is the primary action (asset leg); cash legs are details.
                   <div
                     className={cn(
-                      "grid min-h-[56px] items-center px-2 sm:px-4",
+                      "grid min-h-[58px] items-center px-2 sm:px-4",
                       index > 0 && "border-t border-border",
                       item.legRole === "CASH" &&
                         GROUP_TONE_BY_SIDE[group.primarySide].cashRowClassName
@@ -196,7 +196,7 @@ export function TransactionsTable({ items }: Props) {
                     key={item.id}
                     style={{ gridTemplateColumns: GRID_TEMPLATE }}
                   >
-                    <div className="px-2 font-mono text-xs tabular-nums text-muted-foreground">
+                    <div className="px-2 font-mono text-[12px] tabular-nums text-muted-foreground">
                       {item.tradeDate}
                     </div>
                     <div className="flex min-w-0 items-center gap-3 px-2">
@@ -209,7 +209,7 @@ export function TransactionsTable({ items }: Props) {
                         />
                       </div>
                       <div className="flex min-w-0 flex-col">
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-[13px] font-semibold text-foreground">
                           {item.instrument.symbol}
                         </span>
                         <span className="truncate text-xs text-muted-foreground">
@@ -220,7 +220,7 @@ export function TransactionsTable({ items }: Props) {
                     <div className="px-2">
                       <Badge
                         className={cn(
-                          "rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                          "rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
                           getRowBadgeClassName(item)
                         )}
                         variant="outline"

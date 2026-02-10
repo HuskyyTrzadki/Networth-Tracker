@@ -38,7 +38,7 @@ export function MobileBottomNav({ className }: Props) {
     <nav
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 md:hidden",
-        "border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70",
+        "border-t border-border/85 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80",
         "pb-[env(safe-area-inset-bottom)]",
         className
       )}
@@ -75,13 +75,13 @@ export function MobileBottomNav({ className }: Props) {
               aria-label="Więcej"
             >
               <MoreHorizontal className="size-5" aria-hidden="true" />
-              <span className="text-[11px] font-medium">Więcej</span>
+              <span className="text-[11px] font-medium tracking-tight">Więcej</span>
             </button>
           </SheetTrigger>
 
           <SheetContent
             side="bottom"
-            className="max-h-[80dvh] rounded-t-xl pb-[env(safe-area-inset-bottom)]"
+            className="max-h-[80dvh] rounded-t-xl border-border/85 pb-[env(safe-area-inset-bottom)]"
           >
             <SheetHeader>
               <SheetTitle>Menu</SheetTitle>

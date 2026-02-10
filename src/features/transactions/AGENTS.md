@@ -88,6 +88,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions list type filter (`Wszystkie/Kupno/Sprzedaż`) uses a segmented toggle control instead of dropdown for faster switching and better mobile ergonomics.
 - Transactions table visually separates cash settlement legs from primary asset action rows inside each `group_id`.
 - Transactions table now adds a shared group accent (left border + subtle background tone by BUY/SELL) so asset and cash settlement legs are visually linked as one operation.
+- Transactions page sections now use subtle reveal animations (`AnimatedReveal`) for smoother perceived navigation/loading.
+- Transactions toolbar, table chrome, and add-transaction dialog were visually refreshed (warmer surfaces, clearer micro-typography, calmer badges, consistent button/control sizing) without changing transaction behavior.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

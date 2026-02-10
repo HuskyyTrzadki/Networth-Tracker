@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import { AnimatedReveal } from "@/features/design-system";
 import {
   PortfolioDashboardSkeleton,
   PortfolioMobileHeaderActions,
@@ -74,10 +75,11 @@ export default async function PortfolioPage({ searchParams }: Props) {
     : "Wszystkie portfele";
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] flex-col px-6 py-8">
-      <header className="flex flex-col gap-3">
+    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] flex-col px-5 py-6 sm:px-6 sm:py-8">
+      <AnimatedReveal>
+        <header className="flex flex-col gap-3">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
             Dashboard
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
@@ -102,8 +104,9 @@ export default async function PortfolioPage({ searchParams }: Props) {
             />
           </div>
         ) : null}
-      </header>
-      <section className="mt-6">
+        </header>
+      </AnimatedReveal>
+      <AnimatedReveal className="mt-6" delay={0.05}>
         <Suspense fallback={<PortfolioDashboardSkeleton />}>
           <PortfolioDashboardSection
             baseCurrency={baseCurrency}
@@ -111,7 +114,7 @@ export default async function PortfolioPage({ searchParams }: Props) {
             selectedPortfolioId={selectedPortfolioId}
           />
         </Suspense>
-      </section>
+      </AnimatedReveal>
     </main>
   );
 }

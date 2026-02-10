@@ -37,6 +37,7 @@ export function PortfolioValueOverTimeWidget({
     <ChartCard
       title="Wartość i performance"
       subtitle="Na podstawie dziennych snapshotów"
+      surface="subtle"
       className={SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS}
     >
       <PortfolioValueOverTimeChart

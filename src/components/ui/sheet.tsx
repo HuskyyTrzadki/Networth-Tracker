@@ -4,7 +4,7 @@ import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/cn"
 
 const Sheet = SheetPrimitive.Root
 
@@ -20,7 +20,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -30,16 +30,16 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 flex flex-col bg-background shadow-lg outline-none transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out",
+  "fixed z-50 flex flex-col bg-background shadow-[var(--shadow)] outline-none transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
   {
     variants: {
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "bottom-0 left-0 top-4 w-full rounded-t-xl border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:top-0 sm:w-[450px] sm:rounded-none",
+          "inset-x-0 bottom-0 border-t border-border/85 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        left: "bottom-0 left-0 top-4 w-full rounded-t-xl border-r border-border/85 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:top-0 sm:w-[450px] sm:rounded-none",
         right:
-          "bottom-0 right-0 top-4 w-full rounded-t-xl border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:top-0 sm:w-[450px] sm:rounded-none",
+          "bottom-0 right-0 top-4 w-full rounded-t-xl border-l border-border/85 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:top-0 sm:w-[450px] sm:rounded-none",
       },
     },
     defaultVariants: {

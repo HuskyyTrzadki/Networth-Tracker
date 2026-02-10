@@ -77,12 +77,14 @@ Whenever you ship a new feature or change architecture:
 ### Already built
 - Tailwind v4 configured (PostCSS + `globals.css`)
 - Tailwind theme tokens (colors, radius, shadow, typography) wired via CSS variables + Tailwind config (cool finance palette refresh, improved dark-mode contrast)
+- Visual refresh v2: warmer neutral palette + muted teal accent across app shell/dashboard/transactions, with border-led depth and refined control typography/sizing
 - Local fonts via Fontsource (Geist Sans, Geist Mono, Source Serif 4)
 - Basic feature-first skeleton (`src/features/*`, `src/lib/*`)
 - Storybook + design system stories (colors, typography, finance demo, Recharts charts) with theme toolbars,
 - shadcn/ui primitives live in `src/components/ui` and are re-exported from `src/features/design-system/components/ui/*`
 - App shell navigation (shadcn sidebar on desktop + mobile bottom nav + “More” sheet)
 - Sidebar IA refresh: app-level nav (`Przegląd`, `Transakcje`) separated from portfolio assets (`Portfele`), with stronger active states and quieter currency labels
+- Desktop sidebar now stays sticky while page content scrolls; `Nowy portfel` is moved into `Twoje portfele` directly under portfolio rows and styled as a clear action button
 - Theme switch in app shell (desktop sidebar + mobile "Więcej"), with persisted user preference in `localStorage` (`portfolio-theme`)
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
@@ -96,6 +98,7 @@ Whenever you ship a new feature or change architecture:
 - Add transaction form now shows "Dostępne do sprzedaży (na teraz)" hint per selected portfolio/instrument
 - Add transaction dialog internals were split into focused sections (`Instrument/Trade/Sidebar`) + pure form derivation helpers, reducing component complexity
 - Shared client hooks now power transaction async flows (`use-keyed-async-resource`, `use-debounced-callback`) to remove repeated stale/loading request logic
+- Shared subtle motion presets (`src/features/design-system/lib/motion.ts`) + `AnimatedReveal` wrapper now power key UI entries with reduced-motion safety
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
 - Transactions table groups now visually separate primary asset action from cash settlement detail legs

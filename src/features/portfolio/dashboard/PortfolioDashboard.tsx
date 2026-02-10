@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { AnimatedReveal } from "@/features/design-system";
 
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
@@ -50,32 +51,36 @@ export function PortfolioDashboard({
 
   return (
     <div className={cn("space-y-6", className)}>
-      <PortfolioNetValueHero
-        portfolioLabel={portfolioLabel}
-        baseCurrency={summary.baseCurrency}
-        totalValueBase={summary.totalValueBase}
-        isPartial={summary.isPartial}
-      />
+      <AnimatedReveal>
+        <PortfolioNetValueHero
+          portfolioLabel={portfolioLabel}
+          baseCurrency={summary.baseCurrency}
+          totalValueBase={summary.totalValueBase}
+          isPartial={summary.isPartial}
+        />
+      </AnimatedReveal>
       {selectedPortfolioId === null ? (
-        <div className="hidden md:block">
-          <div className="inline-flex rounded-lg border border-black/5 bg-card p-2 shadow-sm dark:border-white/10">
+        <AnimatedReveal className="hidden md:block" delay={0.04}>
+          <div className="inline-flex rounded-xl border border-border/85 bg-card p-2 shadow-[var(--shadow)]">
             <PortfolioSwitcher
               className="sm:gap-2.5"
               portfolios={portfolios}
               selectedId={selectedPortfolioId}
             />
           </div>
-        </div>
+        </AnimatedReveal>
       ) : null}
-      <PortfolioDashboardClientWidgets
-        selectedPortfolioId={selectedPortfolioId}
-        summary={summary}
-        snapshotRows={snapshotRows}
-        liveTotals={liveTotals}
-        polishCpiSeries={polishCpiSeries}
-        benchmarkSeries={benchmarkSeries}
-        recentTransactions={recentTransactions}
-      />
+      <AnimatedReveal delay={0.06}>
+        <PortfolioDashboardClientWidgets
+          selectedPortfolioId={selectedPortfolioId}
+          summary={summary}
+          snapshotRows={snapshotRows}
+          liveTotals={liveTotals}
+          polishCpiSeries={polishCpiSeries}
+          benchmarkSeries={benchmarkSeries}
+          recentTransactions={recentTransactions}
+        />
+      </AnimatedReveal>
     </div>
   );
 }
