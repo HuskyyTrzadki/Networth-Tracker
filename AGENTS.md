@@ -118,6 +118,7 @@ Whenever you ship a new feature or change architecture:
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
 - Tabela `Pozycje`: dodana kolumna `Śr. cena zakupu` (weighted average buy cost per instrument, liczona po transakcjach ASSET i pokazywana w walucie bazowej portfela)
 - Cache-first quotes + FX with TTL (global cache, direct FX only + inversion)
+- Quotes cache stores normalized daily quote delta (`day_change`, `day_change_percent`) for dashboard daily movers
 - Historyczne ceny w formularzu transakcji: API `/api/instruments/price-on-date` (Yahoo daily), auto-sugestia ceny + zakres low/high + fallback do ostatniej sesji
 - Limity dat transakcji: brak przyszłych dat + max 5 lat wstecz (UI + backend schema)
 - DatePicker component in design system Storybook + transaction form calendar field for choosing trade date
@@ -134,6 +135,7 @@ Whenever you ship a new feature or change architecture:
 - Value/performance chart visuals are now harmonized via shared chart style tokens (axis typography, margins, line widths), and comparison line colors are mapped for stronger contrast vs base return
 - Portfolio value/performance chart compute pipeline is extracted to a view-model module (`portfolio-value-over-time-view-model.ts`), so widget code stays render/orchestration-focused
 - Dashboard uses one shared `Alokacja i pozycje` widget with a `Koło/Tabela` toggle (default `Koło`), preserving unified card chrome/typography; allocation donut stays full-width
+- Dashboard includes read-only `Top movers` pills (max 4, logo + daily kwota/%), rendered between `Alokacja i pozycje` and `Ostatnie transakcje`
 - Dashboard includes `Ostatnie transakcje` under `Alokacja i pozycje`, showing newest rows (`date_desc`) scoped to selected portfolio and reusing the transactions table component
 - Dashboard shows a top net-value hero (`Portfel: ...` + `Wartość netto`) in the selected portfolio base currency, using the same valuation summary as widgets (no duplicate valuation pipeline)
 - Snapshoty zawierają external cashflow oraz implicit transfer do TWR (bez psucia raportów wpłat gotówki)

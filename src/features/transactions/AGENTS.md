@@ -70,6 +70,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction async client requests use shared keyed resource hook (`use-keyed-async-resource`) to avoid duplicated stale-request/loading logic.
 - Add-transaction modal exposes a calendar date picker field with lower bound from `getTradeDateLowerBound()` and upper bound set to `today`.
 - Add-transaction form blocks submit when entered price is outside fetched day-session range (low/high), with inline field error on `price`.
+- Historical price assist warning now distinguishes same-day fallback from no-session fallback:
+  - selected `today` (exchange timezone) + fallback to prior candle => "session may still be in progress / daily close not available yet"
+  - other fallback cases (weekend/holiday/past no-session day) => "no session day"
+- Historical price assist for `trade_date = today` now prefers fresh live/cache quote (`instrument_quotes_cache` + Yahoo fallback) over previous daily close; when live quote is used, day-range validation is skipped (`range=null`) to avoid false "price out of session range" errors against prior-session OHLC.
 - On writes with `trade_date <= today`, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state` (`PORTFOLIO` + `ALL`), so both same-day and past-dated changes use one rebuild flow.
 - Add-transaction modal uses a wider desktop layout with two-pane composition (main form + side summary/cash panel), plus explicit loading states for both historical price assist and submit action.
 - Add-transaction modal shows live cash impact preview (`dostępne / zmiana / po transakcji`) with FX preview for mismatched currencies and inline insufficient-cash warning.

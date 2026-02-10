@@ -49,6 +49,7 @@ type Props = Readonly<{
   minTradeDate: Date;
   maxTradeDate: Date;
   isCashTab: boolean;
+  transactionType: FormValues["type"];
   displayCurrency: string;
   historicalPriceAssist: HistoricalPriceAssistState;
   cashImpactPreview: CashImpactPreviewState;
@@ -67,6 +68,7 @@ export function AddTransactionTradeFields({
   minTradeDate,
   maxTradeDate,
   isCashTab,
+  transactionType,
   displayCurrency,
   historicalPriceAssist,
   cashImpactPreview,
@@ -174,6 +176,7 @@ export function AddTransactionTradeFields({
             tradeDate={tradeDate}
             cashCurrency={cashCurrency}
             consumeCash={consumeCash}
+            transactionType={transactionType}
             cashBalanceOnDateErrorMessage={cashBalanceOnDate.errorMessage}
             fxPreviewErrorMessage={cashImpactPreview.fxPreview.errorMessage}
             form={form}

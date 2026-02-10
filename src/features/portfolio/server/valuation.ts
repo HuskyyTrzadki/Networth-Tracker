@@ -1,17 +1,8 @@
-import {
-  addDecimals,
-  decimalZero,
-  multiplyDecimals,
-  parseDecimalString,
-} from "@/lib/decimal";
+import { addDecimals, decimalZero, multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 
-import type {
-  CurrencyCode,
-  FxRate,
-  InstrumentQuote,
-  InstrumentType,
-} from "@/features/market-data";
+import type { CurrencyCode, FxRate, InstrumentQuote, InstrumentType } from "@/features/market-data";
 import type { PortfolioHolding } from "./get-portfolio-holdings";
+import { toBaseHoldingDayChangeOrNull } from "./to-base-holding-day-change";
 
 export type ValuedHolding = Readonly<{
   instrumentId: string;
@@ -26,6 +17,8 @@ export type ValuedHolding = Readonly<{
   price: string | null;
   valueBase: string | null;
   weight: number | null;
+  todayChangeBase?: string | null;
+  todayChangePercent?: number | null;
   missingReason: null | "MISSING_QUOTE" | "MISSING_FX";
 }>;
 
@@ -221,6 +214,21 @@ export function buildPortfolioSummary({
       };
     }
 
+    // Backend note: daily move comes from quote delta and is converted to
+    // portfolio base currency, so ranking is comparable across instruments.
+    const todayChangeBase = toBaseHoldingDayChangeOrNull({
+      quantity: holding.quantity,
+      dayChange: quote.dayChange,
+      fromCurrency: holding.currency,
+      baseCurrency,
+      fxByPair,
+    });
+    const todayChangePercent =
+      typeof quote.dayChangePercent === "number" &&
+      Number.isFinite(quote.dayChangePercent)
+        ? quote.dayChangePercent
+        : null;
+
     const priceDecimal = parseDecimalString(quote.price);
     const quantityDecimal = parseDecimalString(holding.quantity);
     if (!priceDecimal || !quantityDecimal) {
@@ -261,6 +269,8 @@ export function buildPortfolioSummary({
         price: quote.price,
         valueBase: valueBase.toString(),
         weight: null,
+        todayChangeBase,
+        todayChangePercent,
         missingReason: null,
       };
     }
@@ -328,6 +338,8 @@ export function buildPortfolioSummary({
       price: quote.price,
       valueBase: valueBase.toString(),
       weight: null,
+      todayChangeBase,
+      todayChangePercent,
       missingReason: null,
     };
   });

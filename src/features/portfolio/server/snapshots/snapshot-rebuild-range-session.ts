@@ -174,6 +174,8 @@ const buildDaySnapshotRow = (input: BuildSnapshotRowInput) => {
             instrumentId: holding.instrumentId,
             currency: point.currency,
             price: point.close,
+            dayChange: null,
+            dayChangePercent: null,
             asOf: point.asOf,
             fetchedAt: point.fetchedAt,
           },
@@ -390,4 +392,3 @@ export async function createSnapshotRebuildRangeSession(
     },
   };
 }
-

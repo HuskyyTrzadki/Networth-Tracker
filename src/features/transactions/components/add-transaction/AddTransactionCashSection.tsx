@@ -24,6 +24,7 @@ export function AddTransactionCashSection({
   form,
   consumeCash,
   cashCurrency,
+  transactionType,
   resolvedCashCurrency,
   isFxMismatch,
   availableCashNow,
@@ -42,6 +43,7 @@ export function AddTransactionCashSection({
   form: UseFormReturn<FormValues>;
   consumeCash: boolean;
   cashCurrency: string;
+  transactionType: FormValues["type"];
   resolvedCashCurrency: CashCurrency;
   isFxMismatch: boolean;
   availableCashNow: string;
@@ -57,6 +59,8 @@ export function AddTransactionCashSection({
   handleCashCurrencyChange: (next: string) => void;
   isCashTab: boolean;
 }>) {
+  const cashSettlementLabel = resolveCashSettlementLabel(transactionType);
+
   if (isCashTab) {
     return null;
   }
@@ -86,7 +90,7 @@ export function AddTransactionCashSection({
                   }}
                 />
                 <Label className="m-0 text-base font-medium leading-none">
-                  Potrąć z gotówki
+                  {cashSettlementLabel}
                 </Label>
               </div>
             </FormControl>
@@ -212,3 +216,6 @@ export function AddTransactionCashSection({
     </div>
   );
 }
+
+export const resolveCashSettlementLabel = (transactionType: FormValues["type"]) =>
+  transactionType === "SELL" ? "Dodaj do gotówki" : "Potrąć z gotówki";

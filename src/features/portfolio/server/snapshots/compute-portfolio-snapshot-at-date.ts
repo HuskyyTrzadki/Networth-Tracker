@@ -295,6 +295,8 @@ export async function computePortfolioSnapshotAtDate(
           instrumentId: request.instrumentId,
           currency: price.currency,
           price: price.close,
+          dayChange: null,
+          dayChangePercent: null,
           asOf: price.asOf,
           fetchedAt: price.fetchedAt,
         },

@@ -22,7 +22,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioPerformanceDailySummaryCard.tsx`
+- `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioRecentTransactionsWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/top-movers-utils.ts`
 - `src/features/portfolio/dashboard/lib/twr.ts`
 - `src/features/portfolio/dashboard/lib/chart-helpers.ts`
 - `src/features/portfolio/dashboard/lib/portfolio-value-over-time-view-model.ts`
@@ -35,6 +37,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/average-buy-price.ts`
 - `src/features/portfolio/server/get-portfolio-summary.ts`
 - `src/features/portfolio/server/valuation.ts`
+- `src/features/portfolio/server/to-base-holding-day-change.ts`
 - `src/features/portfolio/server/get-dashboard-benchmark-series.ts`
 - `src/features/portfolio/server/benchmark-series-helpers.ts`
 - `src/app/api/benchmarks/series/route.ts`
@@ -94,6 +97,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Tabela `Pozycje` używa nagłówków kolumn z walutą bazową i pokazuje liczby bez powtarzania symbolu waluty w każdym wierszu.
 - Tabela `Pozycje` pokazuje też `Śr. cena zakupu` (weighted average buy cost) liczona po transakcjach `ASSET`; wartość jest przeliczana do waluty bazowej tym samym FX co wycena.
 - Dashboard aggregate view wraps portfolio selector in a dedicated control surface (subtle bordered card) to separate filters from data widgets.
+- Dashboard shows `Top movers` as compact read-only pills (max 4 rows) using normalized daily quote deltas converted to base currency; each pill also shows current quote price in instrument currency.
 - Dashboard renders `Ostatnie transakcje` below `Alokacja i pozycje`, reusing the transactions table view and fetching newest rows (`date_desc`) with portfolio scope.
 - Portfolio page header adds small context eyebrow (`Dashboard`) and uses centered max-width layout for cleaner visual rhythm on large screens.
 - Dashboard content starts with a dedicated net-value hero (`Portfel: ...` + `Wartość netto`) rendered from `summary.totalValueBase` in the selected portfolio base currency.
@@ -130,6 +134,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/lib/portfolio-value-over-time-view-model.test.ts`
 - `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.test.ts`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueModeContent.test.tsx`
+- `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.test.tsx`
+- `src/features/portfolio/dashboard/widgets/top-movers-utils.test.ts`
 - `src/features/portfolio/dashboard/widgets/portfolio-value-over-time-chart-helpers.test.ts`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.test.tsx`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.test.ts`

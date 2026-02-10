@@ -16,8 +16,22 @@ type QuoteCacheRow = Readonly<{
   provider_key: string;
   currency: string;
   price: string | number;
+  day_change?: string | number | null;
+  day_change_percent?: string | number | null;
   as_of: string;
   fetched_at: string;
+}>;
+
+type QuoteCacheUpsertRow = Readonly<{
+  instrument_id: string;
+  provider: string;
+  provider_key: string;
+  currency: string;
+  price: string | number;
+  as_of: string;
+  fetched_at: string;
+  day_change?: string | null;
+  day_change_percent?: number | null;
 }>;
 
 const isFresh = (fetchedAt: string, ttlMs: number) =>
@@ -26,6 +40,38 @@ const isFresh = (fetchedAt: string, ttlMs: number) =>
 const normalizePrice = (value: string | number) =>
   typeof value === "number" ? value.toString() : value;
 
+const normalizeNullableString = (
+  value: string | number | null | undefined
+): string | null => {
+  if (value === null || value === undefined) return null;
+  return typeof value === "number" ? value.toString() : value;
+};
+
+const normalizeNullableNumber = (
+  value: string | number | null | undefined
+): number | null => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const QUOTES_SELECT_WITH_DAY_CHANGE =
+  "instrument_id, provider, provider_key, currency, price, day_change, day_change_percent, as_of, fetched_at";
+const QUOTES_SELECT_BASE =
+  "instrument_id, provider, provider_key, currency, price, as_of, fetched_at";
+
+function isMissingDayChangeColumnError(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("instrument_quotes_cache.day_change") ||
+    normalized.includes("instrument_quotes_cache.day_change_percent")
+  );
+}
+
 const buildQuote = (
   row: QuoteCacheRow,
   overrides?: Readonly<Partial<InstrumentQuote>>
@@ -33,6 +79,8 @@ const buildQuote = (
   instrumentId: row.instrument_id,
   currency: row.currency,
   price: normalizePrice(row.price),
+  dayChange: normalizeNullableString(row.day_change),
+  dayChangePercent: normalizeNullableNumber(row.day_change_percent),
   asOf: row.as_of,
   fetchedAt: row.fetched_at,
   ...overrides,
@@ -53,13 +101,29 @@ export async function getInstrumentQuotesCached(
   // Step 1: read cache rows for the requested instruments.
   const instrumentIds = requests.map((request) => request.instrumentId);
 
-  const { data, error } = await supabase
+  let supportsDayChangeColumns = true;
+
+  const withDayChangeResult = await supabase
     .from("instrument_quotes_cache")
-    .select(
-      "instrument_id, provider, provider_key, currency, price, as_of, fetched_at"
-    )
+    .select(QUOTES_SELECT_WITH_DAY_CHANGE)
     .in("instrument_id", instrumentIds)
     .eq("provider", PROVIDER);
+
+  let data = withDayChangeResult.data as QuoteCacheRow[] | null;
+  let error = withDayChangeResult.error as { message: string } | null;
+
+  if (error && isMissingDayChangeColumnError(error.message)) {
+    // Backward compatibility: allow app to run before DB migration adds
+    // day-change columns. Top movers will stay empty until migration is applied.
+    supportsDayChangeColumns = false;
+    const fallbackResult = await supabase
+      .from("instrument_quotes_cache")
+      .select(QUOTES_SELECT_BASE)
+      .in("instrument_id", instrumentIds)
+      .eq("provider", PROVIDER);
+    data = fallbackResult.data as QuoteCacheRow[] | null;
+    error = fallbackResult.error as { message: string } | null;
+  }
 
   if (error) {
     throw new Error(error.message);
@@ -93,7 +157,7 @@ export async function getInstrumentQuotesCached(
   );
 
   const now = new Date().toISOString();
-  const upserts: QuoteCacheRow[] = [];
+  const upserts: QuoteCacheUpsertRow[] = [];
 
   missingRequests.forEach((request) => {
     const normalized = normalizeYahooQuote(
@@ -106,7 +170,7 @@ export async function getInstrumentQuotesCached(
       return;
     }
 
-    const row: QuoteCacheRow = {
+    const row: QuoteCacheUpsertRow = {
       instrument_id: request.instrumentId,
       provider: PROVIDER,
       provider_key: request.providerKey,
@@ -114,6 +178,12 @@ export async function getInstrumentQuotesCached(
       price: normalized.price,
       as_of: normalized.asOf,
       fetched_at: now,
+      ...(supportsDayChangeColumns
+        ? {
+            day_change: normalized.dayChange,
+            day_change_percent: normalized.dayChangePercent,
+          }
+        : {}),
     };
 
     upserts.push(row);
@@ -141,3 +211,10 @@ export async function getInstrumentQuotesCached(
 
   return results;
 }
+
+export const __test__ = {
+  buildQuote,
+  normalizeNullableString,
+  normalizeNullableNumber,
+  isMissingDayChangeColumnError,
+};

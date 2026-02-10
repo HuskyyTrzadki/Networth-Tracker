@@ -189,6 +189,7 @@ export function AddTransactionDialogFields({
             minTradeDate={minTradeDate}
             maxTradeDate={maxTradeDate}
             isCashTab={isCashTab}
+            transactionType={type}
             displayCurrency={displayCurrency}
             historicalPriceAssist={historicalPriceAssist}
             cashImpactPreview={cashImpactPreview}

@@ -8,6 +8,7 @@ import type { SnapshotChartRow } from "../server/snapshots/types";
 import type { TransactionListItem } from "@/features/transactions/server/list-transactions";
 import { useSnapshotRebuild } from "./hooks/useSnapshotRebuild";
 import { AllocationHoldingsWidget } from "./widgets/AllocationHoldingsWidget";
+import { PortfolioTopMoversWidget } from "./widgets/PortfolioTopMoversWidget";
 import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
 import { PortfolioRecentTransactionsWidget } from "./widgets/PortfolioRecentTransactionsWidget";
 
@@ -50,6 +51,7 @@ export function PortfolioDashboardClientWidgets({
         rebuild={rebuild}
       />
       <AllocationHoldingsWidget summary={summary} rebuild={rebuild} />
+      <PortfolioTopMoversWidget summary={summary} />
       <PortfolioRecentTransactionsWidget
         selectedPortfolioId={selectedPortfolioId}
         items={recentTransactions}

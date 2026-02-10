@@ -10,6 +10,9 @@ export type InstrumentQuote = Readonly<{
   instrumentId: string;
   currency: CurrencyCode;
   price: string;
+  dayChange: string | null;
+  // Normalized as ratio: 0.01 = +1.00%.
+  dayChangePercent: number | null;
   asOf: string;
   fetchedAt: string;
 }>;
