@@ -20,6 +20,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Notes
 - `profiles.last_active_at` is touched by write actions (e.g. transactions) via `touchProfileLastActive`.
 - Email/password sign-up uses callback `next=/onboarding`, so confirmed registrations continue through onboarding before portfolio work.
+- Settings auth UI is now state-driven:
+  - `signedOut`: minimal login/register form + Google sign-in.
+  - `guest`: minimal upgrade actions (Google/email) + short 60-day retention note.
+  - `signedIn`: compact account status + sign-out, without guest messaging.
+- Signed-in Google CTA semantics were corrected: no more "Kontynuuj z Google" when already logged in; signed-in users can only see Google linking action when not linked.
 
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.

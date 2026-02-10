@@ -17,8 +17,15 @@ export default async function SettingsPage({ searchParams }: Props) {
   const showAuthError = authValue === "error";
 
   return (
-    <main className="px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Ustawienia</h1>
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Ustawienia
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Konto i logowanie
+        </p>
+      </header>
       <AuthSettingsSection showAuthError={showAuthError} />
     </main>
   );
