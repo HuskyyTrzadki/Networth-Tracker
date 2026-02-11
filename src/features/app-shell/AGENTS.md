@@ -14,7 +14,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Current UX decisions
 - Desktop sidebar uses two explicit sections:
-  - app navigation (`Przegląd`, `Transakcje`)
+  - app navigation (`Przegląd`, `Akcje`, `Transakcje`)
   - user portfolios list (`Twoje portfele`) with an inline, visually distinct `Nowy portfel` button directly under the last portfolio row.
 - Desktop sidebar column is sticky to viewport (`top-0`, `h-svh`); middle content scrolls independently while footer controls stay pinned.
 - `Przegląd` maps to `/portfolio` and is active only for aggregate view (`no ?portfolio` or `portfolio=all`).
@@ -23,6 +23,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Theme preference is persisted in local storage (`portfolio-theme`) and applied via `:root[data-theme]`.
 - Theme switch avoids SSR/CSR hydration mismatches by resolving the stored/system theme after mount.
 - Sidebar and mobile bottom nav were visually rebalanced to a softer warm-neutral surface system (lower contrast labels, calmer active states, consistent control heights).
+- `Akcje` points to `/stocks` and is available in desktop sidebar and mobile "Więcej"; bottom primary nav remains unchanged.
 
 ## Boundaries
 - No business logic; UI and navigation only.

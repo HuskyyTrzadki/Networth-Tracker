@@ -7,6 +7,7 @@ type YahooChartQuote = Readonly<{
   high: number | null;
   low: number | null;
   close: number | null;
+  adjclose?: number | null;
   volume: number | null;
 }>;
 
@@ -24,6 +25,7 @@ export type YahooDailyCandle = Readonly<{
   high: string | null;
   low: string | null;
   close: string;
+  adjClose: string | null;
   volume: string | null;
   asOf: string;
 }>;
@@ -97,6 +99,7 @@ export async function fetchYahooDailySeries(
         high: normalizeNullableNumber(quote.high),
         low: normalizeNullableNumber(quote.low),
         close: quote.close.toString(),
+        adjClose: normalizeNullableNumber(quote.adjclose ?? null),
         volume: normalizeNullableNumber(quote.volume),
         asOf: quote.date.toISOString(),
       } satisfies YahooDailyCandle;

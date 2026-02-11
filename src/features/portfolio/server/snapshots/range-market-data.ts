@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FxPair, InstrumentQuoteRequest } from "@/features/market-data";
 import { fetchYahooDailySeries } from "@/features/market-data/server/providers/yahoo/yahoo-daily";
 import { subtractIsoDays } from "@/features/market-data/server/lib/date-utils";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { hasSufficientDailyCoverage } from "./range-market-data-coverage";
 
 const DEFAULT_LOOKBACK_DAYS = 45;
@@ -17,6 +18,7 @@ type InstrumentDailyRow = Readonly<{
   high: string | number | null;
   low: string | number | null;
   close: string | number;
+  adj_close?: string | number | null;
   as_of: string;
   fetched_at: string;
 }>;
@@ -87,7 +89,7 @@ async function readInstrumentRows(
   const { data, error } = await supabase
     .from("instrument_daily_prices_cache")
     .select(
-      "provider_key,price_date,exchange_timezone,currency,open,high,low,close,as_of,fetched_at"
+      "provider_key,price_date,exchange_timezone,currency,open,high,low,close,adj_close,as_of,fetched_at"
     )
     .eq("provider", "yahoo")
     .in("provider_key", providerKeys)
@@ -182,6 +184,7 @@ export async function preloadInstrumentDailySeries(
         high: candle.high,
         low: candle.low,
         close: candle.close,
+        adj_close: candle.adjClose,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });
@@ -196,6 +199,7 @@ export async function preloadInstrumentDailySeries(
         high: candle.high,
         low: candle.low,
         close: candle.close,
+        adj_close: candle.adjClose,
         volume: candle.volume,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
@@ -204,13 +208,18 @@ export async function preloadInstrumentDailySeries(
   }
 
   if (upsertRows.length > 0) {
-    const { error } = await supabase
+    const adminClient = tryCreateAdminClient();
+    const writer = adminClient ?? supabase;
+    const { error } = await writer
       .from("instrument_daily_prices_cache")
       .upsert(upsertRows, {
         onConflict: "provider,provider_key,price_date",
       });
 
-    if (error) {
+    // User-scoped clients can read cache rows via RLS but cannot write.
+    // If service-role client is unavailable, keep the request successful
+    // and continue with in-memory fetched rows.
+    if (error && adminClient) {
       throw new Error(error.message);
     }
   }
@@ -322,11 +331,16 @@ export async function preloadFxDailySeries(
   }
 
   if (upsertRows.length > 0) {
-    const { error } = await supabase.from("fx_daily_rates_cache").upsert(upsertRows, {
+    const adminClient = tryCreateAdminClient();
+    const writer = adminClient ?? supabase;
+    const { error } = await writer.from("fx_daily_rates_cache").upsert(upsertRows, {
       onConflict: "provider,base_currency,quote_currency,rate_date",
     });
 
-    if (error) {
+    // User-scoped clients can read cache rows via RLS but cannot write.
+    // If service-role client is unavailable, keep the request successful
+    // and continue with in-memory fetched rows.
+    if (error && adminClient) {
       throw new Error(error.message);
     }
   }

@@ -31,6 +31,9 @@ type Props = Readonly<{
   onChange: (next: InstrumentSearchResult) => void;
   searchClient?: InstrumentSearchClient;
   allowedTypes?: readonly InstrumentType[];
+  emptyLabel?: string;
+  queryPlaceholder?: string;
+  triggerClassName?: string;
 }>;
 
 const MIN_QUERY_LENGTH = 2;
@@ -43,6 +46,9 @@ export function InstrumentCombobox({
   onChange,
   searchClient,
   allowedTypes,
+  emptyLabel = "Wybierz instrument…",
+  queryPlaceholder = "Szukaj (np. Apple, BTC, XTB)",
+  triggerClassName,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -98,7 +104,8 @@ export function InstrumentCombobox({
           aria-expanded={open}
           className={cn(
             "h-14 w-full justify-between gap-3 px-4",
-            !value && "text-muted-foreground"
+            !value && "text-muted-foreground",
+            triggerClassName
           )}
           role="combobox"
           variant="outline"
@@ -115,7 +122,7 @@ export function InstrumentCombobox({
               </>
             ) : (
               <span className="text-base">
-                Wybierz instrument…
+                {emptyLabel}
               </span>
             )}
           </span>
@@ -136,7 +143,7 @@ export function InstrumentCombobox({
         <Command shouldFilter={false}>
           <CommandInput
             className="h-11 text-base"
-            placeholder="Szukaj (np. Apple, BTC, XTB)"
+            placeholder={queryPlaceholder}
             value={query}
             onValueChange={(nextValue) => {
               setShowAll(false);

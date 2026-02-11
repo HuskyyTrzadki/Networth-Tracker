@@ -25,6 +25,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Quote cache stores normalized daily quote deltas (`dayChange`, `dayChangePercent`) for portfolio daily-movers UI.
 - Yahoo quote normalization falls back to `regularMarketPreviousClose` when provider omits direct day-change fields, so daily movers remain populated.
 - Historical daily caches store only real trading sessions. Weekend/holiday carry-forward is resolved at lookup time, not persisted as synthetic rows.
+- Historical instrument cache stores optional `adj_close` alongside OHLC, enabling split-safe derived metrics (e.g. PE overlays).
 - Daily cache lookup is **as-of requested date** (latest row `<= requestedDate`), never latest-in-range, so backfilled snapshots follow true history.
 - Macro CPI (Eurostat HICP index level, PL) is cached globally in monthly buckets (`macro_cpi_pl_cache`) and is used to derive cumulative inflation + real return overlays for PLN performance.
 - CPI service logs explicit backend diagnostics for cache-read, missing-table, and fetch/parse failures (`[market-data][cpi-pl] ...`) and gracefully falls back to non-cached fetch or empty overlay data.

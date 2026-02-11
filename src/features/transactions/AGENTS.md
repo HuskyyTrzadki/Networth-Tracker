@@ -80,6 +80,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction modal also shows cash balance on selected trade date (API as-of lookup) alongside current balance, and uses the as-of value for projected post-trade cash.
 - Same-day guidance in cash section clarifies operational ordering: when date is equal, add cash deposit first, then asset buy.
 - Instrument upsert does not overwrite an existing `logo_url` unless a non-empty value is provided by the client.
+- `InstrumentCombobox` supports reusable presentation overrides (`emptyLabel`, `queryPlaceholder`, `triggerClassName`) so other features can reuse search behavior without duplicating async logic.
 - Yahoo search debug logs are disabled by default and can be enabled with `DEBUG_YAHOO_SEARCH=1` (non-production only).
 - Add-transaction modal shows "Dostępne do sprzedaży (na teraz)" hints for selected sell instrument per portfolio.
 - After successful save in the intercepted portfolio modal route, dialog closes immediately; empty-dashboard refresh/loader is handled by portfolio-side rebuild status UI.

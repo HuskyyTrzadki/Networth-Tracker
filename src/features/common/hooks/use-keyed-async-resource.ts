@@ -23,6 +23,7 @@ type Params<TData> = Readonly<{
   requestKey: string | null;
   load: (signal: AbortSignal) => Promise<TData>;
   getErrorMessage?: (error: unknown) => string;
+  keepPreviousData?: boolean;
 }>;
 
 const initialState = <TData>(): AsyncState<TData> => ({
@@ -42,6 +43,7 @@ export function useKeyedAsyncResource<TData>({
   requestKey,
   load,
   getErrorMessage,
+  keepPreviousData = false,
 }: Params<TData>): Result<TData> {
   const [state, setState] = useState<AsyncState<TData>>(initialState<TData>());
   const loadRef = useRef(load);
@@ -107,7 +109,7 @@ export function useKeyedAsyncResource<TData>({
   if (state.requestKey !== requestKey) {
     return {
       requestKey,
-      data: null,
+      data: keepPreviousData ? state.data : null,
       errorMessage: null,
       status: "loading",
       isLoading: true,

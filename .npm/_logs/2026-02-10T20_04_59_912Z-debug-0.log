@@ -1,0 +1,55 @@
+0 verbose cli /opt/homebrew/Cellar/node/25.2.1/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+0 verbose cli /opt/homebrew/Cellar/node/25.2.1/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+0 verbose cli /opt/homebrew/Cellar/node/25.2.1/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.6.2
+1 info using npm@11.6.2
+1 info using npm@11.6.2
+2 info using node@v25.2.1
+2 info using node@v25.2.1
+2 info using node@v25.2.1
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npmrc
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+5 silly config load:file:/opt/homebrew/etc/npmrc
+4 silly config load:file:/Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npmrc
+4 silly config load:file:/Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npmrc
+5 silly config load:file:/opt/homebrew/etc/npmrc
+5 silly config load:file:/opt/homebrew/etc/npmrc
+6 verbose title npm exec yahoo-finance2 quoteSummary GOOGL
+6 verbose title npm exec yahoo-finance2 search AMZN
+6 verbose title npm exec yahoo-finance2 quoteSummary NVDA {"modules":["assetProfile","secFilings"]}
+7 verbose argv "exec" "--" "yahoo-finance2" "quoteSummary" "GOOGL"
+8 verbose logfile logs-max:10 dir:/Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npm/_logs/2026-02-10T20_04_59_912Z-
+7 verbose argv "exec" "--" "yahoo-finance2" "search" "AMZN"
+7 verbose argv "exec" "--" "yahoo-finance2" "quoteSummary" "NVDA" "{\"modules\":[\"assetProfile\",\"secFilings\"]}"
+8 verbose logfile logs-max:10 dir:/Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npm/_logs/2026-02-10T20_04_59_912Z-
+8 verbose logfile logs-max:10 dir:/Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npm/_logs/2026-02-10T20_04_59_912Z-
+9 verbose logfile /Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npm/_logs/2026-02-10T20_04_59_912Z-debug-0.log
+9 verbose logfile /Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npm/_logs/2026-02-10T20_04_59_912Z-debug-0.log
+9 verbose logfile /Users/jakubjochymek/WebstormProjects/porfolio-tracker/.npm/_logs/2026-02-10T20_04_59_912Z-debug-0.log
+10 silly logfile done cleaning log files
+10 silly logfile done cleaning log files
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+11 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+11 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with ENOTFOUND
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+12 verbose cwd /Users/jakubjochymek/WebstormProjects/porfolio-tracker
+13 verbose os Darwin 24.6.0
+14 verbose node v25.2.1
+15 verbose npm  v11.6.2
+16 verbose exit 1
+17 verbose code 1
+13 verbose cwd /Users/jakubjochymek/WebstormProjects/porfolio-tracker
+14 verbose os Darwin 24.6.0
+15 verbose node v25.2.1
+16 verbose npm  v11.6.2
+17 verbose exit 1
+18 verbose code 1
+12 verbose cwd /Users/jakubjochymek/WebstormProjects/porfolio-tracker
+13 verbose os Darwin 24.6.0
+14 verbose node v25.2.1
+15 verbose npm  v11.6.2
+16 verbose exit 1
+17 verbose code 1

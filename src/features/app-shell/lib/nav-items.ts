@@ -1,5 +1,6 @@
 import {
   ArrowLeftRight,
+  ChartCandlestick,
   House,
   Plus,
   Settings,
@@ -8,6 +9,7 @@ import {
 
 export type AppNavId =
   | "overview"
+  | "stocks"
   | "transactions"
   | "add"
   | "settings";
@@ -25,6 +27,12 @@ export const primaryNavItems: readonly AppNavItem[] = [
     href: "/portfolio?portfolio=all",
     icon: House,
     label: "Przegląd",
+  },
+  {
+    id: "stocks",
+    href: "/stocks",
+    icon: ChartCandlestick,
+    label: "Akcje",
   },
   {
     id: "transactions",

@@ -22,6 +22,7 @@ type DailyPriceCacheRow = Readonly<{
   high: string | number | null;
   low: string | number | null;
   close: string | number;
+  adj_close?: string | number | null;
   as_of: string;
   fetched_at: string;
 }>;
@@ -36,6 +37,7 @@ type CacheUpsertRow = Readonly<{
   high: string | null;
   low: string | null;
   close: string;
+  adj_close: string | null;
   volume: string | null;
   as_of: string;
   fetched_at: string;
@@ -76,7 +78,7 @@ const readCachedRows = async (
   const { data, error } = await supabase
     .from("instrument_daily_prices_cache")
     .select(
-      "provider,provider_key,price_date,exchange_timezone,currency,open,high,low,close,as_of,fetched_at"
+      "provider,provider_key,price_date,exchange_timezone,currency,open,high,low,close,adj_close,as_of,fetched_at"
     )
     .eq("provider", PROVIDER)
     .in("provider_key", providerKeys)
@@ -143,6 +145,7 @@ const fetchAndCacheMissingRows = async (
         high: candle.high,
         low: candle.low,
         close: candle.close,
+        adj_close: candle.adjClose,
         volume: candle.volume,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
@@ -158,6 +161,7 @@ const fetchAndCacheMissingRows = async (
         high: candle.high,
         low: candle.low,
         close: candle.close,
+        adj_close: candle.adjClose,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });

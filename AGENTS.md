@@ -84,6 +84,7 @@ Whenever you ship a new feature or change architecture:
 - shadcn/ui primitives live in `src/components/ui` and are re-exported from `src/features/design-system/components/ui/*`
 - App shell navigation (shadcn sidebar on desktop + mobile bottom nav + “More” sheet)
 - Sidebar IA refresh: app-level nav (`Przegląd`, `Transakcje`) separated from portfolio assets (`Portfele`), with stronger active states and quieter currency labels
+- App nav now includes `Akcje` (`/stocks`) for a dedicated stock screener/details flow; legacy `/search` redirects to `/stocks`
 - Desktop sidebar now stays sticky while page content scrolls; `Nowy portfel` is moved into `Twoje portfele` directly under portfolio rows and styled as a clear action button
 - Theme switch in app shell (desktop sidebar + mobile "Więcej"), with persisted user preference in `localStorage` (`portfolio-theme`)
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
@@ -120,6 +121,12 @@ Whenever you ship a new feature or change architecture:
 - Rejestracja e-mail kieruje na `/onboarding`, gdzie użytkownik tworzy pierwszy portfel (bez auto-tworzenia `Główny`)
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
+- Stocks screener (`/stocks`): cards for held EQUITY instruments (logo, current price, daily % pill) across all portfolios + top search bar
+- Stock details (`/stocks/[providerKey]`): price chart ranges (`1D`, `1M`, `3M`, `6M`, `1Y`, `5Y`, `ALL`) + optional PE overlay checkbox + valuation/fundamentals metrics panel
+- Stock chart API (`/api/stocks/[providerKey]/chart`) with 1D intraday Yahoo fetch (`includePrePost=true`) and automatic fallback to `1M` when intraday is unavailable
+- Stock PE overlay now uses data-driven EPS priority: Yahoo trailing TTM first, quarterly-derived TTM second, annual EPS proxy fallback for older periods (no hardcoded cutoff date)
+- Stocks fundamentals caches: `instrument_valuation_summary_cache` (quoteSummary-derived metrics, TTL 6h) and `instrument_eps_ttm_events_cache` (EPS TTM events, TTL 30d)
+- Daily instrument cache stores optional `adj_close` (for split-safe PE overlay using `adjClose / EPS_TTM_as_of_day`)
 - Transactions page.
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem
 - Tabela `Pozycje`: dodana kolumna `Śr. cena zakupu` (weighted average buy cost per instrument, liczona po transakcjach ASSET i pokazywana w walucie bazowej portfela)
@@ -204,6 +211,7 @@ supabase project is Project (id ayeeksbqwyqkevbpdlef,, region eu-west-1)
 - Home/landing: `src/features/home/AGENTS.md`
 - Market data: `src/features/market-data/AGENTS.md`
 - Portfolio: `src/features/portfolio/AGENTS.md`
+- Stocks: `src/features/stocks/AGENTS.md`
 - Transactions: `src/features/transactions/AGENTS.md`
 
 ## Transactions  decisions (keep aligned)
