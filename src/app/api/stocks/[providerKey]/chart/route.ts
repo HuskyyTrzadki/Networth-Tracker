@@ -1,13 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { getStockChartResponse, STOCK_CHART_RANGES, type StockChartRange } from "@/features/stocks";
+import { getStockChartResponse } from "@/features/stocks";
+import { parseStockChartQuery } from "@/features/stocks/server/parse-stock-chart-query";
 import { createClient } from "@/lib/supabase/server";
-
-const isChartRange = (value: string): value is StockChartRange =>
-  STOCK_CHART_RANGES.includes(value as StockChartRange);
-
-const parseIncludePe = (value: string | null) => value === "1";
 
 export async function GET(
   request: Request,
@@ -29,20 +25,18 @@ export async function GET(
   }
 
   const url = new URL(request.url);
-  const rangeRaw = url.searchParams.get("range")?.toUpperCase() ?? "1M";
-  if (!isChartRange(rangeRaw)) {
-    return NextResponse.json({ message: "Invalid chart range." }, { status: 400 });
+  const query = parseStockChartQuery(url.searchParams);
+  if (!query.ok) {
+    return NextResponse.json({ message: query.message }, { status: 400 });
   }
-
-  const includePe = parseIncludePe(url.searchParams.get("includePe"));
 
   try {
     // Route handler: validate input, delegate to stock chart service, return DTO.
     const response = await getStockChartResponse(
       supabase,
       providerKey,
-      rangeRaw,
-      includePe
+      query.range,
+      query.overlays
     );
     return NextResponse.json(response, { status: 200 });
   } catch (error) {

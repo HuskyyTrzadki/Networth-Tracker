@@ -11,7 +11,7 @@ export default async function StockChartSection({
 }>) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
-  const initialChart = await getStockChartResponse(supabase, providerKey, "1M", false);
+  const initialChart = await getStockChartResponse(supabase, providerKey, "1M", []);
 
   return <StockChartCard providerKey={providerKey} initialChart={initialChart} />;
 }

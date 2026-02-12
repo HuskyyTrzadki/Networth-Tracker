@@ -1,4 +1,7 @@
 import type { EpsTtmEvent } from "./types";
+import { toDateOrNull, toFiniteNumber, toIsoDate } from "./value-normalizers";
+
+export { toIsoDate } from "./value-normalizers";
 
 export type YahooFinancialSeriesRow = Readonly<{
   TYPE?: string;
@@ -19,54 +22,27 @@ type AnnualEpsEvent = Readonly<{
   eps: number;
 }>;
 
-export const toNumberOrNull = (value: unknown) => {
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
-};
-
-export const toIsoDate = (value: Date) => value.toISOString().slice(0, 10);
-
-const toDateOrNull = (value: unknown) => {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-
-  if (typeof value === "string" || typeof value === "number") {
-    const normalizedValue =
-      typeof value === "number" && value > 0 && value < 10_000_000_000
-        ? value * 1000
-        : value;
-    const date = new Date(normalizedValue);
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  return null;
-};
+export const toNumberOrNull = toFiniteNumber;
 
 export const extractEpsFromRow = (row: YahooFinancialSeriesRow) => {
   const preferred =
-    toNumberOrNull(row.dilutedEPS) ??
-    toNumberOrNull(row.basicEPS) ??
-    toNumberOrNull(row.trailingDilutedEPS) ??
-    toNumberOrNull(row.trailingBasicEPS) ??
-    toNumberOrNull(row.reportedNormalizedDilutedEPS);
+    toFiniteNumber(row.dilutedEPS) ??
+    toFiniteNumber(row.basicEPS) ??
+    toFiniteNumber(row.trailingDilutedEPS) ??
+    toFiniteNumber(row.trailingBasicEPS) ??
+    toFiniteNumber(row.reportedNormalizedDilutedEPS);
 
   if (preferred !== null) {
     return preferred;
   }
 
   // Fallback for provider shape changes: pick any numeric EPS-like field.
-  const dynamicField = Object.entries(row).find(([key, value]) => {
-    if (typeof value !== "number" || !Number.isFinite(value)) return false;
-    return key.toLowerCase().includes("eps");
-  });
-
-  return dynamicField ? toNumberOrNull(dynamicField[1]) : null;
+  return Object.entries(row).reduce<number | null>((found, [key, value]) => {
+    if (found !== null || !key.toLowerCase().includes("eps")) {
+      return found;
+    }
+    return toFiniteNumber(value);
+  }, null);
 };
 
 export const unwrapYahooRows = (raw: unknown): YahooFinancialSeriesRow[] => {
@@ -92,20 +68,20 @@ export const unwrapYahooRows = (raw: unknown): YahooFinancialSeriesRow[] => {
 export const parseYahooRows = (
   rows: readonly YahooFinancialSeriesRow[]
 ): EpsTtmEvent[] => {
-  const byDate = new Map<string, number | null>();
-
-  rows.forEach((row) => {
+  const byDate = rows.reduce<Map<string, number | null>>((result, row) => {
     const date = toDateOrNull(row.date);
-    if (!date) return;
+    if (!date) return result;
 
     const periodEndDate = toIsoDate(date);
     const eps = extractEpsFromRow(row);
-    if (eps === null) return;
+    if (eps === null) return result;
 
-    const existing = byDate.get(periodEndDate);
-    if (existing !== null && existing !== undefined) return;
-    byDate.set(periodEndDate, eps);
-  });
+    const existing = result.get(periodEndDate);
+    if (existing !== null && existing !== undefined) return result;
+
+    result.set(periodEndDate, eps);
+    return result;
+  }, new Map<string, number | null>());
 
   return Array.from(byDate.entries())
     .map(([periodEndDate, epsTtm]) => ({ periodEndDate, epsTtm }))
@@ -115,18 +91,17 @@ export const parseYahooRows = (
 export const parseQuarterlyRows = (
   rows: readonly YahooFinancialSeriesRow[]
 ): QuarterlyEpsEvent[] => {
-  const byDate = new Map<string, number>();
-
-  rows.forEach((row) => {
+  const byDate = rows.reduce<Map<string, number>>((result, row) => {
     const date = toDateOrNull(row.date);
-    if (!date) return;
-    if (row.periodType && row.periodType !== "3M") return;
+    if (!date) return result;
+    if (row.periodType && row.periodType !== "3M") return result;
 
     const eps = extractEpsFromRow(row);
-    if (eps === null) return;
+    if (eps === null) return result;
 
-    byDate.set(toIsoDate(date), eps);
-  });
+    result.set(toIsoDate(date), eps);
+    return result;
+  }, new Map<string, number>());
 
   return Array.from(byDate.entries())
     .map(([periodEndDate, eps]) => ({ periodEndDate, eps }))
@@ -138,38 +113,39 @@ export const buildTtmEventsFromQuarterly = (
 ): EpsTtmEvent[] => {
   if (rows.length < 4) return [];
 
-  const result: EpsTtmEvent[] = [];
-  for (let index = 3; index < rows.length; index += 1) {
-    const window = rows.slice(index - 3, index + 1);
-    const ttm = window.reduce((sum, row) => sum + row.eps, 0);
-    result.push({
-      periodEndDate: rows[index].periodEndDate,
-      epsTtm: Number.isFinite(ttm) ? ttm : null,
-    });
-  }
+  return rows
+    .map((row, index, sourceRows) => {
+      if (index < 3) return null;
 
-  return result;
+      const window = sourceRows.slice(index - 3, index + 1);
+      const ttm = window.reduce((sum, sourceRow) => sum + sourceRow.eps, 0);
+
+      return {
+        periodEndDate: row.periodEndDate,
+        epsTtm: Number.isFinite(ttm) ? ttm : null,
+      } satisfies EpsTtmEvent;
+    })
+    .filter((row): row is EpsTtmEvent => row !== null);
 };
 
 export const parseAnnualRows = (
   rows: readonly YahooFinancialSeriesRow[]
 ): AnnualEpsEvent[] => {
-  const byDate = new Map<string, number>();
   const todayIsoDate = toIsoDate(new Date());
-
-  rows.forEach((row) => {
+  const byDate = rows.reduce<Map<string, number>>((result, row) => {
     const date = toDateOrNull(row.date);
-    if (!date) return;
-    if (row.periodType && row.periodType !== "12M") return;
+    if (!date) return result;
+    if (row.periodType && row.periodType !== "12M") return result;
 
     const periodEndDate = toIsoDate(date);
-    if (periodEndDate > todayIsoDate) return;
+    if (periodEndDate > todayIsoDate) return result;
 
     const eps = extractEpsFromRow(row);
-    if (eps === null) return;
+    if (eps === null) return result;
 
-    byDate.set(periodEndDate, eps);
-  });
+    result.set(periodEndDate, eps);
+    return result;
+  }, new Map<string, number>());
 
   return Array.from(byDate.entries())
     .map(([periodEndDate, eps]) => ({ periodEndDate, eps }))
@@ -188,14 +164,11 @@ export const buildApproxTtmEventsFromAnnual = (
 export const mergeEpsEventsWithPriority = (
   sources: readonly (readonly EpsTtmEvent[])[]
 ): EpsTtmEvent[] => {
-  const byDate = new Map<string, number | null>();
-
-  sources.forEach((rows) => {
-    rows.forEach((row) => {
-      if (byDate.has(row.periodEndDate)) return;
-      byDate.set(row.periodEndDate, row.epsTtm);
-    });
-  });
+  const byDate = sources.flat().reduce<Map<string, number | null>>((result, row) => {
+    if (result.has(row.periodEndDate)) return result;
+    result.set(row.periodEndDate, row.epsTtm);
+    return result;
+  }, new Map<string, number | null>());
 
   return Array.from(byDate.entries())
     .map(([periodEndDate, epsTtm]) => ({ periodEndDate, epsTtm }))

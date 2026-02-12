@@ -5,6 +5,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Stock screener and stock details experience (`/stocks` + `/stocks/[providerKey]`).
 - Cache-first stock chart and valuation/fundamentals retrieval for UI-safe DTOs.
 - Optional historical PE overlay computed on request from daily adjusted close and EPS TTM events.
+- Multi-overlay stock chart supports PE, EPS TTM, and Revenue TTM trend overlays.
 
 ## Main entrypoints
 - App pages:
@@ -18,11 +19,15 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/features/stocks/server/get-eps-ttm-events-cached.ts`
   - `src/features/stocks/server/get-stock-chart-series.ts`
   - `src/features/stocks/server/get-stock-chart-response.ts`
-  - `src/features/stocks/server/build-pe-overlay-series.ts`
+  - `src/features/stocks/server/build-stock-overlay-series.ts`
+  - `src/features/stocks/server/get-fundamental-time-series-cached.ts`
+  - `src/features/stocks/server/fundamental-time-series.ts`
+  - `src/features/stocks/server/parse-stock-chart-query.ts`
 - UI:
   - `src/features/stocks/components/StockSearchBar.tsx`
   - `src/features/stocks/components/StockScreenerGrid.tsx`
   - `src/features/stocks/components/StockChartCard.tsx`
+  - `src/features/stocks/components/stock-chart-card-helpers.ts`
   - `src/features/stocks/components/StockMetricsGrid.tsx`
 
 ## Boundaries
@@ -30,14 +35,20 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Screener cards include only `EQUITY` holdings and dedupe by `providerKey`.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
+- Supported ranges: `1D`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `ALL` (`ALL` backfills full provider history cache-first).
 - 1D chart uses `includePrePost=true`; if intraday data is unavailable, API returns a resolved fallback range of `1M`.
 - QuoteSummary metrics are cached in `instrument_valuation_summary_cache` with TTL 6h.
-- EPS TTM events for PE overlay are cached in `instrument_eps_ttm_events_cache` with TTL 30d.
-- PE overlay is computed per response (no PE persistence): `adjClose` preferred over `close`, mapped with EPS step-function as-of logic.
-- PE source priority is data-driven: trailing TTM EPS first, quarterly-derived TTM second, annual EPS proxy last (no hardcoded date cutoff).
+- Overlay fundamentals cache is generic: `instrument_fundamental_time_series_cache` (`eps_ttm`, `revenue_ttm`) with TTL 30d and incremental refresh.
+- PE/EPS/Revenue overlays are computed per response (no overlay persistence): `adjClose` preferred over `close`, with as-of step-function mapping.
+- EPS and Revenue source priority is data-driven: trailing TTM first, quarterly-derived TTM second, annual proxy last (no hardcoded date cutoff).
 - For PE, `EPS <= 0` maps to `N/M`; missing EPS maps to `-`.
+- Chart response includes overlay availability and coverage metadata; UI shows partial-coverage warning when range exceeds available fundamentals history.
+- Chart supports two display modes: `Trend (100)` (rebased overlays for multi-series shape comparison) and `Raw` (real values, single overlay at a time to avoid mixed-unit clutter).
+- Chart renders a legend (price + active overlays, color-coded) with mode-aware labels.
 
 ## Tests
-- `src/features/stocks/server/build-pe-overlay-series.test.ts`
+- `src/features/stocks/server/build-stock-overlay-series.test.ts`
+- `src/features/stocks/server/fundamental-time-series.test.ts`
+- `src/features/stocks/server/parse-stock-chart-query.test.ts`
 - TODO: add cache hit/stale-refresh tests for valuation summary and EPS TTM cache services.
 - TODO: add route-level tests for `/api/stocks/[providerKey]/chart` range validation + 1D fallback behavior.

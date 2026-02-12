@@ -1,7 +1,5 @@
 import type { DailyChartPoint, EpsTtmEvent, StockChartPoint } from "./types";
-
-const toNumberOrNull = (value: number | null | undefined) =>
-  typeof value === "number" && Number.isFinite(value) ? value : null;
+import { toFiniteNumber } from "./value-normalizers";
 
 export function buildPeOverlaySeries(
   points: readonly DailyChartPoint[],
@@ -22,22 +20,45 @@ export function buildPeOverlaySeries(
       eventCursor += 1;
     }
 
-    const price = toNumberOrNull(point.adjClose ?? point.close ?? point.price);
+    const price = toFiniteNumber(point.adjClose ?? point.close ?? point.price);
     if (price === null) {
-      return { t: point.time, price: null, pe: null, peLabel: "-" };
+      return {
+        t: point.time,
+        price: null,
+        epsTtm: epsAsOf,
+        revenueTtm: null,
+        pe: null,
+        peLabel: "-",
+      };
     }
 
     if (epsAsOf === null) {
-      return { t: point.time, price, pe: null, peLabel: "-" };
+      return {
+        t: point.time,
+        price,
+        epsTtm: null,
+        revenueTtm: null,
+        pe: null,
+        peLabel: "-",
+      };
     }
 
     if (epsAsOf <= 0) {
-      return { t: point.time, price, pe: null, peLabel: "N/M" };
+      return {
+        t: point.time,
+        price,
+        epsTtm: epsAsOf,
+        revenueTtm: null,
+        pe: null,
+        peLabel: "N/M",
+      };
     }
 
     return {
       t: point.time,
       price,
+      epsTtm: epsAsOf,
+      revenueTtm: null,
       pe: price / epsAsOf,
       peLabel: null,
     };

@@ -34,12 +34,16 @@ describe("buildPeOverlaySeries", () => {
     expect(result[0]).toEqual({
       t: "2025-01-01T00:00:00.000Z",
       price: 100,
+      epsTtm: 5,
+      revenueTtm: null,
       pe: 20,
       peLabel: null,
     });
     expect(result[1]).toEqual({
       t: "2025-04-01T00:00:00.000Z",
       price: 120,
+      epsTtm: 6,
+      revenueTtm: null,
       pe: 20,
       peLabel: null,
     });
@@ -73,12 +77,16 @@ describe("buildPeOverlaySeries", () => {
     expect(result[0]).toEqual({
       t: "2025-01-01T00:00:00.000Z",
       price: 100,
+      epsTtm: null,
+      revenueTtm: null,
       pe: null,
       peLabel: "-",
     });
     expect(result[1]).toEqual({
       t: "2025-02-01T00:00:00.000Z",
       price: 95,
+      epsTtm: -2,
+      revenueTtm: null,
       pe: null,
       peLabel: "N/M",
     });

@@ -1,15 +1,19 @@
-import type { StockChartRange, StockChartResponse } from "@/features/stocks";
+import type {
+  StockChartOverlay,
+  StockChartRange,
+  StockChartResponse,
+} from "@/features/stocks";
 
 export async function getStockChart(
   providerKey: string,
   range: StockChartRange,
-  includePe: boolean,
+  overlays: readonly StockChartOverlay[],
   signal?: AbortSignal
 ): Promise<StockChartResponse> {
-  const params = new URLSearchParams({
-    range,
-    includePe: includePe ? "1" : "0",
-  });
+  const params = new URLSearchParams({ range });
+  if (overlays.length > 0) {
+    params.set("overlays", overlays.join(","));
+  }
 
   const response = await fetch(
     `/api/stocks/${encodeURIComponent(providerKey)}/chart?${params.toString()}`,

@@ -8,6 +8,7 @@ import type {
   IntradayChartPoint,
   StockChartRange,
 } from "./types";
+import { toFiniteNumber, toIsoDate } from "./value-normalizers";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -36,16 +37,11 @@ type IntradayYahooResult = Readonly<{
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-const toIsoDate = (date: Date) => date.toISOString().slice(0, 10);
-
 const subtractDays = (date: Date, days: number) => {
   const next = new Date(date.getTime());
   next.setUTCDate(next.getUTCDate() - days);
   return next;
 };
-
-const toNumberOrNull = (value: unknown) =>
-  typeof value === "number" && Number.isFinite(value) ? value : null;
 
 const rangeStartDate = (range: Exclude<StockChartRange, "1D">) => {
   const today = new Date();
@@ -59,10 +55,12 @@ const rangeStartDate = (range: Exclude<StockChartRange, "1D">) => {
       return subtractDays(today, 184);
     case "1Y":
       return subtractDays(today, 366);
+    case "3Y":
+      return subtractDays(today, 3 * 366);
     case "5Y":
       return subtractDays(today, 5 * 366);
     case "ALL":
-      return subtractDays(today, 15 * 366);
+      return new Date("1970-01-01T00:00:00.000Z");
     default:
       return subtractDays(today, 31);
   }
@@ -96,7 +94,7 @@ const loadIntraday = async (
   const points = (raw.quotes ?? [])
     .map((quote) => {
       if (!(quote.date instanceof Date)) return null;
-      const price = toNumberOrNull(quote.close);
+      const price = toFiniteNumber(quote.close);
       return {
         time: quote.date.toISOString(),
         timezone,
@@ -148,12 +146,8 @@ const loadDaily = async (
   const timezone = dedupedRows[0]?.exchange_timezone ?? "UTC";
   const currency = dedupedRows[0]?.currency ?? null;
   const points = dedupedRows.map((row) => {
-    const close = toNumberOrNull(
-      typeof row.close === "string" ? Number(row.close) : row.close
-    );
-    const adjClose = toNumberOrNull(
-      typeof row.adj_close === "string" ? Number(row.adj_close) : row.adj_close
-    );
+    const close = toFiniteNumber(row.close);
+    const adjClose = toFiniteNumber(row.adj_close);
     return {
       time: `${row.price_date}T00:00:00.000Z`,
       date: row.price_date,

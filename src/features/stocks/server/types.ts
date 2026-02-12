@@ -4,11 +4,16 @@ export const STOCK_CHART_RANGES = [
   "3M",
   "6M",
   "1Y",
+  "3Y",
   "5Y",
   "ALL",
 ] as const;
 
 export type StockChartRange = (typeof STOCK_CHART_RANGES)[number];
+
+export const STOCK_CHART_OVERLAYS = ["pe", "epsTtm", "revenueTtm"] as const;
+
+export type StockChartOverlay = (typeof STOCK_CHART_OVERLAYS)[number];
 
 export type StockScreenerCard = Readonly<{
   providerKey: string;
@@ -46,6 +51,22 @@ export type EpsTtmEvent = Readonly<{
   epsTtm: number | null;
 }>;
 
+export type FundamentalSeriesMetric = "eps_ttm" | "revenue_ttm";
+
+export type FundamentalSeriesPeriodType = "TTM" | "TTM_PROXY_ANNUAL";
+
+export type FundamentalSeriesSource =
+  | "trailing"
+  | "quarterly_rollup"
+  | "annual_proxy";
+
+export type FundamentalSeriesEvent = Readonly<{
+  periodEndDate: string;
+  value: number | null;
+  periodType: FundamentalSeriesPeriodType;
+  source: FundamentalSeriesSource;
+}>;
+
 export type DailyChartPoint = Readonly<{
   time: string;
   date: string;
@@ -66,9 +87,25 @@ export type IntradayChartPoint = Readonly<{
 export type StockChartPoint = Readonly<{
   t: string;
   price: number | null;
+  epsTtm: number | null;
+  revenueTtm: number | null;
   pe: number | null;
   peLabel: "N/M" | "-" | null;
 }>;
+
+export type StockOverlayCoverage = Readonly<{
+  firstPointDate: string | null;
+  lastPointDate: string | null;
+  completeForRequestedRange: boolean;
+}>;
+
+export type StockOverlayCoverageMap = Readonly<
+  Record<StockChartOverlay, StockOverlayCoverage>
+>;
+
+export type StockOverlayAvailabilityMap = Readonly<
+  Record<StockChartOverlay, boolean>
+>;
 
 export type StockChartResponse = Readonly<{
   providerKey: string;
@@ -78,5 +115,8 @@ export type StockChartResponse = Readonly<{
   currency: string | null;
   hasIntraday: boolean;
   hasPe: boolean;
+  activeOverlays: readonly StockChartOverlay[];
+  hasOverlayData: StockOverlayAvailabilityMap;
+  overlayCoverage: StockOverlayCoverageMap;
   points: readonly StockChartPoint[];
 }>;

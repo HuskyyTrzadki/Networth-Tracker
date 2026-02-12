@@ -122,10 +122,13 @@ Whenever you ship a new feature or change architecture:
 - Single-locale app: UI copy only in Polish (no translations, no i18n layer)
 - Instrument search (normalized market data provider API via `/api/instruments/search`)
 - Stocks screener (`/stocks`): cards for held EQUITY instruments (logo, current price, daily % pill) across all portfolios + top search bar
-- Stock details (`/stocks/[providerKey]`): price chart ranges (`1D`, `1M`, `3M`, `6M`, `1Y`, `5Y`, `ALL`) + optional PE overlay checkbox + valuation/fundamentals metrics panel
-- Stock chart API (`/api/stocks/[providerKey]/chart`) with 1D intraday Yahoo fetch (`includePrePost=true`) and automatic fallback to `1M` when intraday is unavailable
+- Stock details (`/stocks/[providerKey]`): price chart ranges (`1D`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `ALL`) + overlay toggles (`PE`, `EPS TTM`, `Revenue TTM`) + valuation/fundamentals metrics panel
+- Stock details chart has display switch: `Trend (100)` (rebased overlays) and `Raw` (real values; one overlay at a time)
+- Stock details chart shows color legend for price + active overlays (mode-aware labels)
+- Stock chart API (`/api/stocks/[providerKey]/chart`) supports `overlays=pe,epsTtm,revenueTtm` (with backward `includePe=1`), has 1D intraday Yahoo fetch (`includePrePost=true`), and auto-fallback to `1M` when intraday is unavailable
+- Stock overlays include coverage metadata (`hasOverlayData`, `overlayCoverage`) and UI warns when selected range exceeds available fundamentals history
 - Stock PE overlay now uses data-driven EPS priority: Yahoo trailing TTM first, quarterly-derived TTM second, annual EPS proxy fallback for older periods (no hardcoded cutoff date)
-- Stocks fundamentals caches: `instrument_valuation_summary_cache` (quoteSummary-derived metrics, TTL 6h) and `instrument_eps_ttm_events_cache` (EPS TTM events, TTL 30d)
+- Stocks fundamentals caches: `instrument_valuation_summary_cache` (quoteSummary-derived metrics, TTL 6h) and `instrument_fundamental_time_series_cache` (`eps_ttm`, `revenue_ttm`, TTL 30d, incremental refresh)
 - Daily instrument cache stores optional `adj_close` (for split-safe PE overlay using `adjClose / EPS_TTM_as_of_day`)
 - Transactions page.
 - Portfolio dashboard: alokacja (donut) + holdings z częściową wyceną i timestampem

@@ -4,6 +4,7 @@ import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { yahooFinance } from "@/lib/yahoo-finance-client";
 
 import type { StockValuationSummary } from "./types";
+import { toDateOrNull, toFiniteNumber, toIsoDate } from "./value-normalizers";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -64,38 +65,27 @@ type QuoteSummaryLike = Readonly<{
 const isFresh = (fetchedAt: string, ttlMs: number) =>
   Date.now() - new Date(fetchedAt).getTime() <= ttlMs;
 
-const toNumberOrNull = (value: unknown) => {
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
-};
-
 const toDateOnly = (value: Date | string | null | undefined) => {
   if (!value) return null;
-  const date = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString().slice(0, 10);
+  const date = toDateOrNull(value);
+  return date ? toIsoDate(date) : null;
 };
 
 const fromRow = (providerKey: string, row: SummaryCacheRow): StockValuationSummary => ({
   providerKey,
-  marketCap: toNumberOrNull(row.market_cap),
-  peTtm: toNumberOrNull(row.pe_ttm),
-  priceToSales: toNumberOrNull(row.price_to_sales),
-  evToEbitda: toNumberOrNull(row.ev_to_ebitda),
-  priceToBook: toNumberOrNull(row.price_to_book),
-  profitMargin: toNumberOrNull(row.profit_margin),
-  operatingMargin: toNumberOrNull(row.operating_margin),
-  quarterlyEarningsYoy: toNumberOrNull(row.quarterly_earnings_yoy),
-  quarterlyRevenueYoy: toNumberOrNull(row.quarterly_revenue_yoy),
-  cash: toNumberOrNull(row.cash),
-  debt: toNumberOrNull(row.debt),
-  dividendYield: toNumberOrNull(row.dividend_yield),
-  payoutRatio: toNumberOrNull(row.payout_ratio),
+  marketCap: toFiniteNumber(row.market_cap),
+  peTtm: toFiniteNumber(row.pe_ttm),
+  priceToSales: toFiniteNumber(row.price_to_sales),
+  evToEbitda: toFiniteNumber(row.ev_to_ebitda),
+  priceToBook: toFiniteNumber(row.price_to_book),
+  profitMargin: toFiniteNumber(row.profit_margin),
+  operatingMargin: toFiniteNumber(row.operating_margin),
+  quarterlyEarningsYoy: toFiniteNumber(row.quarterly_earnings_yoy),
+  quarterlyRevenueYoy: toFiniteNumber(row.quarterly_revenue_yoy),
+  cash: toFiniteNumber(row.cash),
+  debt: toFiniteNumber(row.debt),
+  dividendYield: toFiniteNumber(row.dividend_yield),
+  payoutRatio: toFiniteNumber(row.payout_ratio),
   payoutDate: row.payout_date ?? null,
   asOf: row.as_of ?? null,
   fetchedAt: row.fetched_at,
@@ -111,30 +101,30 @@ const fromYahoo = (
 
   return {
     providerKey,
-    marketCap: toNumberOrNull(quoteSummary.summaryDetail?.marketCap),
-    peTtm: toNumberOrNull(quoteSummary.summaryDetail?.trailingPE),
-    priceToSales: toNumberOrNull(
+    marketCap: toFiniteNumber(quoteSummary.summaryDetail?.marketCap),
+    peTtm: toFiniteNumber(quoteSummary.summaryDetail?.trailingPE),
+    priceToSales: toFiniteNumber(
       quoteSummary.summaryDetail?.priceToSalesTrailing12Months
     ),
-    evToEbitda: toNumberOrNull(
+    evToEbitda: toFiniteNumber(
       quoteSummary.defaultKeyStatistics?.enterpriseToEbitda
     ),
     priceToBook:
-      toNumberOrNull(quoteSummary.defaultKeyStatistics?.priceToBook) ??
+      toFiniteNumber(quoteSummary.defaultKeyStatistics?.priceToBook) ??
       null,
     profitMargin:
-      toNumberOrNull(quoteSummary.financialData?.profitMargins) ??
-      toNumberOrNull(quoteSummary.defaultKeyStatistics?.profitMargins) ??
+      toFiniteNumber(quoteSummary.financialData?.profitMargins) ??
+      toFiniteNumber(quoteSummary.defaultKeyStatistics?.profitMargins) ??
       null,
-    operatingMargin: toNumberOrNull(quoteSummary.financialData?.operatingMargins),
-    quarterlyEarningsYoy: toNumberOrNull(
+    operatingMargin: toFiniteNumber(quoteSummary.financialData?.operatingMargins),
+    quarterlyEarningsYoy: toFiniteNumber(
       quoteSummary.financialData?.earningsGrowth
     ),
-    quarterlyRevenueYoy: toNumberOrNull(quoteSummary.financialData?.revenueGrowth),
-    cash: toNumberOrNull(quoteSummary.financialData?.totalCash),
-    debt: toNumberOrNull(quoteSummary.financialData?.totalDebt),
-    dividendYield: toNumberOrNull(quoteSummary.summaryDetail?.dividendYield),
-    payoutRatio: toNumberOrNull(quoteSummary.summaryDetail?.payoutRatio),
+    quarterlyRevenueYoy: toFiniteNumber(quoteSummary.financialData?.revenueGrowth),
+    cash: toFiniteNumber(quoteSummary.financialData?.totalCash),
+    debt: toFiniteNumber(quoteSummary.financialData?.totalDebt),
+    dividendYield: toFiniteNumber(quoteSummary.summaryDetail?.dividendYield),
+    payoutRatio: toFiniteNumber(quoteSummary.summaryDetail?.payoutRatio),
     payoutDate,
     asOf: quoteSummary.price?.regularMarketTime?.toISOString() ?? null,
     fetchedAt: new Date().toISOString(),
