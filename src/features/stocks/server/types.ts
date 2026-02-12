@@ -6,6 +6,7 @@ export const STOCK_CHART_RANGES = [
   "1Y",
   "3Y",
   "5Y",
+  "10Y",
   "ALL",
 ] as const;
 

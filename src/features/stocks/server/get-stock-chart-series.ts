@@ -36,6 +36,7 @@ type IntradayYahooResult = Readonly<{
 }>;
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const TEN_YEAR_LOOKBACK_DAYS = 10 * 366;
 
 const subtractDays = (date: Date, days: number) => {
   const next = new Date(date.getTime());
@@ -59,11 +60,22 @@ const rangeStartDate = (range: Exclude<StockChartRange, "1D">) => {
       return subtractDays(today, 3 * 366);
     case "5Y":
       return subtractDays(today, 5 * 366);
+    case "10Y":
+      return subtractDays(today, TEN_YEAR_LOOKBACK_DAYS);
     case "ALL":
       return new Date("1970-01-01T00:00:00.000Z");
     default:
       return subtractDays(today, 31);
   }
+};
+
+const hasTenYearCoverage = (points: readonly DailyChartPoint[]) => {
+  if (points.length === 0) return false;
+  const firstPointDate = points[0]?.date;
+  if (!firstPointDate) return false;
+
+  const thresholdDate = toIsoDate(subtractDays(new Date(), TEN_YEAR_LOOKBACK_DAYS));
+  return firstPointDate <= thresholdDate;
 };
 
 const loadIntraday = async (
@@ -198,6 +210,18 @@ export async function getStockChartSeries(
   }
 
   const daily = await loadDaily(supabase, providerKey, range);
+  if (range === "10Y" && !hasTenYearCoverage(daily.points)) {
+    return {
+      requestedRange: range,
+      resolvedRange: "ALL",
+      timezone: daily.timezone,
+      currency: daily.currency,
+      hasIntraday: false,
+      intradayPoints: [],
+      dailyPoints: daily.points,
+    };
+  }
+
   return {
     requestedRange: range,
     resolvedRange: range,

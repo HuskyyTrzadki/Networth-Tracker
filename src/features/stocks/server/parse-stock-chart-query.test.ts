@@ -27,8 +27,17 @@ describe("parseStockChartQuery", () => {
     });
   });
 
-  it("returns 400-compatible error for invalid range", () => {
+  it("accepts 10Y as a valid range", () => {
     const query = parseStockChartQuery(new URLSearchParams("range=10Y"));
+    expect(query).toEqual({
+      ok: true,
+      range: "10Y",
+      overlays: [],
+    });
+  });
+
+  it("returns 400-compatible error for invalid range", () => {
+    const query = parseStockChartQuery(new URLSearchParams("range=2Y"));
     expect(query).toEqual({
       ok: false,
       message: "Invalid chart range.",

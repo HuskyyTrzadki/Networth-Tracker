@@ -16,8 +16,11 @@ export async function getStockChart(
   }
 
   const response = await fetch(
-    `/api/stocks/${encodeURIComponent(providerKey)}/chart?${params.toString()}`,
-    { signal }
+    `/api/public/stocks/${encodeURIComponent(providerKey)}/chart?${params.toString()}`,
+    {
+      signal,
+      credentials: "omit",
+    }
   );
 
   const data = (await response.json().catch(() => null)) as

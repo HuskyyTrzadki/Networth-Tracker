@@ -4,6 +4,7 @@ import {
   buildOverlayAxisMeta,
   buildLegendItems,
   buildChartData,
+  buildPriceAxisDomain,
   getNextOverlaySelection,
   normalizeOverlaysForMode,
   toOverlayLineDataKey,
@@ -93,5 +94,77 @@ describe("stock-chart-card-helpers", () => {
     expect(axis.label).toBe("P/E");
     expect(axis.primaryOverlay).toBe("pe");
     expect(axis.domain).toEqual([19.84, 22.16]);
+  });
+
+  it("uses non-zero padded price domain for short ranges", () => {
+    const chartData = buildChartData([
+      {
+        t: "2025-01-01T00:00:00.000Z",
+        price: 320,
+        pe: null,
+        peLabel: null,
+        epsTtm: null,
+        revenueTtm: null,
+      },
+      {
+        t: "2025-01-01T01:00:00.000Z",
+        price: 330,
+        pe: null,
+        peLabel: null,
+        epsTtm: null,
+        revenueTtm: null,
+      },
+    ]);
+
+    const domain = buildPriceAxisDomain("1D", chartData);
+    expect(domain).toEqual([319.2, 330.8]);
+  });
+
+  it("uses zero-based domain for long ranges", () => {
+    const chartData = buildChartData([
+      {
+        t: "2023-01-01T00:00:00.000Z",
+        price: 100,
+        pe: null,
+        peLabel: null,
+        epsTtm: null,
+        revenueTtm: null,
+      },
+      {
+        t: "2026-01-01T00:00:00.000Z",
+        price: 150,
+        pe: null,
+        peLabel: null,
+        epsTtm: null,
+        revenueTtm: null,
+      },
+    ]);
+
+    const domain = buildPriceAxisDomain("3Y", chartData);
+    expect(domain).toEqual([0, 162]);
+  });
+
+  it("uses zero-based domain for 10Y range", () => {
+    const chartData = buildChartData([
+      {
+        t: "2016-01-01T00:00:00.000Z",
+        price: 200,
+        pe: null,
+        peLabel: null,
+        epsTtm: null,
+        revenueTtm: null,
+      },
+      {
+        t: "2026-01-01T00:00:00.000Z",
+        price: 260,
+        pe: null,
+        peLabel: null,
+        epsTtm: null,
+        revenueTtm: null,
+      },
+    ]);
+
+    const domain = buildPriceAxisDomain("10Y", chartData);
+    expect(domain).toEqual([0, 280.8]);
   });
 });

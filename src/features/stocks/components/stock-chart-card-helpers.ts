@@ -218,6 +218,13 @@ type ChartDataPoint = Readonly<{
   revenueTtmIndex: number | null;
 }>;
 
+const PRICE_ZERO_BASELINE_RANGES: readonly StockChartRange[] = [
+  "3Y",
+  "5Y",
+  "10Y",
+  "ALL",
+];
+
 export const buildChartData = (points: readonly StockPoint[]): readonly ChartDataPoint[] => {
   const peBase = findNonZeroBase(points, (point) => point.pe)?.pe ?? null;
   const epsBase = findNonZeroBase(points, (point) => point.epsTtm)?.epsTtm ?? null;
@@ -253,6 +260,41 @@ export const buildChartData = (points: readonly StockPoint[]): readonly ChartDat
         ? (point.revenueTtm / revenueBase) * 100
         : null,
   }));
+};
+
+export const buildPriceAxisDomain = (
+  range: StockChartRange,
+  chartData: readonly ChartDataPoint[]
+) => {
+  const prices = chartData
+    .map((point) => point.price)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  if (prices.length === 0) {
+    return undefined;
+  }
+
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return undefined;
+  }
+
+  if (PRICE_ZERO_BASELINE_RANGES.includes(range)) {
+    const maxPad = max === 0 ? 1 : Math.max(max * 0.08, 1);
+    return [0, max + maxPad] as const;
+  }
+
+  if (min === max) {
+    const pad = Math.max(Math.abs(min) * 0.04, 0.5);
+    return [Math.max(0, min - pad), max + pad] as const;
+  }
+
+  const span = max - min;
+  const pad = Math.max(span * 0.08, max * 0.002);
+  const lower = Math.max(0, min - pad);
+  const upper = max + pad;
+  return [lower, upper] as const;
 };
 
 export const buildCoverageWarnings = (

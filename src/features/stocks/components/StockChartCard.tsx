@@ -25,6 +25,7 @@ import {
   OVERLAY_LINE_COLORS,
   buildOverlayAxisMeta,
   buildLegendItems,
+  buildPriceAxisDomain,
   buildChartData,
   buildCoverageWarnings,
   formatEps,
@@ -80,6 +81,12 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
     chartResource.isLoading && chartResource.data === null && !isInitialState;
   const chart = shouldHideInitialFallback ? null : lastKnownChart;
   const isLoading = chartResource.isLoading;
+  const isTenYearUnavailable =
+    (chart ?? lastKnownChart).requestedRange === "10Y" &&
+    (chart ?? lastKnownChart).resolvedRange !== "10Y";
+
+  const isRangeDisabled = (rangeOption: StockChartRange) =>
+    isLoading || (rangeOption === "10Y" && isTenYearUnavailable);
 
   const toggleOverlay = (overlay: StockChartOverlay, enabled: boolean) =>
     setActiveOverlays((current) =>
@@ -92,6 +99,8 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   };
 
   const chartData = [...buildChartData(chart?.points ?? [])];
+  const priceAxisDomain =
+    chart !== null ? buildPriceAxisDomain(chart.resolvedRange, chartData) : undefined;
 
   const hasVisibleOverlayLines =
     chart !== null &&
@@ -130,7 +139,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               type="button"
               variant={range === rangeOption ? "default" : "outline"}
               onClick={() => setRange(rangeOption)}
-              disabled={isLoading}
+              disabled={isRangeDisabled(rangeOption)}
               className={cn("h-8 min-w-11 rounded-md px-3 font-mono text-xs")}
             >
               {rangeOption}
@@ -201,6 +210,12 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
             Brak danych intraday. Pokazano zakres 1M.
           </p>
         ) : null}
+        {(chart ?? lastKnownChart).requestedRange === "10Y" &&
+        (chart ?? lastKnownChart).resolvedRange !== "10Y" ? (
+          <p className="text-xs text-muted-foreground">
+            Brak pełnej historii 10Y. Pokazano pełny dostępny zakres.
+          </p>
+        ) : null}
 
         {coverageWarnings.length > 0 ? (
           <p className="text-xs text-amber-700 dark:text-amber-300">
@@ -244,6 +259,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
                 />
                 <YAxis
                   yAxisId="price"
+                  domain={priceAxisDomain}
                   tickFormatter={(value) =>
                     typeof value === "number"
                       ? new Intl.NumberFormat("pl-PL", {
