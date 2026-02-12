@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cacheLife, cacheTag } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { Suspense } from "react";
 
 import { ArrowLeft } from "lucide-react";
@@ -23,25 +23,23 @@ type InstrumentRow = Readonly<{
   currency: string;
 }>;
 
-async function getPublicInstrumentCached(
-  providerKey: string
-): Promise<InstrumentRow | null> {
-  "use cache";
-  // Instrument header metadata rarely changes.
-  cacheLife({ stale: 86400, revalidate: 86400, expire: 604800 });
-  cacheTag(`stock:${providerKey}:instrument`);
+const getPublicInstrumentCached = unstable_cache(
+  async (providerKey: string): Promise<InstrumentRow | null> => {
+    // Header metadata is public and changes rarely, so cache it aggressively.
+    const supabase = createPublicStocksSupabaseClient();
+    const { data } = await supabase
+      .from("instruments")
+      .select("symbol,name,logo_url,currency")
+      .eq("provider", "yahoo")
+      .eq("provider_key", providerKey)
+      .limit(1)
+      .maybeSingle();
 
-  const supabase = createPublicStocksSupabaseClient();
-  const { data } = await supabase
-    .from("instruments")
-    .select("symbol,name,logo_url,currency")
-    .eq("provider", "yahoo")
-    .eq("provider_key", providerKey)
-    .limit(1)
-    .maybeSingle();
-
-  return (data as InstrumentRow | null) ?? null;
-}
+    return (data as InstrumentRow | null) ?? null;
+  },
+  ["stocks-instrument-header"],
+  { revalidate: 86400 }
+);
 
 export default async function StockDetailsPage({
   params,
