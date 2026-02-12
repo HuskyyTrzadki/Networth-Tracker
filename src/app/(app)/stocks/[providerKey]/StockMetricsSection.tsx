@@ -1,8 +1,18 @@
-import { cookies } from "next/headers";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { getStockValuationSummaryCached } from "@/features/stocks";
 import { StockMetricsGrid } from "@/features/stocks/components/StockMetricsGrid";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
+
+async function getStockSummaryCached(providerKey: string) {
+  "use cache";
+  // Summary metrics change slower than prices, so longer cache window is safe.
+  cacheLife({ stale: 3600, revalidate: 3600, expire: 86400 });
+  cacheTag(`stock:${providerKey}:summary`);
+
+  const supabase = createPublicStocksSupabaseClient();
+  return getStockValuationSummaryCached(supabase, providerKey);
+}
 
 export default async function StockMetricsSection({
   providerKey,
@@ -11,9 +21,7 @@ export default async function StockMetricsSection({
   providerKey: string;
   metricCurrency: string;
 }>) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const summary = await getStockValuationSummaryCached(supabase, providerKey);
+  const summary = await getStockSummaryCached(providerKey);
 
   return <StockMetricsGrid summary={summary} currency={metricCurrency} />;
 }

@@ -129,6 +129,7 @@ Whenever you ship a new feature or change architecture:
 - Stock details `10Y` range auto-falls back to `ALL` when full 10-year coverage is unavailable for a symbol, and then disables `10Y` in timeframe controls
 - Stock chart API (`/api/stocks/[providerKey]/chart`) supports `overlays=pe,epsTtm,revenueTtm` (with backward `includePe=1`), has 1D intraday Yahoo fetch (`includePrePost=true`), and auto-fallback to `1M` when intraday is unavailable
 - Public stock chart API (`/api/public/stocks/[providerKey]/chart`) mirrors chart DTOs without auth and adds range-based edge caching headers (`s-maxage` + `stale-while-revalidate`) for instant repeat loads
+- Stock details first render now also uses server-side `use cache` (`cacheLife`) for public chart summary/header data (1M chart + valuation + instrument meta), so direct `/stocks/[providerKey]` opens avoid repeated backend work
 - Stock overlays include coverage metadata (`hasOverlayData`, `overlayCoverage`) and UI warns when selected range exceeds available fundamentals history
 - Stock PE overlay now uses data-driven EPS priority: Yahoo trailing TTM first, quarterly-derived TTM second, annual EPS proxy fallback for older periods (no hardcoded cutoff date)
 - Stocks fundamentals caches: `instrument_valuation_summary_cache` (quoteSummary-derived metrics, TTL 6h) and `instrument_fundamental_time_series_cache` (`eps_ttm`, `revenue_ttm`, TTL 30d, incremental refresh)

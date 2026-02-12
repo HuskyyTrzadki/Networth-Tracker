@@ -1,13 +1,13 @@
-import { cookies } from "next/headers";
 import Link from "next/link";
+import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
 
 import { ArrowLeft } from "lucide-react";
 
 import { AnimatedReveal } from "@/features/design-system";
+import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { Button } from "@/features/design-system/components/ui/button";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
-import { createClient } from "@/lib/supabase/server";
 
 import StockChartSection from "./StockChartSection";
 import StockMetricsSection from "./StockMetricsSection";
@@ -23,31 +23,16 @@ type InstrumentRow = Readonly<{
   currency: string;
 }>;
 
-export default async function StockDetailsPage({
-  params,
-}: Readonly<{
-  params: Params;
-}>) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData.user;
+async function getPublicInstrumentCached(
+  providerKey: string
+): Promise<InstrumentRow | null> {
+  "use cache";
+  // Instrument header metadata rarely changes.
+  cacheLife({ stale: 86400, revalidate: 86400, expire: 604800 });
+  cacheTag(`stock:${providerKey}:instrument`);
 
-  if (!user) {
-    return (
-      <main className="px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Szczegóły akcji</h1>
-        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
-          Zaloguj się, aby zobaczyć szczegóły.
-        </div>
-      </main>
-    );
-  }
-
-  const resolvedParams = await params;
-  const providerKey = decodeURIComponent(resolvedParams.providerKey).trim();
-
-  const { data: instrument } = await supabase
+  const supabase = createPublicStocksSupabaseClient();
+  const { data } = await supabase
     .from("instruments")
     .select("symbol,name,logo_url,currency")
     .eq("provider", "yahoo")
@@ -55,7 +40,17 @@ export default async function StockDetailsPage({
     .limit(1)
     .maybeSingle();
 
-  const stock = (instrument as InstrumentRow | null) ?? null;
+  return (data as InstrumentRow | null) ?? null;
+}
+
+export default async function StockDetailsPage({
+  params,
+}: Readonly<{
+  params: Params;
+}>) {
+  const resolvedParams = await params;
+  const providerKey = decodeURIComponent(resolvedParams.providerKey).trim();
+  const stock = await getPublicInstrumentCached(providerKey);
   const symbol = stock?.symbol ?? providerKey;
   const name = stock?.name ?? "Spółka";
   const logoUrl = stock?.logo_url ?? null;

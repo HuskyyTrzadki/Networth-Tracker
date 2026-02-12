@@ -15,6 +15,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/app/api/public/stocks/[providerKey]/chart/route.ts`
   - `src/app/api/stocks/[providerKey]/chart/route.ts`
 - Server services:
+  - `src/features/stocks/server/create-public-stocks-supabase-client.ts`
   - `src/features/stocks/server/get-stock-chart-http-response.ts`
   - `src/features/stocks/server/get-stocks-screener-cards.ts`
   - `src/features/stocks/server/get-stock-valuation-summary-cached.ts`
@@ -36,6 +37,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Route handlers stay thin and delegate to `src/features/stocks/server/*`.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
 - Private chart API (`/api/stocks/[providerKey]/chart`) keeps auth guard and delegates to the same response helper.
+- Stock details initial server sections (`StockChartSection`, `StockMetricsSection`, instrument header in page) use `use cache` + `cacheLife` with public Supabase reads, so first render reuses Next Data Cache.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Screener cards include only `EQUITY` holdings and dedupe by `providerKey`.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
