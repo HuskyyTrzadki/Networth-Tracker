@@ -120,7 +120,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                       "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]"
                     )}
                   >
-                    <Link href={`/portfolio/${portfolio.id}`}>
+                    <Link href={`/portfolio/${portfolio.id}`} prefetch={false}>
                       <PendingLinkLabel className="min-w-0 flex-1 truncate">
                         {portfolio.name}
                       </PendingLinkLabel>
@@ -137,7 +137,6 @@ export function AppSidebar({ className, portfolios }: Props) {
                     router.push(`/portfolio/${createdId}`, {
                       scroll: false,
                     });
-                    router.refresh();
                   }}
                   trigger={({ open, disabled }) => (
                     <Button

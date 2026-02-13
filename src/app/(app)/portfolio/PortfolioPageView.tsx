@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
@@ -9,8 +8,7 @@ import {
   PortfolioDashboardSkeleton,
   PortfolioMobileHeaderActions,
 } from "@/features/portfolio";
-import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
-import { createClient } from "@/lib/supabase/server";
+import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 import PortfolioDashboardSection from "./PortfolioDashboardSection";
 
@@ -19,12 +17,8 @@ type Props = Readonly<{
 }>;
 
 export async function PortfolioPageView({ selectedPortfolioId }: Props) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-
-  // Server-side: resolve the user from cookies so RLS filters portfolios correctly.
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) {
+  const pageData = await getUserPortfoliosPrivateCached();
+  if (!pageData.isAuthenticated) {
     return (
       <main className="px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
@@ -35,7 +29,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
     );
   }
 
-  const portfolios = await listPortfolios(supabase);
+  const portfolios = pageData.portfolios;
   const selectedPortfolio = selectedPortfolioId
     ? portfolios.find((portfolio) => portfolio.id === selectedPortfolioId) ?? null
     : null;

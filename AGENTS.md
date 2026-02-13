@@ -110,6 +110,8 @@ Whenever you ship a new feature or change architecture:
 - Portfolios table + `transactions.portfolio_id` (no auto-created default portfolio during auth)
 - Portfolio selection (switcher) + creation dialog (sidebar + mobile header), with "Wszystkie portfele" view
 - Portfolio routes are canonicalized: aggregate view on `/portfolio`, single-portfolio view on `/portfolio/<id>`, with backward redirects from legacy `?portfolio=...` links
+- Portfolio auth+list reads are now shared through one private Cache Components helper (`getUserPortfoliosPrivateCached`), reused by app layout/sidebar and portfolio page header to avoid duplicate Supabase reads on navigation
+- Portfolio creation navigations no longer force `router.refresh()` on the client; freshness is driven by server `revalidateTag`/`revalidatePath` invalidation to avoid extra roundtrips
 - Widok pojedynczego portfela (`/portfolio?portfolio=<id>`) ma duży CTA `Dodaj transakcję`, który otwiera modal `/transactions/new?portfolio=<id>` z wymuszonym wyborem tego portfela
 - Profiles table + RLS applied
 - `profiles.last_active_at` updates wired into transactions writes

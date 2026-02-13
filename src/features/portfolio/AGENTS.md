@@ -89,6 +89,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio`) and hidden in single-portfolio view (`/portfolio/<id>`).
 - Single-portfolio view (`/portfolio/<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
 - Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to canonical `/portfolio/<id>`.
+- Portfolio create flows (`sidebar`, `mobile header`, `onboarding`) navigate with `router.push` only; cache freshness relies on server-side `revalidateTag/revalidatePath` from portfolio write APIs instead of client `router.refresh()`.
 - Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
@@ -107,6 +108,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.
 - Dashboard server payload (`summary`, `snapshots`, `live totals`, `recent transactions`) now uses Cache Components private caching with tags (`portfolio:all`, `portfolio:<id>`), so reads are reused between navigations and writes can invalidate deterministically.
+- User portfolio list reads are centralized in `server/get-user-portfolios-private-cached.ts` (private cache tag `portfolio:all`) and reused by app shell + portfolio page.
 - Rebuild status hook polls only while `queued/running`, uses server-guided `nextPollAfterMs` (fallback backoff 2s→5s→10s), retries stale `running` states (>90s), and exposes progress fields (`fromDate`, `toDate`, `processedUntil`) for UI progress.
 - Rebuild status hook can be nudged from client events (`portfolio:snapshot-rebuild-triggered`) to re-fetch state immediately even from idle, so loader appears without hard refresh after transaction writes.
 - Rebuild progress percent math is shared (`lib/rebuild-progress.ts`) between API and client hook to avoid drift in UI vs backend progress interpretation.

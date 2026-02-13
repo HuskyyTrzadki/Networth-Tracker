@@ -35,7 +35,6 @@ export function PortfolioMobileHeaderActions({
       }),
       { scroll: false }
     );
-    router.refresh();
   };
 
   return (
