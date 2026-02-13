@@ -15,6 +15,7 @@ type Props = Readonly<{
   selectedPortfolioId: string | null;
   hasHoldings: boolean;
   hasSnapshots: boolean;
+  includesFullHistory: boolean;
   rows: readonly SnapshotChartRow[];
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
@@ -27,6 +28,7 @@ export function PortfolioValueOverTimeWidget({
   selectedPortfolioId,
   hasHoldings,
   hasSnapshots,
+  includesFullHistory,
   rows,
   liveTotals,
   polishCpiSeries,
@@ -45,6 +47,7 @@ export function PortfolioValueOverTimeWidget({
         portfolioId={selectedPortfolioId}
         hasHoldings={hasHoldings}
         hasSnapshots={hasSnapshots}
+        initialIncludesFullHistory={includesFullHistory}
         rows={rows}
         todayBucketDate={liveTotals.todayBucketDate}
         liveTotalsByCurrency={liveTotals.totalsByCurrency}

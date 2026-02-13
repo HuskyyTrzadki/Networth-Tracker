@@ -40,6 +40,8 @@ type Props = Readonly<{
   missingFx: number;
   rebuildStatus: "idle" | "queued" | "running" | "failed";
   rebuildMessage: string | null;
+  isAllHistoryLoading?: boolean;
+  isAllHistoryTruncated?: boolean;
 }>;
 
 export function PortfolioValueOverTimeHeader({
@@ -60,6 +62,8 @@ export function PortfolioValueOverTimeHeader({
   missingFx,
   rebuildStatus,
   rebuildMessage,
+  isAllHistoryLoading = false,
+  isAllHistoryTruncated = false,
 }: Props) {
   const selectedComparisonsCount = selectedComparisons.length;
 
@@ -208,6 +212,19 @@ export function PortfolioValueOverTimeHeader({
       {rebuildStatus === "failed" && rebuildMessage ? (
         <div className="text-xs text-destructive">
           Nie udało się przebudować historii: {rebuildMessage}
+        </div>
+      ) : null}
+
+      {isAllHistoryLoading ? (
+        <div className="text-xs text-muted-foreground">
+          Wczytywanie pełnej historii dla zakresu ALL...
+        </div>
+      ) : null}
+
+      {!isAllHistoryLoading && isAllHistoryTruncated && range !== "ALL" ? (
+        <div className="text-xs text-muted-foreground">
+          Dla szybszego ładowania strona startuje ze skróconą historią; pełny zakres
+          pobierze się po wybraniu ALL.
         </div>
       ) : null}
     </div>

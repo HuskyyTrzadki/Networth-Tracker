@@ -19,9 +19,11 @@ import {
   type ChartMode,
   type ChartRange,
   formatDayLabelWithYear,
+  getRangeRows,
   getTotalValue,
 } from "../lib/chart-helpers";
 import { buildPortfolioValueOverTimeViewModel } from "../lib/portfolio-value-over-time-view-model";
+import { loadFullSnapshotHistory } from "../lib/load-full-snapshot-history";
 import { PortfolioPerformanceModeContent } from "./PortfolioPerformanceModeContent";
 import { PortfolioValueModeContent } from "./PortfolioValueModeContent";
 import { PortfolioValueOverTimeHeader } from "./PortfolioValueOverTimeHeader";
@@ -38,6 +40,7 @@ type Props = Readonly<{
   portfolioId: string | null;
   hasHoldings: boolean;
   hasSnapshots: boolean;
+  initialIncludesFullHistory: boolean;
   rows: readonly SnapshotChartRow[];
   todayBucketDate: string;
   liveTotalsByCurrency: Readonly<Record<SnapshotCurrency, LiveTotals>>;
@@ -51,6 +54,7 @@ export function PortfolioValueOverTimeChart({
   portfolioId,
   hasHoldings,
   hasSnapshots,
+  initialIncludesFullHistory,
   rows,
   todayBucketDate,
   liveTotalsByCurrency,
@@ -61,6 +65,10 @@ export function PortfolioValueOverTimeChart({
   const [currency, setCurrency] = useState<SnapshotCurrency>("PLN");
   const [mode, setMode] = useState<ChartMode>(() => resolveInitialChartMode(rows));
   const [range, setRange] = useState<ChartRange>(() => resolveInitialChartRange(rows));
+  const [fullHistoryRows, setFullHistoryRows] = useState<
+    readonly SnapshotChartRow[] | null
+  >(null);
+  const [isAllHistoryLoading, setIsAllHistoryLoading] = useState(false);
   const [selectedComparisons, setSelectedComparisons] = useState<ComparisonOptionId[]>([]);
   const [benchmarkSeriesState, setBenchmarkSeriesState] =
     useState<DashboardBenchmarkSeries>(benchmarkSeries);
@@ -76,6 +84,8 @@ export function PortfolioValueOverTimeChart({
   >([]);
   const [bootstrapped, setBootstrapped] = useState(false);
   const router = useRouter();
+  const snapshotRows = fullHistoryRows ?? rows;
+  const includesFullHistory = initialIncludesFullHistory || fullHistoryRows !== null;
 
   const shouldBootstrap = hasHoldings && !hasSnapshots && !bootstrapped;
   const rebuildStartDate = rebuild.fromDate ?? rebuild.dirtyFrom;
@@ -83,7 +93,7 @@ export function PortfolioValueOverTimeChart({
   const liveTotals = liveTotalsByCurrency[currency];
 
   const lastValuationBucketDate =
-    [...rows].reverse().find((row) => getTotalValue(row, currency) !== null)
+    [...snapshotRows].reverse().find((row) => getTotalValue(row, currency) !== null)
       ?.bucketDate ?? null;
 
   const lastSnapshotMs = toIsoDayMs(lastValuationBucketDate);
@@ -101,11 +111,11 @@ export function PortfolioValueOverTimeChart({
         gapDaysFromSnapshotToToday <= MAX_LIVE_ANCHOR_GAP_DAYS));
 
   const shouldAppendLiveAnchorRow =
-    canUseLiveEndpoint && !rows.some((row) => row.bucketDate === todayBucketDate);
+    canUseLiveEndpoint && !snapshotRows.some((row) => row.bucketDate === todayBucketDate);
 
   const rowsWithLiveAnchor = shouldAppendLiveAnchorRow
-    ? [...rows, toLiveSnapshotRow(currency, todayBucketDate, liveTotals)]
-    : rows;
+    ? [...snapshotRows, toLiveSnapshotRow(currency, todayBucketDate, liveTotals)]
+    : snapshotRows;
 
   useEffect(() => {
     if (!shouldBootstrap) return;
@@ -187,6 +197,35 @@ export function PortfolioValueOverTimeChart({
     }
   };
 
+  const ensureAllHistoryLoaded = async (): Promise<readonly SnapshotChartRow[] | null> => {
+    if (includesFullHistory || isAllHistoryLoading) {
+      return includesFullHistory ? snapshotRows : null;
+    }
+
+    setIsAllHistoryLoading(true);
+    try {
+      const payload = await loadFullSnapshotHistory({
+        scope,
+        portfolioId,
+      });
+      if (!payload) {
+        return null;
+      }
+
+      if (payload.includesFullHistory) {
+        setFullHistoryRows(payload.rows);
+      }
+      return payload.rows;
+    } finally {
+      setIsAllHistoryLoading(false);
+    }
+  };
+
+  const getRequiredBenchmarkDatesForRows = (
+    sourceRows: readonly SnapshotChartRow[],
+    selectedRange: ChartRange
+  ) => getRangeRows(sourceRows, selectedRange).rowsForReturns.map((row) => row.bucketDate);
+
   const handleComparisonChange = (
     optionId: ComparisonOptionId,
     enabled: boolean
@@ -217,14 +256,24 @@ export function PortfolioValueOverTimeChart({
         range={range}
         onRangeChange={(nextRange) => {
           setRange(nextRange);
-          const requiredDates = viewModel.getRequiredBenchmarkDates(nextRange);
-          selectedComparisons
-            .filter((comparisonId): comparisonId is BenchmarkId =>
-              comparisonId !== "INFLATION_PL"
-            )
-            .forEach((benchmarkId) => {
-              void ensureBenchmarkSeriesLoaded(benchmarkId, requiredDates);
-            });
+
+          void (async () => {
+            const rowsForRange =
+              nextRange === "ALL"
+                ? (await ensureAllHistoryLoaded()) ?? snapshotRows
+                : snapshotRows;
+            const requiredDates = getRequiredBenchmarkDatesForRows(
+              rowsForRange,
+              nextRange
+            );
+            selectedComparisons
+              .filter((comparisonId): comparisonId is BenchmarkId =>
+                comparisonId !== "INFLATION_PL"
+              )
+              .forEach((benchmarkId) => {
+                void ensureBenchmarkSeriesLoaded(benchmarkId, requiredDates);
+              });
+          })();
         }}
         isRangeDisabled={viewModel.isRangeDisabled}
         currency={currency}
@@ -239,6 +288,8 @@ export function PortfolioValueOverTimeChart({
         missingFx={liveTotals.missingFx}
         rebuildStatus={rebuild.status}
         rebuildMessage={rebuild.message}
+        isAllHistoryLoading={isAllHistoryLoading}
+        isAllHistoryTruncated={!includesFullHistory}
       />
 
       {mode === "VALUE" ? (

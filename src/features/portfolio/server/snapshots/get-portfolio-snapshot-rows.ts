@@ -29,6 +29,7 @@ type SnapshotRow = Readonly<{
 type SnapshotRowsResult = Readonly<{
   hasSnapshots: boolean;
   rows: readonly SnapshotChartRow[];
+  includesFullHistory: boolean;
 }>;
 
 const SNAPSHOT_PAGE_SIZE = 1000;
@@ -94,6 +95,7 @@ export async function getPortfolioSnapshotRows(
 
   return {
     hasSnapshots: rows.length > 0,
+    includesFullHistory: typeof days !== "number",
     rows: rows.map((row) => ({
       bucketDate: row.bucket_date,
       totalValuePln: toNumber(row.total_value_pln),

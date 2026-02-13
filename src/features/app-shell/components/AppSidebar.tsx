@@ -93,7 +93,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                     >
                       <Link href={item.href}>
                         <Icon aria-hidden="true" />
-                        <PendingLinkLabel>{item.label}</PendingLinkLabel>
+                        <LinkLabel>{item.label}</LinkLabel>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -120,10 +120,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                       "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]"
                     )}
                   >
-                    <Link href={`/portfolio/${portfolio.id}`} prefetch={false}>
-                      <PendingLinkLabel className="min-w-0 flex-1 truncate">
+                    <Link href={`/portfolio/${portfolio.id}`}>
+                      <LinkLabel className="min-w-0 flex-1 truncate">
                         {portfolio.name}
-                      </PendingLinkLabel>
+                      </LinkLabel>
                       <span className="ml-auto font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
                         {portfolio.baseCurrency}
                       </span>
@@ -181,7 +181,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                 >
                   <Link href={item.href}>
                     <Icon aria-hidden="true" />
-                    <PendingLinkLabel>{item.label}</PendingLinkLabel>
+                    <LinkLabel>{item.label}</LinkLabel>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -193,18 +193,20 @@ export function AppSidebar({ className, portfolios }: Props) {
   );
 }
 
-type PendingLinkLabelProps = Readonly<{
+type LinkLabelProps = Readonly<{
   children: React.ReactNode;
   className?: string;
 }>;
 
-function PendingLinkLabel({ children, className }: PendingLinkLabelProps) {
+function LinkLabel({ children, className }: LinkLabelProps) {
   const { pending } = useLinkStatus();
 
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
       <span className="truncate">{children}</span>
-      {pending ? <Loader2 className="size-3 animate-spin text-primary" aria-hidden /> : null}
+      {pending ? (
+        <Loader2 className="size-3 shrink-0 animate-spin text-primary" aria-hidden />
+      ) : null}
     </span>
   );
 }

@@ -17,6 +17,7 @@ type Props = Readonly<{
   summary: PortfolioSummary;
   snapshotRows: Readonly<{
     hasSnapshots: boolean;
+    includesFullHistory: boolean;
     rows: readonly SnapshotChartRow[];
   }>;
   liveTotals: LiveTotalsResult;
@@ -40,10 +41,12 @@ export function PortfolioDashboardClientWidgets({
   return (
     <>
       <PortfolioValueOverTimeWidget
+        key={`${scope}:${selectedPortfolioId ?? "all"}:${summary.totalValueBase ?? "null"}`}
         scope={scope}
         selectedPortfolioId={selectedPortfolioId}
         hasHoldings={summary.holdings.length > 0}
         hasSnapshots={snapshotRows.hasSnapshots}
+        includesFullHistory={snapshotRows.includesFullHistory}
         rows={snapshotRows.rows}
         liveTotals={liveTotals}
         polishCpiSeries={polishCpiSeries}

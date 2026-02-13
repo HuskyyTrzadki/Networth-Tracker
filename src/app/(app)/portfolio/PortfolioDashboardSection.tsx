@@ -51,6 +51,8 @@ type DashboardData = Readonly<{
   recentTransactions: Awaited<ReturnType<typeof listTransactions>>["items"];
 }>;
 
+const INITIAL_DASHBOARD_SNAPSHOT_DAYS = 400;
+
 const getPortfolioDashboardDataCached = async (
   selectedPortfolioId: string | null,
   baseCurrency: string
@@ -74,7 +76,8 @@ const getPortfolioDashboardDataCached = async (
     getPortfolioSnapshotRows(
       supabase,
       selectedPortfolioId ? "PORTFOLIO" : "ALL",
-      selectedPortfolioId
+      selectedPortfolioId,
+      INITIAL_DASHBOARD_SNAPSHOT_DAYS
     ),
     getPortfolioLiveTotals(supabase, {
       portfolioId: selectedPortfolioId,

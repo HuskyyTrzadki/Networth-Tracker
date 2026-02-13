@@ -21,6 +21,7 @@ type Props = Readonly<{
   summary: PortfolioSummary;
   snapshotRows: Readonly<{
     hasSnapshots: boolean;
+    includesFullHistory: boolean;
     rows: readonly SnapshotChartRow[];
   }>;
   liveTotals: LiveTotalsResult;

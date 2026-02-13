@@ -109,6 +109,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.
 - Dashboard server payload (`summary`, `snapshots`, `live totals`, `recent transactions`) now uses Cache Components private caching with tags (`portfolio:all`, `portfolio:<id>`), so reads are reused between navigations and writes can invalidate deterministically.
+- Dashboard initial snapshot payload is bounded to 400 days for faster first render; selecting `ALL` lazily loads full history from `/api/portfolio-snapshots/rows` (auth + RLS).
 - User portfolio list reads are centralized in `server/get-user-portfolios-private-cached.ts` (private cache tag `portfolio:all`) and reused by app shell + portfolio page.
 - Rebuild status hook polls only while `queued/running`, uses server-guided `nextPollAfterMs` (fallback backoff 2s→5s→10s), retries stale `running` states (>90s), and exposes progress fields (`fromDate`, `toDate`, `processedUntil`) for UI progress.
 - Rebuild status hook can be nudged from client events (`portfolio:snapshot-rebuild-triggered`) to re-fetch state immediately even from idle, so loader appears without hard refresh after transaction writes.
@@ -146,6 +147,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/portfolio-value-over-time-chart-helpers.test.ts`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.test.tsx`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.test.ts`
+- `src/features/portfolio/server/snapshots/snapshot-rows-route-service.test.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.test.ts`
 - `src/features/portfolio/lib/portfolio-url.test.ts`
 - `src/features/portfolio/lib/snapshot-rebuild-events.test.ts`
