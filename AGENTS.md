@@ -104,6 +104,7 @@ When shipping feature/architecture changes:
 - Private dashboard/shell reads cached via Cache Components tags and invalidated on writes.
 - Portfolio chart first render optimized with bounded payload + lazy full-history fetch for `ALL`.
 - Cache/source diagnostic headers available on key read endpoints.
+- Route contracts matrix added: `docs/route-contracts.md` (pages, APIs, cache/dynamic policy, invalidation map).
 
 ## Current architecture snapshot
 - Canonical portfolio routes:
