@@ -88,6 +88,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
 - Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio`) and hidden in single-portfolio view (`/portfolio/<id>`).
 - Single-portfolio view (`/portfolio/<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
+- Aggregate and single-portfolio routes share one loading skeleton (`src/app/(app)/portfolio/PortfolioRouteLoading.tsx`) so switching portfolios displays immediate pending feedback.
 - Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to canonical `/portfolio/<id>`.
 - Portfolio create flows (`sidebar`, `mobile header`, `onboarding`) navigate with `router.push` only; cache freshness relies on server-side `revalidateTag/revalidatePath` from portfolio write APIs instead of client `router.refresh()`.
 - Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
