@@ -11,6 +11,21 @@ export function buildPortfolioUrl({
   nextPortfolioId,
   resetPageParam,
 }: BuildPortfolioUrlArgs): string {
+  if (pathname === "/portfolio" || pathname.startsWith("/portfolio/")) {
+    const params = new URLSearchParams(searchParamsString);
+    params.delete("portfolio");
+
+    if (resetPageParam) {
+      params.set("page", "1");
+    } else {
+      params.delete("page");
+    }
+
+    const nextPathname = nextPortfolioId ? `/portfolio/${nextPortfolioId}` : "/portfolio";
+    const queryString = params.toString();
+    return queryString.length > 0 ? `${nextPathname}?${queryString}` : nextPathname;
+  }
+
   const params = new URLSearchParams(searchParamsString);
 
   if (nextPortfolioId) {

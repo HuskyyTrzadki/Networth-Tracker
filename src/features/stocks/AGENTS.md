@@ -37,7 +37,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Route handlers stay thin and delegate to `src/features/stocks/server/*`.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
 - Private chart API (`/api/stocks/[providerKey]/chart`) keeps auth guard and delegates to the same response helper.
-- Stock details initial server sections (`StockChartSection`, `StockMetricsSection`, instrument header in page) use `unstable_cache` with public Supabase reads, so first render reuses Next Data Cache while keeping cacheComponents off.
+- Stock details initial server sections (`StockChartSection`, `StockMetricsSection`, instrument header in page) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads, so first render reuses Next Data Cache with `cacheComponents` enabled.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Screener cards include only `EQUITY` holdings and dedupe by `providerKey`.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.

@@ -30,6 +30,7 @@ const PRIVATE_CACHE_CONTROL = "private, no-store";
 
 const toSuccessHeaders = (
   mode: StockChartResponseMode,
+  providerKey: string,
   requestedRange: StockChartRange,
   resolvedRange: StockChartRange
 ) =>
@@ -37,12 +38,16 @@ const toSuccessHeaders = (
     ? {
         "Cache-Control": PUBLIC_CACHE_CONTROL_BY_RANGE[requestedRange],
         "X-Cache-Policy": "public-edge",
+        "X-Data-Source": "market-cache-first",
+        "X-Cache-Tags": `stock:${providerKey},stock:${providerKey}:chart`,
         "X-Requested-Range": requestedRange,
         "X-Resolved-Range": resolvedRange,
       }
     : {
         "Cache-Control": PRIVATE_CACHE_CONTROL,
         "X-Cache-Policy": "private-no-store",
+        "X-Data-Source": "market-cache-first",
+        "X-Cache-Tags": `stock:${providerKey},stock:${providerKey}:chart`,
         "X-Requested-Range": requestedRange,
         "X-Resolved-Range": resolvedRange,
       };
@@ -77,6 +82,7 @@ export async function getStockChartHttpResponse({
       status: 200,
       headers: toSuccessHeaders(
         responseMode,
+        providerKey,
         response.requestedRange,
         response.resolvedRange
       ),

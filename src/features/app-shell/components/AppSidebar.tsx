@@ -1,8 +1,8 @@
 "use client";
 
-import { BriefcaseBusiness, Plus } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { BriefcaseBusiness, Loader2, Plus } from "lucide-react";
+import Link, { useLinkStatus } from "next/link";
+import { useRouter } from "next/navigation";
 
 import { CreatePortfolioDialog } from "@/features/portfolio";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -25,7 +25,7 @@ import { cn } from "@/lib/cn";
 
 import { useAppPathname } from "../hooks/useAppPathname";
 import { primaryNavItems, secondaryNavItems } from "../lib/nav-items";
-import { isHrefActive } from "../lib/path";
+import { getPortfolioIdFromPathname, isHrefActive } from "../lib/path";
 import { ThemeSwitch } from "./ThemeSwitch";
 
 type Props = Readonly<{
@@ -40,11 +40,9 @@ type Props = Readonly<{
 export function AppSidebar({ className, portfolios }: Props) {
   const pathname = useAppPathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const activePortfolioId = searchParams?.get("portfolio") ?? null;
+  const activePortfolioId = getPortfolioIdFromPathname(pathname);
   const isPortfolioActive = isHrefActive(pathname, "/portfolio");
-  const isOverviewActive =
-    isPortfolioActive && (!activePortfolioId || activePortfolioId === "all");
+  const isOverviewActive = isPortfolioActive && !activePortfolioId;
 
   return (
     <Sidebar
@@ -56,7 +54,7 @@ export function AppSidebar({ className, portfolios }: Props) {
     >
       <SidebarHeader className="px-4 py-5">
         <Link
-          href="/portfolio?portfolio=all"
+          href="/portfolio"
           className="flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold tracking-tight text-sidebar-foreground"
         >
           <span className="inline-flex size-8 items-center justify-center rounded-md border border-sidebar-border/80 bg-sidebar-accent/55">
@@ -95,7 +93,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                     >
                       <Link href={item.href}>
                         <Icon aria-hidden="true" />
-                        <span>{item.label}</span>
+                        <PendingLinkLabel>{item.label}</PendingLinkLabel>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -122,8 +120,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                       "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]"
                     )}
                   >
-                    <Link href={`/portfolio?portfolio=${portfolio.id}`}>
-                      <span className="min-w-0 flex-1 truncate">{portfolio.name}</span>
+                    <Link href={`/portfolio/${portfolio.id}`}>
+                      <PendingLinkLabel className="min-w-0 flex-1 truncate">
+                        {portfolio.name}
+                      </PendingLinkLabel>
                       <span className="ml-auto font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
                         {portfolio.baseCurrency}
                       </span>
@@ -134,7 +134,7 @@ export function AppSidebar({ className, portfolios }: Props) {
               <SidebarMenuSubItem>
                 <CreatePortfolioDialog
                   onCreated={(createdId) => {
-                    router.push(`/portfolio?portfolio=${createdId}`, {
+                    router.push(`/portfolio/${createdId}`, {
                       scroll: false,
                     });
                     router.refresh();
@@ -182,7 +182,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                 >
                   <Link href={item.href}>
                     <Icon aria-hidden="true" />
-                    <span>{item.label}</span>
+                    <PendingLinkLabel>{item.label}</PendingLinkLabel>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -191,5 +191,21 @@ export function AppSidebar({ className, portfolios }: Props) {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+type PendingLinkLabelProps = Readonly<{
+  children: React.ReactNode;
+  className?: string;
+}>;
+
+function PendingLinkLabel({ children, className }: PendingLinkLabelProps) {
+  const { pending } = useLinkStatus();
+
+  return (
+    <span className={cn("inline-flex items-center gap-1.5", className)}>
+      <span className="truncate">{children}</span>
+      {pending ? <Loader2 className="size-3 animate-spin text-primary" aria-hidden /> : null}
+    </span>
   );
 }

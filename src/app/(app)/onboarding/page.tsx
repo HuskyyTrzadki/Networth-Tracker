@@ -48,7 +48,7 @@ export default async function OnboardingPage() {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           {firstPortfolioId ? (
             <Button asChild className="h-11 w-full sm:w-auto">
-              <Link href={`/portfolio?portfolio=${firstPortfolioId}`}>
+              <Link href={`/portfolio/${firstPortfolioId}`}>
                 Przejdź do portfela
               </Link>
             </Button>

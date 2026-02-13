@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { createTransaction } from "@/features/transactions/server/create-transaction";
 import { createTransactionRequestSchema } from "@/features/transactions/server/schema";
@@ -41,6 +42,17 @@ export async function POST(request: Request) {
       user.id,
       parsed.data
     );
+
+    // Invalidate read models touched by a new transaction.
+    revalidatePath("/portfolio");
+    revalidatePath(`/portfolio/${parsed.data.portfolioId}`);
+    revalidatePath("/transactions");
+    revalidatePath("/stocks");
+    revalidateTag("portfolio:all", "max");
+    revalidateTag(`portfolio:${parsed.data.portfolioId}`, "max");
+    revalidateTag("transactions:all", "max");
+    revalidateTag(`transactions:portfolio:${parsed.data.portfolioId}`, "max");
+
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

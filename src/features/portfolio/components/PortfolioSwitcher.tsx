@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { useTransition } from "react";
 
 import {
   Select,
@@ -39,19 +41,22 @@ export function PortfolioSwitcher({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const searchParamsString = searchParams?.toString() ?? "";
 
   const handlePortfolioChange = (nextValue: string) => {
     const nextPortfolioId = nextValue === ALL_VALUE ? null : nextValue;
-    router.push(
-      buildPortfolioUrl({
-        pathname,
-        searchParamsString,
-        nextPortfolioId,
-        resetPageParam,
-      }),
-      { scroll: false }
-    );
+    startTransition(() => {
+      router.push(
+        buildPortfolioUrl({
+          pathname,
+          searchParamsString,
+          nextPortfolioId,
+          resetPageParam,
+        }),
+        { scroll: false }
+      );
+    });
   };
 
   const currentValue = selectedId ?? ALL_VALUE;
@@ -64,11 +69,16 @@ export function PortfolioSwitcher({
       )}
     >
       <span className="px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
-        Portfel
+        <span className="inline-flex items-center gap-1.5">
+          Portfel
+          {isPending ? (
+            <Loader2 className="size-3 animate-spin text-muted-foreground" aria-hidden />
+          ) : null}
+        </span>
       </span>
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Select
-          disabled={disabled}
+          disabled={disabled || isPending}
           onValueChange={handlePortfolioChange}
           value={currentValue}
         >

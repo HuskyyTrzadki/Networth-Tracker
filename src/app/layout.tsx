@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 
 import "./globals.css";
 
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: Props) {
             }
           })();`}
         </Script>
-        {children}
+        <Suspense fallback={null}>{children}</Suspense>
       </body>
     </html>
   );

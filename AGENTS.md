@@ -89,6 +89,8 @@ Whenever you ship a new feature or change architecture:
 - Theme switch in app shell (desktop sidebar + mobile "Więcej"), with persisted user preference in `localStorage` (`portfolio-theme`)
 - Landing page (PL) with a single “Try as guest” CTA (anonymous session)
 - Route-grouped layouts: landing outside `AppShell`, app routes under `src/app/(app)`
+- Next.js Cache Components enabled (`cacheComponents: true`) with layout-level Suspense boundaries so dynamic server reads stream instead of blocking full-route prerender
+- Portfolio shell/dashboard reads use private Cache Components caching with `portfolio:all` / `portfolio:<id>` tags, and transaction/portfolio write APIs trigger `revalidatePath` + `revalidateTag` to keep post-write views fresh
 - Portfolio empty state with CTA actions (Dashboard)
 - Transactions: “Add transaction” modal UI (`/transactions/new`) wired to API with live instrument search + portfolio select (forced when URL has `?portfolio=...`)
 - Add transaction modal UX refresh: wider desktop dialog, two-pane form layout (main inputs + side summary/cash), improved loading feedback (historical-price fetch + save spinner)
@@ -102,10 +104,12 @@ Whenever you ship a new feature or change architecture:
 - Shared subtle motion presets (`src/features/design-system/lib/motion.ts`) + `AnimatedReveal` wrapper now power key UI entries with reduced-motion safety
 - Transactions persistence: instruments cache + transactions tables with RLS + API `/api/transactions`
 - Transactions list: table view with search, type filter, and paging in `/transactions`
+- Transactions page server reads (table + portfolio filter options) use private Cache Components caching tagged for deterministic invalidation after transaction/portfolio writes
 - Transactions table groups now visually separate primary asset action from cash settlement detail legs
 - Cash instruments (system provider) + transaction leg grouping (`group_id`, `leg_role`) with cash settlement + FX at write-time
 - Portfolios table + `transactions.portfolio_id` (no auto-created default portfolio during auth)
 - Portfolio selection (switcher) + creation dialog (sidebar + mobile header), with "Wszystkie portfele" view
+- Portfolio routes are canonicalized: aggregate view on `/portfolio`, single-portfolio view on `/portfolio/<id>`, with backward redirects from legacy `?portfolio=...` links
 - Widok pojedynczego portfela (`/portfolio?portfolio=<id>`) ma duży CTA `Dodaj transakcję`, który otwiera modal `/transactions/new?portfolio=<id>` z wymuszonym wyborem tego portfela
 - Profiles table + RLS applied
 - `profiles.last_active_at` updates wired into transactions writes
@@ -129,7 +133,8 @@ Whenever you ship a new feature or change architecture:
 - Stock details `10Y` range auto-falls back to `ALL` when full 10-year coverage is unavailable for a symbol, and then disables `10Y` in timeframe controls
 - Stock chart API (`/api/stocks/[providerKey]/chart`) supports `overlays=pe,epsTtm,revenueTtm` (with backward `includePe=1`), has 1D intraday Yahoo fetch (`includePrePost=true`), and auto-fallback to `1M` when intraday is unavailable
 - Public stock chart API (`/api/public/stocks/[providerKey]/chart`) mirrors chart DTOs without auth and adds range-based edge caching headers (`s-maxage` + `stale-while-revalidate`) for instant repeat loads
-- Stock details first render now also uses server-side `unstable_cache` for public chart summary/header data (1M chart + valuation + instrument meta), so direct `/stocks/[providerKey]` opens avoid repeated backend work
+- Read APIs now expose lightweight diagnostics headers (`X-Data-Source`, `X-Cache-Policy`, `X-Cache-Tags`) on chart/portfolio/rebuild-status endpoints to verify cache behavior in DevTools
+- Stock details first render uses Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) for public chart summary/header data (1M chart + valuation + instrument meta), so direct `/stocks/[providerKey]` opens avoid repeated backend work
 - Stock overlays include coverage metadata (`hasOverlayData`, `overlayCoverage`) and UI warns when selected range exceeds available fundamentals history
 - Stock PE overlay now uses data-driven EPS priority: Yahoo trailing TTM first, quarterly-derived TTM second, annual EPS proxy fallback for older periods (no hardcoded cutoff date)
 - Stocks fundamentals caches: `instrument_valuation_summary_cache` (quoteSummary-derived metrics, TTL 6h) and `instrument_fundamental_time_series_cache` (`eps_ttm`, `revenue_ttm`, TTL 30d, incremental refresh)

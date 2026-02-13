@@ -12,7 +12,7 @@ export function CreateFirstPortfolioAction() {
   return (
     <CreatePortfolioDialog
       onCreated={(createdId) => {
-        router.push(`/portfolio?portfolio=${createdId}`);
+        router.push(`/portfolio/${createdId}`);
         router.refresh();
       }}
       trigger={({ open, disabled }) => (

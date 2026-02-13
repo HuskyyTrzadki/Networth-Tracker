@@ -86,10 +86,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Holdings data from `get_portfolio_holdings` includes `instrument_type` for concentration warnings.
 - Holdings with `instrument_type = CURRENCY` are valued at price 1.0 (no quotes); FX is only needed when base currency differs.
 - PortfolioSwitcher handles selection only; creation happens in the dialog component.
-- Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio` or `?portfolio=all`), and hidden in single-portfolio view (`?portfolio=<id>`).
-- Single-portfolio view (`/portfolio?portfolio=<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
-- Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to `/portfolio?portfolio=<id>`.
-- Strona `/portfolio` normalizuje brak parametru `portfolio` do `?portfolio=all`, żeby domyślny widok zbiorczy był zawsze jawny w URL.
+- Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio`) and hidden in single-portfolio view (`/portfolio/<id>`).
+- Single-portfolio view (`/portfolio/<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
+- Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to canonical `/portfolio/<id>`.
+- Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
 - Tryb wartości dla zakresów >1D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
@@ -106,6 +106,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.
+- Dashboard server payload (`summary`, `snapshots`, `live totals`, `recent transactions`) now uses Cache Components private caching with tags (`portfolio:all`, `portfolio:<id>`), so reads are reused between navigations and writes can invalidate deterministically.
 - Rebuild status hook polls only while `queued/running`, uses server-guided `nextPollAfterMs` (fallback backoff 2s→5s→10s), retries stale `running` states (>90s), and exposes progress fields (`fromDate`, `toDate`, `processedUntil`) for UI progress.
 - Rebuild status hook can be nudged from client events (`portfolio:snapshot-rebuild-triggered`) to re-fetch state immediately even from idle, so loader appears without hard refresh after transaction writes.
 - Rebuild progress percent math is shared (`lib/rebuild-progress.ts`) between API and client hook to avoid drift in UI vs backend progress interpretation.
@@ -117,6 +118,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Rebuild status API also returns backend-computed `progressPercent` derived from (`fromDate`, `toDate`, `processedUntil`) so UI does not own progress math.
 - Rebuild API `POST /api/portfolio-snapshots/rebuild` logs chunk lifecycle (`post-start`, `post-finish`, `post-error`) for operational debugging.
 - Rebuild route (`/api/portfolio-snapshots/rebuild`) keeps handler thin and delegates parse/access/response-shaping helpers to `server/snapshots/rebuild-route-service.ts`.
+- Rebuild POST now revalidates portfolio cache tags/paths (`portfolio:all`, `portfolio:<id>`, `/portfolio`, `/portfolio/<id>`) when chunks process data, so private cached dashboard reads stay fresh after snapshot recompute.
 - Rebuild worker merges concurrent `dirty_from` updates at chunk finalize (prevents losing backdated writes that arrive during an active rebuild run).
 - Rebuild worker is adaptive per request: one POST can process multiple internal chunks under a server time budget (`timeBudgetMs`) with per-chunk day cap (`maxDaysPerRun`), reducing end-to-end rebuild latency.
 - Internal chunks in one run now share a single preloaded rebuild session (transactions + daily prices + daily FX loaded once, then reused in-memory across chunks), eliminating repeated DB/provider reads per chunk.

@@ -15,3 +15,18 @@ export function isHrefActive(currentPathname: string, href: string) {
   if (target === "/") return current === "/";
   return current === target || current.startsWith(`${target}/`);
 }
+
+export function getPortfolioIdFromPathname(pathname: string): string | null {
+  const normalizedPath = normalizeAppPath(pathname);
+
+  if (!normalizedPath.startsWith("/portfolio")) {
+    return null;
+  }
+
+  const segments = normalizedPath.split("/").filter((segment) => segment.length > 0);
+  if (segments.length !== 2 || segments[0] !== "portfolio") {
+    return null;
+  }
+
+  return segments[1] ?? null;
+}

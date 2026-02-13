@@ -1,18 +1,20 @@
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { getStockChartResponse } from "@/features/stocks";
 import { StockChartCard } from "@/features/stocks/components/StockChartCard";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 
-const getInitialStockChartCached = unstable_cache(
-  async (providerKey: string) => {
-    // Server-side first paint: cache the default 1M chart payload across requests.
-    const supabase = createPublicStocksSupabaseClient();
-    return getStockChartResponse(supabase, providerKey, "1M", []);
-  },
-  ["stocks-initial-chart-1m"],
-  { revalidate: 300 }
-);
+const getInitialStockChartCached = async (providerKey: string) => {
+  "use cache";
+
+  // First-paint stock chart can be stale briefly; client fetch still refreshes ranges on demand.
+  cacheLife("minutes");
+  cacheTag(`stock:${providerKey}`);
+  cacheTag(`stock:${providerKey}:chart:1m`);
+
+  const supabase = createPublicStocksSupabaseClient();
+  return getStockChartResponse(supabase, providerKey, "1M", []);
+};
 
 export default async function StockChartSection({
   providerKey,

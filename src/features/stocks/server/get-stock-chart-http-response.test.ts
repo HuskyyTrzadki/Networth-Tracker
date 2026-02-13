@@ -63,6 +63,8 @@ describe("getStockChartHttpResponse", () => {
       "public, s-maxage=30, stale-while-revalidate=120"
     );
     expect(response.headers.get("X-Cache-Policy")).toBe("public-edge");
+    expect(response.headers.get("X-Data-Source")).toBe("market-cache-first");
+    expect(response.headers.get("X-Cache-Tags")).toBe("stock:GOOG,stock:GOOG:chart");
   });
 
   it("returns private no-store headers for private response mode", async () => {
@@ -106,5 +108,7 @@ describe("getStockChartHttpResponse", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe("private, no-store");
     expect(response.headers.get("X-Cache-Policy")).toBe("private-no-store");
+    expect(response.headers.get("X-Data-Source")).toBe("market-cache-first");
+    expect(response.headers.get("X-Cache-Tags")).toBe("stock:GOOG,stock:GOOG:chart");
   });
 });

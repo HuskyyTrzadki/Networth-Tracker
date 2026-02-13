@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { AnimatedReveal } from "@/features/design-system";
@@ -25,11 +26,9 @@ export const metadata = {
 export default async function TransactionsPage({ searchParams }: Props) {
   const params = await searchParams;
   const filters = parseTransactionsFilters(params);
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data } = await supabase.auth.getUser();
+  const pageData = await getTransactionsPageDataCached(filters);
 
-  if (!data.user) {
+  if (!pageData.isAuthenticated) {
     return (
       <main className="px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
@@ -40,10 +39,6 @@ export default async function TransactionsPage({ searchParams }: Props) {
     );
   }
 
-  const [transactionsPage, portfolios] = await Promise.all([
-    listTransactions(supabase, filters),
-    listPortfolios(supabase),
-  ]);
   const transactionCreateHref = filters.portfolioId
     ? `/transactions/new?portfolio=${filters.portfolioId}`
     : "/transactions/new";
@@ -71,7 +66,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
           key={`${filters.query ?? ""}:${filters.type ?? "all"}:${
             filters.sort
           }:${filters.portfolioId ?? "all"}`}
-          portfolios={portfolios}
+          portfolios={pageData.portfolios}
           query={filters.query}
           selectedPortfolioId={filters.portfolioId}
           sort={filters.sort}
@@ -80,8 +75,8 @@ export default async function TransactionsPage({ searchParams }: Props) {
       </AnimatedReveal>
 
       <AnimatedReveal className="mt-4" delay={0.08}>
-        {transactionsPage.items.length > 0 ? (
-          <TransactionsTable items={transactionsPage.items} />
+        {pageData.transactionsPage.items.length > 0 ? (
+          <TransactionsTable items={pageData.transactionsPage.items} />
         ) : (
           <TransactionsEmptyState query={filters.query} />
         )}
@@ -90,9 +85,58 @@ export default async function TransactionsPage({ searchParams }: Props) {
       <AnimatedReveal delay={0.1}>
         <TransactionsPagination
           filters={filters}
-          hasNextPage={transactionsPage.hasNextPage}
+          hasNextPage={pageData.transactionsPage.hasNextPage}
         />
       </AnimatedReveal>
     </main>
   );
 }
+
+type TransactionsPageData = Readonly<{
+  isAuthenticated: boolean;
+  portfolios: Awaited<ReturnType<typeof listPortfolios>>;
+  transactionsPage: Awaited<ReturnType<typeof listTransactions>>;
+}>;
+
+const getTransactionsPageDataCached = async (
+  filters: ReturnType<typeof parseTransactionsFilters>
+): Promise<TransactionsPageData> => {
+  "use cache: private";
+
+  // Transactions list is frequently revisited with nearby filters.
+  cacheLife("minutes");
+  cacheTag("transactions:all");
+  cacheTag("portfolio:all");
+  if (filters.portfolioId) {
+    cacheTag(`transactions:portfolio:${filters.portfolioId}`);
+    cacheTag(`portfolio:${filters.portfolioId}`);
+  }
+
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    return {
+      isAuthenticated: false,
+      portfolios: [],
+      transactionsPage: {
+        items: [],
+        page: filters.page,
+        pageSize: filters.pageSize,
+        hasNextPage: false,
+      },
+    };
+  }
+
+  const [transactionsPage, portfolios] = await Promise.all([
+    listTransactions(supabase, filters),
+    listPortfolios(supabase),
+  ]);
+
+  return {
+    isAuthenticated: true,
+    portfolios,
+    transactionsPage,
+  };
+};

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { createPortfolioStrict } from "@/features/portfolio/server/create-portfolio";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
@@ -18,7 +19,18 @@ export async function GET() {
 
   try {
     const portfolios = await listPortfolios(supabase);
-    return NextResponse.json({ portfolios }, { status: 200 });
+    return NextResponse.json(
+      { portfolios },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, no-store",
+          "X-Data-Source": "supabase-rls",
+          "X-Cache-Policy": "private-runtime",
+          "X-Cache-Tags": "portfolio:all",
+        },
+      }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ message }, { status: 400 });
@@ -56,6 +68,14 @@ export async function POST(request: Request) {
       data.user.id,
       parsed.data
     );
+
+    // Refresh portfolio navigation and aggregate views after creation.
+    revalidatePath("/portfolio");
+    revalidatePath("/transactions");
+    revalidateTag("portfolio:all", "max");
+    revalidateTag(`portfolio:${result.id}`, "max");
+    revalidateTag("transactions:all", "max");
+
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

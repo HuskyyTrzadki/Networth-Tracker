@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import {
   getSnapshotRebuildState,
@@ -66,10 +67,24 @@ export async function GET(request: Request) {
   );
 
   const responsePayload = buildRebuildResponsePayload(state);
+  const cacheTags =
+    scope === "PORTFOLIO" && access.portfolioId
+      ? `portfolio:${access.portfolioId},portfolio:all`
+      : "portfolio:all";
+  const pollingHeaders = withRebuildPollingHeaders(responsePayload);
 
   return NextResponse.json(
     responsePayload,
-    { status: 200, headers: withRebuildPollingHeaders(responsePayload) }
+    {
+      status: 200,
+      headers: {
+        ...pollingHeaders,
+        "Cache-Control": "private, no-store",
+        "X-Data-Source": "snapshot-rebuild-state",
+        "X-Cache-Policy": "private-runtime",
+        "X-Cache-Tags": cacheTags,
+      },
+    }
   );
 }
 
@@ -125,6 +140,17 @@ export async function POST(request: Request) {
       maxDaysPerRun: parseMaxDays(payload?.maxDaysPerRun),
       timeBudgetMs: parseTimeBudgetMs(payload?.timeBudgetMs),
     });
+
+    if (result.processedDays > 0) {
+      // Rebuild changed snapshot-backed read models; invalidate tagged/private cached views.
+      revalidateTag("portfolio:all", "max");
+      revalidatePath("/portfolio");
+
+      if (access.portfolioId) {
+        revalidateTag(`portfolio:${access.portfolioId}`, "max");
+        revalidatePath(`/portfolio/${access.portfolioId}`);
+      }
+    }
 
     logRebuildEvent("post-finish", {
       userId: data.user.id,

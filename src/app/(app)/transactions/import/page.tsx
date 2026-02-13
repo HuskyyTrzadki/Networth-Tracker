@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 import { ImportCsvDialogStandaloneRoute } from "@/features/transactions";
 export const metadata = {
@@ -6,6 +7,8 @@ export const metadata = {
 };
 
 export default async function TransactionsImportPage() {
+  await connection();
+
   return (
     <Suspense fallback={null}>
       <ImportCsvDialogStandaloneRoute />

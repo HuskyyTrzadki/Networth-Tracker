@@ -24,7 +24,7 @@ export type AppNavItem = Readonly<{
 export const primaryNavItems: readonly AppNavItem[] = [
   {
     id: "overview",
-    href: "/portfolio?portfolio=all",
+    href: "/portfolio",
     icon: House,
     label: "Przegląd",
   },

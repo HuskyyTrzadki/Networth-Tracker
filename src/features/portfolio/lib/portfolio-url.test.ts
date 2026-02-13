@@ -11,7 +11,7 @@ describe("buildPortfolioUrl", () => {
       resetPageParam: false,
     });
 
-    expect(result).toBe("/portfolio?q=abc&portfolio=portfolio-1");
+    expect(result).toBe("/portfolio/portfolio-1?q=abc");
   });
 
   it("removes portfolio param when null", () => {
@@ -23,6 +23,17 @@ describe("buildPortfolioUrl", () => {
     });
 
     expect(result).toBe("/portfolio");
+  });
+
+  it("keeps canonical detail route when already scoped", () => {
+    const result = buildPortfolioUrl({
+      pathname: "/portfolio/old-id",
+      searchParamsString: "q=abc",
+      nextPortfolioId: "new-id",
+      resetPageParam: false,
+    });
+
+    expect(result).toBe("/portfolio/new-id?q=abc");
   });
 
   it("resets page when requested", () => {

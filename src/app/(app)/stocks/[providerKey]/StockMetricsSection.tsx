@@ -1,18 +1,20 @@
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { getStockValuationSummaryCached } from "@/features/stocks";
 import { StockMetricsGrid } from "@/features/stocks/components/StockMetricsGrid";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 
-const getStockSummaryCached = unstable_cache(
-  async (providerKey: string) => {
-    // Server-side first paint: cache valuation summary snapshot for stock details.
-    const supabase = createPublicStocksSupabaseClient();
-    return getStockValuationSummaryCached(supabase, providerKey);
-  },
-  ["stocks-valuation-summary"],
-  { revalidate: 3600 }
-);
+const getStockSummaryCached = async (providerKey: string) => {
+  "use cache";
+
+  // Valuation summary changes slower than prices; hourly cache keeps first render snappy.
+  cacheLife("hours");
+  cacheTag(`stock:${providerKey}`);
+  cacheTag(`stock:${providerKey}:summary`);
+
+  const supabase = createPublicStocksSupabaseClient();
+  return getStockValuationSummaryCached(supabase, providerKey);
+};
 
 export default async function StockMetricsSection({
   providerKey,
