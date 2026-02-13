@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ArrowLeft } from "lucide-react";
@@ -22,6 +23,15 @@ type InstrumentRow = Readonly<{
   logo_url: string | null;
   currency: string;
 }>;
+
+const decodeProviderKey = (rawProviderKey: string): string | null => {
+  try {
+    const decoded = decodeURIComponent(rawProviderKey).trim();
+    return decoded.length > 0 ? decoded : null;
+  } catch {
+    return null;
+  }
+};
 
 const getPublicInstrumentCached = async (
   providerKey: string
@@ -51,7 +61,11 @@ export default async function StockDetailsPage({
   params: Params;
 }>) {
   const resolvedParams = await params;
-  const providerKey = decodeURIComponent(resolvedParams.providerKey).trim();
+  const providerKey = decodeProviderKey(resolvedParams.providerKey);
+  if (!providerKey) {
+    notFound();
+  }
+
   const stock = await getPublicInstrumentCached(providerKey);
   const symbol = stock?.symbol ?? providerKey;
   const name = stock?.name ?? "Spółka";

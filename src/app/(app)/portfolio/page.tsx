@@ -8,6 +8,21 @@ type Props = Readonly<{
 const getFirstParam = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
+const buildQueryWithoutPortfolio = (
+  params: Record<string, string | string[] | undefined>
+) => {
+  const nextParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (key === "portfolio") return;
+    const first = getFirstParam(value);
+    if (first && first.trim().length > 0) {
+      nextParams.set(key, first);
+    }
+  });
+
+  return nextParams.toString();
+};
+
 export const metadata = {
   title: "Portfele",
 };
@@ -15,31 +30,13 @@ export const metadata = {
 export default async function PortfolioPage({ searchParams }: Props) {
   const params = await searchParams;
   const requestedPortfolio = getFirstParam(params.portfolio)?.trim() ?? null;
+  const nextQuery = buildQueryWithoutPortfolio(params);
 
   if (requestedPortfolio === "all") {
-    const nextParams = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (key === "portfolio") return;
-      const first = getFirstParam(value);
-      if (first && first.trim().length > 0) {
-        nextParams.set(key, first);
-      }
-    });
-
-    const nextQuery = nextParams.toString();
     redirect(nextQuery.length > 0 ? `/portfolio?${nextQuery}` : "/portfolio");
   }
 
   if (requestedPortfolio && requestedPortfolio !== "all") {
-    const nextParams = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (key === "portfolio") return;
-      const first = getFirstParam(value);
-      if (first && first.trim().length > 0) {
-        nextParams.set(key, first);
-      }
-    });
-    const nextQuery = nextParams.toString();
     redirect(
       nextQuery.length > 0
         ? `/portfolio/${requestedPortfolio}?${nextQuery}`

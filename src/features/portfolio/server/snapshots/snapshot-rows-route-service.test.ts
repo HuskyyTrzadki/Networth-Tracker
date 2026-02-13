@@ -18,7 +18,7 @@ describe("parseSnapshotRowsQuery", () => {
   it("accepts PORTFOLIO scope with portfolio id", () => {
     const query = new URLSearchParams({
       scope: "PORTFOLIO",
-      portfolioId: "abc-123",
+      portfolioId: "2b43c0d9-4689-439e-9ca8-8f3d044a22d4",
     });
 
     const result = parseSnapshotRowsQuery(query);
@@ -26,7 +26,7 @@ describe("parseSnapshotRowsQuery", () => {
     expect(result).toEqual({
       ok: true,
       scope: "PORTFOLIO",
-      portfolioId: "abc-123",
+      portfolioId: "2b43c0d9-4689-439e-9ca8-8f3d044a22d4",
     });
   });
 
@@ -50,6 +50,21 @@ describe("parseSnapshotRowsQuery", () => {
     expect(result).toEqual({
       ok: false,
       message: "Invalid scope. Expected ALL or PORTFOLIO.",
+      status: 400,
+    });
+  });
+
+  it("rejects invalid portfolio id format", () => {
+    const query = new URLSearchParams({
+      scope: "PORTFOLIO",
+      portfolioId: "abc-123",
+    });
+
+    const result = parseSnapshotRowsQuery(query);
+
+    expect(result).toEqual({
+      ok: false,
+      message: "Invalid portfolioId format. Expected UUID.",
       status: 400,
     });
   });

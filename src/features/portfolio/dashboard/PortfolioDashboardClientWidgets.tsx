@@ -41,7 +41,7 @@ export function PortfolioDashboardClientWidgets({
   return (
     <>
       <PortfolioValueOverTimeWidget
-        key={`${scope}:${selectedPortfolioId ?? "all"}:${summary.totalValueBase ?? "null"}`}
+        key={`${scope}:${selectedPortfolioId ?? "all"}`}
         scope={scope}
         selectedPortfolioId={selectedPortfolioId}
         hasHoldings={summary.holdings.length > 0}

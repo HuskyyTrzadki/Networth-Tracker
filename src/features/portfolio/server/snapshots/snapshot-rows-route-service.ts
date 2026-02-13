@@ -3,6 +3,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SnapshotScope } from "./types";
 import { getPortfolioSnapshotRows } from "./get-portfolio-snapshot-rows";
 
+const UUID_FORMAT =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 type ParsedSnapshotRowsQuery =
   | Readonly<{
       ok: true;
@@ -41,6 +44,13 @@ export const parseSnapshotRowsQuery = (
     return {
       ok: false,
       message: "Missing portfolioId for PORTFOLIO scope.",
+      status: 400,
+    };
+  }
+  if (!UUID_FORMAT.test(portfolioId)) {
+    return {
+      ok: false,
+      message: "Invalid portfolioId format. Expected UUID.",
       status: 400,
     };
   }

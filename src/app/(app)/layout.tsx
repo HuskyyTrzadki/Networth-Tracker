@@ -12,7 +12,7 @@ type Props = Readonly<{
 export default async function AppLayout({ children, modal }: Props) {
   return (
     <>
-      <Suspense fallback={<AppShell portfolios={[]}>{children}</AppShell>}>
+      <Suspense fallback={<AppShellFallback />}>
         <AuthenticatedAppShell>{children}</AuthenticatedAppShell>
       </Suspense>
       {modal}
@@ -29,6 +29,17 @@ async function AuthenticatedAppShell({ children }: AuthenticatedAppShellProps) {
   const portfolios = await getSidebarPortfoliosCached();
 
   return <AppShell portfolios={portfolios}>{children}</AppShell>;
+}
+
+function AppShellFallback() {
+  return (
+    <AppShell portfolios={[]}>
+      <main className="min-h-[calc(100vh-120px)] px-6 py-8">
+        <div className="h-6 w-44 animate-pulse rounded-md bg-muted/50" />
+        <div className="mt-3 h-4 w-64 animate-pulse rounded-md bg-muted/40" />
+      </main>
+    </AppShell>
+  );
 }
 
 const getSidebarPortfoliosCached = async () => {
