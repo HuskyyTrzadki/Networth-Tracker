@@ -33,6 +33,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Design system now exposes shared motion presets in `lib/motion.ts` and reusable client reveal wrapper `components/AnimatedReveal.tsx` (subtle 150-220ms easing, reduced-motion safe).
 - Global tokens were tuned toward a cooler finance palette (blue/slate) with stronger dark-mode legibility and clearer semantic contrast for primary/action states.
 - Global tokens and controls were refreshed to a warmer neutral palette with muted teal accent, border-led depth, and consistent rounded-`lg` control chrome.
+- Global tokens now follow an editorial paper/ink system (warm paper background, ink-first typography, dashed-border module grammar) in both light and dark (`night paper`) themes.
+- Shared primitives (`button`, `input`, `table`, `badge`, `card`, `sheet`) were flattened to border-led chrome with minimal radius and no decorative shadows.
 - `ChartCard` uses symmetrical `p-4` spacing and a single internal rhythm (`header` + `content`) so widget chrome remains consistent across portfolio sections.
 - `ChartCard` now supports `surface` variants (`default`/`subtle`) for consistent visual hierarchy between primary and secondary dashboard cards.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.

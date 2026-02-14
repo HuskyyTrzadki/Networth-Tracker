@@ -15,11 +15,13 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | Route | Contract | Why |
 |---|---|---|
 | `/` | `dynamic-private` | Reads auth cookie and redirects signed-in user. |
+| `/login` | `dynamic-private` | Login page redirects authenticated users to app dashboard. |
+| `/pricing` | `static` | Public marketing/pricing content, no user data. |
 | `/(app)/search` | `static` redirect | Permanent app redirect to `/stocks`; no user data read. |
 | `/(app)/settings` | `dynamic-private` (UI-level) | Settings UI is user-facing; route may vary by auth status via client/server boundaries. |
 | `/(app)/onboarding` | `dynamic-private` | Reads authenticated user + user portfolios. |
 | `/(app)/stocks` | `dynamic-private` | Auth-gated screener shell + user-scoped state. |
-| `/(app)/stocks/[providerKey]` | `dynamic + cached parts` | Server page composes cached public instrument/summary/chart sections. |
+| `/stocks/[providerKey]` | `dynamic + cached parts` | Public report page composes cached instrument/summary/chart server sections. |
 | `/(app)/transactions` | `dynamic-private-cached` | Uses private cache (`"use cache: private"`) for list/filter reads. |
 | `/(app)/transactions/new` | `dynamic-private` | Reads portfolios/balances for authenticated user. |
 | `/(app)/transactions/import` | `dynamic-private` | Uses server connection/auth flow; not shareable. |
@@ -34,6 +36,7 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 |---|---|---|
 | `/api/public/stocks/[providerKey]/chart` | `public-edge-cached-api` | Public market data, shared by URL, explicit edge cache headers. |
 | `/api/stocks/[providerKey]/chart` | `private-no-store-api` | Authenticated version of stock chart endpoint. |
+| `/api/stocks/[providerKey]/trade-markers` | `private-no-store-api` | User-scoped buy/sell markers for stock report chart overlays. |
 | `/api/portfolio-snapshots/rebuild` | `private-no-store-api` | User-scoped rebuild state/work + revalidation side effects. |
 | `/api/portfolio-snapshots/rows` | `private-no-store-api` | Lazy full-history snapshot rows for authenticated user. |
 | `/api/portfolio-snapshots/bootstrap` | `private-no-store-api` | User-scoped bootstrap trigger. |

@@ -121,3 +121,13 @@ export type StockChartResponse = Readonly<{
   overlayCoverage: StockOverlayCoverageMap;
   points: readonly StockChartPoint[];
 }>;
+
+export type StockTradeMarker = Readonly<{
+  id: string;
+  tradeDate: string;
+  side: "BUY" | "SELL";
+  price: number;
+  quantity: number;
+  portfolioId: string;
+  portfolioName: string;
+}>;

@@ -10,10 +10,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Main entrypoints
 - App pages:
   - `src/app/(app)/stocks/page.tsx`
-  - `src/app/(app)/stocks/[providerKey]/page.tsx`
+  - `src/app/(report)/stocks/[providerKey]/page.tsx`
 - App API:
   - `src/app/api/public/stocks/[providerKey]/chart/route.ts`
   - `src/app/api/stocks/[providerKey]/chart/route.ts`
+  - `src/app/api/stocks/[providerKey]/trade-markers/route.ts`
 - Server services:
   - `src/features/stocks/server/create-public-stocks-supabase-client.ts`
   - `src/features/stocks/server/get-stock-chart-http-response.ts`
@@ -26,6 +27,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/features/stocks/server/get-fundamental-time-series-cached.ts`
   - `src/features/stocks/server/fundamental-time-series.ts`
   - `src/features/stocks/server/parse-stock-chart-query.ts`
+  - `src/features/stocks/server/list-stock-trade-markers.ts`
 - UI:
   - `src/features/stocks/components/StockSearchBar.tsx`
   - `src/features/stocks/components/StockScreenerGrid.tsx`
@@ -37,7 +39,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Route handlers stay thin and delegate to `src/features/stocks/server/*`.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
 - Private chart API (`/api/stocks/[providerKey]/chart`) keeps auth guard and delegates to the same response helper.
+- Private trade markers API (`/api/stocks/[providerKey]/trade-markers`) returns authenticated user BUY/SELL points for stock report overlays.
 - Stock details initial server sections (`StockChartSection`, `StockMetricsSection`, instrument header in page) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads, so first render reuses Next Data Cache with `cacheComponents` enabled.
+- Stock details route uses report shell layout (top bar + drawer) while keeping the same public URL `/stocks/[providerKey]`.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Screener cards include only `EQUITY` holdings and dedupe by `providerKey`.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
@@ -53,6 +57,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Chart supports two display modes: `Trend (100)` (rebased overlays for multi-series shape comparison) and `Raw` (real values, single overlay at a time to avoid mixed-unit clutter).
 - Chart renders a legend (price + active overlays, color-coded) with mode-aware labels.
 - Price Y-axis is range-aware: `1D/1M/3M/6M/1Y` use padded non-zero min/max to preserve short-term shape, while `3Y/5Y/10Y/ALL` keep zero baseline for long-horizon context.
+- `StockChartCard` overlays optional buy/sell trade markers from authenticated user transactions (mapped by `trade_date` to available chart points); signed-out users get no markers.
 
 ## Tests
 - `src/features/stocks/server/build-stock-overlay-series.test.ts`

@@ -92,6 +92,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions page sections now use subtle reveal animations (`AnimatedReveal`) for smoother perceived navigation/loading.
 - Transactions toolbar, table chrome, and add-transaction dialog were visually refreshed (warmer surfaces, clearer micro-typography, calmer badges, consistent button/control sizing) without changing transaction behavior.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
+- Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

@@ -12,5 +12,6 @@ export type {
   StockChartResponse,
   StockOverlayCoverage,
   StockScreenerCard,
+  StockTradeMarker,
   StockValuationSummary,
 } from "./server/types";

@@ -1,56 +1,84 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
-import { ChartCard } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import { Checkbox } from "@/features/design-system/components/ui/checkbox";
 import { cn } from "@/lib/cn";
 import { LoaderCircle } from "lucide-react";
 
 import { getStockChart } from "../client/get-stock-chart";
+import { getStockTradeMarkers } from "../client/get-stock-trade-markers";
 import {
   OVERLAY_CONTROL_LABELS,
   OVERLAY_KEYS,
-  OVERLAY_LINE_COLORS,
   buildOverlayAxisMeta,
   buildLegendItems,
   buildPriceAxisDomain,
   buildChartData,
   buildCoverageWarnings,
-  formatEps,
-  formatLabelDate,
-  formatPe,
-  formatPrice,
-  formatRevenue,
-  formatXAxisTick,
   getNextOverlaySelection,
   normalizeOverlaysForMode,
-  toOverlayLineDataKey,
   toOverlayRequestKey,
   type StockChartMode,
 } from "./stock-chart-card-helpers";
+import { StockChartPlot } from "./StockChartPlot";
 import {
   STOCK_CHART_RANGES,
   type StockChartOverlay,
   type StockChartRange,
   type StockChartResponse,
+  type StockTradeMarker,
 } from "../server/types";
 
 type Props = Readonly<{
   providerKey: string;
   initialChart: StockChartResponse;
 }>;
+
+type VisibleMarker = Readonly<{
+  key: string;
+  t: string;
+  side: StockTradeMarker["side"];
+  portfolioName: string;
+  price: number;
+}>;
+
+const toDateKey = (value: string) => value.slice(0, 10);
+
+const resolveVisibleTradeMarkers = (
+  markers: readonly StockTradeMarker[],
+  chartPoints: StockChartResponse["points"]
+): readonly VisibleMarker[] => {
+  if (markers.length === 0 || chartPoints.length === 0) {
+    return [];
+  }
+
+  const chartTimeByDate = new Map<string, string>();
+  for (const point of chartPoints) {
+    const time = point.t;
+    const key = toDateKey(time);
+    chartTimeByDate.set(key, time);
+  }
+
+  return markers
+    .map((marker) => {
+      const t = chartTimeByDate.get(marker.tradeDate);
+      if (!t) {
+        return null;
+      }
+
+      return {
+        key: marker.id,
+        t,
+        side: marker.side,
+        portfolioName: marker.portfolioName,
+        price: marker.price,
+      } satisfies VisibleMarker;
+    })
+    .filter((marker): marker is VisibleMarker => marker !== null);
+};
 
 export function StockChartCard({ providerKey, initialChart }: Props) {
   const [range, setRange] = useState<StockChartRange>(initialChart.requestedRange);
@@ -73,6 +101,12 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
     load: (signal) => getStockChart(providerKey, range, normalizedOverlays, signal),
     getErrorMessage: (error) =>
       error instanceof Error ? error.message : "Nie udało się pobrać wykresu.",
+    keepPreviousData: true,
+  });
+  const tradeMarkersResource = useKeyedAsyncResource<readonly StockTradeMarker[]>({
+    requestKey: providerKey,
+    load: (signal) => getStockTradeMarkers(providerKey, signal),
+    getErrorMessage: () => "",
     keepPreviousData: true,
   });
 
@@ -123,13 +157,25 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
         )
       : { label: null, primaryOverlay: null, domain: undefined };
   const showOverlayAxis = mode === "trend" && hasVisibleOverlayLines;
+  const priceAxisDomainForChart = priceAxisDomain
+    ? ([priceAxisDomain[0], priceAxisDomain[1]] as [number, number])
+    : undefined;
+  const overlayAxisDomainForChart = overlayAxisMeta.domain
+    ? ([overlayAxisMeta.domain[0], overlayAxisMeta.domain[1]] as [number, number])
+    : undefined;
+  const visibleTradeMarkers = chart
+    ? resolveVisibleTradeMarkers(tradeMarkersResource.data ?? [], chart.points)
+    : [];
 
   return (
-    <ChartCard
-      title="Wykres ceny"
-      surface="subtle"
-      className="rounded-2xl"
-    >
+    <section className="news-divider-strong-y space-y-4 py-4">
+      <header className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-2xl font-semibold tracking-tight">Wykres ceny</h2>
+        <p className="text-xs text-muted-foreground">
+          Wykres + overlaye fundamentalne
+        </p>
+      </header>
+
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           {STOCK_CHART_RANGES.map((rangeOption) => (
@@ -242,159 +288,18 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
           </div>
         ) : null}
 
-        <div className="relative h-[340px] w-full min-w-0">
-          {chart ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 18, left: 6, bottom: 8 }}>
-                <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} vertical={false} />
-                <XAxis
-                  dataKey="t"
-                  tickFormatter={(value) =>
-                    formatXAxisTick(String(value), chart.resolvedRange)
-                  }
-                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                  axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-                  tickLine={false}
-                  minTickGap={26}
-                />
-                <YAxis
-                  yAxisId="price"
-                  domain={priceAxisDomain}
-                  tickFormatter={(value) =>
-                    typeof value === "number"
-                      ? new Intl.NumberFormat("pl-PL", {
-                          maximumFractionDigits: 2,
-                        }).format(value)
-                      : ""
-                  }
-                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                  axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-                  tickLine={false}
-                  width={72}
-                />
-                {showOverlayAxis ? (
-                  <YAxis
-                    yAxisId="overlay"
-                    orientation="right"
-                    domain={overlayAxisMeta.domain}
-                    label={
-                      overlayAxisMeta.label
-                        ? {
-                            value: overlayAxisMeta.label,
-                            angle: -90,
-                            position: "insideRight",
-                            style: {
-                              fill: "var(--muted-foreground)",
-                              fontSize: 11,
-                            },
-                          }
-                        : undefined
-                    }
-                    tickFormatter={(value) =>
-                      typeof value === "number"
-                        ? new Intl.NumberFormat("pl-PL", {
-                            maximumFractionDigits: 0,
-                          }).format(value)
-                        : ""
-                    }
-                    tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                    axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-                    tickLine={false}
-                    width={58}
-                  />
-                ) : null}
-                <Tooltip
-                  cursor={{ stroke: "var(--ring)", strokeOpacity: 0.4 }}
-                  labelFormatter={(value) => formatLabelDate(String(value))}
-                  formatter={(value, name, payload) => {
-                    if (name === "price") {
-                      return [formatPrice(value as number | null, chart.currency), "Cena"];
-                    }
-
-                    if (name === "peIndex" || name === "peRaw") {
-                      if ((payload?.payload?.peLabel as string | null) === "N/M") {
-                        return ["N/M", "PE"];
-                      }
-                      if ((payload?.payload?.peLabel as string | null) === "-") {
-                        return ["-", "PE"];
-                      }
-                      return [formatPe(payload?.payload?.peRaw as number | null), "PE"];
-                    }
-
-                    if (name === "epsTtmIndex" || name === "epsTtmRaw") {
-                      return [
-                        formatEps(payload?.payload?.epsTtmRaw as number | null),
-                        "EPS TTM",
-                      ];
-                    }
-
-                    return [
-                      formatRevenue(
-                        payload?.payload?.revenueTtmRaw as number | null,
-                        chart.currency
-                      ),
-                      "Revenue TTM",
-                    ];
-                  }}
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius)",
-                    color: "var(--popover-foreground)",
-                  }}
-                />
-                <Line
-                  yAxisId="price"
-                  dataKey="price"
-                  stroke="var(--chart-1)"
-                  strokeWidth={2.4}
-                  dot={false}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                  name="price"
-                />
-                {normalizedOverlays.map((overlay) => {
-                  const lineDataKey = toOverlayLineDataKey(overlay, mode);
-                  const hasData = chart.hasOverlayData[overlay];
-                  if (!hasData) return null;
-
-                  return (
-                    <Line
-                      key={overlay}
-                      yAxisId={mode === "trend" ? "overlay" : "price"}
-                      dataKey={lineDataKey}
-                      type={overlay === "epsTtm" ? "stepAfter" : "linear"}
-                      stroke={OVERLAY_LINE_COLORS[overlay]}
-                      strokeWidth={2}
-                      dot={false}
-                      connectNulls={false}
-                      isAnimationActive={false}
-                      name={lineDataKey}
-                    />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          ) : null}
-
-          {chart === null ? (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg border border-border/60 bg-card/60">
-              <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-card px-3 py-1.5 text-xs text-muted-foreground">
-                <LoaderCircle className="size-3.5 animate-spin" />
-                Odświeżam wykres
-              </div>
-            </div>
-          ) : null}
-
-          {chart !== null && isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/45 backdrop-blur-[1px]">
-              <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-card px-3 py-1.5 text-xs text-muted-foreground">
-                <LoaderCircle className="size-3.5 animate-spin" />
-                Odświeżam wykres
-              </div>
-            </div>
-          ) : null}
-        </div>
+        <StockChartPlot
+          chart={chart}
+          chartData={chartData}
+          normalizedOverlays={normalizedOverlays}
+          mode={mode}
+          showOverlayAxis={showOverlayAxis}
+          priceAxisDomainForChart={priceAxisDomainForChart}
+          overlayAxisDomainForChart={overlayAxisDomainForChart}
+          overlayAxisLabel={overlayAxisMeta.label}
+          visibleTradeMarkers={visibleTradeMarkers}
+          isLoading={isLoading}
+        />
 
         {chart !== null &&
         normalizedOverlays.some((overlay) => !chart.hasOverlayData[overlay]) ? (
@@ -402,7 +307,13 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
             Część overlayów jest niedostępna dla tej spółki lub zakresu danych.
           </p>
         ) : null}
+        {tradeMarkersResource.data && tradeMarkersResource.data.length > 0 ? (
+          <p className="text-xs text-muted-foreground">
+            Znaczniki BUY/SELL pochodza z Twoich transakcji i sa nanoszone na
+            dostepne punkty czasowe wykresu.
+          </p>
+        ) : null}
       </div>
-    </ChartCard>
+    </section>
   );
 }

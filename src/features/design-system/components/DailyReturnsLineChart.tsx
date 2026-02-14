@@ -115,6 +115,10 @@ export function DailyReturnsLineChart({
   const timeAxisConfig = createSharedTimeAxisConfig(
     chartData.map((entry) => entry.label)
   );
+  const xTicks = timeAxisConfig.ticks ? [...timeAxisConfig.ticks] : undefined;
+  const yAxisDomain = yDomain
+    ? ([yDomain[0], yDomain[1]] as [number, number])
+    : (["auto", "auto"] as [string, string]);
   const legendItems = [
     ...activeComparisonLines.map((line) => ({
       id: line.id,
@@ -153,7 +157,7 @@ export function DailyReturnsLineChart({
             <XAxis
               dataKey="label"
               tickFormatter={(value) => timeAxisConfig.tickFormatter(String(value))}
-              ticks={timeAxisConfig.ticks}
+              ticks={xTicks}
               tick={SHARED_CHART_AXIS_TICK}
               interval={timeAxisConfig.interval}
               minTickGap={timeAxisConfig.minTickGap}
@@ -161,7 +165,7 @@ export function DailyReturnsLineChart({
               tickLine={SHARED_CHART_TICK_LINE}
             />
             <YAxis
-              domain={yDomain ?? ["auto", "auto"]}
+              domain={yAxisDomain}
               ticks={yTicks}
               tickFormatter={formatAxisPercent}
               tick={SHARED_CHART_AXIS_TICK}

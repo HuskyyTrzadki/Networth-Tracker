@@ -20,11 +20,11 @@ export function ChartCard({
   return (
     <section
       className={cn(
-        "rounded-xl border transition-shadow duration-200",
+        "rounded-md border border-dashed transition-colors duration-150",
         surface === "default"
-          ? "border-border/85 bg-card shadow-[var(--shadow)]"
-          : "border-border/75 bg-card/85 shadow-none",
-        "hover:shadow-md/20",
+          ? "border-border/90 bg-card"
+          : "border-border/70 bg-card/80",
+        "hover:border-border",
         className
       )}
     >

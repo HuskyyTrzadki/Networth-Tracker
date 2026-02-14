@@ -7,7 +7,6 @@ import { createPublicStocksSupabaseClient } from "@/features/stocks/server/creat
 const getInitialStockChartCached = async (providerKey: string) => {
   "use cache";
 
-  // First-paint stock chart can be stale briefly; client fetch still refreshes ranges on demand.
   cacheLife("minutes");
   cacheTag(`stock:${providerKey}`);
   cacheTag(`stock:${providerKey}:chart:1m`);

@@ -7,7 +7,6 @@ import { createPublicStocksSupabaseClient } from "@/features/stocks/server/creat
 const getStockSummaryCached = async (providerKey: string) => {
   "use cache";
 
-  // Valuation summary changes slower than prices; hourly cache keeps first render snappy.
   cacheLife("hours");
   cacheTag(`stock:${providerKey}`);
   cacheTag(`stock:${providerKey}:summary`);

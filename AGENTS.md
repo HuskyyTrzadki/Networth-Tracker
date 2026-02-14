@@ -78,6 +78,7 @@ When shipping feature/architecture changes:
 
 ## Already built
 - App shell with desktop sidebar + mobile navigation.
+- Report shell for public/editorial pages with minimal top bar + menu drawer.
 - Canonical portfolio routes: `/portfolio` and `/portfolio/<id>` with legacy query redirects.
 - Guest-first auth with upgrade/sign-in flows (Supabase Auth + RLS).
 - Transactions:
@@ -111,11 +112,14 @@ When shipping feature/architecture changes:
   - Aggregate: `/portfolio`
   - Single portfolio: `/portfolio/<id>`
   - Legacy `?portfolio=` links are redirected.
+- Route split by shell:
+  - App shell routes keep sidebar (`/(app)/*`).
+  - Report/public shell hosts stock details and login (`/stocks/<providerKey>`, `/login`, `/pricing`).
 - App Router uses Cache Components (`cacheComponents: true`) with Suspense boundaries.
 - Private dashboard/shell reads use tagged private cache (`portfolio:all`, `portfolio:<id>`, `transactions:*`).
 - Write APIs invalidate with `revalidateTag`/`revalidatePath`.
 - Public stock chart API (`/api/public/stocks/[providerKey]/chart`) uses edge cache headers (`s-maxage`, `stale-while-revalidate`).
-- Stock details support ranges + overlays (PE / EPS TTM / Revenue TTM) with Trend(100) and Raw modes.
+- Stock details support ranges + overlays (PE / EPS TTM / Revenue TTM) with Trend(100) and Raw modes, plus authenticated BUY/SELL markers from user transactions.
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
 

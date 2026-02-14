@@ -134,6 +134,7 @@ export function PortfolioComparisonChart({
   const timeAxisConfig = createSharedTimeAxisConfig(
     chartData.map((entry) => entry.label)
   );
+  const xTicks = timeAxisConfig.ticks ? [...timeAxisConfig.ticks] : undefined;
   const yDomain = buildPaddedDomain(
     chartData.flatMap((entry) => [entry.portfolioValue, entry.investedCapital]),
     {
@@ -142,6 +143,9 @@ export function PortfolioComparisonChart({
       includeZero: true,
     }
   );
+  const yAxisDomain = yDomain
+    ? ([yDomain[0], yDomain[1]] as [number, number])
+    : (["auto", "auto"] as [string, string]);
 
   return (
     <div className="min-w-0 w-full" style={{ height }}>
@@ -154,7 +158,7 @@ export function PortfolioComparisonChart({
           <XAxis
             dataKey="label"
             tickFormatter={(value) => timeAxisConfig.tickFormatter(String(value))}
-            ticks={timeAxisConfig.ticks}
+            ticks={xTicks}
             tick={SHARED_CHART_AXIS_TICK}
             interval={timeAxisConfig.interval}
             minTickGap={timeAxisConfig.minTickGap}
@@ -162,7 +166,7 @@ export function PortfolioComparisonChart({
             tickLine={SHARED_CHART_TICK_LINE}
           />
           <YAxis
-            domain={yDomain ?? ["auto", "auto"]}
+            domain={yAxisDomain}
             tickFormatter={axisValueFormatter}
             tick={SHARED_CHART_AXIS_TICK}
             axisLine={SHARED_CHART_AXIS_LINE}

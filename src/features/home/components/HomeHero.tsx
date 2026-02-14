@@ -33,77 +33,86 @@ export function HomeHero() {
 
   return (
     <main className="min-h-dvh bg-background">
-      <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-6 py-10">
-        <div className="text-sm font-semibold tracking-tight text-foreground">
-          Portfolio Tracker
-        </div>
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1560px] flex-col px-4 pb-8 pt-5 sm:px-6">
+        <header className="flex h-14 items-center justify-between border-b border-dashed border-border/85 pb-4">
+          <div className="text-xl font-semibold tracking-tight">Portfolio Tracker</div>
+          <nav className="flex items-center gap-6 text-sm font-semibold">
+            <a href="/pricing" className="text-muted-foreground hover:text-foreground">
+              Cennik
+            </a>
+            <a href="/login" className="hover:text-muted-foreground">
+              Zaloguj
+            </a>
+          </nav>
+        </header>
 
-        <div className="flex flex-1 items-center">
-          <div className="w-full">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                Portfolio Tracker
+        <div className="grid flex-1 items-center gap-10 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                Raport inwestora
+              </p>
+              <h1 className="max-w-2xl text-5xl font-semibold tracking-tight">
+                Szukaj akcji. Czytaj dane jak gazete.
               </h1>
-              <p className="mt-4 text-base text-muted-foreground sm:text-lg">
-                Śledź portfel na opóźnionych notowaniach. PLN + USD od startu.
+              <p className="max-w-xl text-base leading-7 text-muted-foreground">
+                Stock report i portfolio management w jednym miejscu. Z naciskiem
+                na czytelnosc, nie na dashboardowy halas.
               </p>
             </div>
 
-            <div className="mt-8 max-w-2xl space-y-3">
+            <div className="max-w-xl space-y-3 rounded-md border border-dashed border-border/90 bg-card/65 p-4">
               <Button
                 size="lg"
-                className="h-11 w-full px-6 sm:w-auto"
+                className="h-12 w-full"
                 onClick={startGuest}
                 disabled={pending}
                 aria-busy={pending}
               >
                 Wypróbuj jako gość
               </Button>
-
               <p className="text-sm text-muted-foreground">
-                Bez zakładania konta. Możesz uaktualnić później w ustawieniach.
+                Bez zakladania konta. Mozesz uaktualnic profil pozniej.
               </p>
-
               {notice ? (
                 <div
-                  className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground"
+                  className="rounded-md border border-destructive/40 px-3 py-2 text-sm text-destructive"
                   role="alert"
                 >
                   {notice}
                 </div>
               ) : null}
             </div>
+          </div>
 
-            <div className="mt-12 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-                <div className="text-sm font-semibold tracking-tight">
-                  Opóźnione notowania
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Stabilna wycena bez gonienia za tickami.
-                </p>
+          <div className="space-y-4">
+            <div className="rounded-md border border-dashed border-border/90 bg-card/65 p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                Slot ilustracji
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                Astronauta czytajacy raport
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Wstaw wygenerowany obraz AI zgodny z motywem grawiury.
+              </p>
+              <div className="mt-5 h-[360px] rounded-md border border-dashed border-border/80 bg-background/70" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-md border border-dashed border-border/80 bg-card/70 p-3 text-sm">
+                Opoznione notowania
               </div>
-              <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-                <div className="text-sm font-semibold tracking-tight">
-                  PLN + USD
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Jedna wartość portfela w wybranej walucie.
-                </p>
+              <div className="rounded-md border border-dashed border-border/80 bg-card/70 p-3 text-sm">
+                PLN + USD
               </div>
-              <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-                <div className="text-sm font-semibold tracking-tight">
-                  Cache-first
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Notowania i FX z TTL — szybko i tanio.
-                </p>
+              <div className="rounded-md border border-dashed border-border/80 bg-card/70 p-3 text-sm">
+                Cache-first
               </div>
             </div>
           </div>
         </div>
 
-        <div className="pt-10 text-xs text-muted-foreground">
+        <div className="border-t border-dashed border-border/85 pt-4 text-xs text-muted-foreground">
           Dane gościa mogą zostać usunięte po 60 dniach braku aktywności.
         </div>
       </div>

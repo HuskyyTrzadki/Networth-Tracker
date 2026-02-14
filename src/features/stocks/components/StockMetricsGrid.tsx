@@ -51,9 +51,9 @@ function MetricRow({
   value: string;
 }>) {
   return (
-    <div className="rounded-lg border border-border/70 bg-card/60 px-3 py-2">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p>
+    <div className="news-divider-row-b grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2.5 text-sm">
+      <p className="text-muted-foreground">{label}</p>
+      <p className="font-mono text-sm font-bold tabular-nums">{value}</p>
     </div>
   );
 }
@@ -66,11 +66,12 @@ export function StockMetricsGrid({
   currency: string;
 }>) {
   return (
-    <section className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-[var(--shadow)]">
-      <header>
-        <h2 className="text-base font-semibold tracking-tight">Wycena i fundamenty</h2>
+    <section className="news-divider-strong-t space-y-3 pt-3">
+      <header className="flex items-center justify-between gap-2">
+        <h2 className="text-xl font-semibold tracking-tight">Wycena i fundamenty</h2>
+        <p className="text-xs text-muted-foreground">Dane z ostatniej aktualizacji</p>
       </header>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
         <MetricRow label="Market Cap" value={formatMoney(summary.marketCap, currency)} />
         <MetricRow label="PE (TTM)" value={formatRatio(summary.peTtm)} />
         <MetricRow label="Price to Sales" value={formatRatio(summary.priceToSales)} />
