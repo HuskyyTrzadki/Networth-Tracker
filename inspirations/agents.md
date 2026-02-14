@@ -163,3 +163,29 @@ paragraph text (might need slightly darker ink or just keep #393939)
 
 hover states (paper-tint hovers may become invisible; use ink-outline emphasis instead)
 
+--------
+for images whenever u d like to add one u need to give me a prompt.
+i will generate images using ai and will just put it wherever u d like. 
+As u see this website should use a lot of images. 
+
+---
+Subject, described literally,
+in the style of a 19th century engraved illustration,
+pen-and-ink, stippling and cross-hatching,
+Victorian scientific engraving,
+high detail, monochrome,
+black ink on warm off-white paper,
+no color, no gradients, no shading,
+printmaking, woodcut, etching,
+editorial illustration, antique textbook plate
+
+no color
+no watercolor
+no soft shading
+no gradients
+no modern illustration
+no digital painting
+no smooth lighting
+no realism
+
+-
