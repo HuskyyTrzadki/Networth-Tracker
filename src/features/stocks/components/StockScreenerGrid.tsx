@@ -1,9 +1,10 @@
 import Link from "next/link";
 
-import { ChangePill, Sparkline } from "@/features/design-system";
+import { ChangePill } from "@/features/design-system";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import type { StockScreenerCard } from "@/features/stocks";
 import { cn } from "@/lib/cn";
+import { StockScreenerPreviewChart } from "./StockScreenerPreviewChart";
 
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
   style: "percent",
@@ -52,20 +53,14 @@ export function StockScreenerGrid({
   return (
     <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3", className)}>
       {cards.map((card) => {
-        const move = toTrend(card.weekChangePercent);
-        const moveValue = move.text === "-" ? "-" : `1T ${move.text}`;
-        const sparklineColorClass =
-          move.trend === "up"
-            ? "text-profit"
-            : move.trend === "down"
-              ? "text-loss"
-              : "text-muted-foreground/65";
+        const move = toTrend(card.monthChangePercent);
+        const moveValue = move.text === "-" ? "-" : `1M ${move.text}`;
         return (
           <Link
             key={card.providerKey}
             href={`/stocks/${encodeURIComponent(card.providerKey)}`}
             className={cn(
-              "group h-56 rounded-xl border border-border/70 bg-card p-3 shadow-[var(--shadow)] transition",
+              "group h-64 rounded-xl border border-border/70 bg-card p-3 shadow-[var(--shadow)] transition",
               "hover:border-primary/35 hover:bg-card/95"
             )}
           >
@@ -95,12 +90,8 @@ export function StockScreenerGrid({
                 </div>
               </div>
 
-              <div className="mt-3 min-h-0 flex-1 rounded-lg border border-border/50 bg-muted/15 px-2.5 py-2.5">
-                <Sparkline
-                  values={card.weekSparkline}
-                  strokeWidth={1.9}
-                  className={cn("h-full w-full", sparklineColorClass)}
-                />
+              <div className="mt-3 min-h-0 flex-1 rounded-lg border border-border/50 bg-muted/15 px-1.5 py-1.5">
+                <StockScreenerPreviewChart data={card.monthChart} currency={card.currency} />
               </div>
             </div>
           </Link>

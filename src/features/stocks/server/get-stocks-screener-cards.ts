@@ -17,7 +17,7 @@ type HoldingKey = Readonly<{
   logoUrl: string | null;
 }>;
 
-const WEEK_LOOKBACK_DAYS = 7;
+const MONTH_LOOKBACK_DAYS = 31;
 
 const toIsoDate = (date: Date) => date.toISOString().slice(0, 10);
 
@@ -27,7 +27,7 @@ const toFiniteNumber = (value: string | number | null | undefined) => {
   return Number.isFinite(numeric) ? numeric : null;
 };
 
-const toWeekChangePercent = (series: readonly number[]) => {
+const toPeriodChangePercent = (series: readonly number[]) => {
   const start = series[0] ?? null;
   const end = series.at(-1) ?? null;
   if (start === null || end === null || start === 0) return null;
@@ -64,20 +64,23 @@ export async function getStocksScreenerCards(
 
   const quotesByInstrument = await getInstrumentQuotesCached(supabase, quoteRequests);
   const nowDate = toIsoDate(new Date());
-  const weekStartDate = subtractIsoDays(nowDate, WEEK_LOOKBACK_DAYS);
+  const monthStartDate = subtractIsoDays(nowDate, MONTH_LOOKBACK_DAYS);
   const dailySeriesByProviderKey = await preloadInstrumentDailySeries(
     supabase,
     quoteRequests,
-    weekStartDate,
+    monthStartDate,
     nowDate
   );
 
-  const weekSeriesByProviderKey = new Map<string, readonly number[]>();
+  const monthSeriesByProviderKey = new Map<
+    string,
+    readonly Readonly<{ date: string; price: number }>[]
+  >();
   dailySeriesByProviderKey.forEach((rows, providerKey) => {
     const closesByDate = new Map<string, number>();
     rows
       .filter(
-        (row) => row.price_date >= weekStartDate && row.price_date <= nowDate
+        (row) => row.price_date >= monthStartDate && row.price_date <= nowDate
       )
       .sort((left, right) => left.price_date.localeCompare(right.price_date))
       .forEach((row) => {
@@ -88,27 +91,36 @@ export async function getStocksScreenerCards(
 
     const series = Array.from(closesByDate.entries())
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([, close]) => close);
+      .map(([date, price]) => ({ date, price }));
 
     if (series.length === 1) {
-      weekSeriesByProviderKey.set(providerKey, [series[0], series[0]]);
+      monthSeriesByProviderKey.set(providerKey, [
+        series[0],
+        { date: nowDate, price: series[0].price },
+      ]);
       return;
     }
 
-    weekSeriesByProviderKey.set(providerKey, series);
+    monthSeriesByProviderKey.set(providerKey, series);
   });
 
   return Array.from(byProviderKey.values())
     .map((holding) => {
       const quote = quotesByInstrument.get(holding.instrumentId) ?? null;
       const quotePrice = toFiniteNumber(quote?.price);
-      const weekSparklineBase = weekSeriesByProviderKey.get(holding.providerKey) ?? [];
-      const weekSparkline =
-        weekSparklineBase.length >= 2
-          ? weekSparklineBase
+      const monthChartBase = monthSeriesByProviderKey.get(holding.providerKey) ?? [];
+      const monthChart =
+        monthChartBase.length >= 2
+          ? monthChartBase
           : quotePrice === null
-            ? [0, 0]
-            : [quotePrice, quotePrice];
+            ? [
+                { date: monthStartDate, price: 0 },
+                { date: nowDate, price: 0 },
+              ]
+            : [
+                { date: monthStartDate, price: quotePrice },
+                { date: nowDate, price: quotePrice },
+              ];
       return {
         providerKey: holding.providerKey,
         symbol: holding.symbol,
@@ -116,8 +128,8 @@ export async function getStocksScreenerCards(
         logoUrl: holding.logoUrl,
         currency: quote?.currency ?? "-",
         price: quote?.price ?? null,
-        weekChangePercent: toWeekChangePercent(weekSparklineBase),
-        weekSparkline,
+        monthChangePercent: toPeriodChangePercent(monthChartBase.map((point) => point.price)),
+        monthChart,
         asOf: quote?.asOf ?? null,
       } satisfies StockScreenerCard;
     })

@@ -67,7 +67,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Concept-heavy sections expose hover tooltips via an `i` icon to clarify definitions in-place.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
-- Screener cards render a compact layout with a 1-week (`1T`) sparkline and weekly percentage tag sourced from cache-first daily price series.
+- Screener cards render a larger 1-month (`1M`) preview chart with visible X/Y axes and a monthly percentage tag sourced from cache-first daily price series.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
 - Supported ranges: `1D`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `10Y`, `ALL`.
 - 1D chart uses `includePrePost=true`; if intraday data is unavailable, API returns fallback range `1M`.
