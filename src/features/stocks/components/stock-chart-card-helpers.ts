@@ -22,19 +22,19 @@ const RAW_MODE_ALLOWED_OVERLAYS: readonly StockChartOverlay[] = ["pe", "epsTtm"]
 export const OVERLAY_LABELS: Readonly<Record<StockChartOverlay, string>> = {
   pe: "PE",
   epsTtm: "EPS TTM",
-  revenueTtm: "Revenue TTM",
+  revenueTtm: "Przychody TTM",
 };
 
 export const OVERLAY_CONTROL_LABELS: Readonly<Record<StockChartOverlay, string>> = {
   pe: "Pokaż historyczne PE",
   epsTtm: "Pokaż EPS TTM",
-  revenueTtm: "Pokaż Revenue TTM",
+  revenueTtm: "Pokaż przychody TTM",
 };
 
 export const OVERLAY_LINE_COLORS: Readonly<Record<StockChartOverlay, string>> = {
-  pe: "var(--chart-4)",
-  epsTtm: "var(--chart-2)",
-  revenueTtm: "var(--chart-3)",
+  pe: "#e11d48",
+  epsTtm: "#0284c7",
+  revenueTtm: "#d97706",
 };
 const PRICE_LINE_COLOR = "var(--chart-1)";
 

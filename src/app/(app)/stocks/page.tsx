@@ -17,7 +17,7 @@ function ScreenerFallback() {
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="aspect-square animate-pulse rounded-2xl border border-border/70 bg-card"
+          className="h-56 animate-pulse rounded-xl border border-border/70 bg-card"
         />
       ))}
     </div>

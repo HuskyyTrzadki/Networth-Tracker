@@ -23,7 +23,8 @@ export type StockScreenerCard = Readonly<{
   logoUrl: string | null;
   currency: string;
   price: string | null;
-  dayChangePercent: number | null;
+  weekChangePercent: number | null;
+  weekSparkline: readonly number[];
   asOf: string | null;
 }>;
 

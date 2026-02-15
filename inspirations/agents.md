@@ -1,21 +1,22 @@
 # Inspirations Notes
 
-This file is now a short index. Canonical style rules live in:
-
-- `inspirations/style-guide.md`
+Canonical style rules live in:
+- `inspirations/style-guide.md` (v2)
 
 ## References
-- StockTaper landing and report density (visual direction only, no 1:1 copy):
+- StockTaper landing/report density (direction only, no 1:1 copy):
   - `inspirations/landing.png`
   - `inspirations/stock_insights*.png`
+- Qualtrim reference for richer chart storytelling:
+  - `inspirations/qualtrim/*`
 
-## Non-negotiables
-- Ink-first UI (`#393939` as baseline ink in day mode).
-- Warm paper background (darker than plain white).
-- Dashed border grammar for modules and separators.
-- Mono-first typography for data readability.
-- Minimal, quiet motion only.
+## Locked Non-negotiables
+- Ink-first UI (`#393939` in day theme).
+- Day paper background `#FCF7EB`.
+- Dashed separator grammar across report pages.
+- Beginner-first reading order with progressive disclosure.
+- Subtle motion, including chart draw animation.
 
 ## Image Workflow
-- If a page asks for an illustration, generate it with the prompt template in:
-  - `inspirations/style-guide.md`
+- Build placeholders: `picsum.photos`.
+- Final assets: generate with prompt template from `inspirations/style-guide.md`.

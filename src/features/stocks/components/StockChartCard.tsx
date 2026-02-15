@@ -23,7 +23,9 @@ import {
   toOverlayRequestKey,
   type StockChartMode,
 } from "./stock-chart-card-helpers";
+import { buildMockChartEventMarkers } from "./stock-chart-event-markers";
 import { StockChartPlot } from "./StockChartPlot";
+import { getPriceTrendColor, resolveStockPriceTrend } from "./stock-chart-trend";
 import {
   STOCK_CHART_RANGES,
   type StockChartOverlay,
@@ -46,6 +48,19 @@ type VisibleMarker = Readonly<{
 }>;
 
 const toDateKey = (value: string) => value.slice(0, 10);
+
+const changeFormatter = new Intl.NumberFormat("pl-PL", {
+  style: "percent",
+  maximumFractionDigits: 2,
+  signDisplay: "always",
+});
+
+const formatChangePercent = (value: number | null) => {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "-";
+  }
+  return changeFormatter.format(value / 100);
+};
 
 const resolveVisibleTradeMarkers = (
   markers: readonly StockTradeMarker[],
@@ -86,6 +101,10 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   const [activeOverlays, setActiveOverlays] = useState<StockChartOverlay[]>(
     [...initialChart.activeOverlays]
   );
+  const [showEarningsEvents, setShowEarningsEvents] = useState(false);
+  const [showNewsEvents, setShowNewsEvents] = useState(false);
+  const [showUserTradeEvents, setShowUserTradeEvents] = useState(false);
+  const [showGlobalNewsEvents, setShowGlobalNewsEvents] = useState(false);
 
   const normalizedOverlays = normalizeOverlaysForMode(mode, activeOverlays);
   const initialOverlayKey = toOverlayRequestKey(initialChart.activeOverlays);
@@ -118,6 +137,9 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   const isTenYearUnavailable =
     (chart ?? lastKnownChart).requestedRange === "10Y" &&
     (chart ?? lastKnownChart).resolvedRange !== "10Y";
+  const isEventRangeEligible = ["3Y", "5Y", "10Y", "ALL"].includes(
+    (chart ?? lastKnownChart).resolvedRange
+  );
 
   const isRangeDisabled = (rangeOption: StockChartRange) =>
     isLoading || (rangeOption === "10Y" && isTenYearUnavailable);
@@ -133,6 +155,8 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   };
 
   const chartData = [...buildChartData(chart?.points ?? [])];
+  const priceTrend = resolveStockPriceTrend(chartData.map((point) => point.price));
+  const priceLineColor = getPriceTrendColor(priceTrend.direction);
   const priceAxisDomain =
     chart !== null ? buildPriceAxisDomain(chart.resolvedRange, chartData) : undefined;
 
@@ -166,13 +190,28 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   const visibleTradeMarkers = chart
     ? resolveVisibleTradeMarkers(tradeMarkersResource.data ?? [], chart.points)
     : [];
+  const eventMarkers = isEventRangeEligible
+    ? buildMockChartEventMarkers(chartData, {
+      includeEarnings: showEarningsEvents,
+      includeNews: showNewsEvents,
+      includeUserTrades: showUserTradeEvents,
+      includeGlobalNews: showGlobalNewsEvents,
+    })
+    : [];
 
   return (
-    <section className="news-divider-strong-y space-y-4 py-4">
+    <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-5">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-2xl font-semibold tracking-tight">Wykres ceny</h2>
-        <p className="text-xs text-muted-foreground">
-          Wykres + overlaye fundamentalne
+        <p
+          className={cn(
+            "text-xs font-semibold",
+            priceTrend.direction === "up" && "text-[color:var(--profit)]",
+            priceTrend.direction === "down" && "text-[color:var(--loss)]",
+            priceTrend.direction === "flat" && "text-muted-foreground"
+          )}
+        >
+          Zmiana zakresu: {formatChangePercent(priceTrend.changePercent)}
         </p>
       </header>
 
@@ -211,7 +250,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               disabled={isLoading}
               className="h-7 rounded-sm px-2.5 text-xs"
             >
-              Raw
+              Surowe
             </Button>
           </div>
         </div>
@@ -233,12 +272,57 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
                 {OVERLAY_CONTROL_LABELS[overlay]}
               </label>
             ))}
+            <span className="text-xs text-muted-foreground/70">|</span>
+            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={isEventRangeEligible ? showEarningsEvents : false}
+                onCheckedChange={(checked) => {
+                  if (!isEventRangeEligible) return;
+                  setShowEarningsEvents(checked === true);
+                }}
+                disabled={!isEventRangeEligible}
+              />
+              Wyniki (konsensus vs raport)
+            </label>
+            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={isEventRangeEligible ? showNewsEvents : false}
+                onCheckedChange={(checked) => {
+                  if (!isEventRangeEligible) return;
+                  setShowNewsEvents(checked === true);
+                }}
+                disabled={!isEventRangeEligible}
+              />
+              Wazne wydarzenia
+            </label>
+            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={isEventRangeEligible ? showUserTradeEvents : false}
+                onCheckedChange={(checked) => {
+                  if (!isEventRangeEligible) return;
+                  setShowUserTradeEvents(checked === true);
+                }}
+                disabled={!isEventRangeEligible}
+              />
+              BUY/SELL uzytkownika (mock)
+            </label>
+            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={isEventRangeEligible ? showGlobalNewsEvents : false}
+                onCheckedChange={(checked) => {
+                  if (!isEventRangeEligible) return;
+                  setShowGlobalNewsEvents(checked === true);
+                }}
+                disabled={!isEventRangeEligible}
+              />
+              Wazne wydarzenia globalne
+            </label>
           </div>
         ) : null}
 
         {mode === "raw" ? (
           <p className="text-xs text-muted-foreground">
-            W trybie Raw można porównać tylko jeden overlay naraz (PE lub EPS
+            W trybie Surowe mozna porownac tylko jeden overlay naraz (PE lub EPS
             TTM).
           </p>
         ) : null}
@@ -293,11 +377,14 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
           chartData={chartData}
           normalizedOverlays={normalizedOverlays}
           mode={mode}
+          priceTrendDirection={priceTrend.direction}
+          priceLineColor={priceLineColor}
           showOverlayAxis={showOverlayAxis}
           priceAxisDomainForChart={priceAxisDomainForChart}
           overlayAxisDomainForChart={overlayAxisDomainForChart}
           overlayAxisLabel={overlayAxisMeta.label}
           visibleTradeMarkers={visibleTradeMarkers}
+          eventMarkers={eventMarkers}
           isLoading={isLoading}
         />
 
@@ -307,12 +394,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
             Część overlayów jest niedostępna dla tej spółki lub zakresu danych.
           </p>
         ) : null}
-        {tradeMarkersResource.data && tradeMarkersResource.data.length > 0 ? (
-          <p className="text-xs text-muted-foreground">
-            Znaczniki BUY/SELL pochodza z Twoich transakcji i sa nanoszone na
-            dostepne punkty czasowe wykresu.
-          </p>
-        ) : null}
+
       </div>
     </section>
   );

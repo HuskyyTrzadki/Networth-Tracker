@@ -3,7 +3,7 @@
 import { Newspaper, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -23,10 +23,52 @@ type Props = Readonly<{
   children: React.ReactNode;
 }>;
 
+type MenuTriggerCtx = Readonly<{
+  mountCustomTrigger: () => void;
+  unmountCustomTrigger: () => void;
+  isMenuOpen: boolean;
+}>;
+
+const ReportShellMenuTriggerContext = createContext<MenuTriggerCtx | null>(null);
+
+export function ReportShellMenuTrigger({
+  className,
+}: Readonly<{
+  className?: string;
+}>) {
+  const ctx = useContext(ReportShellMenuTriggerContext);
+
+  useEffect(() => {
+    if (!ctx) return;
+    ctx.mountCustomTrigger();
+    return () => {
+      ctx.unmountCustomTrigger();
+    };
+  }, [ctx]);
+
+  return (
+    <SheetTrigger asChild>
+      <Button
+        size="sm"
+        variant="outline"
+        className={cn(
+          "h-9 rounded-md border border-[color:var(--report-rule)] px-3 text-xs font-semibold tracking-[0.02em]",
+          ctx?.isMenuOpen ? "bg-foreground text-background hover:bg-foreground" : "",
+          className
+        )}
+      >
+        Menu
+      </Button>
+    </SheetTrigger>
+  );
+}
+
 export function ReportShell({ children }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [hasSession, setHasSession] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [customTriggerCount, setCustomTriggerCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -68,79 +110,142 @@ export function ReportShell({ children }: Props) {
     setIsMenuOpen(false);
   };
 
+  const onSignOut = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+    try {
+      await fetch("/api/auth/signout", { method: "POST" });
+      setIsMenuOpen(false);
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const hasCustomTrigger = customTriggerCount > 0;
+
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <div className="pointer-events-none fixed left-4 top-4 z-50 sm:left-6 sm:top-5">
-          <SheetTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              className={cn(
-                "pointer-events-auto h-9 rounded-md border-border/90 px-3 text-xs font-semibold tracking-[0.02em]",
-                isMenuOpen ? "bg-foreground text-background hover:bg-foreground" : ""
-              )}
-            >
-              Menu
-            </Button>
-          </SheetTrigger>
-        </div>
-
-        <SheetContent
-          side="top"
-          className="border-b border-dashed border-border/85 bg-background/98 px-4 py-4 backdrop-blur-[2px] sm:px-6"
+        <ReportShellMenuTriggerContext.Provider
+          value={useMemo(
+            () => ({
+              mountCustomTrigger: () => setCustomTriggerCount((value) => value + 1),
+              unmountCustomTrigger: () => setCustomTriggerCount((value) => Math.max(0, value - 1)),
+              isMenuOpen,
+            }),
+            [isMenuOpen]
+          )}
         >
-          <SheetHeader className="sr-only">
-            <SheetTitle>Nawigacja raportu</SheetTitle>
-          </SheetHeader>
-          <SheetBody className="w-full px-0 py-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <SheetClose asChild>
-                <Link
-                  href="/"
-                  className="inline-flex h-11 items-center gap-2 rounded-md border border-border/85 px-3 text-sm font-semibold tracking-tight hover:bg-muted/35"
+          {!hasCustomTrigger ? (
+            <div className="pointer-events-none fixed left-7 top-4 z-50 sm:left-10 sm:top-5 lg:left-16 xl:left-20">
+              <SheetTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={cn(
+                    "pointer-events-auto h-9 rounded-md border border-[color:var(--report-rule)] px-3 text-xs font-semibold tracking-[0.02em]",
+                    isMenuOpen ? "bg-foreground text-background hover:bg-foreground" : ""
+                  )}
                 >
-                  <Newspaper className="size-4" aria-hidden />
-                  Portfolio Tracker
-                </Link>
-              </SheetClose>
-
-              <form onSubmit={onSearchSubmit} className="min-w-0 flex-1">
-                <label htmlFor="report-menu-search" className="sr-only">
-                  Search stocks and ETFs
-                </label>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="report-menu-search"
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search Stocks & ETFs (NASDAQ & NYSE)"
-                    className="h-11 rounded-full border-[2px] border-border/95 pl-12 pr-4 text-[0.97rem]"
-                  />
-                </div>
-              </form>
-
-              <div className="ml-auto flex items-center gap-2">
-                <SheetClose asChild>
-                  <Button asChild size="sm" variant="outline" className="h-10 px-3 text-sm">
-                    <Link href="/portfolio">Portfolio management</Link>
-                  </Button>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Button asChild size="sm" variant="outline" className="h-10 px-3 text-sm">
-                    <Link href={hasSession ? "/settings" : "/login"}>Account</Link>
-                  </Button>
-                </SheetClose>
-              </div>
+                  Menu
+                </Button>
+              </SheetTrigger>
             </div>
-          </SheetBody>
-        </SheetContent>
+          ) : null}
+
+          <SheetContent
+            side="top"
+            className="border-b border-dashed border-[color:var(--report-rule)] bg-background/98 px-4 py-3 backdrop-blur-[2px] sm:px-6"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>Nawigacja raportu</SheetTitle>
+            </SheetHeader>
+            <SheetBody className="w-full px-0 py-0">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <SheetClose asChild>
+                  <Link
+                    href="/"
+                    className="inline-flex h-10 items-center gap-2 rounded-md border border-[color:var(--report-rule)] px-3 text-sm font-semibold tracking-tight hover:bg-muted/35"
+                  >
+                    <Newspaper className="size-4" aria-hidden />
+                    Portfolio Tracker
+                  </Link>
+                </SheetClose>
+
+                <form onSubmit={onSearchSubmit} className="min-w-0 flex-1">
+                  <label htmlFor="report-menu-search" className="sr-only">
+                    Search stocks and ETFs
+                  </label>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="report-menu-search"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search Stocks & ETFs (NASDAQ & NYSE)"
+                      className="h-10 rounded-full border-[2px] border-[color:var(--report-rule)] pl-12 pr-4 text-[0.97rem]"
+                    />
+                  </div>
+                </form>
+
+                <div className="ml-auto flex items-center gap-2">
+                  <SheetClose asChild>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
+                    >
+                      <Link href="/portfolio">Portfolio management</Link>
+                    </Button>
+                  </SheetClose>
+                  {hasSession ? (
+                    <>
+                      <SheetClose asChild>
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
+                        >
+                          <Link href="/settings">Konto</Link>
+                        </Button>
+                      </SheetClose>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
+                        onClick={onSignOut}
+                        disabled={isSigningOut}
+                      >
+                        {isSigningOut ? "Wylogowywanie..." : "Wyloguj"}
+                      </Button>
+                    </>
+                  ) : (
+                    <SheetClose asChild>
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
+                      >
+                        <Link href="/login">Konto</Link>
+                      </Button>
+                    </SheetClose>
+                  )}
+                </div>
+              </div>
+            </SheetBody>
+          </SheetContent>
+
+          <main className="w-full px-3 pb-8 pt-14 sm:px-4 lg:px-6 xl:px-8 sm:pt-14">
+            {children}
+          </main>
+        </ReportShellMenuTriggerContext.Provider>
       </Sheet>
 
-      <main className="w-full px-3 pb-8 pt-14 sm:px-3 sm:pt-14">
-        {children}
-      </main>
     </div>
   );
 }

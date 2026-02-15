@@ -221,12 +221,7 @@ export function PortfolioValueOverTimeHeader({
         </div>
       ) : null}
 
-      {!isAllHistoryLoading && isAllHistoryTruncated && range !== "ALL" ? (
-        <div className="text-xs text-muted-foreground">
-          Dla szybszego ładowania strona startuje ze skróconą historią; pełny zakres
-          pobierze się po wybraniu ALL.
-        </div>
-      ) : null}
+
     </div>
   );
 }

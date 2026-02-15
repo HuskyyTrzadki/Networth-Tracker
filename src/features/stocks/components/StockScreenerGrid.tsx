@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ChangePill } from "@/features/design-system";
+import { ChangePill, Sparkline } from "@/features/design-system";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import type { StockScreenerCard } from "@/features/stocks";
 import { cn } from "@/lib/cn";
@@ -52,40 +52,55 @@ export function StockScreenerGrid({
   return (
     <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3", className)}>
       {cards.map((card) => {
-        const move = toTrend(card.dayChangePercent);
+        const move = toTrend(card.weekChangePercent);
+        const moveValue = move.text === "-" ? "-" : `1T ${move.text}`;
+        const sparklineColorClass =
+          move.trend === "up"
+            ? "text-profit"
+            : move.trend === "down"
+              ? "text-loss"
+              : "text-muted-foreground/65";
         return (
           <Link
             key={card.providerKey}
             href={`/stocks/${encodeURIComponent(card.providerKey)}`}
             className={cn(
-              "group aspect-square rounded-2xl border border-border/70 bg-card p-4 shadow-[var(--shadow)] transition",
+              "group h-56 rounded-xl border border-border/70 bg-card p-3 shadow-[var(--shadow)] transition",
               "hover:border-primary/35 hover:bg-card/95"
             )}
           >
-            <div className="flex h-full flex-col justify-between">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <InstrumentLogoImage
-                    src={card.logoUrl}
-                    size={36}
-                    fallbackText={card.symbol}
-                    alt={card.name}
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate font-mono text-sm font-semibold">{card.symbol}</p>
-                    <p className="truncate text-xs text-muted-foreground">{card.name}</p>
+            <div className="flex h-full flex-col">
+              <div className="flex min-w-0 items-start gap-3">
+                <InstrumentLogoImage
+                  src={card.logoUrl}
+                  size={36}
+                  fallbackText={card.symbol}
+                  alt={card.name}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-sm font-semibold">
+                        {card.symbol}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{card.name}</p>
+                    </div>
+                    <p className="shrink-0 pt-0.5 font-mono text-sm font-semibold tabular-nums text-foreground/90">
+                      {formatPrice(card.price, card.currency)}
+                    </p>
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <ChangePill value={moveValue} trend={move.trend} />
                   </div>
                 </div>
-                <ChangePill value={move.text} trend={move.trend} />
               </div>
 
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  Cena
-                </p>
-                <p className="font-mono text-2xl font-semibold tabular-nums">
-                  {formatPrice(card.price, card.currency)}
-                </p>
+              <div className="mt-3 min-h-0 flex-1 rounded-lg border border-border/50 bg-muted/15 px-2.5 py-2.5">
+                <Sparkline
+                  values={card.weekSparkline}
+                  strokeWidth={1.9}
+                  className={cn("h-full w-full", sparklineColorClass)}
+                />
               </div>
             </div>
           </Link>

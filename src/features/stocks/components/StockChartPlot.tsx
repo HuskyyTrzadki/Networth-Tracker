@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
+  Area,
   CartesianGrid,
+  ComposedChart,
   Line,
-  LineChart,
   ReferenceDot,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,15 +23,20 @@ import type {
 } from "../server/types";
 import {
   OVERLAY_LINE_COLORS,
-  formatEps,
-  formatLabelDate,
-  formatPe,
-  formatPrice,
-  formatRevenue,
   formatXAxisTick,
   toOverlayLineDataKey,
   type StockChartMode,
 } from "./stock-chart-card-helpers";
+import type { StockChartEventMarker } from "./stock-chart-event-markers";
+import {
+  buildStockChartEventMarkerPoints,
+  StockChartHoverEventCard,
+  StockChartEventMarkerDot,
+  StockChartTooltipPanel,
+  type StockChartEventMarkerDotProps,
+  type StockChartEventMarkerPoint,
+  type StockChartPlotDataPoint,
+} from "./stock-chart-plot-events";
 
 type VisibleMarker = Readonly<{
   key: string;
@@ -37,28 +46,19 @@ type VisibleMarker = Readonly<{
   price: number;
 }>;
 
-type ChartDataPoint = Readonly<{
-  t: string;
-  price: number | null;
-  peRaw: number | null;
-  epsTtmRaw: number | null;
-  revenueTtmRaw: number | null;
-  peLabel: "N/M" | "-" | null;
-  peIndex: number | null;
-  epsTtmIndex: number | null;
-  revenueTtmIndex: number | null;
-}>;
-
 type Props = Readonly<{
   chart: StockChartResponse | null;
-  chartData: readonly ChartDataPoint[];
+  chartData: readonly StockChartPlotDataPoint[];
   normalizedOverlays: readonly StockChartOverlay[];
   mode: StockChartMode;
+  priceTrendDirection: "up" | "down" | "flat";
+  priceLineColor: string;
   showOverlayAxis: boolean;
   priceAxisDomainForChart: [number, number] | undefined;
   overlayAxisDomainForChart: [number, number] | undefined;
   overlayAxisLabel: string | null;
   visibleTradeMarkers: readonly VisibleMarker[];
+  eventMarkers: readonly StockChartEventMarker[];
   isLoading: boolean;
 }>;
 
@@ -67,27 +67,101 @@ export function StockChartPlot({
   chartData,
   normalizedOverlays,
   mode,
+  priceTrendDirection,
+  priceLineColor,
   showOverlayAxis,
   priceAxisDomainForChart,
   overlayAxisDomainForChart,
   overlayAxisLabel,
   visibleTradeMarkers,
+  eventMarkers,
   isLoading,
 }: Props) {
   const mutableChartData = [...chartData];
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [hoveredEventMarker, setHoveredEventMarker] =
+    useState<StockChartEventMarkerPoint | null>(null);
+  const [hoveredEventCoordinates, setHoveredEventCoordinates] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => {
+      setPrefersReducedMotion(mediaQuery.matches);
+    };
+
+    update();
+    mediaQuery.addEventListener("change", update);
+
+    return () => {
+      mediaQuery.removeEventListener("change", update);
+    };
+  }, []);
+
+  const animationDisabled = prefersReducedMotion || isLoading;
+  const chartAnimationDuration = animationDisabled ? 0 : 180;
+  const overlayAnimationDuration = animationDisabled ? 0 : 160;
+  const areaAnimationDuration = animationDisabled ? 0 : 160;
+  const hasEnabledOverlays = normalizedOverlays.some(
+    (overlay) => chart?.hasOverlayData[overlay] === true
+  );
+  const areaFillColor =
+    priceTrendDirection === "up"
+      ? hasEnabledOverlays
+        ? "rgba(95, 174, 112, 0.36)"
+        : "rgba(95, 174, 112, 0.55)"
+      : priceTrendDirection === "down"
+        ? hasEnabledOverlays
+          ? "rgba(208, 116, 109, 0.34)"
+          : "rgba(208, 116, 109, 0.5)"
+        : hasEnabledOverlays
+          ? "rgba(138, 138, 138, 0.24)"
+          : "rgba(138, 138, 138, 0.35)";
+  const areaBaseValue = priceAxisDomainForChart?.[0] ?? 0;
+  const eventMarkerPoints = buildStockChartEventMarkerPoints(
+    chartData,
+    eventMarkers,
+    priceAxisDomainForChart
+  );
+  const overlayAxisLabelValue = overlayAxisLabel ?? undefined;
+  const chartCurrency = chart?.currency ?? "USD";
+  const hoveredEventId = hoveredEventMarker?.id ?? null;
+
+  const handleEventMarkerHover = (
+    marker: StockChartEventMarkerPoint | null,
+    coordinates?: Readonly<{ x: number; y: number }>
+  ) => {
+    if (!marker || !coordinates) {
+      setHoveredEventMarker(null);
+      setHoveredEventCoordinates(null);
+      return;
+    }
+
+    setHoveredEventMarker(marker);
+    setHoveredEventCoordinates({ x: coordinates.x, y: coordinates.y });
+  };
 
   return (
     <div className="relative h-[340px] w-full min-w-0">
       {chart ? (
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
+          <ComposedChart
             data={mutableChartData}
-            margin={{ top: 8, right: 18, left: 6, bottom: 8 }}
+            margin={{ top: 28, right: 18, left: 6, bottom: 8 }}
           >
-            <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} vertical={false} />
+            <CartesianGrid
+              stroke="var(--border)"
+              strokeDasharray="4 6"
+              strokeOpacity={0.5}
+              vertical={false}
+            />
             <XAxis
               dataKey="t"
-              tickFormatter={(value) => formatXAxisTick(String(value), chart.resolvedRange)}
+              tickFormatter={(value) =>
+                formatXAxisTick(String(value), chart.resolvedRange)
+              }
               tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
               axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
               tickLine={false}
@@ -114,9 +188,9 @@ export function StockChartPlot({
                 orientation="right"
                 domain={overlayAxisDomainForChart}
                 label={
-                  overlayAxisLabel
+                  overlayAxisLabelValue
                     ? {
-                        value: overlayAxisLabel,
+                        value: overlayAxisLabelValue,
                         angle: -90,
                         position: "insideRight",
                         style: {
@@ -141,49 +215,32 @@ export function StockChartPlot({
             ) : null}
             <Tooltip
               cursor={{ stroke: "var(--ring)", strokeOpacity: 0.4 }}
-              labelFormatter={(value) => formatLabelDate(String(value))}
-              formatter={(value, name, payload) => {
-                const chartPayload = payload?.payload as ChartDataPoint | undefined;
-
-                if (name === "price") {
-                  return [formatPrice(value as number | null, chart.currency), "Cena"];
-                }
-
-                if (name === "peIndex" || name === "peRaw") {
-                  if (chartPayload?.peLabel === "N/M") {
-                    return ["N/M", "PE"];
-                  }
-                  if (chartPayload?.peLabel === "-") {
-                    return ["-", "PE"];
-                  }
-                  return [formatPe(chartPayload?.peRaw ?? null), "PE"];
-                }
-
-                if (name === "epsTtmIndex" || name === "epsTtmRaw") {
-                  return [formatEps(chartPayload?.epsTtmRaw ?? null), "EPS TTM"];
-                }
-
-                return [
-                  formatRevenue(chartPayload?.revenueTtmRaw ?? null, chart.currency),
-                  "Revenue TTM",
-                ];
-              }}
-              contentStyle={{
-                background: "var(--popover)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                color: "var(--popover-foreground)",
-              }}
+              content={<StockChartTooltipPanel currency={chartCurrency} />}
+            />
+            <Area
+              yAxisId="price"
+              dataKey="price"
+              type="linear"
+              stroke="none"
+              baseValue={areaBaseValue}
+              fill={areaFillColor}
+              fillOpacity={1}
+              isAnimationActive={!animationDisabled}
+              animationDuration={areaAnimationDuration}
+              animationEasing="ease-out"
             />
             <Line
               yAxisId="price"
               dataKey="price"
-              stroke="var(--chart-1)"
+              type="linear"
+              stroke={priceLineColor}
+              strokeOpacity={hasEnabledOverlays ? 0.72 : 1}
               strokeWidth={2.4}
               dot={false}
+              activeDot={false}
               connectNulls={false}
-              isAnimationActive
-              animationDuration={240}
+              isAnimationActive={!animationDisabled}
+              animationDuration={chartAnimationDuration}
               animationEasing="ease-out"
               name="price"
             />
@@ -199,16 +256,57 @@ export function StockChartPlot({
                   dataKey={lineDataKey}
                   type={overlay === "epsTtm" ? "stepAfter" : "linear"}
                   stroke={OVERLAY_LINE_COLORS[overlay]}
-                  strokeWidth={2}
+                  strokeWidth={2.8}
+                  strokeOpacity={0.97}
                   dot={false}
                   connectNulls={false}
-                  isAnimationActive
-                  animationDuration={220}
+                  isAnimationActive={!animationDisabled}
+                  animationDuration={overlayAnimationDuration}
                   animationEasing="ease-out"
                   name={lineDataKey}
                 />
               );
             })}
+            {eventMarkerPoints.map((marker) => (
+              <ReferenceLine
+                key={`event-line-${marker.id}`}
+                x={marker.t}
+                yAxisId="price"
+                stroke={
+                  marker.kind === "earnings"
+                    ? "#2563eb"
+                    : marker.kind === "userTrade"
+                      ? marker.side === "BUY"
+                        ? "var(--profit)"
+                        : "var(--loss)"
+                      : marker.kind === "globalNews"
+                        ? "#0f766e"
+                        : "#d97706"
+                }
+                strokeOpacity={hoveredEventId === marker.id ? 0.62 : 0.25}
+                strokeWidth={hoveredEventId === marker.id ? 1.4 : 1}
+                strokeDasharray={marker.kind === "userTrade" ? "2 4" : "3 5"}
+                ifOverflow="discard"
+              />
+            ))}
+            {eventMarkerPoints.map((marker) => (
+              <ReferenceDot
+                key={`event-dot-${marker.id}`}
+                x={marker.t}
+                y={marker.markerY}
+                yAxisId="price"
+                ifOverflow="discard"
+                isFront
+                shape={(props: unknown) => (
+                  <StockChartEventMarkerDot
+                    {...(props as StockChartEventMarkerDotProps)}
+                    payload={marker}
+                    isActive={hoveredEventId === marker.id}
+                    onHoverChange={handleEventMarkerHover}
+                  />
+                )}
+              />
+            ))}
             {visibleTradeMarkers.map((marker) => (
               <ReferenceDot
                 key={marker.key}
@@ -222,7 +320,7 @@ export function StockChartPlot({
                 strokeWidth={1.2}
               />
             ))}
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       ) : null}
 
@@ -242,6 +340,15 @@ export function StockChartPlot({
             Odswiezam wykres
           </div>
         </div>
+      ) : null}
+
+      {hoveredEventMarker && hoveredEventCoordinates ? (
+        <StockChartHoverEventCard
+          marker={hoveredEventMarker}
+          x={hoveredEventCoordinates.x}
+          y={hoveredEventCoordinates.y}
+          currency={chartCurrency}
+        />
       ) : null}
     </div>
   );

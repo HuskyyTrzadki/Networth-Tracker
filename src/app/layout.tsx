@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <html lang="pl">
+    <html lang="pl" suppressHydrationWarning>
       <body className="antialiased">
         <Script id="theme-preference-init" strategy="beforeInteractive">
           {`(() => {

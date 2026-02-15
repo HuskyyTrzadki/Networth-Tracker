@@ -1,81 +1,73 @@
-# Portfolio Tracker Editorial Style Guide (v1)
+# Portfolio Tracker Editorial Style Guide (v2)
 
 ## Design Direction
 - Personality: Precision and Density + Data and Analysis.
+- Product promise: beginner-friendly first read, advanced depth on demand.
 - Visual metaphor: monochrome field report on warm paper.
-- Outcome: fast scanning, high trust, low ornament.
 
 ## Foundations
 - Typography:
-  - Primary/UI/data: IBM Plex Mono look and rhythm (fallback to Geist Mono).
-  - Numbers: always tabular.
-- Light theme (`day paper`):
-  - Paper: warm, darker-than-white beige.
-  - Ink: `#393939`.
-- Dark theme (`night paper`):
-  - Deep warm charcoal paper.
-  - Off-white ink.
-- Radius scale: minimal (`4px/6px` family).
-- Depth: borders only, no glossy shadows.
+  - Primary/UI/data: IBM Plex Mono rhythm (fallback Geist Mono).
+  - Numbers: tabular-nums everywhere.
+- Day paper theme:
+  - Background: `#FCF7EB`.
+  - Baseline ink: `#393939`.
+- Night paper theme:
+  - Warm charcoal background with off-white ink.
+- Radius:
+  - Minimal (`4px/6px`).
+- Elevation:
+  - Borders-first, no glossy shadows.
+
+## Layout Strategy (Locked)
+- Option A across product:
+  - App workflows keep sidebar shell.
+  - Report/public pages use fullscreen paper + sticky `Menu` button.
+- Stock report desktop layout:
+  - **2 columns only**.
+  - Left rail: ticker identity + quick facts.
+  - Right rail: single vertical narrative stream.
+- Reading order:
+  - Snapshot -> Chart -> Business summary -> Fundamentals -> Risks -> Advanced details.
+
+## Progressive Disclosure
+- Default view must stay understandable for non-advanced users.
+- Dense data moves under `details`/expanders/dialogs.
+- Every major section ends with `Co to znaczy dla inwestora?`.
 
 ## Border Grammar
-- Default module boundary: dashed border.
-- Column separators and section rules: dashed.
-- Strong hierarchy: one solid/darker rule only where navigation context needs it.
+- Use dashed separators with explicit ink tone for report rows:
+  - `border-dashed border-[#393939]`.
+- Prefer separators over heavy widget cards.
+- Column separators may use utility classes where needed.
 
 ## Motion
-- Micro interactions: `150ms`.
-- Panel/drawer: `200-220ms`.
-- Easing: `cubic-bezier(0.25, 1, 0.5, 1)`.
-- No spring, bounce, or continuous chart animation.
-
-## Color Semantics
-- Color appears only for meaning:
-  - Profit: muted green.
-  - Loss: muted brick red.
-  - Neutral trend accents: dusty warm tones.
-- Structural UI remains mostly ink/paper.
-
-## Shell Strategy (Option A)
-- App workflows (`/portfolio`, `/transactions`, `/settings`, `/stocks`):
-  - Sidebar layout, denser operational rhythm.
-- Report/public pages (`/stocks/[providerKey]`, `/login`, `/`):
-  - Full-screen paper feel.
-  - Minimal top bar + `Menu` drawer.
-
-## Page Patterns
-- Landing:
-  - Hero copy + single primary action.
-  - One large illustration slot.
-  - Small metric chips below.
-- Stock report:
-  - Left/main data rail (chart + tables + analysis cards).
-  - Right context rail (AI summary, metadata, investor mode CTA).
-- Login:
-  - Focused authentication card.
-  - Google first, then email/password.
-  - Illustration slot on desktop.
+- Micro interactions: ~`150ms`.
+- Menu panel: ~`200-220ms`.
+- Chart draw animation: enabled and calm (`~450-750ms`), disabled when reduced-motion is on.
+- Easing: `ease-out` or `cubic-bezier(0.25, 1, 0.5, 1)`.
 
 ## Chart Language
+- Price line color depends on selected-range performance:
+  - Up range -> profit green.
+  - Down range -> loss red.
+  - Flat range -> neutral ink.
 - Dashed horizontal grid.
-- Flat color strokes.
-- Plain tooltip (paper box, ink border, mono text).
-- Buy/sell markers (for logged-in users only), no decorative effects.
+- Plain tooltip (paper background, ink border, mono text).
+- Buy/sell markers remain semantic only.
 
 ## Copy and Localization
 - Product UI copy is Polish only.
-- Headlines concise, declarative, report-like.
-- Avoid marketing superlatives and decorative wording.
+- Tone: report-like, concise, no marketing fluff.
+- Explain before you optimize for density.
 
-## Image Direction
-- Use engraved/editorial monochrome images only.
-- Keep illustrations contextual (finance desk, report reading, market device).
-- Avoid color-heavy or photorealistic assets.
+## Image Workflow
+- During build: placeholder images may use `https://picsum.photos/...`.
+- Final assets: engraved monochrome editorial illustrations.
 
 ### Prompt Template
 `<subject>, 19th century engraved illustration, pen-and-ink stippling and cross-hatching, Victorian scientific engraving, monochrome, black ink on warm off-white paper, no color, no gradients, no smooth shading, editorial illustration, antique textbook plate`
 
-### Current Required Slots
-- Landing hero image: astronaut reading a printed stock report.
-- Login illustration: ledger desk with fountain pen and market notes.
-- Stock report side illustration: hand with phone showing market chart and coffee cup.
+### Current Report Placeholder Slots
+- Left rail illustration: `https://picsum.photos/420/280?random=41`
+- Snapshot section illustration: `https://picsum.photos/960/360?random=42`

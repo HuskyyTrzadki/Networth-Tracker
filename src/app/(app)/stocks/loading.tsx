@@ -11,7 +11,7 @@ export default function StocksLoading() {
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={`stocks-loading-${index}`}
-            className="aspect-square animate-pulse rounded-2xl bg-muted/35"
+            className="h-56 animate-pulse rounded-xl bg-muted/35"
           />
         ))}
       </section>
