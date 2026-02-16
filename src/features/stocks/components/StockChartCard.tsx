@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -44,7 +44,19 @@ type Props = Readonly<{
 }>;
 
 export function StockChartCard({ providerKey, initialChart }: Props) {
-  const [range, setRange] = useState<StockChartRange>(initialChart.requestedRange);
+  const rangeStorageKey = `stocks:chart-range:${providerKey}`;
+  const [range, setRange] = useState<StockChartRange>(() => {
+    if (typeof window === "undefined") {
+      return initialChart.requestedRange;
+    }
+
+    const savedRange = window.localStorage.getItem(rangeStorageKey) as StockChartRange | null;
+    if (savedRange && STOCK_CHART_RANGES.includes(savedRange)) {
+      return savedRange;
+    }
+
+    return initialChart.requestedRange;
+  });
   const [mode, setMode] = useState<StockChartMode>("trend");
   const [activeOverlays, setActiveOverlays] = useState<StockChartOverlay[]>(
     [...initialChart.activeOverlays]
@@ -54,6 +66,10 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   const [showUserTradeEvents, setShowUserTradeEvents] = useState(false);
   const [showGlobalNewsEvents, setShowGlobalNewsEvents] = useState(true);
   const [showNarration, setShowNarration] = useState(true);
+
+  useEffect(() => {
+    window.localStorage.setItem(rangeStorageKey, range);
+  }, [range, rangeStorageKey]);
 
   const normalizedOverlays = normalizeOverlaysForMode(mode, activeOverlays);
   const initialOverlayKey = toOverlayRequestKey(initialChart.activeOverlays);

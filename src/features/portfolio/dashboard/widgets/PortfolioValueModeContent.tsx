@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { PortfolioComparisonChart } from "@/features/design-system";
+import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
 
 import type { SnapshotCurrency } from "../../lib/supported-currencies";
@@ -33,6 +35,8 @@ type Props = Readonly<{
   investedCapitalSeries: readonly NullableSeriesPoint[];
   formatCurrencyValue: (value: number) => string;
   formatDayLabelWithYear: (label: string) => string;
+  transactionCreateHref: string;
+  cashDepositHref: string;
 }>;
 
 export function PortfolioValueModeContent({
@@ -54,6 +58,8 @@ export function PortfolioValueModeContent({
   investedCapitalSeries,
   formatCurrencyValue,
   formatDayLabelWithYear,
+  transactionCreateHref,
+  cashDepositHref,
 }: Props) {
   const isRebuildBusy = rebuildStatus === "queued" || rebuildStatus === "running";
 
@@ -69,10 +75,26 @@ export function PortfolioValueModeContent({
 
   if (!hasValuePoints) {
     return (
-      <div className={getPortfolioChartEmptyStateClassName(shouldBootstrap)}>
-        {hasHoldings
-          ? "Tworzymy pierwszy punkt wartości portfela."
-          : "Dodaj transakcje, aby zobaczyć wykres."}
+      <div className={cn(getPortfolioChartEmptyStateClassName(shouldBootstrap), "space-y-3")}>
+        <p>
+          {hasHoldings
+            ? "Tworzymy pierwszy punkt wartości portfela."
+            : "Dodaj transakcje, aby zobaczyć wykres."}
+        </p>
+        {!hasHoldings ? (
+          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+            <Button asChild className="h-9 px-3 text-xs" size="sm">
+              <Link href={transactionCreateHref} scroll={false}>
+                Dodaj pierwsze kupno
+              </Link>
+            </Button>
+            <Button asChild className="h-9 px-3 text-xs" size="sm" variant="outline">
+              <Link href={cashDepositHref} scroll={false}>
+                Dodaj depozyt gotówki
+              </Link>
+            </Button>
+          </div>
+        ) : null}
       </div>
     );
   }

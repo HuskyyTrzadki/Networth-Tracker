@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Badge } from "@/features/design-system/components/ui/badge";
@@ -34,6 +34,7 @@ type Props = Readonly<{
   emptyLabel?: string;
   queryPlaceholder?: string;
   triggerClassName?: string;
+  listenForFocusShortcut?: boolean;
 }>;
 
 const MIN_QUERY_LENGTH = 2;
@@ -49,11 +50,13 @@ export function InstrumentCombobox({
   emptyLabel = "Wybierz instrument…",
   queryPlaceholder = "Szukaj (np. Apple, BTC, XTB)",
   triggerClassName,
+  listenForFocusShortcut = false,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const commandInputRef = useRef<HTMLInputElement | null>(null);
   const debouncedCommit = useDebouncedCallback(
     (nextValue: string) => setDebouncedQuery(nextValue),
     DEBOUNCE_MS
@@ -85,6 +88,21 @@ export function InstrumentCombobox({
     !error &&
     hasMinQuery &&
     results.length > 0;
+
+  useEffect(() => {
+    if (!listenForFocusShortcut) return;
+
+    const onFocusSearch = () => {
+      setOpen(true);
+      window.requestAnimationFrame(() => {
+        commandInputRef.current?.focus();
+        commandInputRef.current?.select();
+      });
+    };
+
+    window.addEventListener("app:focus-search", onFocusSearch);
+    return () => window.removeEventListener("app:focus-search", onFocusSearch);
+  }, [listenForFocusShortcut]);
 
   return (
     <Popover
@@ -144,6 +162,7 @@ export function InstrumentCombobox({
           <CommandInput
             className="h-10 text-sm"
             placeholder={queryPlaceholder}
+            ref={commandInputRef}
             value={query}
             onValueChange={(nextValue) => {
               setShowAll(false);

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { LoaderCircle, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -17,6 +17,7 @@ import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/
 import {
   Form,
 } from "@/features/design-system/components/ui/form";
+import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
 
 import {
   createAddTransactionFormSchema,
@@ -30,6 +31,7 @@ import {
   type CashCurrency,
 } from "../lib/system-currencies";
 import { createTransaction } from "../client/create-transaction";
+import { deleteTransaction } from "../client/delete-transaction";
 import type { InstrumentSearchClient } from "../client/search-instruments";
 import {
   resolveInitialTab,
@@ -121,6 +123,8 @@ export function AddTransactionDialogContent({
   forcedPortfolioId,
   onSubmitSuccess,
   onClose,
+  onDirtyChange,
+  onSubmittingChange,
 }: Readonly<{
   initialValues?: Partial<FormValues>;
   initialInstrument?: InstrumentSearchResult;
@@ -131,7 +135,9 @@ export function AddTransactionDialogContent({
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
   onSubmitSuccess?: () => void;
-  onClose: () => void;
+  onClose: (options?: { force?: boolean }) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+  onSubmittingChange?: (isSubmitting: boolean) => void;
 }>) {
   const schema = createAddTransactionFormSchema();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -205,7 +211,7 @@ export function AddTransactionDialogContent({
     try {
       const resolvedPortfolioId = forcedPortfolioId ?? values.portfolioId;
       const payloadFields = buildSubmitPayloadFields(values, isCashTab);
-      await createTransaction({
+      const createResult = await createTransaction({
         type: values.type,
         date: values.date,
         quantity: values.quantity,
@@ -238,10 +244,50 @@ export function AddTransactionDialogContent({
       triggerSnapshotRebuild("PORTFOLIO", resolvedPortfolioId);
       triggerSnapshotRebuild("ALL", null);
 
+      dispatchAppToast({
+        title: "Transakcja zapisana.",
+        description: "Możesz cofnąć zmianę przez 10 sekund.",
+        tone: "success",
+        durationMs: 10_000,
+        action: {
+          label: "Cofnij",
+          onClick: async () => {
+            try {
+              const undoResult = await deleteTransaction(createResult.transactionId);
+              dispatchSnapshotRebuildTriggeredEvent({
+                scope: "PORTFOLIO",
+                portfolioId: undoResult.portfolioId,
+              });
+              dispatchSnapshotRebuildTriggeredEvent({
+                scope: "ALL",
+                portfolioId: null,
+              });
+              triggerSnapshotRebuild("PORTFOLIO", undoResult.portfolioId);
+              triggerSnapshotRebuild("ALL", null);
+              dispatchAppToast({
+                title: "Cofnięto transakcję.",
+                description: "Zmiana została anulowana.",
+                tone: "success",
+              });
+            } catch (undoError) {
+              const message =
+                undoError instanceof Error
+                  ? undoError.message
+                  : "Nie udało się cofnąć transakcji.";
+              dispatchAppToast({
+                title: "Nie udało się cofnąć transakcji.",
+                description: message,
+                tone: "destructive",
+              });
+            }
+          },
+        },
+      });
+
       onSubmitSuccess?.();
 
       // Close dialog after submit side effects are scheduled.
-      onClose();
+      onClose({ force: true });
     } catch (error) {
       const message =
         error instanceof Error
@@ -254,6 +300,15 @@ export function AddTransactionDialogContent({
   });
 
   const rootError = form.formState.errors.root?.message;
+  const isDirty = form.formState.isDirty;
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  useEffect(() => {
+    onSubmittingChange?.(isSubmitting);
+  }, [isSubmitting, onSubmittingChange]);
 
   return (
     <Form {...form}>
@@ -263,24 +318,24 @@ export function AddTransactionDialogContent({
           onSubmit={submitTransaction}
         >
           <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-5 py-4 md:px-6 md:py-5">
-          <div className="min-w-0">
-            <DialogTitle className="truncate">Dodaj transakcję</DialogTitle>
-            <DialogDescription className="mt-1 text-[13px]">
-              Uzupełnij dane i zapisz transakcję w portfelu.
-            </DialogDescription>
-          </div>
-          <DialogClose asChild>
-            <Button
-              aria-label="Zamknij"
-              className="h-9 w-9 p-0"
-              type="button"
-              variant="ghost"
-              disabled={isSubmitting}
-            >
-              <X className="size-5 opacity-70" aria-hidden />
-            </Button>
-          </DialogClose>
-        </header>
+            <div className="min-w-0">
+              <DialogTitle className="truncate">Dodaj transakcję</DialogTitle>
+              <DialogDescription className="mt-1 text-[13px]">
+                Uzupełnij dane i zapisz transakcję w portfelu.
+              </DialogDescription>
+            </div>
+            <DialogClose asChild>
+              <Button
+                aria-label="Zamknij"
+                className="h-9 w-9 p-0"
+                type="button"
+                variant="ghost"
+                disabled={isSubmitting}
+              >
+                <X className="size-5 opacity-70" aria-hidden />
+              </Button>
+            </DialogClose>
+          </header>
 
           <AddTransactionDialogFields
             activeTab={activeTab}
@@ -296,14 +351,14 @@ export function AddTransactionDialogContent({
             setSelectedInstrument={setSelectedInstrument}
           />
 
-          <footer className="border-t border-border/70 bg-background px-5 py-4 md:px-6 md:py-5">
+          <footer className="sticky bottom-0 z-10 border-t border-border/70 bg-background px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:static md:px-6 md:py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-h-5 text-sm text-destructive">
                 {rootError ?? ""}
               </div>
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button
-                  onClick={onClose}
+                  onClick={() => onClose()}
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}

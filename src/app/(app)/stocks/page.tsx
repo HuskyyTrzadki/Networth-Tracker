@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
 import { Suspense } from "react";
+import Link from "next/link";
 
 import { AnimatedReveal } from "@/features/design-system";
+import { Button } from "@/features/design-system/components/ui/button";
 import { StockSearchBar } from "@/features/stocks/components/StockSearchBar";
 import { createClient } from "@/lib/supabase/server";
 
@@ -36,6 +38,16 @@ export default async function StocksPage() {
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby korzystać ze screenera akcji.
         </div>
+        <Button asChild className="mt-4 h-11">
+          <Link
+            href={{
+              pathname: "/login",
+              query: { next: "/stocks" },
+            }}
+          >
+            Zaloguj się
+          </Link>
+        </Button>
       </main>
     );
   }

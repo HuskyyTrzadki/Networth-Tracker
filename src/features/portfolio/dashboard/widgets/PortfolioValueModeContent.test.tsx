@@ -29,6 +29,8 @@ describe("PortfolioValueModeContent", () => {
         investedCapitalSeries={[]}
         formatCurrencyValue={(value) => `VAL(${value})`}
         formatDayLabelWithYear={(value) => value}
+        transactionCreateHref="/transactions/new"
+        cashDepositHref="/transactions/new?preset=cash-deposit"
       />
     );
 

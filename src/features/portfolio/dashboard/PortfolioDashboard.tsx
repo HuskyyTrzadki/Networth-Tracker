@@ -1,5 +1,7 @@
 import { cn } from "@/lib/cn";
 import { AnimatedReveal } from "@/features/design-system";
+import { Alert } from "@/features/design-system/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
@@ -58,8 +60,20 @@ export function PortfolioDashboard({
           baseCurrency={summary.baseCurrency}
           totalValueBase={summary.totalValueBase}
           isPartial={summary.isPartial}
+          asOf={summary.asOf}
         />
       </AnimatedReveal>
+      {summary.isPartial ? (
+        <AnimatedReveal delay={0.03}>
+          <Alert className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50/70 px-3 py-2 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <p className="text-sm">
+              Dane wyceny są częściowe: brak cen dla {summary.missingQuotes} pozycji
+              i brak FX dla {summary.missingFx}. Wyniki mogą być zaniżone.
+            </p>
+          </Alert>
+        </AnimatedReveal>
+      ) : null}
       {selectedPortfolioId === null ? (
         <AnimatedReveal className="hidden md:block" delay={0.04}>
           <div className="inline-flex rounded-lg border border-border/85 bg-card p-2">

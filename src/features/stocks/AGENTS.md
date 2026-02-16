@@ -74,9 +74,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),
   - free-cash-flow explainer section.
 - "Jak firma zarabia" now has two visuals for revenue understanding:
-  - default `Sankey` flow rendered with `echarts-for-react` (segmenty przychodow -> koszty -> zysk netto) with print-like textures/dashed streams,
+  - default `Sankey` flow rendered with `echarts-for-react` in hourglass topology (`regiony geograficzne` -> `Przychody razem` -> `COGS / OPEX / Podatki / Zysk netto`) with print-like textures/dashed streams,
   - fallback `Kołowe` view (existing product/geo donuts).
-- Sankey left-lane split is now based on geographic revenue mix (4 segments) instead of highly concentrated product split, to improve readability and avoid one dominant 98% stream.
+- Sankey uses one central revenue aggregator to avoid right-side "spaghetti" crossings; right-lane costs are grouped into investor-first hierarchy (`COGS`, `OPEX` as `R&D+SG&A`, `Podatki`) and include contextual hover explanations.
 - Price chart controls include a `Narracja` toggle (default ON for long ranges) that reveals labeled event annotations on vertical guides.
 - Report stream now includes `Zarzad i insiderzy` section (`#sekcja-zarzad`) with leadership cards and insider timeline (demo data).
 - Concept-heavy sections expose hover tooltips via an `i` icon to clarify definitions in-place.
@@ -101,7 +101,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - global event card (`Wazne wydarzenia globalne`) with separate marker color and placeholder image.
   - optional `BUY/SELL uzytkownika (mock)` markers use plus/minus icons with size scaled by mocked position value.
   - event overlays are enabled only on longer ranges (`3Y`, `5Y`, `10Y`, `ALL`) and are generated as yearly mocked markers.
+- `StockChartCard` remembers selected range in localStorage per instrument (`stocks:chart-range:<providerKey>`), preserving user preference across revisits.
 - Screener/search and chart hover tooltips were aligned with the shared editorial style baseline (consistent radii/borders, toned-down surface depth) without changing data behavior.
+- Stock search input (`StockSearchBar`) opts into global `/` focus shortcut via reusable `InstrumentCombobox` shortcut-listener mode.
 - Desktop polish follow-up adjusted `/stocks` shell/readability on large screens (search width containment, loader/skeleton geometry, and screener card density/rhythm).
 - Desktop micro-pass for `/stocks/[providerKey]` refined chart controls and typography: grouped range/mode/overlay controls into clearer desktop panels, reduced chart-axis typographic noise, and tightened heading/row scale in valuation/sidebar blocks.
 - Desktop report typography pass further aligned long-form sections (`StockReportMainContent`, `StockReportRevenueMixSection`, `StockReportFiveYearTrendAnalysisSection`, `StockReportConceptSections`): section titles normalized to a calmer scale, uppercase helper labels softened, and key financial values switched to `font-mono tabular-nums` for faster scan/comparison.

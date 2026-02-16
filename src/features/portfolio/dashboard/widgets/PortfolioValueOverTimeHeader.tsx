@@ -3,6 +3,7 @@
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import { Badge } from "@/features/design-system/components/ui/badge";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -38,6 +39,7 @@ type Props = Readonly<{
   valueIsPartial: boolean;
   missingQuotes: number;
   missingFx: number;
+  liveAsOf: string | null;
   rebuildStatus: "idle" | "queued" | "running" | "failed";
   rebuildMessage: string | null;
   isAllHistoryLoading?: boolean;
@@ -60,15 +62,43 @@ export function PortfolioValueOverTimeHeader({
   valueIsPartial,
   missingQuotes,
   missingFx,
+  liveAsOf,
   rebuildStatus,
   rebuildMessage,
   isAllHistoryLoading = false,
   isAllHistoryTruncated = false,
 }: Props) {
   const selectedComparisonsCount = selectedComparisons.length;
+  const liveAsOfDate = liveAsOf ? new Date(liveAsOf) : null;
+  const quoteAsOfLabel =
+    liveAsOfDate && Number.isFinite(liveAsOfDate.getTime())
+      ? new Intl.DateTimeFormat("pl-PL", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(liveAsOfDate)
+      : null;
+  const fxAsOfLabel =
+    liveAsOfDate && Number.isFinite(liveAsOfDate.getTime())
+      ? new Intl.DateTimeFormat("pl-PL", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(liveAsOfDate)
+      : null;
 
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge className="rounded-md px-2 py-0.5 text-[11px]" variant="outline">
+          Notowania z {quoteAsOfLabel ?? "—"}
+        </Badge>
+        <Badge className="rounded-md px-2 py-0.5 text-[11px]" variant="outline">
+          Kurs FX z dnia {fxAsOfLabel ?? "—"}
+        </Badge>
+      </div>
       <div className="flex flex-wrap items-end gap-2.5 xl:flex-nowrap">
         <div className="rounded-md border border-border/60 bg-card p-2.5">
           <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">

@@ -94,9 +94,16 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions toolbar, table chrome, and add-transaction dialog were visually refreshed (warmer surfaces, clearer micro-typography, calmer badges, consistent button/control sizing) without changing transaction behavior.
 - Refresh pass tightened consistency further: unified rounded container scale (`rounded-lg`/`rounded-md`), removed excess visual depth from modal/table surfaces, and aligned segmented/toggle controls with shared primitive states.
 - Desktop-only follow-up refined route-shell alignment (`max-w-[1560px]`), header hierarchy on `/transactions`, and dense form/table typography in add-transaction combobox + live summary for better scanability on large screens.
+- Transactions empty state is actionable: no-results state can clear the search filters, and default empty state provides direct CTA to open add-transaction flow.
+- Transactions toolbar exposes explicit pending feedback (`Aktualizowanie listy...`) while URL/filter transitions are in flight.
+- Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.
+- Add-transaction close guard uses an in-app confirmation dialog (`Odrzucić niezapisane zmiany?`) instead of `window.confirm`, so behavior stays consistent with design-system modals.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.
+- Save success UX includes global toast feedback with undo (`Cofnij` for 10s). Undo calls `DELETE /api/transactions/[transactionId]` and re-triggers snapshot rebuild events.
+- Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.
+- Search surfaces that use `InstrumentCombobox` can opt into global `/` focus shortcut via `listenForFocusShortcut`.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

@@ -1,6 +1,6 @@
 export default function TransactionsLoading() {
   return (
-    <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
+    <main className="mx-auto w-full max-w-[1560px] px-5 py-6 sm:px-6 sm:py-8">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <div className="h-3 w-20 rounded-md bg-muted/45" />

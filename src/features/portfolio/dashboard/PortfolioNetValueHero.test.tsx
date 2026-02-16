@@ -11,6 +11,7 @@ describe("PortfolioNetValueHero", () => {
         baseCurrency="PLN"
         totalValueBase="12345.67"
         isPartial={false}
+        asOf={null}
       />
     );
 
@@ -26,6 +27,7 @@ describe("PortfolioNetValueHero", () => {
         baseCurrency="PLN"
         totalValueBase="100"
         isPartial
+        asOf={null}
       />
     );
 

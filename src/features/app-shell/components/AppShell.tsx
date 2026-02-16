@@ -1,6 +1,7 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   SidebarInset,
@@ -9,7 +10,9 @@ import {
 import { cn } from "@/lib/cn";
 
 import { AppSidebar } from "./AppSidebar";
+import { AppToastHost } from "./AppToastHost";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { getPortfolioIdFromPathname } from "../lib/path";
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -22,10 +25,50 @@ type Props = Readonly<{
 }>;
 
 export function AppShell({ children, portfolios, className }: Props) {
+  const router = useRouter();
+  const pathname = usePathname() ?? "/";
   const sidebarStyle = {
     "--sidebar-width": "24rem",
     "--sidebar-width-icon": "3.5rem",
   } as CSSProperties;
+
+  useEffect(() => {
+    const isTypingElement = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName.toLowerCase();
+      if (target.isContentEditable) return true;
+      return tag === "input" || tag === "textarea" || tag === "select";
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        window.dispatchEvent(new Event("app:close-modal"));
+        return;
+      }
+
+      if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) {
+        return;
+      }
+
+      if (event.key === "/" && !isTypingElement(event.target)) {
+        event.preventDefault();
+        window.dispatchEvent(new Event("app:focus-search"));
+        return;
+      }
+
+      if (event.key.toLowerCase() === "n" && !isTypingElement(event.target)) {
+        event.preventDefault();
+        const activePortfolioId = getPortfolioIdFromPathname(pathname);
+        const href = activePortfolioId
+          ? `/transactions/new?portfolio=${activePortfolioId}`
+          : "/transactions/new";
+        router.push(href, { scroll: false });
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [pathname, router]);
 
   return (
     <SidebarProvider style={sidebarStyle}>
@@ -33,6 +76,7 @@ export function AppShell({ children, portfolios, className }: Props) {
       <SidebarInset className={cn("min-h-dvh pb-24 md:pb-0", className)}>
         {children}
         <MobileBottomNav />
+        <AppToastHost />
       </SidebarInset>
     </SidebarProvider>
   );

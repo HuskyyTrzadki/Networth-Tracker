@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getCurrencyFormatter } from "@/lib/format-currency";
@@ -20,8 +20,9 @@ import {
   type ChartRange,
   formatDayLabelWithYear,
   getRangeRows,
-  getTotalValue,
-} from "../lib/chart-helpers";
+    getTotalValue,
+    rangeOptions,
+  } from "../lib/chart-helpers";
 import { buildPortfolioValueOverTimeViewModel } from "../lib/portfolio-value-over-time-view-model";
 import { loadFullSnapshotHistory } from "../lib/load-full-snapshot-history";
 import { PortfolioPerformanceModeContent } from "./PortfolioPerformanceModeContent";
@@ -62,9 +63,14 @@ export function PortfolioValueOverTimeChart({
   benchmarkSeries,
   rebuild,
 }: Props) {
+  const rangeStorageKey = useMemo(
+    () => `portfolio:chart-range:${scope}:${portfolioId ?? "all"}`,
+    [scope, portfolioId]
+  );
   const [currency, setCurrency] = useState<SnapshotCurrency>("PLN");
   const [mode, setMode] = useState<ChartMode>(() => resolveInitialChartMode(rows));
   const [range, setRange] = useState<ChartRange>(() => resolveInitialChartRange(rows));
+  const [didRestoreRange, setDidRestoreRange] = useState(false);
   const [fullHistoryRows, setFullHistoryRows] = useState<
     readonly SnapshotChartRow[] | null
   >(null);
@@ -91,6 +97,12 @@ export function PortfolioValueOverTimeChart({
   const rebuildStartDate = rebuild.fromDate ?? rebuild.dirtyFrom;
 
   const liveTotals = liveTotalsByCurrency[currency];
+  const transactionCreateHref = portfolioId
+    ? `/transactions/new?portfolio=${portfolioId}`
+    : "/transactions/new";
+  const cashDepositHref = portfolioId
+    ? `/transactions/new?portfolio=${portfolioId}&preset=cash-deposit`
+    : "/transactions/new?preset=cash-deposit";
 
   const lastValuationBucketDate =
     [...snapshotRows].reverse().find((row) => getTotalValue(row, currency) !== null)
@@ -144,6 +156,22 @@ export function PortfolioValueOverTimeChart({
     benchmarkSeriesState,
     selectedComparisons,
   });
+
+  useEffect(() => {
+    if (didRestoreRange) return;
+
+    const savedRange = window.localStorage.getItem(rangeStorageKey) as ChartRange | null;
+    const isKnownRange = rangeOptions.some((option) => option.value === savedRange);
+    if (savedRange && isKnownRange && !viewModel.isRangeDisabled(savedRange)) {
+      setRange(savedRange);
+    }
+    setDidRestoreRange(true);
+  }, [didRestoreRange, rangeStorageKey, viewModel]);
+
+  useEffect(() => {
+    if (!didRestoreRange) return;
+    window.localStorage.setItem(rangeStorageKey, range);
+  }, [didRestoreRange, range, rangeStorageKey]);
 
   const currencyFormatter = getCurrencyFormatter(currency);
   const formatCurrencyValue = (value: number) =>
@@ -286,6 +314,7 @@ export function PortfolioValueOverTimeChart({
         valueIsPartial={liveTotals.totalValue !== null && liveTotals.isPartial}
         missingQuotes={liveTotals.missingQuotes}
         missingFx={liveTotals.missingFx}
+        liveAsOf={liveTotals.asOf}
         rebuildStatus={rebuild.status}
         rebuildMessage={rebuild.message}
         isAllHistoryLoading={isAllHistoryLoading}
@@ -312,6 +341,8 @@ export function PortfolioValueOverTimeChart({
           investedCapitalSeries={viewModel.investedCapitalSeries}
           formatCurrencyValue={formatCurrencyValue}
           formatDayLabelWithYear={formatDayLabelWithYear}
+          transactionCreateHref={transactionCreateHref}
+          cashDepositHref={cashDepositHref}
         />
       ) : (
         <PortfolioPerformanceModeContent
@@ -330,6 +361,8 @@ export function PortfolioValueOverTimeChart({
           cumulativeChartData={viewModel.cumulativeChartData}
           comparisonLines={viewModel.activeComparisonLines}
           formatCurrencyValue={formatCurrencyValue}
+          transactionCreateHref={transactionCreateHref}
+          cashDepositHref={cashDepositHref}
         />
       )}
     </div>

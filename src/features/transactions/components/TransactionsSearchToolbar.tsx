@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { Loader2 } from "lucide-react";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -52,6 +53,7 @@ export function TransactionsSearchToolbar({
   const [searchValue, setSearchValue] = useState(query ?? "");
   const [isPending, startTransition] = useTransition();
   const searchParamsString = searchParams?.toString() ?? "";
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const pushWithUpdates = (updates: Readonly<Record<string, string | null>>) => {
     const params = new URLSearchParams(searchParams?.toString());
@@ -94,6 +96,16 @@ export function TransactionsSearchToolbar({
     debouncedCommit(nextValue);
   };
 
+  useEffect(() => {
+    const onFocusSearch = () => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    };
+
+    window.addEventListener("app:focus-search", onFocusSearch);
+    return () => window.removeEventListener("app:focus-search", onFocusSearch);
+  }, []);
+
   return (
     <div
       className={cn(
@@ -108,12 +120,19 @@ export function TransactionsSearchToolbar({
           selectedId={selectedPortfolioId}
         />
       </div>
+      {isPending ? (
+        <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="size-3 animate-spin" aria-hidden />
+          Aktualizowanie listy...
+        </div>
+      ) : null}
 
       <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex-1">
           <Input
             aria-label="Szukaj instrumentu"
             className="h-10"
+            ref={searchInputRef}
             onChange={handleSearchChange}
             placeholder="Szukaj instrumentu..."
             value={searchValue}

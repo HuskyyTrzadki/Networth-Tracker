@@ -3,12 +3,14 @@ export type RevenueSegment = Readonly<{
   label: string;
   valuePercent: number;
   color: string;
+  description?: string;
 }>;
 
 export type CostSlice = Readonly<{
   id: string;
   label: string;
   valuePercent: number;
+  description?: string;
 }>;
 
 export type SankeyNode = Readonly<{
@@ -18,6 +20,7 @@ export type SankeyNode = Readonly<{
   valuePercent: number;
   color: string;
   pattern: "solid" | "hatch" | "dots" | "cross";
+  description?: string;
 }>;
 
 export type SankeyLink = Readonly<{
@@ -55,6 +58,7 @@ export const buildRevenueSankeyModel = (params: Readonly<{
   revenueSegments: readonly RevenueSegment[];
   costs: readonly CostSlice[];
   netMarginPercent: number;
+  netProfitDescription?: string;
 }>): SankeyModel => {
   const costPalette = ["#7a7368", "#827a70", "#8a8177", "#746d64"] as const;
   const segments = normalizeSlices(
@@ -79,11 +83,22 @@ export const buildRevenueSankeyModel = (params: Readonly<{
       valuePercent: segment.valuePercent,
       color: segment.color,
       pattern: "solid" as const,
+      description: segment.description,
     })),
+    {
+      id: "total-revenue",
+      label: "Przychody razem",
+      lane: "middle" as const,
+      valuePercent: 100,
+      color: "#655f57",
+      pattern: "solid" as const,
+      description:
+        "Wspolny worek gotowki: caly strumien przychodow (100%) przed podzialem na koszty i zysk.",
+    },
     ...costSlices.map((cost, index) => ({
       id: cost.id,
       label: cost.label,
-      lane: "middle" as const,
+      lane: "right" as const,
       valuePercent: (cost.valuePercent / 100) * costTotalPercent,
       color: costPalette[index % costPalette.length],
       pattern:
@@ -92,6 +107,7 @@ export const buildRevenueSankeyModel = (params: Readonly<{
           : index % 3 === 1
             ? ("dots" as const)
             : ("cross" as const),
+      description: cost.description,
     })),
     {
       id: "net-profit",
@@ -100,37 +116,47 @@ export const buildRevenueSankeyModel = (params: Readonly<{
       valuePercent: netMarginPercent,
       color: "#4d4a45",
       pattern: "solid" as const,
+      description:
+        params.netProfitDescription ??
+        "Czesc przychodu, ktora pozostaje po pokryciu kosztow i podatkow.",
     },
   ];
 
   const links: SankeyLink[] = [];
 
   segments.forEach((segment) => {
-    costSlices.forEach((cost, index) => {
-      const targetNode = nodes.find((node) => node.id === cost.id);
-      const shareOfCosts = (cost.valuePercent / 100) * costTotalPercent;
-      const linkValue = (segment.valuePercent * shareOfCosts) / 100;
-      if (!targetNode || linkValue <= 0) return;
-
-      links.push({
-        id: `${segment.id}-${cost.id}`,
-        sourceId: segment.id,
-        targetId: cost.id,
-        valuePercent: linkValue,
-        style: index % 2 === 0 ? "dashed" : "dotted",
-      });
-    });
-
-    const netLinkValue = (segment.valuePercent * netMarginPercent) / 100;
-    if (netLinkValue <= 0) return;
     links.push({
-      id: `${segment.id}-net-profit`,
+      id: `${segment.id}-total-revenue`,
       sourceId: segment.id,
-      targetId: "net-profit",
-      valuePercent: netLinkValue,
+      targetId: "total-revenue",
+      valuePercent: segment.valuePercent,
       style: "solid",
     });
   });
+
+  costSlices.forEach((cost, index) => {
+    const targetNode = nodes.find((node) => node.id === cost.id);
+    const linkValue = (cost.valuePercent / 100) * costTotalPercent;
+    if (!targetNode || linkValue <= 0) return;
+
+    links.push({
+      id: `total-revenue-${cost.id}`,
+      sourceId: "total-revenue",
+      targetId: cost.id,
+      valuePercent: linkValue,
+      style: index % 2 === 0 ? "dashed" : "dotted",
+    });
+  });
+
+  if (netMarginPercent > 0) {
+    links.push({
+      id: "total-revenue-net-profit",
+      sourceId: "total-revenue",
+      targetId: "net-profit",
+      valuePercent: netMarginPercent,
+      style: "solid",
+    });
+  }
 
   return {
     nodes,

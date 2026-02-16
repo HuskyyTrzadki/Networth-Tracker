@@ -25,6 +25,16 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby zobaczyć portfel.
         </div>
+        <Button asChild className="mt-4 h-11">
+          <Link
+            href={{
+              pathname: "/login",
+              query: { next: "/portfolio" },
+            }}
+          >
+            Zaloguj się
+          </Link>
+        </Button>
       </main>
     );
   }
@@ -61,6 +71,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
                   ? `/transactions/new?portfolio=${selectedPortfolioId}`
                   : "/transactions/new"
               }
+              scroll={false}
             >
               Dodaj transakcję
             </Link>

@@ -30,6 +30,16 @@ const GEO_COLOR_BY_ICON: Readonly<Record<string, string>> = {
   ROW: "#756a7f",
 };
 
+const COST_LABEL_BY_KEY: Readonly<Record<string, string>> = {
+  COGS: "Koszt sprzedanych produktow i uslug",
+  OPEX: "Koszty operacyjne (R&D + SG&A)",
+  Podatki: "Podatki",
+};
+
+const percentFormatter = new Intl.NumberFormat("pl-PL", {
+  maximumFractionDigits: 1,
+});
+
 export default function StockReportRevenueMixSection() {
   const [mode, setMode] = useState<MixMode>("now");
   const [quarter, setQuarter] = useState<QuarterKey>("q4");
@@ -98,18 +108,44 @@ export default function StockReportRevenueMixSection() {
         : 0,
   }));
   const netSlice = normalizedProfitability.find((slice) => slice.key === "Zysk");
-  const costSlices = normalizedProfitability
-    .filter((slice) => slice.key !== "Zysk")
-    .map((slice) => ({
-      id: slice.key,
-      label: slice.label,
-      valuePercent: slice.valuePercent,
-    }));
+  const cogsSlice = normalizedProfitability.find((slice) => slice.key === "COGS");
+  const rdSlice = normalizedProfitability.find((slice) => slice.key === "R&D");
+  const sgaSlice = normalizedProfitability.find((slice) => slice.key === "SG&A");
+  const taxSlice = normalizedProfitability.find((slice) => slice.key === "Podatki");
+  const opexPercent = (rdSlice?.valuePercent ?? 0) + (sgaSlice?.valuePercent ?? 0);
+  const opexIntensity =
+    opexPercent >= 30 ? "wysoki" : opexPercent >= 18 ? "umiarkowany" : "nizszy";
+
+  const costSlices = [
+    {
+      id: "COGS",
+      label: COST_LABEL_BY_KEY.COGS,
+      valuePercent: cogsSlice?.valuePercent ?? 0,
+      description:
+        cogsSlice?.help ??
+        "Pierwszy odsiew kosztowy: koszt wytworzenia i dostarczenia produktu/uslugi.",
+    },
+    {
+      id: "OPEX",
+      label: COST_LABEL_BY_KEY.OPEX,
+      valuePercent: opexPercent,
+      description: `R&D: ${percentFormatter.format(rdSlice?.valuePercent ?? 0)}% • SG&A: ${percentFormatter.format(sgaSlice?.valuePercent ?? 0)}%. To wydatki na wzrost (produkty, AI, sprzedaz i administracje). Aktualny poziom OPEX jest ${opexIntensity}.`,
+    },
+    {
+      id: "Podatki",
+      label: COST_LABEL_BY_KEY.Podatki,
+      valuePercent: taxSlice?.valuePercent ?? 0,
+      description: taxSlice?.help ?? "Obciazenia podatkowe od wyniku finansowego spolki.",
+    },
+  ].filter((slice) => slice.valuePercent > 0);
   const sankeySegments = geoSlices.map((slice) => ({
     id: slice.key,
     label: slice.label,
     valuePercent: slice.value,
     color: geoEntries.find((entry) => entry.label === slice.label)?.color ?? "#646464",
+    description:
+      geoEntries.find((entry) => entry.label === slice.label)?.help ??
+      "Udzial regionu w calosci przychodow.",
   }));
   const netMarginPercent = netSlice?.valuePercent ?? 0;
 
@@ -200,6 +236,7 @@ export default function StockReportRevenueMixSection() {
             revenueSegments={sankeySegments}
             costSlices={costSlices}
             netMarginPercent={netMarginPercent}
+            netProfitDescription={netSlice?.help}
           />
         ) : (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">

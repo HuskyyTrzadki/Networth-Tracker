@@ -8,11 +8,13 @@ import {
   type CostSlice,
   type RevenueSegment,
 } from "./stock-report-revenue-sankey-helpers";
+import StockReportInfoHint from "./StockReportInfoHint";
 
 type Props = Readonly<{
   revenueSegments: readonly RevenueSegment[];
   costSlices: readonly CostSlice[];
   netMarginPercent: number;
+  netProfitDescription?: string;
 }>;
 
 type SankeyNodePattern = "solid" | "hatch" | "dots" | "cross";
@@ -62,6 +64,11 @@ const buildOption = (
       color: "#3b3b3b",
       fontFamily: "var(--font-mono)",
       fontSize: 11,
+      position: node.lane === "right" ? "left" : "right",
+      align: node.lane === "right" ? "right" : "left",
+      distance: node.lane === "right" ? 12 : 8,
+      width: node.lane === "right" ? 240 : 168,
+      overflow: "truncate" as const,
       formatter: `${node.label} ${percentFormatter.format(node.valuePercent)}%`,
     },
   }));
@@ -110,19 +117,29 @@ const buildOption = (
           const value = params.data?.value ?? 0;
           const sourceLabel = nodeById.get(source)?.label ?? source;
           const targetLabel = nodeById.get(target)?.label ?? target;
-          return `${sourceLabel} -> ${targetLabel}<br/>${percentFormatter.format(value)}%`;
+          const targetDescription = nodeById.get(target)?.description;
+          const description = targetDescription
+            ? `<br/><span style="color:#6b645a;">ⓘ ${targetDescription}</span>`
+            : "";
+
+          return `${sourceLabel} -> ${targetLabel}<br/>${percentFormatter.format(value)}%${description}`;
         }
 
-        const label = nodeById.get(params.name ?? "")?.label ?? params.name ?? "-";
+        const node = nodeById.get(params.name ?? "");
+        const label = node?.label ?? params.name ?? "-";
         const value = typeof params.value === "number" ? params.value : 0;
-        return `${label}<br/>${percentFormatter.format(value)}%`;
+        const description = node?.description
+          ? `<br/><span style="color:#6b645a;">ⓘ ${node.description}</span>`
+          : "";
+
+        return `${label}<br/>${percentFormatter.format(value)}%${description}`;
       },
     } as EChartsOption["tooltip"],
     series: [
       {
         type: "sankey",
-        left: 18,
-        right: 18,
+        left: 28,
+        right: 34,
         top: 16,
         bottom: 16,
         draggable: false,
@@ -132,6 +149,15 @@ const buildOption = (
         layoutIterations: 36,
         emphasis: {
           focus: "adjacency",
+          lineStyle: {
+            opacity: 0.74,
+            width: 1.35,
+          },
+        },
+        blur: {
+          lineStyle: {
+            opacity: 0.09,
+          },
         },
         levels: [
           { depth: 0, lineStyle: { color: "source", opacity: 0.2 } },
@@ -154,11 +180,13 @@ export function StockReportRevenueSankeyCard({
   revenueSegments,
   costSlices,
   netMarginPercent,
+  netProfitDescription,
 }: Props) {
   const model = buildRevenueSankeyModel({
     revenueSegments,
     costs: costSlices,
     netMarginPercent,
+    netProfitDescription,
   });
   const option = buildOption(model);
 
@@ -166,11 +194,17 @@ export function StockReportRevenueSankeyCard({
     <article className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h4 className="text-base font-semibold tracking-tight">
-            Przeplyw od przychodu do zysku (diagram sankey)
-          </h4>
+          <div className="flex items-center gap-1">
+            <h4 className="text-base font-semibold tracking-tight">
+              Przeplyw przychodow: suma -&gt; regiony -&gt; koszty i zysk
+            </h4>
+            <StockReportInfoHint
+              text="Wykres czytamy od lewej: najpierw caly przychod, potem podzial geograficzny, na koncu pozycje kosztowe i zysk netto."
+              ariaLabel="Wyjasnienie wykresu przeplywu przychodow"
+            />
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Grubosc strumienia pokazuje, ile przychodu znika po drodze przez koszty.
+            Grubosc strumienia pokazuje, jaka czesc przychodu trafia do kosztow i jaka zostaje jako zysk.
           </p>
         </div>
         <p className="font-mono text-xs text-muted-foreground">

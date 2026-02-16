@@ -109,6 +109,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard renders `Ostatnie transakcje` below `Alokacja i pozycje`, reusing the transactions table view and fetching newest rows (`date_desc`) with portfolio scope.
 - Portfolio page header adds small context eyebrow (`Dashboard`) and uses centered max-width layout for cleaner visual rhythm on large screens.
 - Dashboard content starts with a dedicated net-value hero (`Portfel: ...` + `Wartość netto`) rendered from `summary.totalValueBase` in the selected portfolio base currency.
+- Net-value hero and chart header expose valuation freshness badges (`Notowania z ...`, `Kurs FX z dnia ...`) using `summary/liveTotals.asOf`.
+- Dashboard shows a dedicated partial-valuation warning banner when quotes/FX are missing, with explicit counts (`missingQuotes`, `missingFx`).
 - Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.
 - Net value hero and allocation/holdings widget use stronger typographic rhythm (monospace net value, cleaner heading/label contrast, calmer warning tones) without changing valuation logic.
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
@@ -122,6 +124,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Rebuild progress percent math is shared (`lib/rebuild-progress.ts`) between API and client hook to avoid drift in UI vs backend progress interpretation.
 - Rebuild polling/backoff decisions are isolated in `dashboard/hooks/snapshot-rebuild-polling.ts` so hook side effects stay easier to read.
 - Empty holdings state uses the same dashboard widgets as non-empty portfolios; rebuild loaders are rendered inside widgets based on snapshot rebuild status.
+- Empty chart states include actionable CTAs for both flows:
+  - `Dodaj pierwsze kupno` (`/transactions/new` scoped by portfolio),
+  - `Dodaj depozyt gotówki` (`preset=cash-deposit`).
 - While rebuild is busy (`queued/running`), value chart disables live endpoint override and stays snapshot-based so `Wartość` and `Zainwestowany kapitał` move in one pipeline.
 - Rebuild loading state is rendered directly in chart area via `PortfolioSnapshotRebuildChartLoader` (cool-tone, chart-shaped skeleton), replacing the old top progress bar.
 - Rebuild loading state is also shown in `Alokacja i pozycje` (same `queued/running` source, with percent + date range), so allocation/holdings does not look stale during rebuild.
@@ -136,6 +141,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Internal chunks in one run now share a single preloaded rebuild session (transactions + daily prices + daily FX loaded once, then reused in-memory across chunks), eliminating repeated DB/provider reads per chunk.
 - Daily cache preload validates range coverage quality (start/end + max internal gap), so sparse cache fragments trigger provider refetch instead of creating long flat carry-forward segments.
 - Portfolio value/performance chart compute is split into a dedicated view-model builder (`dashboard/lib/portfolio-value-over-time-view-model.ts`) so the widget component stays focused on orchestration and rendering.
+- Portfolio chart remembers selected range in localStorage per scope (`ALL` vs `PORTFOLIO:<id>`) so users keep their preferred timeframe between visits.
 - Dashboard visual surfaces (hero, switcher shell, allocation/rebuild cards, and skeletons) were normalized to the same rounded/border rhythm as shared primitives, with decorative shadows/gradients reduced for consistency.
 - Desktop polish follow-up tightened dashboard control density (`PortfolioValueOverTimeHeader`) and route-loading shell width alignment (`max-w-[1560px]`) for more consistent large-screen rhythm.
 - Allocation/holdings widget palette now uses differentiated ink accents plus patterned fills (hatch/dots/cross/grid) across donut + participation bars, improving category distinction without breaking editorial style.

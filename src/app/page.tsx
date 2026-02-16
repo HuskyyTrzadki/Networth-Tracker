@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
-import { getAuthUser } from "@/features/auth/server/service";
 import { HomeHero } from "@/features/home";
+import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 export const metadata = {
   title: "Portfolio Tracker",
@@ -12,9 +11,9 @@ export const metadata = {
 export default async function Home() {
   await connection();
 
-  const user = await getAuthUser(await cookies());
-  if (user) {
-    redirect("/search");
+  const pageData = await getUserPortfoliosPrivateCached();
+  if (pageData.isAuthenticated) {
+    redirect(pageData.portfolios.length > 0 ? "/portfolio" : "/onboarding");
   }
 
   return <HomeHero />;

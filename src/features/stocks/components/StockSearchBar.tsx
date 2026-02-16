@@ -14,6 +14,7 @@ export function StockSearchBar() {
     <InstrumentCombobox
       value={value}
       allowedTypes={["EQUITY"]}
+      listenForFocusShortcut
       emptyLabel="Szukaj akcji po nazwie lub tickerze"
       queryPlaceholder="Szukaj (np. AAPL, MSFT, CDR)"
       triggerClassName="h-11 rounded-md bg-background"

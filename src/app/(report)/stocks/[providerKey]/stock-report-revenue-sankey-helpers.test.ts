@@ -19,15 +19,23 @@ describe("buildRevenueSankeyModel", () => {
     const leftTotal = model.nodes
       .filter((node) => node.lane === "left")
       .reduce((sum, node) => sum + node.valuePercent, 0);
+    const totalRevenueNode = model.nodes.find((node) => node.id === "total-revenue");
     const costTotal = model.nodes
-      .filter((node) => node.lane === "middle")
+      .filter((node) => node.lane === "right" && node.id !== "net-profit")
       .reduce((sum, node) => sum + node.valuePercent, 0);
     const netNode = model.nodes.find((node) => node.id === "net-profit");
+    const segmentToCostLinks = model.links.filter((link) => {
+      const sourceNode = model.nodes.find((node) => node.id === link.sourceId);
+      const targetNode = model.nodes.find((node) => node.id === link.targetId);
+      return sourceNode?.lane === "left" && targetNode?.lane === "right";
+    });
 
     expect(leftTotal).toBeCloseTo(100, 5);
     expect(costTotal).toBeCloseTo(70, 5);
+    expect(totalRevenueNode?.valuePercent).toBeCloseTo(100, 5);
     expect(netNode?.valuePercent).toBeCloseTo(30, 5);
-    expect(model.links.length).toBe(6);
+    expect(model.links.length).toBe(5);
+    expect(segmentToCostLinks.length).toBe(0);
   });
 
   it("clamps invalid net margin to 100 and keeps links valid", () => {
@@ -45,5 +53,13 @@ describe("buildRevenueSankeyModel", () => {
     expect(model.links.find((link) => link.targetId === "net-profit")?.valuePercent).toBe(
       100
     );
+    expect(
+      model.links.find((link) => link.sourceId === "single" && link.targetId === "total-revenue")
+        ?.valuePercent
+    ).toBe(100);
+    expect(
+      model.links.find((link) => link.sourceId === "total-revenue" && link.targetId === "net-profit")
+        ?.valuePercent
+    ).toBe(100);
   });
 });
