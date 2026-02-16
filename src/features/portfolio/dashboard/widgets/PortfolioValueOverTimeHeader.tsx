@@ -220,7 +220,11 @@ export function PortfolioValueOverTimeHeader({
           Wczytywanie pełnej historii dla zakresu ALL...
         </div>
       ) : null}
-
+      {isAllHistoryTruncated && !isAllHistoryLoading ? (
+        <div className="text-xs text-muted-foreground">
+          Pokazano skróconą historię. Przełącz na zakres ALL, aby dociągnąć pełne dane.
+        </div>
+      ) : null}
 
     </div>
   );

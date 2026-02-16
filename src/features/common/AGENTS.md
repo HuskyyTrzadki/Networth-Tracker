@@ -13,3 +13,4 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Boundaries
 - Keep components generic and small.
 - Hooks in this feature should stay UI-agnostic (no domain-specific payload shapes).
+- `use-debounced-callback` keeps a stable callable wrapper and manages debounce instance lifecycle in effects (no `useMemo`/`useCallback` dependency).

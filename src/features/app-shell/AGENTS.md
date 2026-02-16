@@ -28,6 +28,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - sticky `Menu` button in top-left,
   - top sheet with logo, search, `Portfolio management`, and account actions,
   - signed-in state includes `Konto` and `Wyloguj` action.
+- `ReportShell` uses a small context with ref-backed menu-open reads and explicit mount/unmount counters so custom menu triggers mount predictably without `useMemo`/`useCallback`.
 - Report shell resolves auth state client-side (Supabase browser client) to keep public pages cache-friendly.
 
 ## Boundaries

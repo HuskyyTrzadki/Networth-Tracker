@@ -1,4 +1,8 @@
 import type { createClient } from "@/lib/supabase/server";
+import type {
+  SnapshotRebuildStatusKind,
+  SnapshotRebuildStatusPayload,
+} from "@/features/portfolio/lib/snapshot-rebuild-contract";
 
 import type { SnapshotRebuildState } from "./rebuild-state";
 import type { SnapshotScope } from "./types";
@@ -9,17 +13,7 @@ type ScopeAccess = Readonly<
   | { ok: false; message: string }
 >;
 
-type ResponsePayload = Readonly<{
-  status: "idle" | "queued" | "running" | "failed";
-  dirtyFrom: string | null;
-  fromDate: string | null;
-  toDate: string | null;
-  processedUntil: string | null;
-  progressPercent: number | null;
-  message: string | null;
-  updatedAt: string | null;
-  nextPollAfterMs: number | null;
-}>;
+type ResponsePayload = SnapshotRebuildStatusPayload;
 
 export const parseScope = (value: unknown): SnapshotScope | null => {
   if (value === "ALL" || value === "PORTFOLIO") return value;
@@ -57,7 +51,7 @@ const nextPollByAge = (updatedAt: string | null) => {
 };
 
 const resolveNextPollAfterMs = (
-  status: "idle" | "queued" | "running" | "failed",
+  status: SnapshotRebuildStatusKind,
   updatedAt: string | null
 ) => {
   if (status === "queued") return 2_000;

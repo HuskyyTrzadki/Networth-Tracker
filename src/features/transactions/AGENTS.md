@@ -60,6 +60,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI should not depend on provider-specific market data shapes.
 - Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts`.
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
+- Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
 - Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
 - Global instruments cache stores canonical Yahoo quoteType in `public.instruments.instrument_type` for allocation/grouping.
 - Cash settlement uses FX cache at write-time; rate is stored on the cash leg for auditability.
@@ -93,6 +94,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions toolbar, table chrome, and add-transaction dialog were visually refreshed (warmer surfaces, clearer micro-typography, calmer badges, consistent button/control sizing) without changing transaction behavior.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
+- DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

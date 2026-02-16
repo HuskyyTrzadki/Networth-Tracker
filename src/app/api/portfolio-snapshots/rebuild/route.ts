@@ -1,10 +1,10 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 import {
   getSnapshotRebuildState,
 } from "@/features/portfolio/server/snapshots/rebuild-state";
+import type { SnapshotRebuildPostPayload } from "@/features/portfolio/lib/snapshot-rebuild-contract";
 import {
   buildRebuildResponsePayload,
   ensureScopeAccess,
@@ -15,8 +15,12 @@ import {
   withRebuildPollingHeaders,
 } from "@/features/portfolio/server/snapshots/rebuild-route-service";
 import { runSnapshotRebuild } from "@/features/portfolio/server/snapshots/run-snapshot-rebuild";
+import {
+  getAuthenticatedSupabase,
+  parseJsonBody,
+  toErrorMessage,
+} from "@/lib/http/route-handler";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 const logRebuildEvent = (
   event: string,
@@ -32,13 +36,14 @@ const logRebuildEvent = (
 
 export async function GET(request: Request) {
   // Route handler: return current rebuild status for selected snapshot scope.
-  const cookieStore = await cookies();
-  const supabaseUser = createClient(cookieStore);
-
-  const { data, error } = await supabaseUser.auth.getUser();
-  if (error || !data.user) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase({
+    unauthorizedMessage: "Unauthorized.",
+  });
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const supabaseUser = authResult.supabase;
+  const user = authResult.user;
 
   const url = new URL(request.url);
   const scope = parseScope(url.searchParams.get("scope"));
@@ -50,7 +55,7 @@ export async function GET(request: Request) {
 
   const access = await ensureScopeAccess(
     supabaseUser,
-    data.user.id,
+    user.id,
     scope,
     portfolioId
   );
@@ -61,7 +66,7 @@ export async function GET(request: Request) {
 
   const state = await getSnapshotRebuildState(
     supabaseUser,
-    data.user.id,
+    user.id,
     scope,
     access.portfolioId
   );
@@ -90,15 +95,21 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   // Route handler: process rebuild work for selected scope (may include multiple chunks per run).
-  const cookieStore = await cookies();
-  const supabaseUser = createClient(cookieStore);
+  const authResult = await getAuthenticatedSupabase({
+    unauthorizedMessage: "Unauthorized.",
+  });
+  if (!authResult.ok) {
+    return authResult.response;
+  }
+  const supabaseUser = authResult.supabase;
+  const user = authResult.user;
 
-  const { data, error } = await supabaseUser.auth.getUser();
-  if (error || !data.user) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  const parsedBody = await parseJsonBody(request);
+  if (!parsedBody.ok) {
+    return parsedBody.response;
   }
 
-  const payload = (await request.json().catch(() => null)) as
+  const payload = parsedBody.body as
     | {
         scope?: unknown;
         portfolioId?: unknown;
@@ -116,7 +127,7 @@ export async function POST(request: Request) {
 
   const access = await ensureScopeAccess(
     supabaseUser,
-    data.user.id,
+    user.id,
     scope,
     portfolioId
   );
@@ -127,14 +138,14 @@ export async function POST(request: Request) {
 
   try {
     logRebuildEvent("post-start", {
-      userId: data.user.id,
+      userId: user.id,
       scope,
       portfolioId: access.portfolioId,
     });
 
     const adminClient = createAdminClient();
     const result = await runSnapshotRebuild(adminClient, {
-      userId: data.user.id,
+      userId: user.id,
       scope,
       portfolioId: access.portfolioId,
       maxDaysPerRun: parseMaxDays(payload?.maxDaysPerRun),
@@ -153,7 +164,7 @@ export async function POST(request: Request) {
     }
 
     logRebuildEvent("post-finish", {
-      userId: data.user.id,
+      userId: user.id,
       scope,
       portfolioId: access.portfolioId,
       status: result.state?.status ?? "idle",
@@ -162,7 +173,7 @@ export async function POST(request: Request) {
       processedUntil: result.state?.processedUntil ?? null,
     });
 
-    const responsePayload = {
+    const responsePayload: SnapshotRebuildPostPayload = {
       ...buildRebuildResponsePayload(result.state),
       processedDays: result.processedDays,
     };
@@ -172,10 +183,9 @@ export async function POST(request: Request) {
       { status: 200, headers: withRebuildPollingHeaders(responsePayload) }
     );
   } catch (runError) {
-    const message =
-      runError instanceof Error ? runError.message : "Snapshot rebuild failed.";
+    const message = toErrorMessage(runError);
     logRebuildEvent("post-error", {
-      userId: data.user.id,
+      userId: user.id,
       scope,
       portfolioId: access.portfolioId,
       error: message,

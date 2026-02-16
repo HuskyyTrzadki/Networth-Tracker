@@ -1,40 +1,41 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { bootstrapPortfolioSnapshot } from "@/features/portfolio/server/snapshots/bootstrap-portfolio-snapshot";
+import {
+  parsePortfolioId,
+  parseScope,
+} from "@/features/portfolio/server/snapshots/rebuild-route-service";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
-import type { SnapshotScope } from "@/features/portfolio/server/snapshots/types";
+import {
+  getAuthenticatedSupabase,
+  parseJsonBody,
+  toErrorMessage,
+} from "@/lib/http/route-handler";
 
-const parseScope = (value: unknown): SnapshotScope | null => {
-  if (value === "ALL" || value === "PORTFOLIO") return value;
-  return null;
-};
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
 export async function POST(request: Request) {
   // User-triggered bootstrap to create the first snapshot point on demand.
-  const cookieStore = await cookies();
-  const supabaseUser = createClient(cookieStore);
-  const { data, error } = await supabaseUser.auth.getUser();
-
-  if (error || !data.user) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase({
+    unauthorizedMessage: "Unauthorized.",
+  });
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const supabaseUser = authResult.supabase;
 
-  const payload = (await request.json().catch(() => null)) as
-    | { scope?: unknown; portfolioId?: unknown }
-    | null;
+  const parsedBody = await parseJsonBody(request);
+  if (!parsedBody.ok) {
+    return parsedBody.response;
+  }
+  const payload = asRecord(parsedBody.body);
 
-  const scope = parseScope(payload?.scope);
+  const scope = parseScope(payload.scope);
   if (!scope) {
     return NextResponse.json({ message: "Invalid scope." }, { status: 400 });
   }
-
-  const portfolioIdRaw = payload?.portfolioId;
-  const portfolioId =
-    typeof portfolioIdRaw === "string" && portfolioIdRaw.trim().length > 0
-      ? portfolioIdRaw
-      : null;
+  const portfolioId = parsePortfolioId(payload.portfolioId);
 
   const supabaseAdmin = createAdminClient();
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
     const result = await bootstrapPortfolioSnapshot(
       supabaseUser,
       supabaseAdmin,
-      data.user.id,
+      authResult.user.id,
       scope,
       portfolioId
     );
@@ -52,8 +53,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Bootstrap snapshot failed.";
+    const message = toErrorMessage(error);
     return NextResponse.json({ message }, { status: 400 });
   }
 }

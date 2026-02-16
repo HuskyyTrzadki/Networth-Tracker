@@ -39,18 +39,22 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/features/stocks/components/StockSearchBar.tsx`
   - `src/features/stocks/components/StockScreenerGrid.tsx`
   - `src/features/stocks/components/StockChartCard.tsx`
+  - `src/features/stocks/components/stock-chart-card-view-model.ts`
   - `src/features/stocks/components/StockChartPlot.tsx`
   - `src/features/stocks/components/stock-chart-event-markers.ts`
   - `src/features/stocks/components/stock-chart-plot-events.tsx`
+  - `src/features/stocks/components/stock-chart-hover-event-card.tsx`
   - `src/features/stocks/components/StockMetricsGrid.tsx`
   - `src/features/stocks/components/stock-chart-card-helpers.ts`
+  - `src/features/stocks/components/stock-chart-formatters.ts`
   - `src/features/stocks/components/stock-chart-trend.ts`
+  - `src/app/(report)/stocks/[providerKey]/stock-report-revenue-mix-helpers.ts`
+  - `src/app/(report)/stocks/[providerKey]/stock-report-revenue-mix-cards.tsx`
 
 ## Boundaries
 - Route handlers stay thin and delegate to `src/features/stocks/server/*`.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
-- Private chart API (`/api/stocks/[providerKey]/chart`) keeps auth guard and delegates to the same response helper.
-- Private trade markers API (`/api/stocks/[providerKey]/trade-markers`) returns authenticated user BUY/SELL points for stock report overlays.
+- Private chart API (`/api/stocks/[providerKey]/chart`) and trade-markers API (`/api/stocks/[providerKey]/trade-markers`) use shared route auth helper (`src/lib/http/route-handler.ts`) and delegate to feature/server services.
 - Stock details sections (`StockChartSection`, `StockMetricsSection`, instrument header) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads.
 - Report route keeps public URL `/stocks/[providerKey]` and now uses a 2-column clarity-first layout:
   - left rail: quick facts + company profile + CEO/compensation + insider trades,
@@ -67,6 +71,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Concept-heavy sections expose hover tooltips via an `i` icon to clarify definitions in-place.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
+- Stock chart/report modules are split into focused helpers (formatters, view-model mapping, hover card rendering, and revenue-mix section helpers/cards) to keep single-file complexity under repo limits.
 - Screener cards render a larger 1-month (`1M`) preview chart with visible X/Y axes and a monthly percentage tag sourced from cache-first daily price series.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
 - Supported ranges: `1D`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `10Y`, `ALL`.

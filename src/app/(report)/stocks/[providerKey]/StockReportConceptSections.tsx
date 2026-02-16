@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import {
@@ -22,10 +22,7 @@ function DollarAllocationSection() {
   const [mode, setMode] = useState<PeriodMode>("lastQuarter");
   const dataset = HOW_THEY_MAKE_MONEY[mode];
 
-  const total = useMemo(
-    () => dataset.slices.reduce((acc, item) => acc + item.valuePercent, 0),
-    [dataset.slices]
-  );
+  const total = dataset.slices.reduce((acc, item) => acc + item.valuePercent, 0);
 
   return (
     <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-6">

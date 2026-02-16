@@ -1,27 +1,20 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-
 import { getStockChartHttpResponse } from "@/features/stocks/server/get-stock-chart-http-response";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedSupabase } from "@/lib/http/route-handler";
 
 export async function GET(
   request: Request,
   context: Readonly<{ params: Promise<{ providerKey: string }> }>
 ) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
-  if (authError || !user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
   const { providerKey: rawProviderKey } = await context.params;
   return getStockChartHttpResponse({
     request,
     rawProviderKey,
-    supabase,
+    supabase: authResult.supabase,
     responseMode: "private",
   });
 }

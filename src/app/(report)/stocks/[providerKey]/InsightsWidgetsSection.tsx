@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Area,
@@ -268,10 +268,8 @@ export default function InsightsWidgetsSection() {
     return () => mediaQuery.removeEventListener("change", update);
   }, []);
 
-  const activeWidget = useMemo(
-    () => STOCK_INSIGHTS_WIDGETS.find((widget) => widget.id === activeWidgetId) ?? null,
-    [activeWidgetId]
-  );
+  const activeWidget =
+    STOCK_INSIGHTS_WIDGETS.find((widget) => widget.id === activeWidgetId) ?? null;
 
   return (
     <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-7">

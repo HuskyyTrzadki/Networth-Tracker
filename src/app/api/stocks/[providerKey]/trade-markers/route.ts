@@ -1,8 +1,10 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { listStockTradeMarkers } from "@/features/stocks/server/list-stock-trade-markers";
-import { createClient } from "@/lib/supabase/server";
+import {
+  getAuthenticatedSupabase,
+  toErrorMessage,
+} from "@/lib/http/route-handler";
 
 const decodeProviderKey = (rawProviderKey: string): string | null => {
   try {
@@ -17,13 +19,9 @@ export async function GET(
   _request: Request,
   context: Readonly<{ params: Promise<{ providerKey: string }> }>
 ) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
-  if (authError || !user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
   const { providerKey: rawProviderKey } = await context.params;
@@ -33,11 +31,10 @@ export async function GET(
   }
 
   try {
-    const markers = await listStockTradeMarkers(supabase, providerKey);
+    const markers = await listStockTradeMarkers(authResult.supabase, providerKey);
     return NextResponse.json({ markers }, { status: 200 });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to load stock trade markers.";
+    const message = toErrorMessage(error);
     return NextResponse.json({ message }, { status: 500 });
   }
 }

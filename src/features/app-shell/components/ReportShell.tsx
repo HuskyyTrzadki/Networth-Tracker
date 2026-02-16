@@ -3,7 +3,7 @@
 import { Newspaper, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -26,7 +26,7 @@ type Props = Readonly<{
 type MenuTriggerCtx = Readonly<{
   mountCustomTrigger: () => void;
   unmountCustomTrigger: () => void;
-  isMenuOpen: boolean;
+  getIsMenuOpen: () => boolean;
 }>;
 
 const ReportShellMenuTriggerContext = createContext<MenuTriggerCtx | null>(null);
@@ -51,12 +51,12 @@ export function ReportShellMenuTrigger({
       <Button
         size="sm"
         variant="outline"
-        className={cn(
-          "h-9 rounded-md border border-[color:var(--report-rule)] px-3 text-xs font-semibold tracking-[0.02em]",
-          ctx?.isMenuOpen ? "bg-foreground text-background hover:bg-foreground" : "",
-          className
-        )}
-      >
+          className={cn(
+            "h-9 rounded-md border border-[color:var(--report-rule)] px-3 text-xs font-semibold tracking-[0.02em]",
+            ctx?.getIsMenuOpen() ? "bg-foreground text-background hover:bg-foreground" : "",
+            className
+          )}
+        >
         Menu
       </Button>
     </SheetTrigger>
@@ -70,6 +70,8 @@ export function ReportShell({ children }: Props) {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [customTriggerCount, setCustomTriggerCount] = useState(0);
   const router = useRouter();
+  const isMenuOpenRef = useRef(isMenuOpen);
+  isMenuOpenRef.current = isMenuOpen;
 
   useEffect(() => {
     let cancelled = false;
@@ -123,21 +125,21 @@ export function ReportShell({ children }: Props) {
     }
   };
 
+  const menuTriggerContextRef = useRef<MenuTriggerCtx>({
+    mountCustomTrigger: () => {
+      setCustomTriggerCount((value) => value + 1);
+    },
+    unmountCustomTrigger: () => {
+      setCustomTriggerCount((value) => Math.max(0, value - 1));
+    },
+    getIsMenuOpen: () => isMenuOpenRef.current,
+  });
   const hasCustomTrigger = customTriggerCount > 0;
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <ReportShellMenuTriggerContext.Provider
-          value={useMemo(
-            () => ({
-              mountCustomTrigger: () => setCustomTriggerCount((value) => value + 1),
-              unmountCustomTrigger: () => setCustomTriggerCount((value) => Math.max(0, value - 1)),
-              isMenuOpen,
-            }),
-            [isMenuOpen]
-          )}
-        >
+        <ReportShellMenuTriggerContext.Provider value={menuTriggerContextRef.current}>
           {!hasCustomTrigger ? (
             <div className="pointer-events-none fixed left-7 top-4 z-50 sm:left-10 sm:top-5 lg:left-16 xl:left-20">
               <SheetTrigger asChild>

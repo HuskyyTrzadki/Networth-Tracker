@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type NavItem = Readonly<{
   href: `#${string}`;
@@ -25,26 +25,26 @@ export default function StockReportOnPageNav({
     items[0]?.href ?? null
   );
 
-  const resolvedItems = useMemo(
-    () =>
-      items.map((item) => ({
-        ...item,
-        id: item.href.slice(1),
-      })),
-    [items]
-  );
+  const resolvedItems = items.map((item) => ({
+    ...item,
+    id: item.href.slice(1),
+  }));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const trackedItems = items.map((item) => ({
+      ...item,
+      id: item.href.slice(1),
+    }));
 
     let raf = 0;
     const offset = getHeaderOffsetPx() + 6;
 
     const update = () => {
       const y = window.scrollY + offset;
-      let current: NavItem["href"] | null = resolvedItems[0]?.href ?? null;
+      let current: NavItem["href"] | null = trackedItems[0]?.href ?? null;
 
-      for (const item of resolvedItems) {
+      for (const item of trackedItems) {
         const el = document.getElementById(item.id);
         if (!el) continue;
         const top = el.getBoundingClientRect().top + window.scrollY;
@@ -72,7 +72,7 @@ export default function StockReportOnPageNav({
       window.removeEventListener("hashchange", schedule);
       window.removeEventListener("popstate", schedule);
     };
-  }, [resolvedItems]);
+  }, [items]);
 
   return (
     <ul className={["mt-3 space-y-0.5 text-sm", className].filter(Boolean).join(" ")}>

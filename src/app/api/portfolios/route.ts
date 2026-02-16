@@ -1,24 +1,24 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 import { createPortfolioStrict } from "@/features/portfolio/server/create-portfolio";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { createPortfolioSchema } from "@/features/portfolio/lib/create-portfolio-schema";
-import { createClient } from "@/lib/supabase/server";
+import {
+  getAuthenticatedSupabase,
+  parseJsonBody,
+  toErrorMessage,
+} from "@/lib/http/route-handler";
 
 export async function GET() {
   // Route handler: authenticate and return the user's portfolios.
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data, error } = await supabase.auth.getUser();
-
-  if (error || !data.user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
   try {
-    const portfolios = await listPortfolios(supabase);
+    const portfolios = await listPortfolios(authResult.supabase);
     return NextResponse.json(
       { portfolios },
       {
@@ -32,29 +32,25 @@ export async function GET() {
       }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = toErrorMessage(error);
     return NextResponse.json({ message }, { status: 400 });
   }
 }
 
 export async function POST(request: Request) {
   // Route handler: validate input, create a portfolio, return JSON.
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data, error } = await supabase.auth.getUser();
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
+  }
+  const supabase = authResult.supabase;
 
-  if (error || !data.user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const parsedBody = await parseJsonBody(request);
+  if (!parsedBody.ok) {
+    return parsedBody.response;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ message: "Invalid JSON payload." }, { status: 400 });
-  }
-
-  const parsed = createPortfolioSchema.safeParse(body);
+  const parsed = createPortfolioSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
     return NextResponse.json(
       { message: "Invalid input.", issues: parsed.error.issues },
@@ -65,7 +61,7 @@ export async function POST(request: Request) {
   try {
     const result = await createPortfolioStrict(
       supabase,
-      data.user.id,
+      authResult.user.id,
       parsed.data
     );
 
@@ -78,7 +74,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = toErrorMessage(error);
     return NextResponse.json({ message }, { status: 400 });
   }
 }

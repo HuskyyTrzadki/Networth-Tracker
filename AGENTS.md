@@ -157,3 +157,5 @@ Keep these files aligned when touching a feature:
 - Idempotency: unique `(user_id, client_request_id)`.
 - UI money math: no float math; use decimal-safe approach.
 - Transactions: positive `quantity`, explicit `side` enum.
+- 
+projectId supabse: ayeeksbqwyqkevbpdlef

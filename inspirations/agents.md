@@ -13,7 +13,7 @@ Canonical style rules live in:
 ## Locked Non-negotiables
 - Ink-first UI (`#393939` in day theme).
 - Day paper background `#FCF7EB`.
-- Dashed separator grammar across report pages.
+  - Dashed separator grammar across report pages.
 - Beginner-first reading order with progressive disclosure.
 - Subtle motion, including chart draw animation.
 

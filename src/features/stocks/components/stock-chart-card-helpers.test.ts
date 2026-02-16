@@ -60,7 +60,7 @@ describe("stock-chart-card-helpers", () => {
       {
         key: "pe",
         label: "PE (100=start)",
-        color: "var(--chart-4)",
+        color: "#e11d48",
       },
     ]);
   });

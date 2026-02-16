@@ -57,8 +57,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/snapshots/run-snapshot-rebuild.ts`
 - `src/features/portfolio/server/snapshots/rebuild-route-service.ts`
 - `src/app/api/portfolio-snapshots/rebuild/route.ts`
+- `src/app/api/portfolio-snapshots/bootstrap/route.ts`
 - `src/features/portfolio/dashboard/hooks/useSnapshotRebuild.ts`
+- `src/features/portfolio/dashboard/hooks/use-snapshot-rebuild-events.ts`
+- `src/features/portfolio/dashboard/hooks/use-snapshot-rebuild-state-polling.ts`
+- `src/features/portfolio/dashboard/hooks/use-snapshot-rebuild-runner.ts`
 - `src/features/portfolio/dashboard/hooks/snapshot-rebuild-polling.ts`
+- `src/features/portfolio/lib/snapshot-rebuild-contract.ts`
 - `src/features/portfolio/lib/snapshot-rebuild-events.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.ts`
 - `src/features/portfolio/lib/portfolio-url.ts`
@@ -96,6 +101,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
 - Tryb wartości dla zakresów >1D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
 - Dla historii z jednym punktem domyślny zakres wykresu to `ALL` (zamiast disabled `YTD`), a `Zmiana za okres` pozostaje pusta (`—`) do czasu pojawienia się co najmniej 2 punktów.
+- Nagłówek wykresu pokazuje też komunikat o skróconej historii, gdy dane są chwilowo obcięte i pełny zakres `ALL` nie jest jeszcze dociągnięty.
 - Tabela `Pozycje` używa nagłówków kolumn z walutą bazową i pokazuje liczby bez powtarzania symbolu waluty w każdym wierszu.
 - Tabela `Pozycje` pokazuje też `Śr. cena zakupu` (weighted average buy cost) liczona po transakcjach `ASSET`; wartość jest przeliczana do waluty bazowej tym samym FX co wycena.
 - Dashboard aggregate view wraps portfolio selector in a dedicated control surface (subtle bordered card) to separate filters from data widgets.
@@ -122,6 +128,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Rebuild status API also returns backend-computed `progressPercent` derived from (`fromDate`, `toDate`, `processedUntil`) so UI does not own progress math.
 - Rebuild API `POST /api/portfolio-snapshots/rebuild` logs chunk lifecycle (`post-start`, `post-finish`, `post-error`) for operational debugging.
 - Rebuild route (`/api/portfolio-snapshots/rebuild`) keeps handler thin and delegates parse/access/response-shaping helpers to `server/snapshots/rebuild-route-service.ts`.
+- Snapshot bootstrap/rebuild APIs share auth/body/error helper primitives from `src/lib/http/route-handler.ts` to keep route handlers thin and consistent.
+- Rebuild client hook is split by responsibility (`events`, `state polling`, `runner`) and orchestrated by `useSnapshotRebuild.ts` to reduce side-effect complexity.
 - Rebuild POST now revalidates portfolio cache tags/paths (`portfolio:all`, `portfolio:<id>`, `/portfolio`, `/portfolio/<id>`) when chunks process data, so private cached dashboard reads stay fresh after snapshot recompute.
 - Rebuild worker merges concurrent `dirty_from` updates at chunk finalize (prevents losing backdated writes that arrive during an active rebuild run).
 - Rebuild worker is adaptive per request: one POST can process multiple internal chunks under a server time budget (`timeBudgetMs`) with per-chunk day cap (`maxDaysPerRun`), reducing end-to-end rebuild latency.

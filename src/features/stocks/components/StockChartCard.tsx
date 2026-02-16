@@ -27,6 +27,10 @@ import { buildMockChartEventMarkers } from "./stock-chart-event-markers";
 import { StockChartPlot } from "./StockChartPlot";
 import { getPriceTrendColor, resolveStockPriceTrend } from "./stock-chart-trend";
 import {
+  formatChangePercent,
+  resolveVisibleTradeMarkers,
+} from "./stock-chart-card-view-model";
+import {
   STOCK_CHART_RANGES,
   type StockChartOverlay,
   type StockChartRange,
@@ -38,62 +42,6 @@ type Props = Readonly<{
   providerKey: string;
   initialChart: StockChartResponse;
 }>;
-
-type VisibleMarker = Readonly<{
-  key: string;
-  t: string;
-  side: StockTradeMarker["side"];
-  portfolioName: string;
-  price: number;
-}>;
-
-const toDateKey = (value: string) => value.slice(0, 10);
-
-const changeFormatter = new Intl.NumberFormat("pl-PL", {
-  style: "percent",
-  maximumFractionDigits: 2,
-  signDisplay: "always",
-});
-
-const formatChangePercent = (value: number | null) => {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "-";
-  }
-  return changeFormatter.format(value / 100);
-};
-
-const resolveVisibleTradeMarkers = (
-  markers: readonly StockTradeMarker[],
-  chartPoints: StockChartResponse["points"]
-): readonly VisibleMarker[] => {
-  if (markers.length === 0 || chartPoints.length === 0) {
-    return [];
-  }
-
-  const chartTimeByDate = new Map<string, string>();
-  for (const point of chartPoints) {
-    const time = point.t;
-    const key = toDateKey(time);
-    chartTimeByDate.set(key, time);
-  }
-
-  return markers
-    .map((marker) => {
-      const t = chartTimeByDate.get(marker.tradeDate);
-      if (!t) {
-        return null;
-      }
-
-      return {
-        key: marker.id,
-        t,
-        side: marker.side,
-        portfolioName: marker.portfolioName,
-        price: marker.price,
-      } satisfies VisibleMarker;
-    })
-    .filter((marker): marker is VisibleMarker => marker !== null);
-};
 
 export function StockChartCard({ providerKey, initialChart }: Props) {
   const [range, setRange] = useState<StockChartRange>(initialChart.requestedRange);
