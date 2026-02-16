@@ -84,10 +84,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                       asChild
                       isActive={active}
                       className={cn(
-                        "h-11 rounded-lg px-4 text-[15px] font-medium text-sidebar-foreground/90",
+                        "h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/90",
                         "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
                         "data-[active=true]:bg-primary/14 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
-                        "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]",
+                        "data-[active=true]:ring-1 data-[active=true]:ring-primary/30",
                         "[&[data-active=true]>svg]:text-primary"
                       )}
                     >
@@ -115,9 +115,9 @@ export function AppSidebar({ className, portfolios }: Props) {
                     asChild
                     isActive={activePortfolioId === portfolio.id}
                     className={cn(
-                      "h-11 rounded-lg px-4 text-[15px] font-medium text-sidebar-foreground/85",
+                      "h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
                       "data-[active=true]:bg-primary/14 data-[active=true]:font-semibold data-[active=true]:text-sidebar-foreground",
-                      "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]"
+                      "data-[active=true]:ring-1 data-[active=true]:ring-primary/30"
                     )}
                   >
                     <Link href={`/portfolio/${portfolio.id}`}>
@@ -140,7 +140,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                   }}
                   trigger={({ open, disabled }) => (
                     <Button
-                      className="mt-1 h-10 w-full justify-start gap-2 rounded-lg border border-primary/35 bg-primary/12 px-4 text-[13px] font-semibold text-primary hover:bg-primary/18"
+                      className="mt-1 h-10 w-full justify-start gap-2 rounded-md border border-primary/35 bg-primary/12 px-4 text-[13px] font-semibold text-primary hover:bg-primary/18"
                       disabled={disabled}
                       onClick={open}
                       type="button"
@@ -172,10 +172,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                   asChild
                   isActive={active}
                   className={cn(
-                    "h-11 rounded-lg px-4 text-[15px] font-medium text-sidebar-foreground/85",
+                    "h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
                     "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
                     "data-[active=true]:bg-primary/14 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
-                    "data-[active=true]:shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.32)]",
+                    "data-[active=true]:ring-1 data-[active=true]:ring-primary/30",
                     "[&[data-active=true]>svg]:text-primary"
                   )}
                 >

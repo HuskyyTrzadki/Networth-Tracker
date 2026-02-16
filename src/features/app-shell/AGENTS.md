@@ -30,6 +30,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - signed-in state includes `Konto` and `Wyloguj` action.
 - `ReportShell` uses a small context with ref-backed menu-open reads and explicit mount/unmount counters so custom menu triggers mount predictably without `useMemo`/`useCallback`.
 - Report shell resolves auth state client-side (Supabase browser client) to keep public pages cache-friendly.
+- Shell chrome was visually normalized with the refreshed design system: tighter uppercase micro-labels for menu triggers, consistent `rounded-md` control styling, and reduced one-off styling in report search/menu surfaces.
 
 ## Boundaries
 - No domain business logic; UI/navigation only.

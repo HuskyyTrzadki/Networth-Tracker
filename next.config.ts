@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   reactCompiler: true,
+  transpilePackages: ["echarts", "zrender"],
   images: {
     remotePatterns: [
       {

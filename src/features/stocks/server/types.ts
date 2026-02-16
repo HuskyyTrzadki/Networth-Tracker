@@ -51,6 +51,25 @@ export type StockValuationSummary = Readonly<{
   fetchedAt: string | null;
 }>;
 
+export type StockValuationRangeContext = Readonly<{
+  metric: "peTtm";
+  current: number | null;
+  min: number | null;
+  max: number | null;
+  median: number | null;
+  percentile: number | null;
+  pointsCount: number;
+  coverageStart: string | null;
+  coverageEnd: string | null;
+  isTruncated: boolean;
+  interpretation:
+    | "HISTORY_LOW"
+    | "HISTORY_MID"
+    | "HISTORY_HIGH"
+    | "INSUFFICIENT_HISTORY"
+    | "NO_DATA";
+}>;
+
 export type EpsTtmEvent = Readonly<{
   periodEndDate: string;
   epsTtm: number | null;

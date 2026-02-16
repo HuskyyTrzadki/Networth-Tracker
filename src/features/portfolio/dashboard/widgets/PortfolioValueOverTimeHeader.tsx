@@ -69,9 +69,9 @@ export function PortfolioValueOverTimeHeader({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-end gap-2.5">
-        <div className="rounded-lg border border-border/60 bg-card p-2">
-          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
+      <div className="flex flex-wrap items-end gap-2.5 xl:flex-nowrap">
+        <div className="rounded-md border border-border/60 bg-card p-2.5">
+          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
             Tryb
           </div>
           <ToggleGroup
@@ -82,15 +82,19 @@ export function PortfolioValueOverTimeHeader({
                 onModeChange(value);
               }
             }}
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap gap-1.5"
           >
-            <ToggleGroupItem value="PERFORMANCE">Performance</ToggleGroupItem>
-            <ToggleGroupItem value="VALUE">Wartość</ToggleGroupItem>
+            <ToggleGroupItem className="h-8 px-3 text-xs" value="PERFORMANCE">
+              Performance
+            </ToggleGroupItem>
+            <ToggleGroupItem className="h-8 px-3 text-xs" value="VALUE">
+              Wartość
+            </ToggleGroupItem>
           </ToggleGroup>
         </div>
 
-        <div className="rounded-lg border border-border/60 bg-card p-2">
-          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
+        <div className="rounded-md border border-border/60 bg-card p-2.5">
+          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
             Zakres
           </div>
           <ToggleGroup
@@ -101,11 +105,12 @@ export function PortfolioValueOverTimeHeader({
               if (!next) return;
               onRangeChange(next);
             }}
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap gap-1.5"
           >
             {rangeOptions.map((option) => (
               <ToggleGroupItem
                 key={option.value}
+                className="h-8 px-3 text-xs"
                 value={option.value}
                 disabled={isRangeDisabled(option.value)}
               >
@@ -115,8 +120,8 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className="rounded-lg border border-border/60 bg-card p-2">
-          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
+        <div className="rounded-md border border-border/60 bg-card p-2.5">
+          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
             Waluta
           </div>
           <ToggleGroup
@@ -142,8 +147,8 @@ export function PortfolioValueOverTimeHeader({
         </div>
 
         {mode === "PERFORMANCE" && range !== "1D" && comparisonOptions.length > 0 ? (
-          <div className="rounded-lg border border-border/60 bg-card p-2">
-            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
+          <div className="rounded-md border border-border/60 bg-card p-2.5">
+            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
               Porównania
             </div>
             <Popover>

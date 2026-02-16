@@ -85,7 +85,7 @@ export function TransactionLiveSummary({
           <span className="text-sm font-medium text-foreground">
             {type === "BUY" ? "Łącznie (koszt)" : "Łącznie (przychód netto)"}
           </span>
-          <span className="font-mono text-base font-semibold tabular-nums text-foreground">
+          <span className="font-mono text-sm font-semibold tabular-nums text-foreground md:text-base">
             {formatCurrencyValue(total, formatter)}
           </span>
         </div>

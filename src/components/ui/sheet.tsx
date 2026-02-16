@@ -20,7 +20,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/35 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -37,9 +37,9 @@ const sheetVariants = cva(
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
           "inset-x-0 bottom-0 border-t border-border/85 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "bottom-0 left-0 top-4 w-full rounded-t-xl border-r border-border/85 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:top-0 sm:w-[450px] sm:rounded-none",
+        left: "bottom-0 left-0 top-4 w-full rounded-t-lg border-r border-border/85 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:top-0 sm:w-[450px] sm:rounded-none",
         right:
-          "bottom-0 right-0 top-4 w-full rounded-t-xl border-l border-border/85 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:top-0 sm:w-[450px] sm:rounded-none",
+          "bottom-0 right-0 top-4 w-full rounded-t-lg border-l border-border/85 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:top-0 sm:w-[450px] sm:rounded-none",
       },
     },
     defaultVariants: {
@@ -75,7 +75,7 @@ const SheetHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-dashed border-border bg-background px-6 py-4",
+      "sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-dashed border-border bg-background px-5 py-4",
       className
     )}
     {...props}
@@ -88,7 +88,7 @@ const SheetBody = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("min-h-0 flex-1 overflow-y-auto px-6 py-4", className)}
+    className={cn("min-h-0 flex-1 overflow-y-auto px-5 py-4", className)}
     {...props}
   />
 )
@@ -100,7 +100,7 @@ const SheetFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "sticky bottom-0 z-10 flex flex-col-reverse gap-2 border-t border-dashed border-border bg-background px-6 py-4 sm:flex-row sm:justify-end",
+      "sticky bottom-0 z-10 flex flex-col-reverse gap-2 border-t border-dashed border-border bg-background px-5 py-4 sm:flex-row sm:justify-end",
       className
     )}
     {...props}

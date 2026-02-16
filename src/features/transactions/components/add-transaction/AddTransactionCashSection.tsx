@@ -89,7 +89,7 @@ export function AddTransactionCashSection({
                     }
                   }}
                 />
-                <Label className="m-0 text-base font-medium leading-none">
+                <Label className="m-0 text-sm font-medium leading-none">
                   {cashSettlementLabel}
                 </Label>
               </div>

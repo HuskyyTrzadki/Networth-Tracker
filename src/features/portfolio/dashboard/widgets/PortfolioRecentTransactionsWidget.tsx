@@ -34,7 +34,7 @@ export function PortfolioRecentTransactionsWidget({
       {items.length > 0 ? (
         <TransactionsTable items={items} />
       ) : (
-        <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
           Brak transakcji dla wybranego portfela.
         </div>
       )}

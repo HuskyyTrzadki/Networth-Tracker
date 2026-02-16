@@ -31,7 +31,7 @@ function DemoButton({ variant = "primary", className, ...props }: DemoButtonProp
   return (
     <button
       className={cn(
-        "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium shadow-sm",
+        "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "disabled:pointer-events-none disabled:opacity-50",
         variantClasses,
@@ -50,7 +50,7 @@ function DemoInput({ className, ...props }: DemoInputProps) {
   return (
     <input
       className={cn(
-        "h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm",
+        "h-9 w-full rounded-md border border-input bg-background px-3 text-sm",
         "placeholder:text-muted-foreground",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         className
@@ -71,7 +71,7 @@ function SidebarNavItem({
         "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
         active
-          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+          ? "bg-sidebar-primary text-sidebar-primary-foreground"
           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
@@ -145,7 +145,7 @@ function FinanceDemoStory() {
           </nav>
 
           <div className="mt-auto p-4">
-            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent p-3 shadow-sm">
+            <div className="rounded-md border border-sidebar-border bg-sidebar-accent p-3">
               <div className="text-xs font-semibold">Wskazówka</div>
               <div className="mt-1 text-xs text-muted-foreground">
                 Opóźnione notowania + cache FX = szybka wycena.
@@ -155,7 +155,7 @@ function FinanceDemoStory() {
         </aside>
 
         <main className="min-w-0 flex-1 bg-background">
-          <div className="border-b border-border bg-card shadow-sm">
+          <div className="border-b border-border bg-card">
             <div className="mx-auto max-w-6xl px-6 py-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
@@ -184,7 +184,7 @@ function FinanceDemoStory() {
 
           <div className="mx-auto max-w-6xl px-6 py-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="rounded-lg border border-border bg-popover px-3 py-2 text-popover-foreground shadow-sm">
+              <div className="rounded-md border border-border bg-popover px-3 py-2 text-popover-foreground">
                 <div className="flex items-center gap-3">
                   <div className="text-xs font-medium text-muted-foreground">
                     30D
@@ -193,7 +193,7 @@ function FinanceDemoStory() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-border bg-muted px-3 py-2 shadow-sm">
+              <div className="rounded-md border border-border bg-muted px-3 py-2">
                 <div className="flex items-center gap-3">
                   <div className="text-xs font-medium text-muted-foreground">
                     Rynek
@@ -242,7 +242,7 @@ function FinanceDemoStory() {
               />
 
               <div className="space-y-4">
-                <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                <div className="rounded-md border border-border bg-card p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-sm font-semibold">Alokacja</div>
                     <DemoButton variant="ghost" className="h-8 px-2 text-xs shadow-none">
@@ -276,26 +276,26 @@ function FinanceDemoStory() {
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-sm">
+                <div className="rounded-md border border-border bg-popover p-4 text-popover-foreground">
                   <div className="text-sm font-semibold">Co tu jest</div>
                   <p className="mt-2 text-sm text-muted-foreground">
                     UI oparte o semantyczne tokeny (kolory, radius, cienie, typografia)
                     gotowe do prawdziwych ekranów produktu.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground">
                       Opóźnione notowania
                     </span>
-                    <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground">
                       FX w cache
                     </span>
-                    <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-card-foreground">
                       Gotowe pod RLS
                     </span>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-border bg-destructive p-4 text-destructive-foreground shadow-sm">
+                <div className="rounded-md border border-border bg-destructive p-4 text-destructive-foreground">
                   <div className="text-sm font-semibold">Strefa ryzyka</div>
                   <p className="mt-2 text-sm opacity-90">
                     Ta karta celowo używa tokenów destructive, żeby sprawdzić kontrast

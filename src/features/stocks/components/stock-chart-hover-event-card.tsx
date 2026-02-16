@@ -76,7 +76,7 @@ export function StockChartHoverEventCard({
 
     return (
       <div
-        className="pointer-events-none absolute z-20 w-[270px] rounded-md border border-border bg-popover px-3 py-2 text-popover-foreground shadow-sm"
+        className="pointer-events-none absolute z-20 w-[270px] rounded-md border border-border/80 bg-popover px-3 py-2 text-popover-foreground shadow-[var(--shadow)]"
         style={cardStyle}
       >
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
@@ -143,7 +143,7 @@ export function StockChartHoverEventCard({
 
     return (
       <div
-        className="pointer-events-none absolute z-20 w-[286px] rounded-md border border-border bg-popover px-3 py-2 text-popover-foreground shadow-sm"
+        className="pointer-events-none absolute z-20 w-[286px] rounded-md border border-border/80 bg-popover px-3 py-2 text-popover-foreground shadow-[var(--shadow)]"
         style={cardStyle}
       >
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
@@ -181,7 +181,7 @@ export function StockChartHoverEventCard({
 
   return (
     <div
-      className="pointer-events-none absolute z-20 w-[300px] rounded-md border border-border bg-popover px-3 py-2 text-popover-foreground shadow-sm"
+      className="pointer-events-none absolute z-20 w-[300px] rounded-md border border-border/80 bg-popover px-3 py-2 text-popover-foreground shadow-[var(--shadow)]"
       style={cardStyle}
     >
       <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">

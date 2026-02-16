@@ -24,7 +24,7 @@ export function ImportCsvDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] p-0 sm:max-w-xl">
         <div className="flex max-h-[90dvh] flex-col">
-          <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
+          <header className="flex items-start justify-between gap-4 border-b border-border px-5 py-4 md:px-6 md:py-5">
             <div className="min-w-0">
               <DialogTitle className="truncate">Importuj CSV</DialogTitle>
               <DialogDescription className="mt-1">
@@ -43,11 +43,11 @@ export function ImportCsvDialog({
             </DialogClose>
           </header>
 
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex-1 overflow-y-auto px-5 py-4 md:px-6 md:py-5">
             <ImportCsvPlaceholder />
           </div>
 
-          <footer className="border-t border-border px-6 py-5">
+          <footer className="border-t border-border px-5 py-4 md:px-6 md:py-5">
             <div className="flex justify-end">
               <Button onClick={() => onOpenChange(false)} type="button">
                 Zamknij

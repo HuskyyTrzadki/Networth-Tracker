@@ -262,7 +262,7 @@ export function AddTransactionDialogContent({
           className="flex max-h-[92dvh] flex-col"
           onSubmit={submitTransaction}
         >
-          <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-6 py-5">
+          <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-5 py-4 md:px-6 md:py-5">
           <div className="min-w-0">
             <DialogTitle className="truncate">Dodaj transakcję</DialogTitle>
             <DialogDescription className="mt-1 text-[13px]">
@@ -296,7 +296,7 @@ export function AddTransactionDialogContent({
             setSelectedInstrument={setSelectedInstrument}
           />
 
-          <footer className="border-t border-border/70 bg-background px-6 py-5">
+          <footer className="border-t border-border/70 bg-background px-5 py-4 md:px-6 md:py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-h-5 text-sm text-destructive">
                 {rootError ?? ""}

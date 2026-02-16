@@ -75,7 +75,7 @@ function ComparisonTooltip({
       : null;
 
   return (
-    <div className="space-y-2 rounded-md border border-border bg-popover p-3 text-[12px] text-popover-foreground shadow-sm">
+    <div className="space-y-2 rounded-md border border-border/80 bg-popover p-3 text-[12px] text-popover-foreground shadow-[var(--shadow)]">
       <div className="text-muted-foreground/90">
         {label ? labelFormatter(label) : "—"}
       </div>

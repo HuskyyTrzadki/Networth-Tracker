@@ -243,7 +243,7 @@ export function StockChartTooltipPanel({
   }
 
   return (
-    <div className="min-w-[170px] rounded-md border border-border bg-popover px-3 py-2 text-popover-foreground shadow-sm">
+    <div className="min-w-[170px] rounded-md border border-border/80 bg-popover px-3 py-2 text-popover-foreground shadow-[var(--shadow)]">
       <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
         {formatLabelDate(String(label ?? ""))}
       </p>

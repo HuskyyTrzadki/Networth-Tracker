@@ -7,8 +7,16 @@ import StockChartSection from "./StockChartSection";
 import StockReportCollapsible from "./StockReportCollapsible";
 import StockReportConceptSections from "./StockReportConceptSections";
 import StockReportFiveYearTrendAnalysisSection from "./StockReportFiveYearTrendAnalysisSection";
+import StockReportLeadershipSection from "./StockReportLeadershipSection";
 import StockMetricsSection from "./StockMetricsSection";
 import StockReportRevenueMixSection from "./StockReportRevenueMixSection";
+import {
+  BALANCE_SNAPSHOT,
+  buildBalanceNarrative,
+  formatBillions,
+  formatPercent,
+  formatRatio,
+} from "./stock-report-balance-summary";
 import {
   DEEP_DIVE_BLOCKS,
   EARNINGS_CALL_BLOCKS,
@@ -22,7 +30,7 @@ type MainContentProps = Readonly<{
 function SummaryStartSection() {
   return (
     <section id="sekcja-podsumowanie" className="space-y-3 border-b border-dashed border-[color:var(--report-rule)] pb-6">
-      <h2 className="text-3xl font-semibold tracking-tight">Najwazniejsze wnioski</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">Najwazniejsze wnioski</h2>
       <p className="text-sm text-muted-foreground">
         Szybki skrot raportu pod inwestora. Ten blok ma prowadzic czytanie, zanim wejdziesz w szczegoly.
       </p>
@@ -62,49 +70,68 @@ function SummaryStartSection() {
 }
 
 function BalanceSnapshotSection() {
+  const narrative = buildBalanceNarrative(BALANCE_SNAPSHOT);
+  const riskTone =
+    narrative.risk === "Niskie"
+      ? "text-profit bg-profit/10"
+      : narrative.risk === "Podwyzszone"
+        ? "text-loss bg-loss/10"
+        : "text-amber-700 bg-amber-100/60 dark:bg-amber-300/15";
+
   return (
     <section id="sekcja-bilans" className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-6">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-3xl font-semibold tracking-tight">Co firma posiada i co jest winna</h3>
+        <h3 className="text-2xl font-semibold tracking-tight">Co firma posiada i co jest winna</h3>
         <div className="inline-flex items-center gap-2">
-          <Button size="sm" className="h-8 rounded-sm px-3 text-xs">
+          <Button size="sm" className="h-8 rounded-sm px-3 text-[11px]">
             Ostatni kwartal
           </Button>
-          <Button size="sm" variant="outline" className="h-8 rounded-sm px-3 text-xs">
+          <Button size="sm" variant="outline" className="h-8 rounded-sm px-3 text-[11px]">
             Ostatni rok
           </Button>
         </div>
       </div>
 
       <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-          Szybkie podsumowanie
-        </p>
-        <p className="mt-1 text-sm text-foreground/90">
-          Bilans pozostaje mocny: wysoka gotowka, kontrolowane zadluzenie i duza baza kapitalu wlasnego.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Szybkie podsumowanie
+          </p>
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${riskTone}`}>
+            Ryzyko: {narrative.risk}
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-foreground/90">{narrative.summary}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-          <p className="text-xs text-muted-foreground">Aktywa ogolem</p>
-          <p className="mt-1 text-xl font-semibold">$366.0B</p>
-          <p className="text-xs text-profit">+20%</p>
+          <p className="text-[11px] text-muted-foreground">Aktywa ogolem</p>
+          <p className="mt-1 font-mono text-lg font-semibold tabular-nums">
+            {formatBillions(BALANCE_SNAPSHOT.assetsTotal)}
+          </p>
+          <p className="text-[11px] font-mono tabular-nums text-profit">+20%</p>
         </div>
         <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-          <p className="text-xs text-muted-foreground">Aktywa plynne</p>
-          <p className="mt-1 text-xl font-semibold">$81.6B</p>
-          <p className="text-xs text-profit">+83%</p>
+          <p className="text-[11px] text-muted-foreground">Aktywa plynne</p>
+          <p className="mt-1 font-mono text-lg font-semibold tabular-nums">
+            {formatBillions(BALANCE_SNAPSHOT.liquidAssets)}
+          </p>
+          <p className="text-[11px] font-mono tabular-nums text-profit">+83%</p>
         </div>
         <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-          <p className="text-xs text-muted-foreground">Zadluzenie</p>
-          <p className="mt-1 text-xl font-semibold">$83.9B</p>
-          <p className="text-xs text-loss">+64%</p>
+          <p className="text-[11px] text-muted-foreground">Zadluzenie</p>
+          <p className="mt-1 font-mono text-lg font-semibold tabular-nums">
+            {formatBillions(BALANCE_SNAPSHOT.debt)}
+          </p>
+          <p className="text-[11px] font-mono tabular-nums text-loss">+64%</p>
         </div>
         <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-          <p className="text-xs text-muted-foreground">Kapital wlasny</p>
-          <p className="mt-1 text-xl font-semibold">$217.2B</p>
-          <p className="text-xs text-profit">+11%</p>
+          <p className="text-[11px] text-muted-foreground">Kapital wlasny</p>
+          <p className="mt-1 font-mono text-lg font-semibold tabular-nums">
+            {formatBillions(BALANCE_SNAPSHOT.equity)}
+          </p>
+          <p className="text-[11px] font-mono tabular-nums text-profit">+11%</p>
         </div>
       </div>
 
@@ -116,15 +143,21 @@ function BalanceSnapshotSection() {
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <span className="text-muted-foreground">Aktywa razem</span>
-              <span className="font-semibold">$366.0B</span>
+              <span className="font-mono font-semibold tabular-nums">
+                {formatBillions(BALANCE_SNAPSHOT.assetsTotal)}
+              </span>
             </div>
             <div className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <span className="text-muted-foreground">Zobowiazania razem</span>
-              <span className="font-semibold">$148.8B (40.6%)</span>
+              <span className="font-mono font-semibold tabular-nums">
+                $148.8B (40.6%)
+              </span>
             </div>
             <div className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <span className="text-muted-foreground">Kapital akcjonariuszy</span>
-              <span className="font-semibold">$217.2B (59.4%)</span>
+              <span className="font-mono font-semibold tabular-nums">
+                {formatBillions(BALANCE_SNAPSHOT.equity)} (59.4%)
+              </span>
             </div>
           </div>
         </div>
@@ -133,15 +166,21 @@ function BalanceSnapshotSection() {
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <span className="text-muted-foreground">Dlug do kapitalu</span>
-              <span className="font-semibold">0.39x</span>
+              <span className="font-mono font-semibold tabular-nums">
+                {formatRatio(BALANCE_SNAPSHOT.debtToEquity)}
+              </span>
             </div>
             <div className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <span className="text-muted-foreground">Dlug do aktywow</span>
-              <span className="font-semibold">22.9%</span>
+              <span className="font-mono font-semibold tabular-nums">
+                {formatPercent(BALANCE_SNAPSHOT.debtToAssets)}
+              </span>
             </div>
             <div className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <span className="text-muted-foreground">Dlug netto</span>
-              <span className="font-semibold">$2.3B</span>
+              <span className="font-mono font-semibold tabular-nums">
+                {formatBillions(BALANCE_SNAPSHOT.netDebt)}
+              </span>
             </div>
           </div>
         </div>
@@ -153,7 +192,7 @@ function BalanceSnapshotSection() {
 function EarningsSummarySection() {
   return (
     <section id="sekcja-earnings" className="space-y-3 border-b border-dashed border-[color:var(--report-rule)] pb-6">
-      <h3 className="text-3xl font-semibold tracking-tight">Podsumowanie konferencji wynikowej Q4 2025</h3>
+      <h3 className="text-2xl font-semibold tracking-tight">Podsumowanie konferencji wynikowej Q4 2025</h3>
       <p className="text-sm text-muted-foreground">Skrot konferencji wynikowej META za Q4 2025</p>
 
       <div className="space-y-3">
@@ -227,6 +266,7 @@ export default function StockReportMainContent({
       </section>
 
       <BalanceSnapshotSection />
+      <StockReportLeadershipSection />
 
       <section id="sekcja-widzety">
         <InsightsWidgetsSection />

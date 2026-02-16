@@ -59,6 +59,7 @@ type Props = Readonly<{
   overlayAxisLabel: string | null;
   visibleTradeMarkers: readonly VisibleMarker[];
   eventMarkers: readonly StockChartEventMarker[];
+  showNarrativeLabels: boolean;
   isLoading: boolean;
 }>;
 
@@ -75,6 +76,7 @@ export function StockChartPlot({
   overlayAxisLabel,
   visibleTradeMarkers,
   eventMarkers,
+  showNarrativeLabels,
   isLoading,
 }: Props) {
   const mutableChartData = [...chartData];
@@ -162,7 +164,7 @@ export function StockChartPlot({
               tickFormatter={(value) =>
                 formatXAxisTick(String(value), chart.resolvedRange)
               }
-              tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
               tickLine={false}
               minTickGap={26}
@@ -177,7 +179,7 @@ export function StockChartPlot({
                     }).format(value)
                   : ""
               }
-              tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
               tickLine={false}
               width={72}
@@ -195,7 +197,7 @@ export function StockChartPlot({
                         position: "insideRight",
                         style: {
                           fill: "var(--muted-foreground)",
-                          fontSize: 11,
+                          fontSize: 10,
                         },
                       }
                     : undefined
@@ -207,7 +209,7 @@ export function StockChartPlot({
                       }).format(value)
                     : ""
                 }
-                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                 axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
                 tickLine={false}
                 width={58}
@@ -286,6 +288,18 @@ export function StockChartPlot({
                 strokeOpacity={hoveredEventId === marker.id ? 0.62 : 0.25}
                 strokeWidth={hoveredEventId === marker.id ? 1.4 : 1}
                 strokeDasharray={marker.kind === "userTrade" ? "2 4" : "3 5"}
+                label={
+                  showNarrativeLabels &&
+                  (marker.kind === "news" || marker.kind === "globalNews") &&
+                  marker.annotationLabel
+                    ? {
+                        value: marker.annotationLabel,
+                        position: "insideTop",
+                        fill: "var(--muted-foreground)",
+                        fontSize: 10,
+                      }
+                    : undefined
+                }
                 ifOverflow="discard"
               />
             ))}

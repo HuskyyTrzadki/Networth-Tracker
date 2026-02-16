@@ -36,7 +36,7 @@ export function HomeHero() {
       <div className="mx-auto flex min-h-dvh w-full max-w-[1560px] flex-col px-4 pb-8 pt-5 sm:px-6">
         <header className="flex h-14 items-center justify-between border-b border-dashed border-border/85 pb-4">
           <div className="text-xl font-semibold tracking-tight">Portfolio Tracker</div>
-          <nav className="flex items-center gap-6 text-sm font-semibold">
+          <nav className="flex items-center gap-6 text-xs font-semibold uppercase tracking-[0.08em]">
             <a href="/pricing" className="text-muted-foreground hover:text-foreground">
               Cennik
             </a>
@@ -55,7 +55,7 @@ export function HomeHero() {
               <h1 className="max-w-2xl text-5xl font-semibold tracking-tight">
                 Szukaj akcji. Czytaj dane jak gazete.
               </h1>
-              <p className="max-w-xl text-base leading-7 text-muted-foreground">
+              <p className="max-w-xl text-sm leading-7 text-muted-foreground">
                 Stock report i portfolio management w jednym miejscu. Z naciskiem
                 na czytelnosc, nie na dashboardowy halas.
               </p>
@@ -64,7 +64,7 @@ export function HomeHero() {
             <div className="max-w-xl space-y-3 rounded-md border border-dashed border-border/90 bg-card/65 p-4">
               <Button
                 size="lg"
-                className="h-12 w-full"
+                className="w-full"
                 onClick={startGuest}
                 disabled={pending}
                 aria-busy={pending}

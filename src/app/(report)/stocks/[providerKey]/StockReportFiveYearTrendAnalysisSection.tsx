@@ -4,7 +4,7 @@ import StockReportCollapsible from "./StockReportCollapsible";
 export default function StockReportFiveYearTrendAnalysisSection() {
   return (
     <section className="space-y-3 border-b border-dashed border-[color:var(--report-rule)] pb-6">
-      <h3 className="text-3xl font-semibold tracking-tight">
+      <h3 className="text-2xl font-semibold tracking-tight">
         {FIVE_YEAR_TREND_ANALYSIS.title}
       </h3>
       <p className="text-sm text-muted-foreground">{FIVE_YEAR_TREND_ANALYSIS.subtitle}</p>
@@ -32,4 +32,3 @@ export default function StockReportFiveYearTrendAnalysisSection() {
     </section>
   );
 }
-

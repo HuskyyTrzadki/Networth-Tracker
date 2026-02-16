@@ -38,17 +38,14 @@ export function PortfolioSnapshotRebuildChartLoader({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border/70 bg-gradient-to-b from-slate-600/5 via-cyan-500/5 to-background p-5",
-        "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(2,6,23,0.05)]"
+        "relative overflow-hidden rounded-lg border border-border/75 bg-card p-5"
       )}
       style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_10%_0%,rgba(6,182,212,0.14),transparent_62%)] dark:bg-[radial-gradient(120%_80%_at_10%_0%,rgba(103,232,249,0.10),transparent_62%)]" />
-
       <div className="relative flex h-full flex-col">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-600/25 bg-cyan-600/10 px-2.5 py-1 text-[11px] font-medium tracking-[0.01em] text-cyan-800 dark:text-cyan-200">
+            <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
               <Loader2 className="size-3.5 animate-spin" aria-hidden />
               Przebudowa historii snapshotów
             </div>
@@ -100,15 +97,13 @@ export function PortfolioSnapshotRebuildChartLoader({
           </div>
         </div>
 
-        <div className="relative mt-4 flex-1 overflow-hidden rounded-lg border border-border/60 bg-background/70">
+        <div className="relative mt-4 flex-1 overflow-hidden rounded-md border border-border/70 bg-background">
           <div className="pointer-events-none absolute inset-x-4 top-5 grid gap-7">
             <div className="h-px bg-border/55" />
             <div className="h-px bg-border/55" />
             <div className="h-px bg-border/55" />
             <div className="h-px bg-border/55" />
           </div>
-
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-cyan-500/5 to-transparent animate-[pulse_2.4s_ease-in-out_infinite]" />
 
           <svg
             viewBox="0 0 340 212"
@@ -130,7 +125,6 @@ export function PortfolioSnapshotRebuildChartLoader({
               fill="none"
               stroke="rgba(8,145,178,0.92)"
               strokeWidth="2.5"
-              className="animate-[pulse_2.2s_ease-in-out_infinite]"
             />
             <polyline
               points="0,186 42,180 86,174 132,161 176,160 220,154 264,148 308,140 340,134"

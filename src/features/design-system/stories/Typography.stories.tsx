@@ -14,7 +14,7 @@ function TypographyStory() {
           </p>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="space-y-3 rounded-md border border-border/80 bg-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Nagłówek</div>
           <div className="space-y-1">
             <div className="text-3xl font-semibold tracking-tight">
@@ -27,7 +27,7 @@ function TypographyStory() {
           </div>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="space-y-3 rounded-md border border-border/80 bg-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Tekst główny</div>
           <p className="text-base leading-6">
             Narzędzia do portfela powinny być precyzyjne, szybkie i godne zaufania.
@@ -35,14 +35,14 @@ function TypographyStory() {
           <p className="text-base leading-6 text-muted-foreground">Tekst pomocniczy</p>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="space-y-3 rounded-md border border-border/80 bg-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Szeryf (News)</div>
           <p className="font-serif text-xl leading-7">
             Rynki poruszają się historiami tak samo jak liczbami.
           </p>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="space-y-3 rounded-md border border-border/80 bg-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Monospace (dane)</div>
           <div className="space-y-2 font-mono text-sm tabular-nums">
             <div>Liczby (tabular-nums): 1 234 567.89</div>

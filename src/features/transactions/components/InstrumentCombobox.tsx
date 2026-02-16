@@ -103,7 +103,7 @@ export function InstrumentCombobox({
         <Button
           aria-expanded={open}
           className={cn(
-            "h-14 w-full justify-between gap-3 px-4",
+            "h-12 w-full justify-between gap-3 px-4 md:h-11",
             !value && "text-muted-foreground",
             triggerClassName
           )}
@@ -113,15 +113,15 @@ export function InstrumentCombobox({
           <span className="flex min-w-0 items-center gap-3">
             {value ? (
               <>
-                <span className="font-mono text-base font-semibold tabular-nums sm:text-lg">
+                <span className="font-mono text-sm font-semibold tabular-nums md:text-[15px]">
                   {value.ticker}
                 </span>
-                <span className="truncate text-base text-foreground sm:text-lg">
+                <span className="truncate text-sm text-foreground md:text-[15px]">
                   {value.name}
                 </span>
               </>
             ) : (
-              <span className="text-base">
+              <span className="text-sm">
                 {emptyLabel}
               </span>
             )}
@@ -142,7 +142,7 @@ export function InstrumentCombobox({
       >
         <Command shouldFilter={false}>
           <CommandInput
-            className="h-11 text-base"
+            className="h-10 text-sm"
             placeholder={queryPlaceholder}
             value={query}
             onValueChange={(nextValue) => {

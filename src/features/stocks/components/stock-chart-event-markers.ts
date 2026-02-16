@@ -12,6 +12,7 @@ export type StockChartEventMarker =
       id: string;
       t: string;
       kind: "earnings";
+      annotationLabel: string;
       quarterLabel: string;
       expectedRevenue: number;
       actualRevenue: number;
@@ -22,6 +23,7 @@ export type StockChartEventMarker =
       id: string;
       t: string;
       kind: "news";
+      annotationLabel: string;
       title: string;
       summary: string;
       imageUrl: string;
@@ -30,6 +32,7 @@ export type StockChartEventMarker =
       id: string;
       t: string;
       kind: "globalNews";
+      annotationLabel: string;
       title: string;
       summary: string;
       imageUrl: string;
@@ -52,20 +55,23 @@ const GLOBAL_NEWS_ANCHOR: EventAnchor = { ratio: 0.18 };
 const NEWS_TEMPLATES = [
   {
     id: "news-gemini-2-5-pro",
+    annotationLabel: "Premiera produktu AI",
     title: "Premiera Gemini 2.5 Pro",
     summary:
       "Google rozszerza model Gemini 2.5 Pro i zapowiada szybsza monetyzacje narzedzi AI.",
     imageUrl: "https://picsum.photos/seed/gemini-2-5-pro/120/80",
   },
   {
-    id: "news-court-chrome-ruling",
-    title: "Wyrok: brak wymuszonej sprzedazy Chrome",
+    id: "news-ceo-change-cloud",
+    annotationLabel: "Zmiana CEO segmentu",
+    title: "Zmiana CEO w kluczowym segmencie cloud",
     summary:
-      "Wazne rozstrzygniecie sadowe ogranicza ryzyko natychmiastowej sprzedazy przegladarki Chrome.",
-    imageUrl: "https://picsum.photos/seed/chrome-ruling/120/80",
+      "Nowy CEO segmentu cloud zmienia priorytety sprzedazowe i harmonogram inwestycji produktowych.",
+    imageUrl: "https://picsum.photos/seed/ceo-cloud-change/120/80",
   },
   {
     id: "news-cloud-ai-enterprise",
+    annotationLabel: "Nowe kontrakty enterprise",
     title: "Nowe wdrozenia AI w chmurze",
     summary:
       "Nowe kontrakty enterprise wzmacniaja segment cloud i popyt na infrastrukture AI.",
@@ -76,6 +82,7 @@ const NEWS_TEMPLATES = [
 const GLOBAL_NEWS_TEMPLATES = [
   {
     id: "global-news-covid",
+    annotationLabel: "Szok makro: COVID",
     title: "Wybuch COVID-19",
     summary:
       "Globalny szok popytowo-podazowy wywolal wysoka zmiennosc i silne ruchy na rynkach.",
@@ -83,6 +90,7 @@ const GLOBAL_NEWS_TEMPLATES = [
   },
   {
     id: "global-news-trump-tariffs",
+    annotationLabel: "Szok makro: nowe cla",
     title: "Nowe cla administracji USA",
     summary:
       "Zapowiedz nowych cel podniosla niepewnosc w handlu miedzynarodowym i marzach importerow.",
@@ -90,6 +98,7 @@ const GLOBAL_NEWS_TEMPLATES = [
   },
   {
     id: "global-news-fed-hikes",
+    annotationLabel: "Szok makro: podwyzki stop",
     title: "Cykl podwyzek stop",
     summary:
       "Zaostrzenie polityki pienieznej zwiekszylo koszty kapitalu i presje na wyceny growth.",
@@ -181,6 +190,7 @@ export const buildMockChartEventMarkers = (
         id: `earnings-${anchorEntry.year}`,
         t: anchorEntry.t,
         kind: "earnings",
+        annotationLabel: `Wyniki ${anchorEntry.year}`,
         quarterLabel: `Q4 ${anchorEntry.year}`,
         expectedRevenue,
         actualRevenue,
@@ -199,6 +209,7 @@ export const buildMockChartEventMarkers = (
         id: `${template.id}-${anchorEntry.year}`,
         t: anchorEntry.t,
         kind: "news",
+        annotationLabel: template.annotationLabel,
         title: template.title,
         summary: template.summary,
         imageUrl: template.imageUrl,
@@ -242,6 +253,7 @@ export const buildMockChartEventMarkers = (
         id: `${template.id}-${anchorEntry.year}`,
         t: anchorEntry.t,
         kind: "globalNews",
+        annotationLabel: template.annotationLabel,
         title: template.title,
         summary: template.summary,
         imageUrl: template.imageUrl,

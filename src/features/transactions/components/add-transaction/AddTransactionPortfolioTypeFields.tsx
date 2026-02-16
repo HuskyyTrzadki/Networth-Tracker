@@ -78,15 +78,15 @@ export function AddTransactionPortfolioTypeFields({
                 }}
                 value={field.value}
               >
-                <TabsList className="grid h-11 w-full grid-cols-2 rounded-lg border border-border/70 bg-muted/70 p-1 dark:bg-muted/30">
+                <TabsList className="grid h-10 w-full grid-cols-2 p-1">
                   <TabsTrigger
-                    className="w-full rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-100 dark:data-[state=active]:text-zinc-900"
+                    className="h-8 w-full rounded-sm"
                     value="BUY"
                   >
                     {isCashTab ? "Wpłata" : "Kupno"}
                   </TabsTrigger>
                   <TabsTrigger
-                    className="w-full rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-100 dark:data-[state=active]:text-zinc-900"
+                    className="h-8 w-full rounded-sm"
                     value="SELL"
                   >
                     {isCashTab ? "Wypłata" : "Sprzedaż"}

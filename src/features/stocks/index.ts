@@ -13,5 +13,6 @@ export type {
   StockOverlayCoverage,
   StockScreenerCard,
   StockTradeMarker,
+  StockValuationRangeContext,
   StockValuationSummary,
 } from "./server/types";

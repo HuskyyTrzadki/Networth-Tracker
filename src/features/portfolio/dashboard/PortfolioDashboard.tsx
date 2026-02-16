@@ -62,7 +62,7 @@ export function PortfolioDashboard({
       </AnimatedReveal>
       {selectedPortfolioId === null ? (
         <AnimatedReveal className="hidden md:block" delay={0.04}>
-          <div className="inline-flex rounded-xl border border-border/85 bg-card p-2 shadow-[var(--shadow)]">
+          <div className="inline-flex rounded-lg border border-border/85 bg-card p-2">
             <PortfolioSwitcher
               className="sm:gap-2.5"
               portfolios={portfolios}

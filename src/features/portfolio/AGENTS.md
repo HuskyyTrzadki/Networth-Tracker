@@ -136,6 +136,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Internal chunks in one run now share a single preloaded rebuild session (transactions + daily prices + daily FX loaded once, then reused in-memory across chunks), eliminating repeated DB/provider reads per chunk.
 - Daily cache preload validates range coverage quality (start/end + max internal gap), so sparse cache fragments trigger provider refetch instead of creating long flat carry-forward segments.
 - Portfolio value/performance chart compute is split into a dedicated view-model builder (`dashboard/lib/portfolio-value-over-time-view-model.ts`) so the widget component stays focused on orchestration and rendering.
+- Dashboard visual surfaces (hero, switcher shell, allocation/rebuild cards, and skeletons) were normalized to the same rounded/border rhythm as shared primitives, with decorative shadows/gradients reduced for consistency.
+- Desktop polish follow-up tightened dashboard control density (`PortfolioValueOverTimeHeader`) and route-loading shell width alignment (`max-w-[1560px]`) for more consistent large-screen rhythm.
+- Allocation/holdings widget palette now uses differentiated ink accents plus patterned fills (hatch/dots/cross/grid) across donut + participation bars, improving category distinction without breaking editorial style.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`

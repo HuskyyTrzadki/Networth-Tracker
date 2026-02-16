@@ -16,7 +16,7 @@ export function StockSearchBar() {
       allowedTypes={["EQUITY"]}
       emptyLabel="Szukaj akcji po nazwie lub tickerze"
       queryPlaceholder="Szukaj (np. AAPL, MSFT, CDR)"
-      triggerClassName="h-12 rounded-xl bg-background/90"
+      triggerClassName="h-11 rounded-md bg-background"
       onChange={(next) => {
         setValue(next);
         router.push(`/stocks/${encodeURIComponent(next.providerKey)}`);

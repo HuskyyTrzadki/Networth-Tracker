@@ -19,7 +19,7 @@ export function ChangePill({ value, trend, className }: Props) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border bg-card px-2 py-0.5 font-mono text-xs tabular-nums shadow-sm",
+        "inline-flex items-center gap-1 rounded-md border bg-card px-2 py-0.5 font-mono text-xs tabular-nums",
         trendClasses,
         className
       )}

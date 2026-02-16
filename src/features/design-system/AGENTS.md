@@ -35,8 +35,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Global tokens and controls were refreshed to a warmer neutral palette with muted teal accent, border-led depth, and consistent rounded-`lg` control chrome.
 - Global tokens now follow an editorial paper/ink system (warm paper background, ink-first typography, dashed-border module grammar) in both light and dark (`night paper`) themes.
 - Shared primitives (`button`, `input`, `table`, `badge`, `card`, `sheet`) were flattened to border-led chrome with minimal radius and no decorative shadows.
+- Shared primitives were re-aligned to a crisp editorial baseline: unified control heights (`h-9`/`h-10`/`h-11`), `rounded-md` controls, restrained `rounded-lg` containers, and consistent border/focus treatments across `ui/*`.
 - `ChartCard` uses symmetrical `p-4` spacing and a single internal rhythm (`header` + `content`) so widget chrome remains consistent across portfolio sections.
 - `ChartCard` now supports `surface` variants (`default`/`subtle`) for consistent visual hierarchy between primary and secondary dashboard cards.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
 - `AllocationDonutChart` supports responsive radius values (`innerRadius`/`outerRadius` as percent) so feature widgets can use full-width chart areas without hardcoded pixel donuts.
+- `AllocationDonutChart` now supports optional per-slice SVG patterns (`hatch`, `dots`, `cross`, `grid`) in addition to color fills, enabling print-like category distinction in allocation charts.
 - Chart stories live in `stories/Charts.stories.tsx`.

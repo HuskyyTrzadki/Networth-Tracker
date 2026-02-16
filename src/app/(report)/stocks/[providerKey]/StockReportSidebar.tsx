@@ -40,7 +40,7 @@ export default function StockReportSidebar({
             <div className="flex min-w-0 items-center gap-3">
               <InstrumentLogoImage src={logoUrl} size={46} fallbackText={symbol} alt={name} />
               <div className="min-w-0">
-                <h1 className="truncate text-3xl font-semibold tracking-tight">{symbol}</h1>
+                <h1 className="truncate text-2xl font-semibold tracking-tight">{symbol}</h1>
                 <p className="truncate text-sm text-muted-foreground">{name}</p>
               </div>
             </div>
@@ -55,8 +55,8 @@ export default function StockReportSidebar({
           </div>
 
           <div className="mt-4">
-            <h2 className="text-base font-semibold tracking-tight">Na tej stronie</h2>
-            <ul className="mt-3 space-y-1 text-sm font-semibold tracking-tight text-foreground/80">
+            <h2 className="text-[15px] font-semibold tracking-tight">Na tej stronie</h2>
+            <ul className="mt-3 space-y-1 text-[13px] font-medium tracking-tight text-foreground/80">
               <li>
                 <a className="hover:text-foreground" href="#sekcja-wykres">
                   Wykres ceny
@@ -83,6 +83,11 @@ export default function StockReportSidebar({
                 </a>
               </li>
               <li>
+                <a className="hover:text-foreground" href="#sekcja-zarzad">
+                  Zarzad i insiderzy
+                </a>
+              </li>
+              <li>
                 <a className="hover:text-foreground" href="#sekcja-widzety">
                   Kluczowe mini-wykresy
                 </a>
@@ -100,7 +105,7 @@ export default function StockReportSidebar({
       <div className="report-scrollbar relative pb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
         <div className="space-y-6 pt-4">
           <section className="border-b border-dashed border-[color:var(--report-rule)] pb-6">
-            <h2 className="text-base font-semibold tracking-tight">Fakty podstawowe</h2>
+            <h2 className="text-[15px] font-semibold tracking-tight">Fakty podstawowe</h2>
             <dl className="mt-4 space-y-2">
               <FactRow label="Gielda" value={exchange} />
               <FactRow label="Region" value={region} />

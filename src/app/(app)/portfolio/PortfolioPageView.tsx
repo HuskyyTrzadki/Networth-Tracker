@@ -20,7 +20,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   const pageData = await getUserPortfoliosPrivateCached();
   if (!pageData.isAuthenticated) {
     return (
-      <main className="px-6 py-8">
+      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby zobaczyć portfel.

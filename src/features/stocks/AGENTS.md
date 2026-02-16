@@ -15,8 +15,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/app/(report)/stocks/[providerKey]/InsightsWidgetsSection.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportSidebar.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportMainContent.tsx`
+  - `src/app/(report)/stocks/[providerKey]/StockReportLeadershipSection.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportConceptSections.tsx`
   - `src/app/(report)/stocks/[providerKey]/stock-report-static-data.ts`
+  - `src/app/(report)/stocks/[providerKey]/StockReportRevenueSankeyCard.tsx`
+  - `src/app/(report)/stocks/[providerKey]/stock-report-revenue-sankey-helpers.ts`
+  - `src/app/(report)/stocks/[providerKey]/stock-report-balance-summary.ts`
   - `src/app/(report)/stocks/[providerKey]/stock-insights-widgets-data.ts`
 - App API:
   - `src/app/api/public/stocks/[providerKey]/chart/route.ts`
@@ -53,6 +57,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - Route handlers stay thin and delegate to `src/features/stocks/server/*`.
+- Valuation summary service is fail-soft: when Yahoo summary fetch fails and no DB cache row exists, it returns an empty normalized summary (null metrics) instead of throwing, to avoid crashing report prefetch/render.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
 - Private chart API (`/api/stocks/[providerKey]/chart`) and trade-markers API (`/api/stocks/[providerKey]/trade-markers`) use shared route auth helper (`src/lib/http/route-handler.ts`) and delegate to feature/server services.
 - Stock details sections (`StockChartSection`, `StockMetricsSection`, instrument header) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads.
@@ -68,6 +73,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - revenue allocation ("Gdzie trafia kazda zlotowka przychodu"),
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),
   - free-cash-flow explainer section.
+- "Jak firma zarabia" now has two visuals for revenue understanding:
+  - default `Sankey` flow rendered with `echarts-for-react` (segmenty przychodow -> koszty -> zysk netto) with print-like textures/dashed streams,
+  - fallback `Kołowe` view (existing product/geo donuts).
+- Sankey left-lane split is now based on geographic revenue mix (4 segments) instead of highly concentrated product split, to improve readability and avoid one dominant 98% stream.
+- Price chart controls include a `Narracja` toggle (default ON for long ranges) that reveals labeled event annotations on vertical guides.
+- Report stream now includes `Zarzad i insiderzy` section (`#sekcja-zarzad`) with leadership cards and insider timeline (demo data).
 - Concept-heavy sections expose hover tooltips via an `i` icon to clarify definitions in-place.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
@@ -90,13 +101,26 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - global event card (`Wazne wydarzenia globalne`) with separate marker color and placeholder image.
   - optional `BUY/SELL uzytkownika (mock)` markers use plus/minus icons with size scaled by mocked position value.
   - event overlays are enabled only on longer ranges (`3Y`, `5Y`, `10Y`, `ALL`) and are generated as yearly mocked markers.
+- Screener/search and chart hover tooltips were aligned with the shared editorial style baseline (consistent radii/borders, toned-down surface depth) without changing data behavior.
+- Desktop polish follow-up adjusted `/stocks` shell/readability on large screens (search width containment, loader/skeleton geometry, and screener card density/rhythm).
+- Desktop micro-pass for `/stocks/[providerKey]` refined chart controls and typography: grouped range/mode/overlay controls into clearer desktop panels, reduced chart-axis typographic noise, and tightened heading/row scale in valuation/sidebar blocks.
+- Desktop report typography pass further aligned long-form sections (`StockReportMainContent`, `StockReportRevenueMixSection`, `StockReportFiveYearTrendAnalysisSection`, `StockReportConceptSections`): section titles normalized to a calmer scale, uppercase helper labels softened, and key financial values switched to `font-mono tabular-nums` for faster scan/comparison.
+- Desktop follow-up pass on `InsightsWidgetsSection` aligned widget-card and modal rhythm with the report system: flatter modal chrome (`rounded-sm`), calmer micro-typography/tracking, denser card spacing on large screens, and reduced chart axis noise in both compact and expanded widget charts.
+- `StockMetricsSection` now reads summary + cached 5Y PE overlay context and renders contextual valuation instead of only raw rows:
+  - PE shown on a range bar with min/max/median markers and percentile-based wording (`history low/mid/high`),
+  - additional multiples and fundamentals moved into calmer supporting lists.
+- Report concept section `Ten rok vs ostatni rok` now includes per-metric sparklines for trend context next to point-in-time YoY numbers.
+- Balance snapshot summary now uses deterministic natural-language risk interpretation (`Niskie/Umiarkowane/Podwyzszone`) via helper module `stock-report-balance-summary.ts`.
 
 ## Tests
 - `src/features/stocks/components/stock-chart-card-helpers.test.ts`
 - `src/features/stocks/components/stock-chart-trend.test.ts`
+- `src/features/stocks/components/stock-chart-event-markers.test.ts`
 - `src/features/stocks/server/build-stock-overlay-series.test.ts`
 - `src/features/stocks/server/fundamental-time-series.test.ts`
 - `src/features/stocks/server/get-stock-chart-http-response.test.ts`
 - `src/features/stocks/server/parse-stock-chart-query.test.ts`
+- `src/features/stocks/server/valuation-range-context.test.ts`
+- `src/app/(report)/stocks/[providerKey]/stock-report-revenue-sankey-helpers.test.ts`
 - `src/app/api/public/stocks/[providerKey]/chart/route.test.ts`
 - `src/app/api/stocks/[providerKey]/chart/route.test.ts`

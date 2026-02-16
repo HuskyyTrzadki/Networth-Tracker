@@ -17,7 +17,7 @@ function ScreenerFallback() {
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="h-56 animate-pulse rounded-xl border border-border/70 bg-card"
+          className="h-56 animate-pulse rounded-lg border border-border/70 bg-card"
         />
       ))}
     </div>
@@ -31,7 +31,7 @@ export default async function StocksPage() {
 
   if (!data.user) {
     return (
-      <main className="px-6 py-8">
+      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby korzystać ze screenera akcji.
@@ -51,7 +51,9 @@ export default async function StocksPage() {
           <p className="text-sm text-muted-foreground">
             Twoje akcje z wszystkich portfeli w jednym miejscu.
           </p>
-          <StockSearchBar />
+          <div className="max-w-xl">
+            <StockSearchBar />
+          </div>
         </header>
       </AnimatedReveal>
       <AnimatedReveal className="mt-6" delay={0.05}>

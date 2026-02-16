@@ -131,6 +131,26 @@ const fromYahoo = (
   };
 };
 
+const buildUnavailableSummary = (providerKey: string): StockValuationSummary => ({
+  providerKey,
+  marketCap: null,
+  peTtm: null,
+  priceToSales: null,
+  evToEbitda: null,
+  priceToBook: null,
+  profitMargin: null,
+  operatingMargin: null,
+  quarterlyEarningsYoy: null,
+  quarterlyRevenueYoy: null,
+  cash: null,
+  debt: null,
+  dividendYield: null,
+  payoutRatio: null,
+  payoutDate: null,
+  asOf: null,
+  fetchedAt: new Date().toISOString(),
+});
+
 const readCache = async (
   supabase: SupabaseServerClient,
   providerKey: string
@@ -215,12 +235,10 @@ export async function getStockValuationSummaryCached(
     const fresh = fromYahoo(providerKey, raw as QuoteSummaryLike);
     await writeCache(fresh);
     return fresh;
-  } catch (error) {
+  } catch {
     if (cached) {
       return fromRow(providerKey, cached);
     }
-
-    const message = error instanceof Error ? error.message : "Unknown error";
-    throw new Error(message);
+    return buildUnavailableSummary(providerKey);
   }
 }

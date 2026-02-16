@@ -149,7 +149,7 @@ export function TransactionsTable({ items }: Props) {
   const groups = groupTransactions(items);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/85 bg-card shadow-[var(--shadow)]">
+    <div className="overflow-hidden rounded-lg border border-border/85 bg-card">
       <div className="overflow-x-auto">
         <div className="min-w-[860px]">
           <div
@@ -179,7 +179,7 @@ export function TransactionsTable({ items }: Props) {
               <div
                 key={group.groupId}
                 className={cn(
-                  "overflow-hidden rounded-lg border border-border/80 bg-background/45",
+                  "overflow-hidden rounded-md border border-border/80 bg-background/45",
                   GROUP_ACCENT_BASE_CLASS,
                   GROUP_TONE_BY_SIDE[group.primarySide].accentClassName
                 )}
@@ -200,7 +200,7 @@ export function TransactionsTable({ items }: Props) {
                       {item.tradeDate}
                     </div>
                     <div className="flex min-w-0 items-center gap-3 px-2">
-                      <div className="grid size-8 place-items-center text-base leading-none">
+                      <div className="grid size-8 place-items-center text-sm leading-none">
                         <InstrumentLogoImage
                           className="size-6"
                           fallbackText={item.instrument.symbol}
@@ -220,7 +220,7 @@ export function TransactionsTable({ items }: Props) {
                     <div className="px-2">
                       <Badge
                         className={cn(
-                          "rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+                          "rounded-md border px-2.5 py-0.5 text-[11px] font-medium",
                           getRowBadgeClassName(item)
                         )}
                         variant="outline"

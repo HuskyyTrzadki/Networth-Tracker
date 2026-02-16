@@ -39,7 +39,7 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
   return (
     <section className="mt-6">
       <AnimatedReveal>
-        <div className="space-y-5 rounded-xl border border-border/85 bg-card/95 p-4 shadow-sm sm:p-6">
+        <div className="space-y-5 rounded-lg border border-border/85 bg-card/95 p-4 sm:p-6">
           <header className="space-y-1.5">
             <h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
               {title}
@@ -50,7 +50,7 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
           </header>
 
           {mode === "signedOut" ? null : (
-            <div className="flex items-center justify-between rounded-lg border border-border/70 bg-background/80 px-3 py-2.5">
+            <div className="flex items-center justify-between rounded-md border border-border/70 bg-background/80 px-3 py-2.5">
               <p className="text-sm font-medium text-foreground">{statusLabel}</p>
               <span
                 className={cn(

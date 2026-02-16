@@ -44,14 +44,19 @@ export function StockScreenerGrid({
 }>) {
   if (cards.length === 0) {
     return (
-      <div className="rounded-xl border border-border/70 bg-card p-8 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border/70 bg-card p-8 text-sm text-muted-foreground">
         Brak akcji w portfelu. Dodaj transakcje akcji, aby zbudować screener.
       </div>
     );
   }
 
   return (
-    <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:gap-5",
+        className
+      )}
+    >
       {cards.map((card) => {
         const move = toTrend(card.monthChangePercent);
         const moveValue = move.text === "-" ? "-" : `1M ${move.text}`;
@@ -60,7 +65,7 @@ export function StockScreenerGrid({
             key={card.providerKey}
             href={`/stocks/${encodeURIComponent(card.providerKey)}`}
             className={cn(
-              "group h-64 rounded-xl border border-border/70 bg-card p-3 shadow-[var(--shadow)] transition",
+              "group h-64 rounded-lg border border-border/70 bg-card p-3 md:h-60 transition-colors duration-150",
               "hover:border-primary/35 hover:bg-card/95"
             )}
           >
@@ -90,7 +95,7 @@ export function StockScreenerGrid({
                 </div>
               </div>
 
-              <div className="mt-3 min-h-0 flex-1 rounded-lg border border-border/50 bg-muted/15 px-1.5 py-1.5">
+              <div className="mt-3 min-h-0 flex-1 rounded-md border border-border/50 bg-muted/15 px-1.5 py-1.5">
                 <StockScreenerPreviewChart data={card.monthChart} currency={card.currency} />
               </div>
             </div>

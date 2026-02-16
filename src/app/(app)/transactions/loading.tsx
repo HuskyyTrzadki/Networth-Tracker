@@ -1,8 +1,9 @@
 export default function TransactionsLoading() {
   return (
-    <main className="px-6 py-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
+          <div className="h-3 w-20 rounded-md bg-muted/45" />
           <div className="h-6 w-48 rounded-md bg-muted/50" />
           <div className="h-4 w-64 rounded-md bg-muted/40" />
         </div>
@@ -20,7 +21,7 @@ export default function TransactionsLoading() {
         </div>
       </section>
 
-      <section className="mt-4 rounded-lg border border-border bg-card shadow-sm">
+      <section className="mt-4 rounded-lg border border-border bg-card">
         <div className="grid grid-cols-6 gap-3 border-b border-border px-4 py-3 text-xs text-muted-foreground">
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="h-3 rounded-md bg-muted/40" />

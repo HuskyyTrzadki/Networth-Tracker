@@ -97,7 +97,7 @@ export function TransactionsSearchToolbar({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-xl border border-border/85 bg-card px-4 py-3 shadow-[var(--shadow)]"
+        "flex flex-col gap-3 rounded-lg border border-border/85 bg-card px-4 py-3"
       )}
     >
       <div className="w-full">
@@ -120,7 +120,7 @@ export function TransactionsSearchToolbar({
           />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-input bg-muted/50 p-1">
+          <div className="rounded-md border border-input bg-muted/50 p-1">
             <ToggleGroup
               aria-label="Typ transakcji"
               className="grid grid-cols-3 gap-1"

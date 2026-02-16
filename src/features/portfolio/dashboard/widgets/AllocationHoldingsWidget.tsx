@@ -36,6 +36,7 @@ type Props = Readonly<{
 }>;
 
 type Mode = "ALLOCATION" | "HOLDINGS";
+type AllocationPatternId = "solid" | "hatch" | "dots" | "cross" | "grid";
 
 const formatPercent = (value: number, maxFractionDigits = 1) =>
   new Intl.NumberFormat("pl-PL", {
@@ -64,6 +65,22 @@ const formatDecimalValue = (value: string) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(asNumber);
+};
+
+const getPatternOverlay = (patternId: AllocationPatternId) => {
+  if (patternId === "hatch") {
+    return "repeating-linear-gradient(135deg, rgb(255 255 255 / 0.2) 0 2px, transparent 2px 6px)";
+  }
+  if (patternId === "dots") {
+    return "radial-gradient(rgb(255 255 255 / 0.2) 1.2px, transparent 1.2px)";
+  }
+  if (patternId === "cross") {
+    return "repeating-linear-gradient(0deg, rgb(255 255 255 / 0.16) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, rgb(255 255 255 / 0.16) 0 1px, transparent 1px 6px)";
+  }
+  if (patternId === "grid") {
+    return "repeating-linear-gradient(0deg, rgb(255 255 255 / 0.14) 0 1px, transparent 1px 4px), repeating-linear-gradient(90deg, rgb(255 255 255 / 0.14) 0 1px, transparent 1px 4px)";
+  }
+  return "none";
 };
 
 export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
@@ -102,6 +119,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
       id: row.label,
       value: row.share,
       color: row.color,
+      patternId: row.patternId,
       tooltipLabel: row.label,
       tooltipValue,
     };
@@ -145,7 +163,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
     >
       <div className="h-[460px] lg:h-[560px]">
         {isRebuildBusy ? (
-          <div className="grid h-full place-items-center rounded-xl border border-border/70 bg-muted/10 p-6 text-center">
+          <div className="grid h-full place-items-center rounded-lg border border-border/70 bg-muted/10 p-6 text-center">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[12px] font-medium text-primary">
                 <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -161,7 +179,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
           </div>
         ) : mode === "ALLOCATION" ? (
           <div className="flex h-full flex-col gap-5 overflow-y-auto pr-1">
-            <div className="rounded-xl border border-border/70 bg-muted/10 p-3">
+            <div className="rounded-lg border border-border/70 bg-muted/10 p-3">
               <div className="relative w-full">
                 {hasAllocation ? (
                   <AllocationDonutChart data={slices} height={300} />
@@ -196,7 +214,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
                   return (
                     <div
                       key={row.id}
-                      className="rounded-lg border border-border/70 bg-card p-3 shadow-[var(--shadow)]"
+                      className="rounded-md border border-border/70 bg-card p-3"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-2">
@@ -217,7 +235,10 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
                         <div
                           className="h-full rounded-full"
                           style={{
-                            background: row.color,
+                            backgroundColor: row.color,
+                            backgroundImage: getPatternOverlay(row.patternId),
+                            backgroundSize:
+                              row.patternId === "dots" ? "8px 8px" : undefined,
                             width: `${Math.max(0, Math.min(100, row.share * 100))}%`,
                           }}
                         />
@@ -282,7 +303,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
                     <TableRow key={row.instrumentId} className="h-[68px]">
                       <TableCell className="px-4">
                         <div className="flex items-center gap-3">
-                          <div className="grid size-8 place-items-center text-base leading-none">
+                          <div className="grid size-8 place-items-center text-sm leading-none">
                             <InstrumentLogoImage
                               alt=""
                               className="size-6"

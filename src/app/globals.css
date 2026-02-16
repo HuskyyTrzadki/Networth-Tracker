@@ -24,7 +24,7 @@
   --secondary-foreground: #393939;
 
   --muted: #f2ecdf;
-  --muted-foreground: #676056;
+  --muted-foreground: #5f584d;
 
   --accent: #ede4d2;
   --accent-foreground: #393939;
@@ -32,8 +32,8 @@
   --destructive: #9f4b40;
   --destructive-foreground: #f4ece0;
 
-  --border: #9f9788;
-  --input: #a49c8d;
+  --border: #9b9284;
+  --input: #a89f90;
   --ring: #393939;
   --report-rule: #393939;
 
@@ -56,7 +56,9 @@
   --sidebar-ring: #393939;
 
   --radius: 0.375rem;
-  --shadow: none;
+  --shadow: 0 0 0 1px rgb(57 57 57 / 0.06);
+  --grid-strong: rgb(57 57 57 / 0.02);
+  --grid-soft: rgb(57 57 57 / 0.012);
 
   --font-sans: "IBM Plex Mono", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
     Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -89,7 +91,7 @@
   --secondary-foreground: #d7cebf;
 
   --muted: #2c2822;
-  --muted-foreground: #9f9586;
+  --muted-foreground: #a79d8f;
 
   --accent: #363027;
   --accent-foreground: #e3daca;
@@ -97,8 +99,8 @@
   --destructive: #b77167;
   --destructive-foreground: #150f0f;
 
-  --border: #4f473d;
-  --input: #4f473d;
+  --border: #554d43;
+  --input: #554d43;
   --ring: #d7cebf;
   --report-rule: #d7cebf;
 
@@ -119,6 +121,10 @@
   --sidebar-accent-foreground: #e3daca;
   --sidebar-border: #4f473d;
   --sidebar-ring: #d7cebf;
+
+  --shadow: 0 0 0 1px rgb(227 218 202 / 0.12);
+  --grid-strong: rgb(227 218 202 / 0.025);
+  --grid-soft: rgb(227 218 202 / 0.016);
 
   color-scheme: dark;
 }
@@ -141,7 +147,7 @@
     --secondary-foreground: #d7cebf;
 
     --muted: #2c2822;
-    --muted-foreground: #9f9586;
+    --muted-foreground: #a79d8f;
 
     --accent: #363027;
     --accent-foreground: #e3daca;
@@ -149,8 +155,8 @@
     --destructive: #b77167;
     --destructive-foreground: #150f0f;
 
-    --border: #4f473d;
-    --input: #4f473d;
+    --border: #554d43;
+    --input: #554d43;
     --ring: #d7cebf;
     --report-rule: #d7cebf;
 
@@ -171,6 +177,9 @@
     --sidebar-accent-foreground: #e3daca;
     --sidebar-border: #4f473d;
     --sidebar-ring: #d7cebf;
+    --shadow: 0 0 0 1px rgb(227 218 202 / 0.12);
+    --grid-strong: rgb(227 218 202 / 0.025);
+    --grid-soft: rgb(227 218 202 / 0.016);
   }
 }
 
@@ -185,15 +194,15 @@
     background-image:
       repeating-linear-gradient(
         0deg,
-        rgb(57 57 57 / 0.02),
-        rgb(57 57 57 / 0.02) 1px,
+        var(--grid-strong),
+        var(--grid-strong) 1px,
         transparent 1px,
         transparent 28px
       ),
       repeating-linear-gradient(
         90deg,
-        rgb(57 57 57 / 0.012),
-        rgb(57 57 57 / 0.012) 1px,
+        var(--grid-soft),
+        var(--grid-soft) 1px,
         transparent 1px,
         transparent 36px
       );

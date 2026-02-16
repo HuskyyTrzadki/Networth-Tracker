@@ -50,9 +50,10 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
     [...initialChart.activeOverlays]
   );
   const [showEarningsEvents, setShowEarningsEvents] = useState(false);
-  const [showNewsEvents, setShowNewsEvents] = useState(false);
+  const [showNewsEvents, setShowNewsEvents] = useState(true);
   const [showUserTradeEvents, setShowUserTradeEvents] = useState(false);
-  const [showGlobalNewsEvents, setShowGlobalNewsEvents] = useState(false);
+  const [showGlobalNewsEvents, setShowGlobalNewsEvents] = useState(true);
+  const [showNarration, setShowNarration] = useState(true);
 
   const normalizedOverlays = normalizeOverlaysForMode(mode, activeOverlays);
   const initialOverlayKey = toOverlayRequestKey(initialChart.activeOverlays);
@@ -141,19 +142,19 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   const eventMarkers = isEventRangeEligible
     ? buildMockChartEventMarkers(chartData, {
       includeEarnings: showEarningsEvents,
-      includeNews: showNewsEvents,
+      includeNews: showNarration && showNewsEvents,
       includeUserTrades: showUserTradeEvents,
-      includeGlobalNews: showGlobalNewsEvents,
+      includeGlobalNews: showNarration && showGlobalNewsEvents,
     })
     : [];
 
   return (
-    <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-5">
-      <header className="flex flex-wrap items-baseline justify-between gap-2">
+    <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-6">
+      <header className="flex flex-wrap items-end justify-between gap-2">
         <h2 className="text-2xl font-semibold tracking-tight">Wykres ceny</h2>
         <p
           className={cn(
-            "text-xs font-semibold",
+            "font-mono text-[11px] font-semibold tabular-nums",
             priceTrend.direction === "up" && "text-[color:var(--profit)]",
             priceTrend.direction === "down" && "text-[color:var(--loss)]",
             priceTrend.direction === "flat" && "text-muted-foreground"
@@ -164,51 +165,67 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
       </header>
 
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {STOCK_CHART_RANGES.map((rangeOption) => (
-            <Button
-              key={rangeOption}
-              size="sm"
-              type="button"
-              variant={range === rangeOption ? "default" : "outline"}
-              onClick={() => setRange(rangeOption)}
-              disabled={isRangeDisabled(rangeOption)}
-              className={cn("h-8 min-w-11 rounded-md px-3 font-mono text-xs")}
-            >
-              {rangeOption}
-            </Button>
-          ))}
+        <div className="grid gap-2 xl:grid-cols-[1fr_auto] xl:items-end">
+          <div className="rounded-md border border-border/60 bg-card/45 p-2.5">
+            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+              Zakres
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {STOCK_CHART_RANGES.map((rangeOption) => (
+                <Button
+                  key={rangeOption}
+                  size="sm"
+                  type="button"
+                  variant={range === rangeOption ? "default" : "outline"}
+                  onClick={() => setRange(rangeOption)}
+                  disabled={isRangeDisabled(rangeOption)}
+                  className={cn("h-8 min-w-10 rounded-sm px-2.5 font-mono text-[11px]")}
+                >
+                  {rangeOption}
+                </Button>
+              ))}
+            </div>
+          </div>
 
-          <div className="ml-auto inline-flex rounded-md border border-border/70 p-0.5">
-            <Button
-              size="sm"
-              type="button"
-              variant={mode === "trend" ? "default" : "ghost"}
-              onClick={() => switchMode("trend")}
-              disabled={isLoading}
-              className="h-7 rounded-sm px-2.5 text-xs"
-            >
-              Trend (100)
-            </Button>
-            <Button
-              size="sm"
-              type="button"
-              variant={mode === "raw" ? "default" : "ghost"}
-              onClick={() => switchMode("raw")}
-              disabled={isLoading}
-              className="h-7 rounded-sm px-2.5 text-xs"
-            >
-              Surowe
-            </Button>
+          <div className="rounded-md border border-border/60 bg-card/45 p-2.5 xl:justify-self-end">
+            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+              Tryb
+            </div>
+            <div className="inline-flex rounded-sm border border-border/70 p-0.5">
+              <Button
+                size="sm"
+                type="button"
+                variant={mode === "trend" ? "default" : "ghost"}
+                onClick={() => switchMode("trend")}
+                disabled={isLoading}
+                className="h-8 rounded-sm px-3 text-xs"
+              >
+                Trend (100)
+              </Button>
+              <Button
+                size="sm"
+                type="button"
+                variant={mode === "raw" ? "default" : "ghost"}
+                onClick={() => switchMode("raw")}
+                disabled={isLoading}
+                className="h-8 rounded-sm px-3 text-xs"
+              >
+                Surowe
+              </Button>
+            </div>
           </div>
         </div>
 
         {(chart ?? lastKnownChart).resolvedRange !== "1D" ? (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="rounded-md border border-border/60 bg-card/35 p-2.5">
+            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+              Nakładki i wydarzenia
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {OVERLAY_KEYS.map((overlay) => (
               <label
                 key={overlay}
-                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
               >
                 <Checkbox
                   checked={normalizedOverlays.includes(overlay)}
@@ -221,7 +238,18 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               </label>
             ))}
             <span className="text-xs text-muted-foreground/70">|</span>
-            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Checkbox
+                checked={isEventRangeEligible ? showNarration : false}
+                onCheckedChange={(checked) => {
+                  if (!isEventRangeEligible) return;
+                  setShowNarration(checked === true);
+                }}
+                disabled={!isEventRangeEligible}
+              />
+              Narracja
+            </label>
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Checkbox
                 checked={isEventRangeEligible ? showEarningsEvents : false}
                 onCheckedChange={(checked) => {
@@ -232,7 +260,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               />
               Wyniki (konsensus vs raport)
             </label>
-            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Checkbox
                 checked={isEventRangeEligible ? showNewsEvents : false}
                 onCheckedChange={(checked) => {
@@ -243,7 +271,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               />
               Wazne wydarzenia
             </label>
-            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Checkbox
                 checked={isEventRangeEligible ? showUserTradeEvents : false}
                 onCheckedChange={(checked) => {
@@ -254,7 +282,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               />
               BUY/SELL uzytkownika (mock)
             </label>
-            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Checkbox
                 checked={isEventRangeEligible ? showGlobalNewsEvents : false}
                 onCheckedChange={(checked) => {
@@ -265,6 +293,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
               />
               Wazne wydarzenia globalne
             </label>
+            </div>
           </div>
         ) : null}
 
@@ -333,6 +362,7 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
           overlayAxisLabel={overlayAxisMeta.label}
           visibleTradeMarkers={visibleTradeMarkers}
           eventMarkers={eventMarkers}
+          showNarrativeLabels={showNarration && isEventRangeEligible}
           isLoading={isLoading}
         />
 

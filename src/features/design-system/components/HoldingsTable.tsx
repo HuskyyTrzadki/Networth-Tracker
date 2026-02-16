@@ -25,7 +25,7 @@ type Props = Readonly<{
 
 export function HoldingsTable({ title, columns, rows, className }: Props) {
   return (
-    <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
+    <div className={cn("rounded-md border border-border/80 bg-card", className)}>
       <div className="flex items-center justify-between px-4 py-3">
         <div className="text-sm font-semibold">{title}</div>
       </div>

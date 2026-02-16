@@ -143,11 +143,11 @@ function InsightWidgetChart({
   expanded: boolean;
   reducedMotion: boolean;
 }>) {
-  const chartHeight = expanded ? 320 : 158;
+  const chartHeight = expanded ? 320 : 152;
   const animationDuration = reducedMotion ? 0 : expanded ? 540 : 360;
 
   return (
-    <div className={cn("w-full", expanded ? "h-[320px]" : "h-[158px]")}> 
+    <div className={cn("w-full", expanded ? "h-[320px]" : "h-[152px]")}>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <ComposedChart
           data={[...widget.points]}
@@ -164,7 +164,7 @@ function InsightWidgetChart({
             tickFormatter={truncateQuarter}
             tick={{
               fill: "var(--muted-foreground)",
-              fontSize: expanded ? 11 : 10,
+              fontSize: 10,
             }}
             axisLine={{ stroke: "var(--border)", strokeOpacity: 0.55 }}
             tickLine={false}
@@ -174,7 +174,7 @@ function InsightWidgetChart({
           <YAxis
             width={expanded ? 62 : 52}
             tickFormatter={(value) => formatAxisValue(Number(value), widget.valueFormat)}
-            tick={{ fill: "var(--muted-foreground)", fontSize: expanded ? 11 : 10 }}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
             axisLine={{ stroke: "var(--border)", strokeOpacity: 0.55 }}
             tickLine={false}
           />
@@ -272,7 +272,7 @@ export default function InsightsWidgetsSection() {
     STOCK_INSIGHTS_WIDGETS.find((widget) => widget.id === activeWidgetId) ?? null;
 
   return (
-    <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-7">
+    <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-6">
       <div className="space-y-2">
         <h3 className="text-2xl font-semibold tracking-tight">Szybkie wykresy fundamentalne</h3>
         <p className="text-sm text-muted-foreground">
@@ -280,22 +280,22 @@ export default function InsightsWidgetsSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
         {STOCK_INSIGHTS_WIDGETS.map((widget) => (
           <button
             key={widget.id}
             type="button"
             onClick={() => setActiveWidgetId(widget.id)}
-            className="group rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 p-3 text-left transition-colors duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-muted/25"
+            className="group rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 p-3 text-left transition-colors duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-muted/25 lg:p-3.5"
           >
             <div className="flex items-start justify-between gap-2 border-b border-dashed border-[color:var(--report-rule)] pb-2">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                   {widget.badge}
                 </p>
                 <h4 className="mt-1 text-base font-semibold tracking-tight">{widget.title}</h4>
                 {shouldRenderSubtitle(widget) ? (
-                  <p className="mt-1 text-xs text-muted-foreground">{widget.subtitle}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{widget.subtitle}</p>
                 ) : null}
               </div>
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-sm border border-[color:var(--report-rule)] text-muted-foreground transition-colors group-hover:text-foreground">
@@ -303,7 +303,9 @@ export default function InsightsWidgetsSection() {
               </span>
             </div>
 
-            <p className="mt-2 text-xs font-semibold text-foreground/90">{resolveCardStat(widget)}</p>
+            <p className="mt-2 text-[11px] font-medium text-foreground/90 lg:text-xs">
+              {resolveCardStat(widget)}
+            </p>
             <div className="mt-2 border-t border-dashed border-[color:var(--report-rule)] pt-2">
               <InsightWidgetChart
                 widget={widget}
@@ -316,27 +318,27 @@ export default function InsightsWidgetsSection() {
       </div>
 
       <Dialog open={activeWidget !== null} onOpenChange={(open) => !open && setActiveWidgetId(null)}>
-        <DialogContent className="max-h-[86vh] max-w-5xl overflow-y-auto rounded-xl border border-dashed border-[color:var(--report-rule)] bg-background p-5 shadow-none sm:p-6">
+        <DialogContent className="max-h-[86vh] max-w-5xl overflow-y-auto rounded-sm border border-dashed border-[color:var(--report-rule)] bg-background p-4 shadow-none sm:p-5 lg:p-6">
           {activeWidget ? (
-            <article className="space-y-4">
+            <article className="space-y-4 lg:space-y-5">
               <header className="flex items-start justify-between gap-3 border-b border-dashed border-[color:var(--report-rule)] pb-3">
                 <div>
-                  <DialogTitle className="text-2xl font-semibold tracking-tight">
+                  <DialogTitle className="text-xl font-semibold tracking-tight">
                     {activeWidget.title}
                   </DialogTitle>
                   {shouldRenderSubtitle(activeWidget) ? (
-                    <DialogDescription className="mt-1 text-sm text-muted-foreground">
+                    <DialogDescription className="mt-1 text-[13px] text-muted-foreground">
                       {activeWidget.subtitle}
                     </DialogDescription>
                   ) : null}
-                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-foreground/60">
+                  <p className="mt-2 text-[11px] font-medium text-foreground/70">
                     {resolveCardStat(activeWidget)}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 rounded-sm"
+                  className="h-8 rounded-sm px-2.5 text-[11px]"
                   onClick={() => setActiveWidgetId(null)}
                 >
                   <X className="size-3.5" aria-hidden />
@@ -352,19 +354,19 @@ export default function InsightsWidgetsSection() {
 
               <div className="grid gap-3 border-t border-dashed border-[color:var(--report-rule)] pt-3 md:grid-cols-3">
                 <div className="space-y-1 rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Co widzisz
                   </p>
                   <p className="text-sm leading-6 text-foreground/90">{activeWidget.description}</p>
                 </div>
                 <div className="space-y-1 rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Co to znaczy
                   </p>
                   <p className="text-sm leading-6 text-foreground/90">{activeWidget.implication}</p>
                 </div>
                 <div className="space-y-1 rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Na co patrzec dalej
                   </p>
                   <p className="text-sm leading-6 text-foreground/90">{activeWidget.nextFocus}</p>
@@ -372,7 +374,7 @@ export default function InsightsWidgetsSection() {
               </div>
               <a
                 href="#sekcja-wykres"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-foreground hover:text-muted-foreground"
+                className="inline-flex items-center gap-1 text-[13px] font-semibold text-foreground hover:text-muted-foreground"
               >
                 Wroc do glownego wykresu
                 <ArrowUpRight className="size-4" aria-hidden />

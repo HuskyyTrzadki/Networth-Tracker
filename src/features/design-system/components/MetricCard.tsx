@@ -11,7 +11,7 @@ export function MetricCard({ label, value, right, className }: Props) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card p-4 shadow-sm",
+        "rounded-md border border-border/80 bg-card p-4",
         className
       )}
     >
@@ -25,4 +25,3 @@ export function MetricCard({ label, value, right, className }: Props) {
     </div>
   );
 }
-

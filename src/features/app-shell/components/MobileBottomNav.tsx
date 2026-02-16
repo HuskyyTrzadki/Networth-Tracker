@@ -53,7 +53,7 @@ export function MobileBottomNav({ className }: Props) {
           <Link
             href={mobileActionNavItem.href}
             className={cn(
-              "inline-flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm",
+              "inline-flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             )}
             scroll={false}
@@ -81,7 +81,7 @@ export function MobileBottomNav({ className }: Props) {
 
           <SheetContent
             side="bottom"
-            className="max-h-[80dvh] rounded-t-xl border-border/85 pb-[env(safe-area-inset-bottom)]"
+            className="max-h-[80dvh] rounded-t-lg border-border/85 pb-[env(safe-area-inset-bottom)]"
           >
             <SheetHeader>
               <SheetTitle>Menu</SheetTitle>

@@ -23,7 +23,7 @@ export function DashboardEmptyState({
   secondaryAction,
 }: DashboardEmptyStateProps) {
   return (
-    <section className="w-full max-w-xl rounded-lg border border-border bg-card p-8 text-center shadow-sm">
+    <section className="w-full max-w-xl rounded-lg border border-border/80 bg-card p-8 text-center">
       <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground">
         <Wallet className="size-8" aria-hidden="true" />
       </div>

@@ -13,11 +13,11 @@ export function PortfolioDashboardSkeleton({ className }: Props) {
       data-testid="portfolio-dashboard-skeleton"
     >
       <div className="hidden md:block">
-        <div className="h-[54px] w-[300px] rounded-lg border border-black/5 bg-card p-2 shadow-sm dark:border-white/10">
+        <div className="h-[54px] w-[300px] rounded-lg border border-border/70 bg-card p-2">
           <div className="h-full w-[260px] rounded-md bg-muted/40" />
         </div>
       </div>
-      <section className="min-h-[560px] rounded-lg border border-black/5 bg-card p-4 shadow-sm dark:border-white/10">
+      <section className="min-h-[560px] rounded-lg border border-border/70 bg-card p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">
             <div className="h-4 w-40 rounded-md bg-muted/50" />
@@ -38,7 +38,7 @@ export function PortfolioDashboardSkeleton({ className }: Props) {
         </div>
       </section>
 
-      <section className="rounded-lg border border-black/5 bg-card p-4 shadow-sm dark:border-white/10">
+      <section className="rounded-lg border border-border/70 bg-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-2">
             <div className="h-4 w-36 rounded-md bg-muted/50" />
@@ -80,4 +80,3 @@ export function PortfolioDashboardSkeleton({ className }: Props) {
     </div>
   );
 }
-

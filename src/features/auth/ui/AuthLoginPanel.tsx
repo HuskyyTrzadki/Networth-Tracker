@@ -114,7 +114,7 @@ export function AuthLoginPanel() {
         <Button
           onClick={onGoogleSignIn}
           disabled={pendingAction === "google"}
-          className="h-12 w-full justify-center text-base"
+          className="h-11 w-full justify-center text-sm"
           variant="outline"
         >
           Kontynuuj z Google
@@ -175,7 +175,7 @@ export function AuthLoginPanel() {
             />
           </label>
           <Button
-            className="h-12 w-full text-base"
+            className="h-11 w-full text-sm"
             onClick={onSubmit}
             disabled={pendingAction === "signin" || pendingAction === "signup"}
           >

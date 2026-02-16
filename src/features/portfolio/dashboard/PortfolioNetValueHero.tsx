@@ -23,7 +23,7 @@ export function PortfolioNetValueHero({
     formattedTotalValue ?? (totalValueBase ? `${totalValueBase} ${baseCurrency}` : "—");
 
   return (
-    <section className="rounded-xl border border-border/85 bg-card px-4 py-4 shadow-[var(--shadow)] sm:px-5 sm:py-5">
+    <section className="rounded-lg border border-border/85 bg-card px-4 py-4 sm:px-5 sm:py-5">
       <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
         {portfolioLabel}
       </div>

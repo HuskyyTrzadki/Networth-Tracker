@@ -82,7 +82,7 @@ export function PortfolioSwitcher({
           onValueChange={handlePortfolioChange}
           value={currentValue}
         >
-          <SelectTrigger className="inline-flex h-9 min-w-[220px] justify-between whitespace-nowrap border-black/5 bg-background/70 dark:border-white/10">
+          <SelectTrigger className="inline-flex h-9 min-w-[220px] justify-between whitespace-nowrap bg-background">
             <SelectValue placeholder="Wszystkie portfele" />
           </SelectTrigger>
           <SelectContent>

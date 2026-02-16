@@ -39,7 +39,7 @@ export function AddTransactionDialog({
 }>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-hidden rounded-2xl border-border/80 bg-card p-0 shadow-[var(--shadow)] sm:max-w-[1080px]">
+      <DialogContent className="max-h-[92dvh] overflow-hidden rounded-lg border-border/80 bg-card p-0 sm:max-w-[1080px]">
         <AddTransactionDialogContent
           assetBalancesByPortfolio={assetBalancesByPortfolio}
           cashBalancesByPortfolio={cashBalancesByPortfolio}

@@ -51,12 +51,12 @@ export function ReportShellMenuTrigger({
       <Button
         size="sm"
         variant="outline"
-          className={cn(
-            "h-9 rounded-md border border-[color:var(--report-rule)] px-3 text-xs font-semibold tracking-[0.02em]",
-            ctx?.getIsMenuOpen() ? "bg-foreground text-background hover:bg-foreground" : "",
-            className
-          )}
-        >
+        className={cn(
+          "h-9 rounded-md border border-[color:var(--report-rule)] bg-background px-3 text-[11px] font-semibold uppercase tracking-[0.08em]",
+          ctx?.getIsMenuOpen() ? "bg-foreground text-background hover:bg-foreground" : "",
+          className
+        )}
+      >
         Menu
       </Button>
     </SheetTrigger>
@@ -147,7 +147,7 @@ export function ReportShell({ children }: Props) {
                   size="sm"
                   variant="outline"
                   className={cn(
-                    "pointer-events-auto h-9 rounded-md border border-[color:var(--report-rule)] px-3 text-xs font-semibold tracking-[0.02em]",
+                    "pointer-events-auto h-9 rounded-md border border-[color:var(--report-rule)] bg-background px-3 text-[11px] font-semibold uppercase tracking-[0.08em]",
                     isMenuOpen ? "bg-foreground text-background hover:bg-foreground" : ""
                   )}
                 >
@@ -159,7 +159,7 @@ export function ReportShell({ children }: Props) {
 
           <SheetContent
             side="top"
-            className="border-b border-dashed border-[color:var(--report-rule)] bg-background/98 px-4 py-3 backdrop-blur-[2px] sm:px-6"
+            className="border-b border-dashed border-[color:var(--report-rule)] bg-background/98 px-4 py-3 backdrop-blur-[2px] sm:px-5"
           >
             <SheetHeader className="sr-only">
               <SheetTitle>Nawigacja raportu</SheetTitle>
@@ -187,7 +187,7 @@ export function ReportShell({ children }: Props) {
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                       placeholder="Search Stocks & ETFs (NASDAQ & NYSE)"
-                      className="h-10 rounded-full border-[2px] border-[color:var(--report-rule)] pl-12 pr-4 text-[0.97rem]"
+                      className="h-10 rounded-md border-[color:var(--report-rule)] bg-background pl-12 pr-4 text-sm"
                     />
                   </div>
                 </form>

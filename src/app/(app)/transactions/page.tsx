@@ -30,7 +30,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
 
   if (!pageData.isAuthenticated) {
     return (
-      <main className="px-6 py-8">
+      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby zobaczyć historię transakcji.
@@ -44,20 +44,23 @@ export default async function TransactionsPage({ searchParams }: Props) {
     : "/transactions/new";
 
   return (
-    <main className="px-5 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-[1560px] px-5 py-6 sm:px-6 sm:py-8">
       <AnimatedReveal>
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Historia transakcji
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Przeglądaj i filtruj swoje operacje w portfelu.
-          </p>
-        </div>
-        <Button asChild size="lg">
-          <Link href={transactionCreateHref}>Dodaj transakcję</Link>
-        </Button>
+        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
+              Rejestr
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Historia transakcji
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Przeglądaj i filtruj swoje operacje w portfelu.
+            </p>
+          </div>
+          <Button asChild size="lg" className="md:min-w-44">
+            <Link href={transactionCreateHref}>Dodaj transakcję</Link>
+          </Button>
         </header>
       </AnimatedReveal>
 

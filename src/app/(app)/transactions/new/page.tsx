@@ -23,7 +23,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
 
   if (!data.user) {
     return (
-      <main className="px-6 py-8">
+      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby dodać transakcję.
@@ -41,7 +41,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
 
   if (portfolioOptions.length === 0) {
     return (
-      <main className="px-6 py-8">
+      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Brak portfeli do przypisania transakcji.

@@ -25,7 +25,7 @@ export function AddTransactionSidebarSummary({
 }: Props) {
   return (
     <aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
-      <section className="rounded-xl border border-border/70 bg-background p-4">
+      <section className="rounded-lg border border-border/70 bg-background p-4">
         <AddTransactionNotesSummary
           displayCurrency={displayCurrency}
           fee={fee}

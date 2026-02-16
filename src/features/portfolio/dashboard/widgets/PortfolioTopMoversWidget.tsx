@@ -80,7 +80,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
             return (
               <li
                 key={mover.instrumentId}
-                className="rounded-full border border-border/70 bg-muted/10 px-3 py-2"
+                className="rounded-md border border-border/70 bg-muted/10 px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
@@ -106,7 +106,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Badge className={cn("rounded-full border px-2 py-0.5", badgeTone)}>
+                    <Badge className={cn("rounded-md border px-2 py-0.5", badgeTone)}>
                       {percentLabel}
                     </Badge>
                     <span

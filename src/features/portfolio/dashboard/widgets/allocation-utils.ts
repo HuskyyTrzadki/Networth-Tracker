@@ -3,12 +3,12 @@ import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
 import type { PortfolioSummary, ValuedHolding } from "../../server/valuation";
 
 const chartColors = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-];
+  { color: "#2f2f2f", patternId: "solid" },
+  { color: "#556f85", patternId: "hatch" },
+  { color: "#8c6e50", patternId: "dots" },
+  { color: "#4f7865", patternId: "cross" },
+  { color: "#8d534e", patternId: "grid" },
+] as const;
 
 const maxSlices = 5;
 
@@ -18,6 +18,7 @@ export type AllocationRow = Readonly<{
   share: number;
   valueBase: string | null;
   color: string;
+  patternId: "solid" | "hatch" | "dots" | "cross" | "grid";
 }>;
 
 const toShare = (value: number | null) => Math.max(0, value ?? 0);
@@ -55,20 +56,22 @@ export function buildAllocationData(
     label: holding.symbol,
     share: toShare(holding.weight),
     valueBase: holding.valueBase,
-    color: chartColors[index % chartColors.length],
+    color: chartColors[index % chartColors.length].color,
+    patternId: chartColors[index % chartColors.length].patternId,
   }));
 
   if (remainder.length > 0) {
     const remainderShare = Math.max(0, 1 - sumWeights(primary));
     const remainderValue = sumValues(remainder).toString();
-    const color = chartColors[(maxSlices - 1) % chartColors.length];
+    const styleToken = chartColors[(maxSlices - 1) % chartColors.length];
 
     rows.push({
       id: "other",
       label: "Pozostałe",
       share: remainderShare,
       valueBase: remainderValue,
-      color,
+      color: styleToken.color,
+      patternId: styleToken.patternId,
     });
   }
 
