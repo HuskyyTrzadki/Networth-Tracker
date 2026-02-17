@@ -46,6 +46,8 @@ type Props = Readonly<{
   formatCurrencyValue: (value: number) => string;
   transactionCreateHref: string;
   cashDepositHref: string;
+  bootstrapPending: boolean;
+  onBootstrapRequest: () => void;
 }>;
 
 export function PortfolioPerformanceModeContent({
@@ -66,6 +68,8 @@ export function PortfolioPerformanceModeContent({
   formatCurrencyValue,
   transactionCreateHref,
   cashDepositHref,
+  bootstrapPending,
+  onBootstrapRequest,
 }: Props) {
   const isRebuildBusy = rebuildStatus === "queued" || rebuildStatus === "running";
 
@@ -100,6 +104,17 @@ export function PortfolioPerformanceModeContent({
               <Link href={cashDepositHref} scroll={false}>
                 Dodaj depozyt gotówki
               </Link>
+            </Button>
+          </div>
+        ) : shouldBootstrap ? (
+          <div className="flex justify-center">
+            <Button
+              className="h-9 px-3 text-xs"
+              size="sm"
+              onClick={onBootstrapRequest}
+              disabled={bootstrapPending}
+            >
+              {bootstrapPending ? "Tworzenie punktu..." : "Utwórz pierwszy punkt"}
             </Button>
           </div>
         ) : null}

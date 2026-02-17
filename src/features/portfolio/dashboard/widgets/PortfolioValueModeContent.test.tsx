@@ -31,6 +31,8 @@ describe("PortfolioValueModeContent", () => {
         formatDayLabelWithYear={(value) => value}
         transactionCreateHref="/transactions/new"
         cashDepositHref="/transactions/new?preset=cash-deposit"
+        bootstrapPending={false}
+        onBootstrapRequest={() => undefined}
       />
     );
 

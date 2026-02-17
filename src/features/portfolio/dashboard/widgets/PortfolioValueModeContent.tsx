@@ -37,6 +37,8 @@ type Props = Readonly<{
   formatDayLabelWithYear: (label: string) => string;
   transactionCreateHref: string;
   cashDepositHref: string;
+  bootstrapPending: boolean;
+  onBootstrapRequest: () => void;
 }>;
 
 export function PortfolioValueModeContent({
@@ -60,6 +62,8 @@ export function PortfolioValueModeContent({
   formatDayLabelWithYear,
   transactionCreateHref,
   cashDepositHref,
+  bootstrapPending,
+  onBootstrapRequest,
 }: Props) {
   const isRebuildBusy = rebuildStatus === "queued" || rebuildStatus === "running";
 
@@ -92,6 +96,17 @@ export function PortfolioValueModeContent({
               <Link href={cashDepositHref} scroll={false}>
                 Dodaj depozyt gotówki
               </Link>
+            </Button>
+          </div>
+        ) : shouldBootstrap ? (
+          <div className="flex justify-center">
+            <Button
+              className="h-9 px-3 text-xs"
+              size="sm"
+              onClick={onBootstrapRequest}
+              disabled={bootstrapPending}
+            >
+              {bootstrapPending ? "Tworzenie punktu..." : "Utwórz pierwszy punkt"}
             </Button>
           </div>
         ) : null}
