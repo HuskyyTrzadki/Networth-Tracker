@@ -1,5 +1,6 @@
 # Repository Guidelines
 Write in English. Keep code clean, simple, and production-grade.
+im studying for BE interview, so please educate me while we code, espeically tech wise.  pls be interactive, shorter messages instead of huge raports. lets keep dialogue in.
 
 ## Core priorities
 - Code quality is the top priority.

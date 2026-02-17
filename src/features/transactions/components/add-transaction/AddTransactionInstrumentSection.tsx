@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { Coins, Landmark, Layers, Wallet } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 
 import {
@@ -63,6 +64,13 @@ export function AddTransactionInstrumentSection({
   availableCashNow,
   availableAssetQuantity,
 }: Props) {
+  const tabIcons = {
+    EQUITY: Landmark,
+    ETF: Layers,
+    CRYPTOCURRENCY: Coins,
+    CASH: Wallet,
+  } as const;
+
   return (
     <>
       <AddTransactionPortfolioTypeFields
@@ -77,12 +85,22 @@ export function AddTransactionInstrumentSection({
       <div>
         <Label className="text-sm font-medium">Kategoria instrumentu</Label>
         <Tabs onValueChange={(next) => onTabChange(next as AssetTab)} value={activeTab}>
-          <TabsList className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-5">
-            {ASSET_TABS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
-            ))}
+          <TabsList className="mt-2 grid h-auto w-full grid-cols-2 gap-2 sm:grid-cols-4">
+            {ASSET_TABS.map((tab) => {
+              const Icon = tabIcons[tab.value];
+              return (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="h-9 rounded-md"
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon className="size-3.5" aria-hidden />
+                    <span>{tab.label}</span>
+                  </span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </Tabs>
       </div>

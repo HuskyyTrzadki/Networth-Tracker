@@ -9,7 +9,7 @@ import {
   type CashCurrency,
 } from "../../lib/system-currencies";
 
-export type AssetTab = "EQUITY" | "ETF" | "CRYPTOCURRENCY" | "OTHER" | "CASH";
+export type AssetTab = "EQUITY" | "ETF" | "CRYPTOCURRENCY" | "CASH";
 
 export const ASSET_TABS: ReadonlyArray<{
   value: AssetTab;
@@ -19,19 +19,6 @@ export const ASSET_TABS: ReadonlyArray<{
   { value: "EQUITY", label: "Akcje", types: ["EQUITY"] },
   { value: "ETF", label: "ETF", types: ["ETF"] },
   { value: "CRYPTOCURRENCY", label: "Krypto", types: ["CRYPTOCURRENCY"] },
-  {
-    value: "OTHER",
-    label: "Inne",
-    types: [
-      "MUTUALFUND",
-      "INDEX",
-      "OPTION",
-      "FUTURE",
-      "MONEYMARKET",
-      "ECNQUOTE",
-      "ALTSYMBOL",
-    ],
-  },
   { value: "CASH", label: "Gotówka", types: null },
 ];
 
@@ -42,8 +29,7 @@ export const resolveInitialTab = (
   if (instrument.instrumentType === "CURRENCY") return "CASH";
   if (instrument.instrumentType === "ETF") return "ETF";
   if (instrument.instrumentType === "CRYPTOCURRENCY") return "CRYPTOCURRENCY";
-  if (instrument.instrumentType === "EQUITY") return "EQUITY";
-  return "OTHER";
+  return "EQUITY";
 };
 
 export const formatMoney = (value: string, currency: string) => {
