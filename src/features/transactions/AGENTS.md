@@ -32,6 +32,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Client FX preview API: `src/features/transactions/client/get-fx-preview.ts`
 - Client cash as-of API: `src/features/transactions/client/get-cash-balance-on-date.ts`
 - Server service: `src/features/transactions/server/create-transaction.ts`
+- Server helpers (create transaction):
+  - `src/features/transactions/server/create-transaction-context.ts`
+  - `src/features/transactions/server/create-transaction-write.ts`
 - Server guards: `src/features/transactions/server/transaction-guards.ts`
 - Server intent mapping: `src/features/transactions/server/transaction-intent.ts`
 - Server settlement logic: `src/features/transactions/server/settlement.ts`
