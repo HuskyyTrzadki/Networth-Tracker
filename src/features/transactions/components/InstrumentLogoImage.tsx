@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { Avatar, AvatarFallback } from "@/features/design-system/components/ui/avatar";
 import { cn } from "@/lib/cn";
 
@@ -12,8 +13,6 @@ type Props = Readonly<{
   alt?: string;
   fallbackText: string;
 }>;
-
-const passthroughLoader = ({ src }: { src: string }) => src;
 
 const getFallbackInitials = (value: string) =>
   value
@@ -31,7 +30,8 @@ export function InstrumentLogoImage({
   alt = "",
   fallbackText,
 }: Props) {
-  if (!src) {
+  const resolvedSrc = buildRemoteImageProxyUrl(src);
+  if (!resolvedSrc) {
     return (
       <Avatar className={cn("bg-muted", className)} style={{ width: size, height: size }}>
         <AvatarFallback>{getFallbackInitials(fallbackText)}</AvatarFallback>
@@ -44,10 +44,9 @@ export function InstrumentLogoImage({
       alt={alt}
       className={cn("rounded-full object-contain", className)}
       height={size}
-      loader={passthroughLoader}
       loading="lazy"
-      src={src}
-      unoptimized
+      sizes={`${size}px`}
+      src={resolvedSrc}
       width={size}
     />
   );

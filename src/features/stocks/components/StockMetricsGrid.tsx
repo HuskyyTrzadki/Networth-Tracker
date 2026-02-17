@@ -117,7 +117,7 @@ function ValuationRangeBar({
           className="relative h-7 overflow-hidden rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(90deg, transparent 0 14px, rgb(57 57 57 / 0.06) 14px 15px)",
+              "linear-gradient(90deg, rgb(73 132 95 / 0.24) 0%, rgb(125 119 107 / 0.14) 50%, rgb(168 86 86 / 0.24) 100%), repeating-linear-gradient(90deg, transparent 0 14px, rgb(57 57 57 / 0.06) 14px 15px)",
           }}
         >
           {hasMedian ? (
@@ -145,6 +145,10 @@ function ValuationRangeBar({
           <span className="font-mono tabular-nums">
             Max {formatRatio(context.max) ?? "—"}
           </span>
+        </div>
+        <div className="mt-1 flex items-center justify-between text-[10px]">
+          <span className="font-medium text-[#4a7f5e]">Niska wycena</span>
+          <span className="font-medium text-[#9a5757]">Wysoka wycena</span>
         </div>
       </div>
 

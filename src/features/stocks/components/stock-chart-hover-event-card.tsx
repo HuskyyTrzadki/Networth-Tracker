@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { formatEps, formatLabelDate, formatPrice } from "./stock-chart-card-helpers";
 import type { StockChartHoverEventCardProps } from "./stock-chart-plot-events";
 
@@ -178,6 +179,7 @@ export function StockChartHoverEventCard({
 
   const eventHeaderLabel =
     marker.kind === "globalNews" ? "Wydarzenie globalne" : "Wazne wydarzenie";
+  const eventImageSrc = buildRemoteImageProxyUrl(marker.imageUrl);
 
   return (
     <div
@@ -189,13 +191,18 @@ export function StockChartHoverEventCard({
       </p>
       <p className="mt-1 text-xs font-semibold">{eventHeaderLabel}</p>
       <div className="mt-2 flex items-start gap-2">
-        <Image
-          src={marker.imageUrl}
-          alt={marker.title}
-          width={92}
-          height={56}
-          className="h-14 w-[92px] rounded-[4px] border border-border/70 object-cover"
-        />
+        {eventImageSrc ? (
+          <Image
+            src={eventImageSrc}
+            alt={marker.title}
+            width={92}
+            height={56}
+            sizes="92px"
+            className="h-14 w-[92px] rounded-[4px] border border-border/70 object-cover"
+          />
+        ) : (
+          <div className="h-14 w-[92px] rounded-[4px] border border-border/70 bg-muted/40" />
+        )}
         <div className="space-y-1">
           <p className="text-xs font-semibold leading-snug">{marker.title}</p>
           <p className="text-xs leading-snug text-muted-foreground">{marker.summary}</p>

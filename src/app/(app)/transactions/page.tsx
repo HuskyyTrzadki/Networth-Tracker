@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -104,7 +105,7 @@ const buildActiveFilterChips = (
   return chips;
 };
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Transakcje",
 };
 

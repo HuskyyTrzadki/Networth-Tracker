@@ -16,7 +16,8 @@ export type CostSlice = Readonly<{
 export type SankeyNode = Readonly<{
   id: string;
   label: string;
-  lane: "left" | "middle" | "right";
+  stage: "source" | "collector" | "cost" | "profit";
+  depth: number;
   valuePercent: number;
   color: string;
   pattern: "solid" | "hatch" | "dots" | "cross";
@@ -60,7 +61,7 @@ export const buildRevenueSankeyModel = (params: Readonly<{
   netMarginPercent: number;
   netProfitDescription?: string;
 }>): SankeyModel => {
-  const costPalette = ["#7a7368", "#827a70", "#8a8177", "#746d64"] as const;
+  const costPalette = ["#7b756d", "#8a8379", "#9a8b78", "#746d64"] as const;
   const segments = normalizeSlices(
     params.revenueSegments.filter(
       (segment) =>
@@ -79,7 +80,8 @@ export const buildRevenueSankeyModel = (params: Readonly<{
     ...segments.map((segment) => ({
       id: segment.id,
       label: segment.label,
-      lane: "left" as const,
+      stage: "source" as const,
+      depth: 0,
       valuePercent: segment.valuePercent,
       color: segment.color,
       pattern: "solid" as const,
@@ -88,7 +90,8 @@ export const buildRevenueSankeyModel = (params: Readonly<{
     {
       id: "total-revenue",
       label: "Przychody razem",
-      lane: "middle" as const,
+      stage: "collector" as const,
+      depth: 1,
       valuePercent: 100,
       color: "#655f57",
       pattern: "solid" as const,
@@ -98,7 +101,8 @@ export const buildRevenueSankeyModel = (params: Readonly<{
     ...costSlices.map((cost, index) => ({
       id: cost.id,
       label: cost.label,
-      lane: "right" as const,
+      stage: "cost" as const,
+      depth: 2,
       valuePercent: (cost.valuePercent / 100) * costTotalPercent,
       color: costPalette[index % costPalette.length],
       pattern:
@@ -112,9 +116,10 @@ export const buildRevenueSankeyModel = (params: Readonly<{
     {
       id: "net-profit",
       label: "Zysk netto",
-      lane: "right" as const,
+      stage: "profit" as const,
+      depth: 2,
       valuePercent: netMarginPercent,
-      color: "#4d4a45",
+      color: "#5bb58a",
       pattern: "solid" as const,
       description:
         params.netProfitDescription ??

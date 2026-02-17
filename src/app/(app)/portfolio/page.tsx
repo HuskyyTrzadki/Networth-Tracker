@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PortfolioPageView } from "./PortfolioPageView";
 
@@ -23,7 +24,7 @@ const buildQueryWithoutPortfolio = (
   return nextParams.toString();
 };
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Portfele",
 };
 

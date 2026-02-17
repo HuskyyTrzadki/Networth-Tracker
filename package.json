@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "node scripts/clean-next-types.mjs && tsc --noEmit",
+    "typecheck:strict": "node scripts/clean-next-types.mjs && tsc --project tsconfig.strict.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",
@@ -15,9 +16,6 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@fontsource/geist-mono": "^5.2.7",
-    "@fontsource/geist-sans": "^5.2.5",
-    "@fontsource/source-serif-4": "^5.2.9",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-checkbox": "^1.3.3",

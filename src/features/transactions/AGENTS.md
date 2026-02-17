@@ -104,6 +104,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Save success UX includes global toast feedback with undo (`Cofnij` for 10s). Undo calls `DELETE /api/transactions/[transactionId]` and re-triggers snapshot rebuild events.
 - Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.
 - Search surfaces that use `InstrumentCombobox` can opt into global `/` focus shortcut via `listenForFocusShortcut`.
+- `InstrumentLogoImage` routes remote logo URLs through shared app proxy (`/api/public/image`) to keep `next/image` optimization enabled without custom passthrough loaders.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

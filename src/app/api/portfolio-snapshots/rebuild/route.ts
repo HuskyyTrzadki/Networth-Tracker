@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { z } from "zod";
 
 import {
   getSnapshotRebuildState,
@@ -32,6 +33,15 @@ const logRebuildEvent = (
 
   console.info(`[snapshot-rebuild] ${event}`, details);
 };
+
+const rebuildRequestSchema = z
+  .object({
+    scope: z.unknown().optional(),
+    portfolioId: z.unknown().optional(),
+    maxDaysPerRun: z.unknown().optional(),
+    timeBudgetMs: z.unknown().optional(),
+  })
+  .strict();
 
 
 export async function GET(request: Request) {
@@ -109,14 +119,11 @@ export async function POST(request: Request) {
     return parsedBody.response;
   }
 
-  const payload = parsedBody.body as
-    | {
-        scope?: unknown;
-        portfolioId?: unknown;
-        maxDaysPerRun?: unknown;
-        timeBudgetMs?: unknown;
-      }
-    | null;
+  const parsedPayload = rebuildRequestSchema.safeParse(parsedBody.body ?? {});
+  if (!parsedPayload.success) {
+    return NextResponse.json({ message: "Invalid input." }, { status: 400 });
+  }
+  const payload = parsedPayload.data;
 
   const scope = parseScope(payload?.scope);
   const portfolioId = parsePortfolioId(payload?.portfolioId);

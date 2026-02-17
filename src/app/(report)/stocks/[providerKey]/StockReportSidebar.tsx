@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { ReportShellMenuTrigger } from "@/features/app-shell";
+import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 
 import { FactRow } from "./ReportRows";
@@ -30,6 +31,10 @@ export default function StockReportSidebar({
   dividendYield,
   asOf,
 }: SidebarProps) {
+  const reportImageSrc = buildRemoteImageProxyUrl(
+    "https://picsum.photos/110/110?grayscale&random=97"
+  );
+
   return (
     <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-14 lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-[color:var(--report-rule)] lg:pr-4 lg:pt-4">
       <div className="space-y-4 bg-background">
@@ -45,13 +50,16 @@ export default function StockReportSidebar({
               </div>
             </div>
 
-            <Image
-              src="https://picsum.photos/110/110?grayscale&random=97"
-              alt="Ilustracja spolki"
-              width={110}
-              height={110}
-              className="h-auto w-[44px] rounded-sm border border-dashed border-[color:var(--report-rule)] object-cover"
-            />
+            {reportImageSrc ? (
+              <Image
+                src={reportImageSrc}
+                alt="Ilustracja spolki"
+                width={110}
+                height={110}
+                sizes="44px"
+                className="h-auto w-[44px] rounded-sm border border-dashed border-[color:var(--report-rule)] object-cover"
+              />
+            ) : null}
           </div>
 
           <div className="mt-4">

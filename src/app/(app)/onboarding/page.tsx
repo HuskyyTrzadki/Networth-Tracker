@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Circle } from "lucide-react";
 
@@ -8,7 +9,7 @@ import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Onboarding",
 };
 

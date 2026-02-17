@@ -29,7 +29,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - top sheet with logo, search, `Portfolio management`, and account actions,
   - signed-in state includes `Konto` and `Wyloguj` action.
 - `ReportShell` uses a small context with ref-backed menu-open reads and explicit mount/unmount counters so custom menu triggers mount predictably without `useMemo`/`useCallback`.
-- Report shell resolves auth state client-side (Supabase browser client) to keep public pages cache-friendly.
+- Report shell receives auth state from server layout (`/(report)/layout.tsx`) and does not run client-side Supabase session polling anymore.
 - Shell chrome was visually normalized with the refreshed design system: tighter uppercase micro-labels for menu triggers, consistent `rounded-md` control styling, and reduced one-off styling in report search/menu surfaces.
 - App shell owns global keyboard shortcuts:
   - `/` focuses the active search surface (`app:focus-search` event),
@@ -40,7 +40,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Boundaries
 - No domain business logic; UI/navigation only.
 - App shell receives data from layouts; no sidebar-specific domain fetches.
-- Report shell performs lightweight client auth-status reads plus sign-out action call.
+- Report shell performs UI/menu state handling and sign-out action call; auth-status read is server-owned.
 
 ## Tests
 - Path helpers: `src/features/app-shell/lib/path.test.ts`.

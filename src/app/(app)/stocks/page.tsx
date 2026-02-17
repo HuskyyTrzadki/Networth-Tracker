@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 
@@ -9,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 
 import StocksScreenerSection from "./StocksScreenerSection";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Akcje",
 };
 

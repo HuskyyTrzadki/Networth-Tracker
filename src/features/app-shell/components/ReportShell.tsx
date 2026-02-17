@@ -17,10 +17,10 @@ import {
   SheetTrigger,
 } from "@/features/design-system/components/ui/sheet";
 import { cn } from "@/lib/cn";
-import { createClient } from "@/lib/supabase/client";
 
 type Props = Readonly<{
   children: React.ReactNode;
+  hasSession: boolean;
 }>;
 
 type MenuTriggerCtx = Readonly<{
@@ -63,42 +63,14 @@ export function ReportShellMenuTrigger({
   );
 }
 
-export function ReportShell({ children }: Props) {
+export function ReportShell({ children, hasSession }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [hasSession, setHasSession] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [customTriggerCount, setCustomTriggerCount] = useState(0);
   const router = useRouter();
   const isMenuOpenRef = useRef(isMenuOpen);
   isMenuOpenRef.current = isMenuOpen;
-
-  useEffect(() => {
-    let cancelled = false;
-    const supabase = createClient();
-
-    const syncSession = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (cancelled) {
-        return;
-      }
-      const user = data.user ?? null;
-      setHasSession(Boolean(user));
-    };
-
-    void syncSession();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
-      setHasSession(Boolean(user));
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   const onSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

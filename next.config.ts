@@ -6,10 +6,9 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   transpilePackages: ["echarts", "zrender"],
   images: {
-    remotePatterns: [
+    localPatterns: [
       {
-        protocol: "https",
-        hostname: "picsum.photos",
+        pathname: "/api/public/image",
       },
     ],
   },

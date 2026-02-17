@@ -138,14 +138,14 @@ export default function StockReportRevenueMixSection() {
       description: taxSlice?.help ?? "Obciazenia podatkowe od wyniku finansowego spolki.",
     },
   ].filter((slice) => slice.valuePercent > 0);
-  const sankeySegments = geoSlices.map((slice) => ({
+  const sankeySegments = productsSlices.map((slice) => ({
     id: slice.key,
     label: slice.label,
     valuePercent: slice.value,
-    color: geoEntries.find((entry) => entry.label === slice.label)?.color ?? "#646464",
+    color: productEntries.find((entry) => entry.label === slice.label)?.color ?? "#646464",
     description:
-      geoEntries.find((entry) => entry.label === slice.label)?.help ??
-      "Udzial regionu w calosci przychodow.",
+      productEntries.find((entry) => entry.label === slice.label)?.help ??
+      "Udzial segmentu w calosci przychodow.",
   }));
   const netMarginPercent = netSlice?.valuePercent ?? 0;
 
@@ -232,12 +232,19 @@ export default function StockReportRevenueMixSection() {
         ) : null}
 
         {mixVisual === "sankey" ? (
-          <StockReportRevenueSankeyCard
-            revenueSegments={sankeySegments}
-            costSlices={costSlices}
-            netMarginPercent={netMarginPercent}
-            netProfitDescription={netSlice?.help}
-          />
+          <div className="space-y-3">
+            <StockReportRevenueSankeyCard
+              revenueSegments={sankeySegments}
+              costSlices={costSlices}
+              netMarginPercent={netMarginPercent}
+              netProfitDescription={netSlice?.help}
+            />
+            <DonutCard
+              title="Geografia przychodow"
+              subtitle={`Osobny widok geograficzny (${periodLabel})`}
+              slices={geoSlices}
+            />
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             <DonutCard

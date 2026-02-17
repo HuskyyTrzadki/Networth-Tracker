@@ -22,6 +22,7 @@ type SankeyNodePattern = "solid" | "hatch" | "dots" | "cross";
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 1,
 });
+const NET_PROFIT_COLOR = "#5bb58a";
 
 type SankeyLineType = "solid" | "dashed" | "dotted";
 
@@ -50,9 +51,20 @@ const buildOption = (
   model: ReturnType<typeof buildRevenueSankeyModel>
 ): EChartsOption => {
   const nodeById = new Map(model.nodes.map((node) => [node.id, node]));
+  const toLabelPosition = (stage: (typeof model.nodes)[number]["stage"]) => {
+    if (stage === "source") return "right";
+    if (stage === "collector") return "top";
+    return "left";
+  };
+  const toLabelAlign = (stage: (typeof model.nodes)[number]["stage"]) => {
+    if (stage === "source") return "left";
+    if (stage === "collector") return "center";
+    return "right";
+  };
   const nodes = model.nodes.map((node) => ({
     name: node.id,
     value: node.valuePercent,
+    depth: node.depth,
     itemStyle: {
       color: node.color,
       borderColor: "#6b645a",
@@ -64,10 +76,10 @@ const buildOption = (
       color: "#3b3b3b",
       fontFamily: "var(--font-mono)",
       fontSize: 11,
-      position: node.lane === "right" ? "left" : "right",
-      align: node.lane === "right" ? "right" : "left",
-      distance: node.lane === "right" ? 12 : 8,
-      width: node.lane === "right" ? 240 : 168,
+      position: toLabelPosition(node.stage),
+      align: toLabelAlign(node.stage),
+      distance: node.stage === "collector" ? 6 : 10,
+      width: node.stage === "source" ? 170 : 252,
       overflow: "truncate" as const,
       formatter: `${node.label} ${percentFormatter.format(node.valuePercent)}%`,
     },
@@ -77,20 +89,35 @@ const buildOption = (
     target: string;
     value: number;
     lineStyle: {
+      color: string;
       type: SankeyLineType;
       opacity: number;
       curveness: number;
     };
-  }> = model.links.map((link) => ({
-    source: link.sourceId,
-    target: link.targetId,
-    value: Number(link.valuePercent.toFixed(3)),
-    lineStyle: {
-      type: toLinkStyleType(link.style),
-      opacity: link.targetId === "net-profit" ? 0.48 : 0.25,
-      curveness: 0.5,
-    },
-  }));
+  }> = model.links.map((link) => {
+    const sourceNode = nodeById.get(link.sourceId);
+    const targetNode = nodeById.get(link.targetId);
+    const color =
+      targetNode?.stage === "profit"
+        ? NET_PROFIT_COLOR
+        : sourceNode?.stage === "source"
+          ? sourceNode.color
+          : (targetNode?.color ?? "#867f74");
+    const opacity =
+      targetNode?.stage === "profit" ? 0.58 : sourceNode?.stage === "source" ? 0.38 : 0.33;
+
+    return {
+      source: link.sourceId,
+      target: link.targetId,
+      value: Number(link.valuePercent.toFixed(3)),
+      lineStyle: {
+        color,
+        type: toLinkStyleType(link.style),
+        opacity,
+        curveness: 0.48,
+      },
+    };
+  });
 
   return {
     animationDuration: 260,
@@ -138,15 +165,15 @@ const buildOption = (
     series: [
       {
         type: "sankey",
-        left: 28,
-        right: 34,
-        top: 16,
-        bottom: 16,
+        left: 26,
+        right: 30,
+        top: 18,
+        bottom: 18,
         draggable: false,
         nodeAlign: "justify",
-        nodeGap: 9,
-        nodeWidth: 22,
-        layoutIterations: 36,
+        nodeGap: 16,
+        nodeWidth: 24,
+        layoutIterations: 0,
         emphasis: {
           focus: "adjacency",
           lineStyle: {
@@ -160,13 +187,13 @@ const buildOption = (
           },
         },
         levels: [
-          { depth: 0, lineStyle: { color: "source", opacity: 0.2 } },
-          { depth: 1, lineStyle: { color: "source", opacity: 0.2 } },
-          { depth: 2, lineStyle: { color: "source", opacity: 0.45 } },
+          { depth: 0, lineStyle: { color: "source", opacity: 0.24 } },
+          { depth: 1, lineStyle: { color: "#8a8377", opacity: 0.26 } },
+          { depth: 2, lineStyle: { color: "source", opacity: 0.44 } },
         ],
         lineStyle: {
-          color: "source",
-          curveness: 0.5,
+          color: "#8a8377",
+          curveness: 0.48,
           opacity: 0.3,
         },
         data: nodes,
@@ -196,15 +223,15 @@ export function StockReportRevenueSankeyCard({
         <div>
           <div className="flex items-center gap-1">
             <h4 className="text-base font-semibold tracking-tight">
-              Przeplyw przychodow: suma -&gt; regiony -&gt; koszty i zysk
+              Przeplyw przychodow: zrodla -&gt; suma -&gt; koszty -&gt; zysk
             </h4>
             <StockReportInfoHint
-              text="Wykres czytamy od lewej: najpierw caly przychod, potem podzial geograficzny, na koncu pozycje kosztowe i zysk netto."
+              text="Wykres czytamy od lewej: segmenty przychodow wpadaja do jednego kolektora, po prawej koszty sa ulozone jak wodospad (COGS, OPEX, Podatki), a na samym dole zostaje zysk netto."
               ariaLabel="Wyjasnienie wykresu przeplywu przychodow"
             />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Grubosc strumienia pokazuje, jaka czesc przychodu trafia do kosztow i jaka zostaje jako zysk.
+            Grubosc strumienia pokazuje, jaka czesc przychodu zostaje zjedzona przez koszty i jaka trafia finalnie do zysku netto.
           </p>
         </div>
         <p className="font-mono text-xs text-muted-foreground">
@@ -213,7 +240,7 @@ export function StockReportRevenueSankeyCard({
         </p>
       </div>
 
-      <div className="mt-3 h-[320px] overflow-hidden rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 p-2">
+      <div className="mt-3 h-[336px] overflow-hidden rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 p-2">
         <ReactECharts
           option={option}
           notMerge

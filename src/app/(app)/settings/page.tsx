@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { AuthSettingsSection } from "@/features/auth";
 
 type Props = Readonly<{
@@ -6,7 +7,7 @@ type Props = Readonly<{
   }>;
 }>;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Ustawienia",
 };
 

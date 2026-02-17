@@ -1,14 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
-import { connection } from "next/server";
 
 import { ImportCsvDialogStandaloneRoute } from "@/features/transactions";
-export const metadata = {
+export const metadata: Metadata = {
   title: "Importuj CSV",
 };
 
-export default async function TransactionsImportPage() {
-  await connection();
-
+export default function TransactionsImportPage() {
   return (
     <Suspense fallback={null}>
       <ImportCsvDialogStandaloneRoute />

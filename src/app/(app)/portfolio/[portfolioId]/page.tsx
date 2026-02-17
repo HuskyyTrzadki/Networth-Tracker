@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { PortfolioPageView } from "../PortfolioPageView";
@@ -8,7 +9,7 @@ type Props = Readonly<{
   }>;
 }>;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Portfele",
 };
 

@@ -74,9 +74,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),
   - free-cash-flow explainer section.
 - "Jak firma zarabia" now has two visuals for revenue understanding:
-  - default `Sankey` flow rendered with `echarts-for-react` in hourglass topology (`regiony geograficzne` -> `Przychody razem` -> `COGS / OPEX / Podatki / Zysk netto`) with print-like textures/dashed streams,
+  - default `Sankey` flow rendered with `echarts-for-react` in clean left-to-right topology (`segmenty biznesowe` -> `Przychody razem` -> `COGS / OPEX / Podatki / Zysk netto`) with ordered right-side waterfall and bottom-line emphasis,
   - fallback `Kołowe` view (existing product/geo donuts).
-- Sankey uses one central revenue aggregator to avoid right-side "spaghetti" crossings; right-lane costs are grouped into investor-first hierarchy (`COGS`, `OPEX` as `R&D+SG&A`, `Podatki`) and include contextual hover explanations.
+- Sankey uses one central revenue aggregator to avoid "spaghetti" crossings; costs follow investor-first waterfall order (`COGS`, `OPEX` as `R&D+SG&A`, `Podatki`) and net profit is rendered as the final terminal stage.
+- In Sankey mode, geography is shown as a separate circular card under the flow (`Geografia przychodow`) so business-source mix and regional exposure are not conflated.
 - Price chart controls include a `Narracja` toggle (default ON for long ranges) that reveals labeled event annotations on vertical guides.
 - Report stream now includes `Zarzad i insiderzy` section (`#sekcja-zarzad`) with leadership cards and insider timeline (demo data).
 - Concept-heavy sections expose hover tooltips via an `i` icon to clarify definitions in-place.

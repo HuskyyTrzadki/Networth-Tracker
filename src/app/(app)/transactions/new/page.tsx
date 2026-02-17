@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -46,7 +47,7 @@ const resolveDialogPreset = (
   } as const;
 };
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Dodaj transakcję",
 };
 

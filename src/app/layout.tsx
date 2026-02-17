@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import Script from "next/script";
 import { Suspense } from "react";
 
@@ -8,6 +9,18 @@ type Props = Readonly<{
   children: React.ReactNode;
 }>;
 
+const geistMono = localFont({
+  src: "./fonts/geist-mono-latin.woff2",
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+
+const ibmPlexMono = localFont({
+  src: "./fonts/geist-latin.woff2",
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Portfolio Tracker",
   description: "Śledź portfel z opóźnionymi notowaniami i przeliczeniem walut.",
@@ -15,7 +28,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <html lang="pl" suppressHydrationWarning>
+    <html
+      lang="pl"
+      suppressHydrationWarning
+      className={`${ibmPlexMono.variable} ${geistMono.variable}`}
+    >
       <body className="antialiased">
         <Script id="theme-preference-init" strategy="beforeInteractive">
           {`(() => {

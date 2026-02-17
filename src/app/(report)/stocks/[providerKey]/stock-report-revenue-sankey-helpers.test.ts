@@ -17,23 +17,25 @@ describe("buildRevenueSankeyModel", () => {
     });
 
     const leftTotal = model.nodes
-      .filter((node) => node.lane === "left")
+      .filter((node) => node.stage === "source")
       .reduce((sum, node) => sum + node.valuePercent, 0);
     const totalRevenueNode = model.nodes.find((node) => node.id === "total-revenue");
     const costTotal = model.nodes
-      .filter((node) => node.lane === "right" && node.id !== "net-profit")
+      .filter((node) => node.stage === "cost")
       .reduce((sum, node) => sum + node.valuePercent, 0);
     const netNode = model.nodes.find((node) => node.id === "net-profit");
     const segmentToCostLinks = model.links.filter((link) => {
       const sourceNode = model.nodes.find((node) => node.id === link.sourceId);
       const targetNode = model.nodes.find((node) => node.id === link.targetId);
-      return sourceNode?.lane === "left" && targetNode?.lane === "right";
+      return sourceNode?.stage === "source" && targetNode?.stage === "cost";
     });
 
     expect(leftTotal).toBeCloseTo(100, 5);
     expect(costTotal).toBeCloseTo(70, 5);
     expect(totalRevenueNode?.valuePercent).toBeCloseTo(100, 5);
     expect(netNode?.valuePercent).toBeCloseTo(30, 5);
+    expect(totalRevenueNode?.depth).toBe(1);
+    expect(netNode?.depth).toBe(2);
     expect(model.links.length).toBe(5);
     expect(segmentToCostLinks.length).toBe(0);
   });

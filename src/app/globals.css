@@ -1,5 +1,4 @@
 @plugin "tailwindcss-animate";
-@import "@fontsource/geist-mono/latin.css";
 
 @config "../../tailwind.config.mjs";
 @import "tailwindcss";
@@ -60,12 +59,12 @@
   --grid-strong: rgb(57 57 57 / 0.02);
   --grid-soft: rgb(57 57 57 / 0.012);
 
-  --font-sans: "IBM Plex Mono", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --font-serif: "IBM Plex Mono", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --font-mono: "IBM Plex Mono", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: var(--font-ibm-plex-mono), var(--font-geist-mono), ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-serif: var(--font-ibm-plex-mono), var(--font-geist-mono), ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: var(--font-ibm-plex-mono), var(--font-geist-mono), ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   color-scheme: light dark;
 }

@@ -1,10 +1,11 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthLoginPanel } from "@/features/auth/ui/AuthLoginPanel";
 import { getAuthUser } from "@/features/auth/server/service";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Logowanie",
 };
 

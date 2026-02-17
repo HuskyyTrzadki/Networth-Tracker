@@ -61,18 +61,18 @@ export const REVENUE_BY_PRODUCTS: readonly RevenueRow[] = [
   {
     name: "Rodzina aplikacji",
     iconLabel: "FOA",
-    q1: { value: "$41.9B", trend: "up" },
-    q2: { value: "$47.2B", trend: "up" },
-    q3: { value: "$50.8B", trend: "up" },
-    q4: { value: "$58.9B", trend: "up" },
+    q1: { value: "$22.6B", trend: "up" },
+    q2: { value: "$24.3B", trend: "up" },
+    q3: { value: "$26.9B", trend: "up" },
+    q4: { value: "$30.2B", trend: "up" },
   },
   {
     name: "Reality Labs",
     iconLabel: "RL",
-    q1: { value: "$0.41B", trend: "up" },
-    q2: { value: "$0.37B", trend: "down" },
-    q3: { value: "$0.47B", trend: "up" },
-    q4: { value: "$0.95B", trend: "up" },
+    q1: { value: "$21.8B", trend: "up" },
+    q2: { value: "$23.7B", trend: "up" },
+    q3: { value: "$26.1B", trend: "up" },
+    q4: { value: "$29.8B", trend: "up" },
   },
 ];
 

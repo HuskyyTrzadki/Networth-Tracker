@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 
@@ -74,6 +75,30 @@ const decodeProviderKey = (rawProviderKey: string): string | null => {
   }
 };
 
+const buildStockMetadata = (
+  symbol: string,
+  name: string,
+  asOf: string | null
+): Metadata => {
+  const title = `${symbol} · ${name}`;
+  const asOfLabel = asOf ? ` Aktualizacja: ${asOf}.` : "";
+  const description = `Raport spółki ${name} (${symbol}) z wykresem, kluczowymi wskaźnikami i podsumowaniem fundamentalnym.${asOfLabel}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+};
+
 const getPublicInstrumentCached = async (
   providerKey: string
 ): Promise<InstrumentRow | null> => {
@@ -105,6 +130,33 @@ const getStockSummaryCached = async (providerKey: string) => {
   const supabase = createPublicStocksSupabaseClient();
   return getStockValuationSummaryCached(supabase, providerKey);
 };
+
+export async function generateMetadata({
+  params,
+}: Readonly<{
+  params: Params;
+}>): Promise<Metadata> {
+  const resolvedParams = await params;
+  const providerKey = decodeProviderKey(resolvedParams.providerKey);
+
+  if (!providerKey) {
+    return {
+      title: "Spółka",
+      description: "Raport szczegółowy spółki.",
+    };
+  }
+
+  const [stock, summary] = await Promise.all([
+    getPublicInstrumentCached(providerKey),
+    getStockSummaryCached(providerKey),
+  ]);
+
+  const symbol = stock?.symbol ?? providerKey;
+  const name = stock?.name ?? "Spółka";
+  const asOf = summary.asOf ? formatDate(summary.asOf.slice(0, 10)) : null;
+
+  return buildStockMetadata(symbol, name, asOf);
+}
 
 export default async function StockDetailsPage({
   params,

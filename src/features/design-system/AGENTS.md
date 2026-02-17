@@ -36,6 +36,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Global tokens now follow an editorial paper/ink system (warm paper background, ink-first typography, dashed-border module grammar) in both light and dark (`night paper`) themes.
 - Shared primitives (`button`, `input`, `table`, `badge`, `card`, `sheet`) were flattened to border-led chrome with minimal radius and no decorative shadows.
 - Shared primitives were re-aligned to a crisp editorial baseline: unified control heights (`h-9`/`h-10`/`h-11`), `rounded-md` controls, restrained `rounded-lg` containers, and consistent border/focus treatments across `ui/*`.
+- Base sidebar primitive internals are split by responsibility (`src/components/ui/sidebar-context.tsx`, `src/components/ui/sidebar-core.tsx`, `src/components/ui/sidebar-menu.tsx`) and re-exported through `src/components/ui/sidebar.tsx` to keep each file below repo size limits.
 - `ChartCard` uses symmetrical `p-4` spacing and a single internal rhythm (`header` + `content`) so widget chrome remains consistent across portfolio sections.
 - `ChartCard` now supports `surface` variants (`default`/`subtle`) for consistent visual hierarchy between primary and secondary dashboard cards.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
