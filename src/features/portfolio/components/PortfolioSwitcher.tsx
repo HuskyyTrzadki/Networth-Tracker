@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { useTransition } from "react";
 
 import {
   Select,
@@ -31,7 +31,7 @@ type Props = Readonly<{
   className?: string;
 }>;
 
-export function PortfolioSwitcher({
+function PortfolioSwitcherInner({
   portfolios,
   selectedId,
   resetPageParam = false,
@@ -42,10 +42,10 @@ export function PortfolioSwitcher({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const searchParamsString = searchParams?.toString() ?? "";
 
   const handlePortfolioChange = (nextValue: string) => {
     const nextPortfolioId = nextValue === ALL_VALUE ? null : nextValue;
+    const searchParamsString = searchParams?.toString() ?? "";
     startTransition(() => {
       router.push(
         buildPortfolioUrl({
@@ -101,5 +101,13 @@ export function PortfolioSwitcher({
         </Select>
       </div>
     </div>
+  );
+}
+
+export function PortfolioSwitcher(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <PortfolioSwitcherInner {...props} />
+    </Suspense>
   );
 }

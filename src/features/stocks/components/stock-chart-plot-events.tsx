@@ -187,7 +187,10 @@ export function StockChartEventMarkerDot({
         fill={fillColor}
         stroke={isActive ? hoverRingColor : "var(--background)"}
         strokeWidth={isActive ? 2.8 : 2.1}
-        style={{ transition: "all 150ms cubic-bezier(0.25, 1, 0.5, 1)" }}
+        style={{
+          transition:
+            "fill-opacity 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke-width 150ms cubic-bezier(0.25, 1, 0.5, 1)",
+        }}
         pointerEvents="none"
       />
       {isUserTrade ? (

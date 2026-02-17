@@ -71,14 +71,10 @@ function SheetStory() {
                 </SheetHeader>
 
                 <SheetBody>
-                  <form
+                  <div
                     id={formId}
                     className="space-y-6"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      setOpen(false);
-                    }}
-                    >
+                  >
                     <div className="space-y-2">
                       <div className="text-sm font-medium">Formularz</div>
                       <div className="text-xs text-muted-foreground">
@@ -99,14 +95,14 @@ function SheetStory() {
                         </div>
                       ))}
                     </div>
-                  </form>
+                  </div>
                 </SheetBody>
 
                 <SheetFooter>
                   <SheetClose asChild>
                     <Button variant="outline">Anuluj</Button>
                   </SheetClose>
-                  <Button type="submit" form={formId}>
+                  <Button type="button" onClick={() => setOpen(false)} form={formId}>
                     Zapisz
                   </Button>
                 </SheetFooter>

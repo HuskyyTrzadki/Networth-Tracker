@@ -28,11 +28,11 @@ export function Alert({ className, variant, ...props }: AlertProps) {
   );
 }
 
-export type AlertTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
+export type AlertTitleProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function AlertTitle({ className, ...props }: AlertTitleProps) {
   return (
-    <h5
+    <div
       className={cn("mb-1 font-medium leading-none tracking-tight", className)}
       {...props}
     />

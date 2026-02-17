@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type CSSProperties } from "react";
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
@@ -32,48 +32,46 @@ export function AppShell({ children, portfolios, className }: Props) {
     "--sidebar-width-icon": "3.5rem",
   } as CSSProperties;
 
-  useEffect(() => {
-    const isTypingElement = (target: EventTarget | null) => {
-      if (!(target instanceof HTMLElement)) return false;
-      const tag = target.tagName.toLowerCase();
-      if (target.isContentEditable) return true;
-      return tag === "input" || tag === "textarea" || tag === "select";
-    };
+  const isTypingElement = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return false;
+    const tag = target.tagName.toLowerCase();
+    if (target.isContentEditable) return true;
+    return tag === "input" || tag === "textarea" || tag === "select";
+  };
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        window.dispatchEvent(new Event("app:close-modal"));
-        return;
-      }
+  const onKeyDownCapture = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      window.dispatchEvent(new Event("app:close-modal"));
+      return;
+    }
 
-      if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) {
-        return;
-      }
+    if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) {
+      return;
+    }
 
-      if (event.key === "/" && !isTypingElement(event.target)) {
-        event.preventDefault();
-        window.dispatchEvent(new Event("app:focus-search"));
-        return;
-      }
+    if (event.key === "/" && !isTypingElement(event.target)) {
+      event.preventDefault();
+      window.dispatchEvent(new Event("app:focus-search"));
+      return;
+    }
 
-      if (event.key.toLowerCase() === "n" && !isTypingElement(event.target)) {
-        event.preventDefault();
-        const activePortfolioId = getPortfolioIdFromPathname(pathname);
-        const href = activePortfolioId
-          ? `/transactions/new?portfolio=${activePortfolioId}`
-          : "/transactions/new";
-        router.push(href, { scroll: false });
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [pathname, router]);
+    if (event.key.toLowerCase() === "n" && !isTypingElement(event.target)) {
+      event.preventDefault();
+      const activePortfolioId = getPortfolioIdFromPathname(pathname);
+      const href = activePortfolioId
+        ? `/transactions/new?portfolio=${activePortfolioId}`
+        : "/transactions/new";
+      router.push(href, { scroll: false });
+    }
+  };
 
   return (
     <SidebarProvider style={sidebarStyle}>
       <AppSidebar portfolios={portfolios} />
-      <SidebarInset className={cn("min-h-dvh pb-24 md:pb-0", className)}>
+      <SidebarInset
+        className={cn("min-h-dvh pb-24 md:pb-0", className)}
+        onKeyDownCapture={onKeyDownCapture}
+      >
         {children}
         <MobileBottomNav />
         <AppToastHost />

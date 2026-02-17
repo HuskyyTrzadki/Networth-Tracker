@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDown } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "@/lib/recharts-dynamic";
 
 import { Button } from "@/features/design-system/components/ui/button";
 

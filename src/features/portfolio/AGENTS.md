@@ -43,12 +43,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/app/api/benchmarks/series/route.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.ts`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.ts`
-- `src/features/portfolio/server/snapshots/get-portfolio-snapshot-series.ts`
 - `src/features/portfolio/server/snapshots/run-portfolio-snapshots-cron.ts`
 - `src/features/portfolio/server/snapshots/bootstrap-portfolio-snapshot.ts`
 - `src/features/portfolio/server/snapshots/rebuild-state.ts`
-- `src/features/portfolio/server/snapshots/compute-portfolio-snapshot-at-date.ts`
-- `src/features/portfolio/server/snapshots/compute-portfolio-snapshot-range.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot-range-helpers.ts`
 - `src/features/portfolio/server/snapshots/range-market-data.ts`
 - `src/features/portfolio/server/snapshots/range-market-data-cursor.ts`
@@ -168,4 +165,4 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/lib/create-portfolio-schema.test.ts`
 - `src/features/portfolio/lib/portfolio-url.test.ts`
 - `src/features/portfolio/lib/snapshot-rebuild-events.test.ts`
-- TODO: extend snapshot rebuild tests beyond pure merge helpers (session lifecycle + concurrent dirty update integration) and add tests for as-of compute (`compute-portfolio-snapshot-at-date.ts`).
+- TODO: extend snapshot rebuild tests beyond pure merge helpers (session lifecycle + concurrent dirty update integration).

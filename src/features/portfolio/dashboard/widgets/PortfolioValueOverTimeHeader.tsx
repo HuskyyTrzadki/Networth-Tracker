@@ -46,6 +46,10 @@ type Props = Readonly<{
   isAllHistoryTruncated?: boolean;
 }>;
 
+const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
+const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
+const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
+
 export function PortfolioValueOverTimeHeader({
   mode,
   onModeChange,
@@ -54,9 +58,9 @@ export function PortfolioValueOverTimeHeader({
   isRangeDisabled,
   currency,
   onCurrencyChange,
-  comparisonOptions = [],
-  selectedComparisons = [],
-  loadingComparisons = [],
+  comparisonOptions = EMPTY_COMPARISON_OPTIONS,
+  selectedComparisons = EMPTY_SELECTED_COMPARISONS,
+  loadingComparisons = EMPTY_LOADING_COMPARISONS,
   onComparisonChange,
   performancePartial,
   valueIsPartial,

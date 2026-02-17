@@ -9,7 +9,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from "@/lib/recharts-dynamic";
 
 type Point = Readonly<{
   label: string;

@@ -12,7 +12,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from "@/lib/recharts-dynamic";
 import { ArrowUpRight, Expand, X } from "lucide-react";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -173,7 +173,9 @@ function InsightWidgetChart({
           />
           <YAxis
             width={expanded ? 62 : 52}
-            tickFormatter={(value) => formatAxisValue(Number(value), widget.valueFormat)}
+            tickFormatter={(value: string | number) =>
+              formatAxisValue(Number(value), widget.valueFormat)
+            }
             tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
             axisLine={{ stroke: "var(--border)", strokeOpacity: 0.55 }}
             tickLine={false}

@@ -9,7 +9,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from "@/lib/recharts-dynamic";
 
 import { buildPaddedDomain } from "../lib/chart-domain";
 import {
@@ -43,6 +43,8 @@ type Props = Readonly<{
   height?: number;
   comparisonLines?: readonly ComparisonLine[];
 }>;
+
+const EMPTY_COMPARISON_LINES: readonly ComparisonLine[] = [];
 
 const formatPercent = (value: number) =>
   new Intl.NumberFormat("pl-PL", {
@@ -91,7 +93,7 @@ const buildYAxisTicks = (domain: readonly [number, number] | null) => {
 export function DailyReturnsLineChart({
   data,
   height = 140,
-  comparisonLines = [],
+  comparisonLines = EMPTY_COMPARISON_LINES,
 }: Props) {
   const chartData = [...data];
   const activeComparisonLines = comparisonLines.filter((line) =>
@@ -156,7 +158,9 @@ export function DailyReturnsLineChart({
             <CartesianGrid {...SHARED_CHART_GRID_PROPS} />
             <XAxis
               dataKey="label"
-              tickFormatter={(value) => timeAxisConfig.tickFormatter(String(value))}
+              tickFormatter={(value: string | number) =>
+                timeAxisConfig.tickFormatter(String(value))
+              }
               ticks={xTicks}
               tick={SHARED_CHART_AXIS_TICK}
               interval={timeAxisConfig.interval}
@@ -182,8 +186,8 @@ export function DailyReturnsLineChart({
             />
             <Tooltip
               cursor={{ stroke: "var(--ring)" }}
-              labelFormatter={(value) => formatTooltipDate(String(value))}
-              formatter={(value, name) => [
+              labelFormatter={(value: string | number) => formatTooltipDate(String(value))}
+              formatter={(value: string | number, name: string | number) => [
                 formatPercent(Number(value)),
                 name === "value"
                   ? "Zwrot skumulowany"
@@ -211,7 +215,7 @@ export function DailyReturnsLineChart({
               <Line
                 key={line.id}
                 type={line.strokeStyle ?? "monotone"}
-                dataKey={(entry) => entry.comparisons?.[line.id] ?? null}
+                dataKey={(entry: Point) => entry.comparisons?.[line.id] ?? null}
                 name={line.id}
                 stroke={line.color}
                 strokeWidth={SHARED_CHART_SECONDARY_LINE_WIDTH}

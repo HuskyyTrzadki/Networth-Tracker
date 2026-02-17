@@ -143,7 +143,7 @@ export function AddTransactionDialogContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentSearchResult | null>(initialInstrument ?? null);
-  const [activeTab, setActiveTab] = useState<AssetTab>(
+  const [activeTab, setActiveTab] = useState<AssetTab>(() =>
     resolveInitialTab(initialInstrument)
   );
 
@@ -207,96 +207,97 @@ export function AddTransactionDialogContent({
 
     setIsSubmitting(true);
     form.clearErrors("root");
-
-    try {
-      const resolvedPortfolioId = forcedPortfolioId ?? values.portfolioId;
-      const payloadFields = buildSubmitPayloadFields(values, isCashTab);
-      const createResult = await createTransaction({
-        type: values.type,
-        date: values.date,
-        quantity: values.quantity,
-        ...payloadFields,
-        notes: values.notes,
-        portfolioId: resolvedPortfolioId,
-        clientRequestId: crypto.randomUUID(),
-        instrument: {
-          provider: selectedInstrument.provider,
-          providerKey: selectedInstrument.providerKey,
-          symbol: selectedInstrument.symbol,
-          name: selectedInstrument.name,
-          currency: selectedInstrument.currency,
-          instrumentType: selectedInstrument.instrumentType ?? undefined,
-          exchange: selectedInstrument.exchange ?? undefined,
-          region: selectedInstrument.region ?? undefined,
-          logoUrl: selectedInstrument.logoUrl ?? undefined,
-        },
-      });
-
-      dispatchSnapshotRebuildTriggeredEvent({
-        scope: "PORTFOLIO",
-        portfolioId: resolvedPortfolioId,
-      });
-      dispatchSnapshotRebuildTriggeredEvent({
-        scope: "ALL",
-        portfolioId: null,
-      });
-
-      triggerSnapshotRebuild("PORTFOLIO", resolvedPortfolioId);
-      triggerSnapshotRebuild("ALL", null);
-
-      dispatchAppToast({
-        title: "Transakcja zapisana.",
-        description: "Możesz cofnąć zmianę przez 10 sekund.",
-        tone: "success",
-        durationMs: 10_000,
-        action: {
-          label: "Cofnij",
-          onClick: async () => {
-            try {
-              const undoResult = await deleteTransaction(createResult.transactionId);
-              dispatchSnapshotRebuildTriggeredEvent({
-                scope: "PORTFOLIO",
-                portfolioId: undoResult.portfolioId,
-              });
-              dispatchSnapshotRebuildTriggeredEvent({
-                scope: "ALL",
-                portfolioId: null,
-              });
-              triggerSnapshotRebuild("PORTFOLIO", undoResult.portfolioId);
-              triggerSnapshotRebuild("ALL", null);
-              dispatchAppToast({
-                title: "Cofnięto transakcję.",
-                description: "Zmiana została anulowana.",
-                tone: "success",
-              });
-            } catch (undoError) {
-              const message =
-                undoError instanceof Error
-                  ? undoError.message
-                  : "Nie udało się cofnąć transakcji.";
-              dispatchAppToast({
-                title: "Nie udało się cofnąć transakcji.",
-                description: message,
-                tone: "destructive",
-              });
-            }
-          },
-        },
-      });
-
-      onSubmitSuccess?.();
-
-      // Close dialog after submit side effects are scheduled.
-      onClose({ force: true });
-    } catch (error) {
+    const resolvedPortfolioId = forcedPortfolioId ?? values.portfolioId;
+    const payloadFields = buildSubmitPayloadFields(values, isCashTab);
+    const createResult = await createTransaction({
+      type: values.type,
+      date: values.date,
+      quantity: values.quantity,
+      ...payloadFields,
+      notes: values.notes,
+      portfolioId: resolvedPortfolioId,
+      clientRequestId: crypto.randomUUID(),
+      instrument: {
+        provider: selectedInstrument.provider,
+        providerKey: selectedInstrument.providerKey,
+        symbol: selectedInstrument.symbol,
+        name: selectedInstrument.name,
+        currency: selectedInstrument.currency,
+        instrumentType: selectedInstrument.instrumentType ?? undefined,
+        exchange: selectedInstrument.exchange ?? undefined,
+        region: selectedInstrument.region ?? undefined,
+        logoUrl: selectedInstrument.logoUrl ?? undefined,
+      },
+    }).catch((error: unknown) => {
       const message =
         error instanceof Error
           ? error.message
           : "Nie udało się zapisać transakcji.";
       form.setError("root", { message });
-    } finally {
+      return null;
+    });
+    if (!createResult) {
       setIsSubmitting(false);
+      return;
     }
+
+    dispatchSnapshotRebuildTriggeredEvent({
+      scope: "PORTFOLIO",
+      portfolioId: resolvedPortfolioId,
+    });
+    dispatchSnapshotRebuildTriggeredEvent({
+      scope: "ALL",
+      portfolioId: null,
+    });
+
+    triggerSnapshotRebuild("PORTFOLIO", resolvedPortfolioId);
+    triggerSnapshotRebuild("ALL", null);
+
+    dispatchAppToast({
+      title: "Transakcja zapisana.",
+      description: "Możesz cofnąć zmianę przez 10 sekund.",
+      tone: "success",
+      durationMs: 10_000,
+      action: {
+        label: "Cofnij",
+        onClick: async () => {
+          try {
+            const undoResult = await deleteTransaction(createResult.transactionId);
+            dispatchSnapshotRebuildTriggeredEvent({
+              scope: "PORTFOLIO",
+              portfolioId: undoResult.portfolioId,
+            });
+            dispatchSnapshotRebuildTriggeredEvent({
+              scope: "ALL",
+              portfolioId: null,
+            });
+            triggerSnapshotRebuild("PORTFOLIO", undoResult.portfolioId);
+            triggerSnapshotRebuild("ALL", null);
+            dispatchAppToast({
+              title: "Cofnięto transakcję.",
+              description: "Zmiana została anulowana.",
+              tone: "success",
+            });
+          } catch (undoError) {
+            const message =
+              undoError instanceof Error
+                ? undoError.message
+                : "Nie udało się cofnąć transakcji.";
+            dispatchAppToast({
+              title: "Nie udało się cofnąć transakcji.",
+              description: message,
+              tone: "destructive",
+            });
+          }
+        },
+      },
+    });
+
+    onSubmitSuccess?.();
+
+    // Close dialog after submit side effects are scheduled.
+    onClose({ force: true });
+    setIsSubmitting(false);
   });
 
   const rootError = form.formState.errors.root?.message;

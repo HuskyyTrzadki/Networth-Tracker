@@ -3,7 +3,7 @@
 import { Newspaper, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -26,7 +26,7 @@ type Props = Readonly<{
 type MenuTriggerCtx = Readonly<{
   mountCustomTrigger: () => void;
   unmountCustomTrigger: () => void;
-  getIsMenuOpen: () => boolean;
+  isMenuOpen: boolean;
 }>;
 
 const ReportShellMenuTriggerContext = createContext<MenuTriggerCtx | null>(null);
@@ -53,7 +53,7 @@ export function ReportShellMenuTrigger({
         variant="outline"
         className={cn(
           "h-9 rounded-md border border-[color:var(--report-rule)] bg-background px-3 text-[11px] font-semibold uppercase tracking-[0.08em]",
-          ctx?.getIsMenuOpen() ? "bg-foreground text-background hover:bg-foreground" : "",
+          ctx?.isMenuOpen ? "bg-foreground text-background hover:bg-foreground" : "",
           className
         )}
       >
@@ -69,8 +69,12 @@ export function ReportShell({ children, hasSession }: Props) {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [customTriggerCount, setCustomTriggerCount] = useState(0);
   const router = useRouter();
-  const isMenuOpenRef = useRef(isMenuOpen);
-  isMenuOpenRef.current = isMenuOpen;
+  const mountCustomTrigger = useCallback(() => {
+    setCustomTriggerCount((value) => value + 1);
+  }, []);
+  const unmountCustomTrigger = useCallback(() => {
+    setCustomTriggerCount((value) => Math.max(0, value - 1));
+  }, []);
 
   const onSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -87,31 +91,31 @@ export function ReportShell({ children, hasSession }: Props) {
   const onSignOut = async () => {
     if (isSigningOut) return;
     setIsSigningOut(true);
-    try {
-      await fetch("/api/auth/signout", { method: "POST" });
-      setIsMenuOpen(false);
-      router.push("/login");
-      router.refresh();
-    } finally {
-      setIsSigningOut(false);
-    }
+    await fetch("/api/auth/signout", { method: "POST" }).catch(() => null);
+    setIsMenuOpen(false);
+    router.push("/login");
+    router.refresh();
+    setIsSigningOut(false);
   };
 
-  const menuTriggerContextRef = useRef<MenuTriggerCtx>({
-    mountCustomTrigger: () => {
-      setCustomTriggerCount((value) => value + 1);
-    },
-    unmountCustomTrigger: () => {
-      setCustomTriggerCount((value) => Math.max(0, value - 1));
-    },
-    getIsMenuOpen: () => isMenuOpenRef.current,
-  });
+  const menuTriggerContext = useMemo<MenuTriggerCtx>(
+    () => ({
+      mountCustomTrigger: () => {
+        mountCustomTrigger();
+      },
+      unmountCustomTrigger: () => {
+        unmountCustomTrigger();
+      },
+      isMenuOpen,
+    }),
+    [isMenuOpen, mountCustomTrigger, unmountCustomTrigger]
+  );
   const hasCustomTrigger = customTriggerCount > 0;
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <ReportShellMenuTriggerContext.Provider value={menuTriggerContextRef.current}>
+        <ReportShellMenuTriggerContext.Provider value={menuTriggerContext}>
           {!hasCustomTrigger ? (
             <div className="pointer-events-none fixed left-7 top-4 z-50 sm:left-10 sm:top-5 lg:left-16 xl:left-20">
               <SheetTrigger asChild>

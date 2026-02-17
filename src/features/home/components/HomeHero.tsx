@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -16,19 +17,17 @@ export function HomeHero() {
     setNotice(null);
     setPending(true);
 
-    try {
-      const response = await fetch("/api/auth/anonymous", { method: "POST" });
-      if (!response.ok) {
-        setNotice(errorMessage);
-        return;
-      }
-
-      router.replace("/search");
-    } catch {
+    const response = await fetch("/api/auth/anonymous", { method: "POST" }).catch(
+      () => null
+    );
+    if (!response?.ok) {
       setNotice(errorMessage);
-    } finally {
       setPending(false);
+      return;
     }
+
+    router.replace("/search");
+    setPending(false);
   };
 
   return (
@@ -37,12 +36,12 @@ export function HomeHero() {
         <header className="flex h-14 items-center justify-between border-b border-dashed border-border/85 pb-4">
           <div className="text-xl font-semibold tracking-tight">Portfolio Tracker</div>
           <nav className="flex items-center gap-6 text-xs font-semibold uppercase tracking-[0.08em]">
-            <a href="/pricing" className="text-muted-foreground hover:text-foreground">
+            <Link href="/pricing" className="text-muted-foreground hover:text-foreground">
               Cennik
-            </a>
-            <a href="/login" className="hover:text-muted-foreground">
+            </Link>
+            <Link href="/login" className="hover:text-muted-foreground">
               Zaloguj
-            </a>
+            </Link>
           </nav>
         </header>
 

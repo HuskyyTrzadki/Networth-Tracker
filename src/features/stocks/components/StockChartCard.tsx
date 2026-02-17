@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -43,6 +43,239 @@ type Props = Readonly<{
   initialChart: StockChartResponse;
 }>;
 
+type UiState = Readonly<{
+  mode: StockChartMode;
+  activeOverlays: readonly StockChartOverlay[];
+  showEarningsEvents: boolean;
+  showNewsEvents: boolean;
+  showUserTradeEvents: boolean;
+  showGlobalNewsEvents: boolean;
+  showNarration: boolean;
+}>;
+
+type UiAction =
+  | { type: "set_mode"; payload: StockChartMode }
+  | { type: "set_active_overlays"; payload: readonly StockChartOverlay[] }
+  | { type: "set_show_earnings_events"; payload: boolean }
+  | { type: "set_show_news_events"; payload: boolean }
+  | { type: "set_show_user_trade_events"; payload: boolean }
+  | { type: "set_show_global_news_events"; payload: boolean }
+  | { type: "set_show_narration"; payload: boolean };
+
+const createInitialUiState = (
+  initialChart: StockChartResponse
+): UiState => ({
+  mode: "trend",
+  activeOverlays: [...initialChart.activeOverlays],
+  showEarningsEvents: false,
+  showNewsEvents: true,
+  showUserTradeEvents: false,
+  showGlobalNewsEvents: true,
+  showNarration: true,
+});
+
+const uiReducer = (state: UiState, action: UiAction): UiState => {
+  switch (action.type) {
+    case "set_mode":
+      return { ...state, mode: action.payload };
+    case "set_active_overlays":
+      return { ...state, activeOverlays: action.payload };
+    case "set_show_earnings_events":
+      return { ...state, showEarningsEvents: action.payload };
+    case "set_show_news_events":
+      return { ...state, showNewsEvents: action.payload };
+    case "set_show_user_trade_events":
+      return { ...state, showUserTradeEvents: action.payload };
+    case "set_show_global_news_events":
+      return { ...state, showGlobalNewsEvents: action.payload };
+    case "set_show_narration":
+      return { ...state, showNarration: action.payload };
+    default:
+      return state;
+  }
+};
+
+const isRangeDisabledOption = (
+  isLoading: boolean,
+  isTenYearUnavailable: boolean,
+  rangeOption: StockChartRange
+) => isLoading || (rangeOption === "10Y" && isTenYearUnavailable);
+
+const resolveNextOverlayState = (
+  mode: StockChartMode,
+  activeOverlays: readonly StockChartOverlay[],
+  overlay: StockChartOverlay,
+  enabled: boolean
+) => getNextOverlaySelection(mode, activeOverlays, overlay, enabled);
+
+const resolveNextModeOverlayState = (
+  nextMode: StockChartMode,
+  activeOverlays: readonly StockChartOverlay[]
+) => normalizeOverlaysForMode(nextMode, activeOverlays);
+
+function StockChartOverlayEventsPanel({
+  resolvedRange,
+  normalizedOverlays,
+  mode,
+  isLoading,
+  isEventRangeEligible,
+  showNarration,
+  showEarningsEvents,
+  showNewsEvents,
+  showUserTradeEvents,
+  showGlobalNewsEvents,
+  onToggleOverlay,
+  onToggleNarration,
+  onToggleEarnings,
+  onToggleNews,
+  onToggleUserTrades,
+  onToggleGlobalNews,
+}: Readonly<{
+  resolvedRange: StockChartRange;
+  normalizedOverlays: readonly StockChartOverlay[];
+  mode: StockChartMode;
+  isLoading: boolean;
+  isEventRangeEligible: boolean;
+  showNarration: boolean;
+  showEarningsEvents: boolean;
+  showNewsEvents: boolean;
+  showUserTradeEvents: boolean;
+  showGlobalNewsEvents: boolean;
+  onToggleOverlay: (overlay: StockChartOverlay, enabled: boolean) => void;
+  onToggleNarration: (enabled: boolean) => void;
+  onToggleEarnings: (enabled: boolean) => void;
+  onToggleNews: (enabled: boolean) => void;
+  onToggleUserTrades: (enabled: boolean) => void;
+  onToggleGlobalNews: (enabled: boolean) => void;
+}>) {
+  if (resolvedRange === "1D") return null;
+
+  return (
+    <div className="rounded-md border border-border/60 bg-card/35 p-2.5">
+      <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+        Nakładki i wydarzenia
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {OVERLAY_KEYS.map((overlay) => (
+          <label
+            key={overlay}
+            htmlFor={`stock-chart-overlay-${overlay}`}
+            className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+          >
+            <Checkbox
+              id={`stock-chart-overlay-${overlay}`}
+              checked={normalizedOverlays.includes(overlay)}
+              onCheckedChange={(checked) => onToggleOverlay(overlay, checked === true)}
+              disabled={isLoading || (mode === "raw" && overlay === "revenueTtm")}
+            />
+            {OVERLAY_CONTROL_LABELS[overlay]}
+          </label>
+        ))}
+        <span className="text-xs text-muted-foreground/70">|</span>
+        <label
+          htmlFor="stock-chart-toggle-narration"
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+        >
+          <Checkbox
+            id="stock-chart-toggle-narration"
+            checked={isEventRangeEligible ? showNarration : false}
+            onCheckedChange={(checked) => {
+              if (!isEventRangeEligible) return;
+              onToggleNarration(checked === true);
+            }}
+            disabled={!isEventRangeEligible}
+          />
+          Narracja
+        </label>
+        <label
+          htmlFor="stock-chart-toggle-earnings"
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+        >
+          <Checkbox
+            id="stock-chart-toggle-earnings"
+            checked={isEventRangeEligible ? showEarningsEvents : false}
+            onCheckedChange={(checked) => {
+              if (!isEventRangeEligible) return;
+              onToggleEarnings(checked === true);
+            }}
+            disabled={!isEventRangeEligible}
+          />
+          Wyniki (konsensus vs raport)
+        </label>
+        <label
+          htmlFor="stock-chart-toggle-news"
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+        >
+          <Checkbox
+            id="stock-chart-toggle-news"
+            checked={isEventRangeEligible ? showNewsEvents : false}
+            onCheckedChange={(checked) => {
+              if (!isEventRangeEligible) return;
+              onToggleNews(checked === true);
+            }}
+            disabled={!isEventRangeEligible}
+          />
+          Wazne wydarzenia
+        </label>
+        <label
+          htmlFor="stock-chart-toggle-user-trades"
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+        >
+          <Checkbox
+            id="stock-chart-toggle-user-trades"
+            checked={isEventRangeEligible ? showUserTradeEvents : false}
+            onCheckedChange={(checked) => {
+              if (!isEventRangeEligible) return;
+              onToggleUserTrades(checked === true);
+            }}
+            disabled={!isEventRangeEligible}
+          />
+          BUY/SELL uzytkownika (mock)
+        </label>
+        <label
+          htmlFor="stock-chart-toggle-global-news"
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+        >
+          <Checkbox
+            id="stock-chart-toggle-global-news"
+            checked={isEventRangeEligible ? showGlobalNewsEvents : false}
+            onCheckedChange={(checked) => {
+              if (!isEventRangeEligible) return;
+              onToggleGlobalNews(checked === true);
+            }}
+            disabled={!isEventRangeEligible}
+          />
+          Wazne wydarzenia globalne
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function StockChartCardHeader({
+  direction,
+  changePercent,
+}: Readonly<{
+  direction: "up" | "down" | "flat";
+  changePercent: number | null;
+}>) {
+  return (
+    <header className="flex flex-wrap items-end justify-between gap-2">
+      <h2 className="text-2xl font-semibold tracking-tight">Wykres ceny</h2>
+      <p
+        className={cn(
+          "font-mono text-[11px] font-semibold tabular-nums",
+          direction === "up" && "text-[color:var(--profit)]",
+          direction === "down" && "text-[color:var(--loss)]",
+          direction === "flat" && "text-muted-foreground"
+        )}
+      >
+        Zmiana zakresu: {formatChangePercent(changePercent)}
+      </p>
+    </header>
+  );
+}
+
 export function StockChartCard({ providerKey, initialChart }: Props) {
   const rangeStorageKey = `stocks:chart-range:${providerKey}`;
   const [range, setRange] = useState<StockChartRange>(() => {
@@ -57,15 +290,20 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
 
     return initialChart.requestedRange;
   });
-  const [mode, setMode] = useState<StockChartMode>("trend");
-  const [activeOverlays, setActiveOverlays] = useState<StockChartOverlay[]>(
-    [...initialChart.activeOverlays]
+  const [uiState, dispatch] = useReducer(
+    uiReducer,
+    initialChart,
+    createInitialUiState
   );
-  const [showEarningsEvents, setShowEarningsEvents] = useState(false);
-  const [showNewsEvents, setShowNewsEvents] = useState(true);
-  const [showUserTradeEvents, setShowUserTradeEvents] = useState(false);
-  const [showGlobalNewsEvents, setShowGlobalNewsEvents] = useState(true);
-  const [showNarration, setShowNarration] = useState(true);
+  const {
+    mode,
+    activeOverlays,
+    showEarningsEvents,
+    showNewsEvents,
+    showUserTradeEvents,
+    showGlobalNewsEvents,
+    showNarration,
+  } = uiState;
 
   useEffect(() => {
     window.localStorage.setItem(rangeStorageKey, range);
@@ -106,17 +344,18 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
     (chart ?? lastKnownChart).resolvedRange
   );
 
-  const isRangeDisabled = (rangeOption: StockChartRange) =>
-    isLoading || (rangeOption === "10Y" && isTenYearUnavailable);
-
   const toggleOverlay = (overlay: StockChartOverlay, enabled: boolean) =>
-    setActiveOverlays((current) =>
-      getNextOverlaySelection(mode, current, overlay, enabled)
-    );
+    dispatch({
+      type: "set_active_overlays",
+      payload: resolveNextOverlayState(mode, activeOverlays, overlay, enabled),
+    });
 
   const switchMode = (nextMode: StockChartMode) => {
-    setMode(nextMode);
-    setActiveOverlays((current) => normalizeOverlaysForMode(nextMode, current));
+    dispatch({ type: "set_mode", payload: nextMode });
+    dispatch({
+      type: "set_active_overlays",
+      payload: resolveNextModeOverlayState(nextMode, activeOverlays),
+    });
   };
 
   const chartData = [...buildChartData(chart?.points ?? [])];
@@ -166,19 +405,10 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
 
   return (
     <section className="space-y-4 border-b border-dashed border-[color:var(--report-rule)] pb-6">
-      <header className="flex flex-wrap items-end justify-between gap-2">
-        <h2 className="text-2xl font-semibold tracking-tight">Wykres ceny</h2>
-        <p
-          className={cn(
-            "font-mono text-[11px] font-semibold tabular-nums",
-            priceTrend.direction === "up" && "text-[color:var(--profit)]",
-            priceTrend.direction === "down" && "text-[color:var(--loss)]",
-            priceTrend.direction === "flat" && "text-muted-foreground"
-          )}
-        >
-          Zmiana zakresu: {formatChangePercent(priceTrend.changePercent)}
-        </p>
-      </header>
+      <StockChartCardHeader
+        direction={priceTrend.direction}
+        changePercent={priceTrend.changePercent}
+      />
 
       <div className="space-y-4">
         <div className="grid gap-2 xl:grid-cols-[1fr_auto] xl:items-end">
@@ -194,7 +424,11 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
                   type="button"
                   variant={range === rangeOption ? "default" : "outline"}
                   onClick={() => setRange(rangeOption)}
-                  disabled={isRangeDisabled(rangeOption)}
+                  disabled={isRangeDisabledOption(
+                    isLoading,
+                    isTenYearUnavailable,
+                    rangeOption
+                  )}
                   className={cn("h-8 min-w-10 rounded-sm px-2.5 font-mono text-[11px]")}
                 >
                   {rangeOption}
@@ -232,86 +466,34 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
           </div>
         </div>
 
-        {(chart ?? lastKnownChart).resolvedRange !== "1D" ? (
-          <div className="rounded-md border border-border/60 bg-card/35 p-2.5">
-            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
-              Nakładki i wydarzenia
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {OVERLAY_KEYS.map((overlay) => (
-              <label
-                key={overlay}
-                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-              >
-                <Checkbox
-                  checked={normalizedOverlays.includes(overlay)}
-                  onCheckedChange={(checked) =>
-                    toggleOverlay(overlay, checked === true)
-                  }
-                  disabled={isLoading || (mode === "raw" && overlay === "revenueTtm")}
-                />
-                {OVERLAY_CONTROL_LABELS[overlay]}
-              </label>
-            ))}
-            <span className="text-xs text-muted-foreground/70">|</span>
-            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Checkbox
-                checked={isEventRangeEligible ? showNarration : false}
-                onCheckedChange={(checked) => {
-                  if (!isEventRangeEligible) return;
-                  setShowNarration(checked === true);
-                }}
-                disabled={!isEventRangeEligible}
-              />
-              Narracja
-            </label>
-            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Checkbox
-                checked={isEventRangeEligible ? showEarningsEvents : false}
-                onCheckedChange={(checked) => {
-                  if (!isEventRangeEligible) return;
-                  setShowEarningsEvents(checked === true);
-                }}
-                disabled={!isEventRangeEligible}
-              />
-              Wyniki (konsensus vs raport)
-            </label>
-            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Checkbox
-                checked={isEventRangeEligible ? showNewsEvents : false}
-                onCheckedChange={(checked) => {
-                  if (!isEventRangeEligible) return;
-                  setShowNewsEvents(checked === true);
-                }}
-                disabled={!isEventRangeEligible}
-              />
-              Wazne wydarzenia
-            </label>
-            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Checkbox
-                checked={isEventRangeEligible ? showUserTradeEvents : false}
-                onCheckedChange={(checked) => {
-                  if (!isEventRangeEligible) return;
-                  setShowUserTradeEvents(checked === true);
-                }}
-                disabled={!isEventRangeEligible}
-              />
-              BUY/SELL uzytkownika (mock)
-            </label>
-            <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Checkbox
-                checked={isEventRangeEligible ? showGlobalNewsEvents : false}
-                onCheckedChange={(checked) => {
-                  if (!isEventRangeEligible) return;
-                  setShowGlobalNewsEvents(checked === true);
-                }}
-                disabled={!isEventRangeEligible}
-              />
-              Wazne wydarzenia globalne
-            </label>
-            </div>
-          </div>
-        ) : null}
+        <StockChartOverlayEventsPanel
+          resolvedRange={(chart ?? lastKnownChart).resolvedRange}
+          normalizedOverlays={normalizedOverlays}
+          mode={mode}
+          isLoading={isLoading}
+          isEventRangeEligible={isEventRangeEligible}
+          showNarration={showNarration}
+          showEarningsEvents={showEarningsEvents}
+          showNewsEvents={showNewsEvents}
+          showUserTradeEvents={showUserTradeEvents}
+          showGlobalNewsEvents={showGlobalNewsEvents}
+          onToggleOverlay={toggleOverlay}
+          onToggleNarration={(enabled) =>
+            dispatch({ type: "set_show_narration", payload: enabled })
+          }
+          onToggleEarnings={(enabled) =>
+            dispatch({ type: "set_show_earnings_events", payload: enabled })
+          }
+          onToggleNews={(enabled) =>
+            dispatch({ type: "set_show_news_events", payload: enabled })
+          }
+          onToggleUserTrades={(enabled) =>
+            dispatch({ type: "set_show_user_trade_events", payload: enabled })
+          }
+          onToggleGlobalNews={(enabled) =>
+            dispatch({ type: "set_show_global_news_events", payload: enabled })
+          }
+        />
 
         {mode === "raw" ? (
           <p className="text-xs text-muted-foreground">

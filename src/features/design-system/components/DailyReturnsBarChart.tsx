@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
   Cell,
-} from "recharts";
+} from "@/lib/recharts-dynamic";
 
 type Point = Readonly<{
   label: string;
@@ -74,7 +74,7 @@ export function DailyReturnsBarChart({
           ) : null}
           <Tooltip
             cursor={{ fill: "var(--muted)" }}
-            formatter={(value) => formatPercent(Number(value))}
+            formatter={(value: string | number) => formatPercent(Number(value))}
             contentStyle={{
               background: "var(--popover)",
               border: "1px solid var(--border)",

@@ -72,21 +72,24 @@ export function CreatePortfolioDialog({
     setIsSubmitting(true);
     form.clearErrors("root");
 
-    try {
-      const create = createPortfolioFn ?? createPortfolio;
-      const created = await create(values);
-      resetForm();
-      setIsDialogOpen(false);
-      onCreated(created.id);
-    } catch (error) {
+    const create = createPortfolioFn ?? createPortfolio;
+    const created = await create(values).catch((error: unknown) => {
       const message =
         error instanceof Error
           ? error.message
           : "Nie udało się utworzyć portfela.";
       form.setError("root", { message });
-    } finally {
       setIsSubmitting(false);
+      return null;
+    });
+    if (!created) {
+      return;
     }
+
+    resetForm();
+    setIsDialogOpen(false);
+    onCreated(created.id);
+    setIsSubmitting(false);
   });
 
   const rootError = form.formState.errors.root?.message;

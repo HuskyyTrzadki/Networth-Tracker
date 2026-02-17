@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -15,7 +16,7 @@ type Props = Readonly<{
   className?: string;
 }>;
 
-export function PortfolioMobileHeaderActions({
+function PortfolioMobileHeaderActionsInner({
   portfolios,
   selectedId,
   className,
@@ -23,9 +24,9 @@ export function PortfolioMobileHeaderActions({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchParamsString = searchParams?.toString() ?? "";
 
   const handleCreated = (createdId: string) => {
+    const searchParamsString = searchParams?.toString() ?? "";
     router.push(
       buildPortfolioUrl({
         pathname,
@@ -55,5 +56,13 @@ export function PortfolioMobileHeaderActions({
         )}
       />
     </div>
+  );
+}
+
+export function PortfolioMobileHeaderActions(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <PortfolioMobileHeaderActionsInner {...props} />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Badge } from "@/features/design-system/components/ui/badge";
@@ -57,6 +57,7 @@ export function InstrumentCombobox({
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const commandInputRef = useRef<HTMLInputElement | null>(null);
+  const commandListId = useId();
   const debouncedCommit = useDebouncedCallback(
     (nextValue: string) => setDebouncedQuery(nextValue),
     DEBOUNCE_MS
@@ -119,7 +120,9 @@ export function InstrumentCombobox({
     >
       <PopoverTrigger asChild>
         <Button
+          aria-controls={commandListId}
           aria-expanded={open}
+          aria-haspopup="listbox"
           className={cn(
             "h-12 w-full justify-between gap-3 px-4 md:h-11",
             !value && "text-muted-foreground",
@@ -175,7 +178,7 @@ export function InstrumentCombobox({
               debouncedCommit(nextValue);
             }}
           />
-          <CommandList className="max-h-[360px]">
+          <CommandList className="max-h-[360px]" id={commandListId}>
             {!isLoading ? <CommandEmpty>{emptyMessage}</CommandEmpty> : null}
             <CommandGroup>
               {results.map((option) => {

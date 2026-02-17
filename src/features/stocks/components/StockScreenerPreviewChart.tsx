@@ -1,6 +1,6 @@
 "use client";
 
-import { Line, LineChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Line, LineChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "@/lib/recharts-dynamic";
 
 import { cn } from "@/lib/cn";
 

@@ -8,7 +8,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from "@/lib/recharts-dynamic";
 
 type Point = Readonly<{
   label: string;
@@ -72,8 +72,8 @@ export function PortfolioAreaChart({
             }}
             labelStyle={{ color: "var(--muted-foreground)" }}
             itemStyle={{ color: "var(--popover-foreground)" }}
-            labelFormatter={(value) => labelFormatter(String(value))}
-            formatter={(value) => [
+            labelFormatter={(value: string | number) => labelFormatter(String(value))}
+            formatter={(value: string | number) => [
               valueFormatter(Number(value)),
               "Wartość",
             ]}

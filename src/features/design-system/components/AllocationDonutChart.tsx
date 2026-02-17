@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "@/lib/recharts-dynamic";
 
 export type DonutSlice = Readonly<{
   id: string;
@@ -105,7 +105,13 @@ export function AllocationDonutChart({
           <Tooltip
             wrapperStyle={{ zIndex: 50 }}
             offset={16}
-            content={({ active, payload }) => {
+            content={({
+              active,
+              payload,
+            }: {
+              active?: boolean;
+              payload?: Array<{ payload: DonutSlice; value: string | number }>;
+            }) => {
               if (!active || !payload?.length) return null;
               const entry = payload[0];
               const dataPoint = entry.payload as DonutSlice;

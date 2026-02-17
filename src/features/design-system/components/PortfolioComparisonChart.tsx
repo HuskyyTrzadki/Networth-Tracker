@@ -9,7 +9,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from "@/lib/recharts-dynamic";
 
 import { buildPaddedDomain } from "../lib/chart-domain";
 import {
@@ -157,7 +157,9 @@ export function PortfolioComparisonChart({
           <CartesianGrid {...SHARED_CHART_GRID_PROPS} />
           <XAxis
             dataKey="label"
-            tickFormatter={(value) => timeAxisConfig.tickFormatter(String(value))}
+            tickFormatter={(value: string | number) =>
+              timeAxisConfig.tickFormatter(String(value))
+            }
             ticks={xTicks}
             tick={SHARED_CHART_AXIS_TICK}
             interval={timeAxisConfig.interval}

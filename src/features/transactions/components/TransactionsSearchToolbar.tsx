@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { Suspense, useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { Loader2 } from "lucide-react";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
@@ -41,7 +41,7 @@ const buildTransactionsUrl = (params: URLSearchParams) => {
   return queryString.length > 0 ? `/transactions?${queryString}` : "/transactions";
 };
 
-export function TransactionsSearchToolbar({
+function TransactionsSearchToolbarInner({
   query,
   type,
   sort,
@@ -52,7 +52,6 @@ export function TransactionsSearchToolbar({
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(query ?? "");
   const [isPending, startTransition] = useTransition();
-  const searchParamsString = searchParams?.toString() ?? "";
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const pushWithUpdates = (updates: Readonly<Record<string, string | null>>) => {
@@ -76,7 +75,7 @@ export function TransactionsSearchToolbar({
 
   const debouncedCommit = useDebouncedCallback((value: string) => {
     const trimmed = value.trim();
-    const params = new URLSearchParams(searchParamsString);
+    const params = new URLSearchParams(searchParams?.toString());
     if (trimmed.length > 0) {
       params.set("q", trimmed);
     } else {
@@ -191,5 +190,13 @@ export function TransactionsSearchToolbar({
         </div>
       </div>
     </div>
+  );
+}
+
+export function TransactionsSearchToolbar(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <TransactionsSearchToolbarInner {...props} />
+    </Suspense>
   );
 }
