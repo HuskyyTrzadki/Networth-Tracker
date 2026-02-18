@@ -1,20 +1,9 @@
 import { cacheLife, cacheTag } from "next/cache";
 
-import { getStockChartResponse, getStockValuationSummaryCached } from "@/features/stocks";
+import { getPublicStockSummaryCached, getStockChartResponse } from "@/features/stocks";
 import { StockMetricsGrid } from "@/features/stocks/components/StockMetricsGrid";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { buildPeValuationRangeContext } from "@/features/stocks/server/valuation-range-context";
-
-const getStockSummaryCached = async (providerKey: string) => {
-  "use cache";
-
-  cacheLife("hours");
-  cacheTag(`stock:${providerKey}`);
-  cacheTag(`stock:${providerKey}:summary`);
-
-  const supabase = createPublicStocksSupabaseClient();
-  return getStockValuationSummaryCached(supabase, providerKey);
-};
 
 export default async function StockMetricsSection({
   providerKey,
@@ -24,7 +13,7 @@ export default async function StockMetricsSection({
   metricCurrency: string;
 }>) {
   const [summary, peRangeChart] = await Promise.all([
-    getStockSummaryCached(providerKey),
+    getPublicStockSummaryCached(providerKey),
     getStockPeRangeContextChartCached(providerKey),
   ]);
   const peContext = buildPeValuationRangeContext({

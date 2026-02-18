@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 
-import { getStockValuationSummaryCached } from "@/features/stocks";
+import { getPublicStockSummaryCached } from "@/features/stocks";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 
 import StockReportMainContent from "./StockReportMainContent";
@@ -99,37 +99,27 @@ const buildStockMetadata = (
   };
 };
 
-const getPublicInstrumentCached = async (
-  providerKey: string
-): Promise<InstrumentRow | null> => {
-  "use cache";
+const getPublicInstrumentCached =
+  async (providerKey: string): Promise<InstrumentRow | null> => {
+    "use cache";
 
-  cacheLife("days");
-  cacheTag(`stock:${providerKey}`);
-  cacheTag(`stock:${providerKey}:instrument`);
+    cacheLife("days");
+    cacheTag(`stock:${providerKey}`);
+    cacheTag(`stock:${providerKey}:instrument`);
 
-  const supabase = createPublicStocksSupabaseClient();
-  const { data } = await supabase
-    .from("instruments")
-    .select("symbol,name,logo_url,currency,exchange,region")
-    .eq("provider", "yahoo")
-    .eq("provider_key", providerKey)
-    .limit(1)
-    .maybeSingle();
+    const supabase = createPublicStocksSupabaseClient();
+    const { data } = await supabase
+      .from("instruments")
+      .select("symbol,name,logo_url,currency,exchange,region")
+      .eq("provider", "yahoo")
+      .eq("provider_key", providerKey)
+      .limit(1)
+      .maybeSingle();
 
-  return (data as InstrumentRow | null) ?? null;
-};
+    return (data as InstrumentRow | null) ?? null;
+  };
 
-const getStockSummaryCached = async (providerKey: string) => {
-  "use cache";
 
-  cacheLife("hours");
-  cacheTag(`stock:${providerKey}`);
-  cacheTag(`stock:${providerKey}:summary`);
-
-  const supabase = createPublicStocksSupabaseClient();
-  return getStockValuationSummaryCached(supabase, providerKey);
-};
 
 export async function generateMetadata({
   params,
@@ -148,7 +138,7 @@ export async function generateMetadata({
 
   const [stock, summary] = await Promise.all([
     getPublicInstrumentCached(providerKey),
-    getStockSummaryCached(providerKey),
+    getPublicStockSummaryCached(providerKey),
   ]);
 
   const symbol = stock?.symbol ?? providerKey;
@@ -172,7 +162,7 @@ export default async function StockDetailsPage({
 
   const [stock, summary] = await Promise.all([
     getPublicInstrumentCached(providerKey),
-    getStockSummaryCached(providerKey),
+    getPublicStockSummaryCached(providerKey),
   ]);
 
   const symbol = stock?.symbol ?? providerKey;

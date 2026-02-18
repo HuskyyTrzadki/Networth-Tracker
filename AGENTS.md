@@ -5,7 +5,7 @@ im studying for BE interview, so please educate me while we code, espeically tec
 ## Core priorities
 - Code quality is the top priority.
 - Be assertive: propose better solutions when current approach is weak.
-- Build for desktop and mobile.
+- Build for desktop. (mobile we dont care about)
 - Reuse existing design system/shadcn patterns; add Storybook stories when a new shared component is introduced.
 
 ## Scope
