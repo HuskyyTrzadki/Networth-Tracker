@@ -11,6 +11,7 @@
     "typecheck:strict": "node scripts/clean-next-types.mjs && tsc --project tsconfig.strict.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "supabase:types": "npx --yes supabase gen types typescript --project-id ayeeksbqwyqkevbpdlef --schema public > src/lib/supabase/database.types.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "knip": "knip"

@@ -9,7 +9,6 @@ import { buildCashImpact } from "./build-cash-impact";
 import { formatMoney } from "./constants";
 import { useFxPreview } from "./use-fx-preview";
 import type { FormValues } from "../AddTransactionDialogContent";
-import type { InstrumentSearchResult } from "../../lib/instrument-search";
 import type { CashCurrency } from "../../lib/system-currencies";
 import type { TransactionType } from "../../lib/add-transaction-form-schema";
 
@@ -17,7 +16,7 @@ type Params = Readonly<{
   form: UseFormReturn<FormValues>;
   consumeCash: boolean;
   isCashTab: boolean;
-  selectedInstrument: InstrumentSearchResult | null;
+  assetCurrency: string;
   resolvedCashCurrency: CashCurrency;
   availableCashOnTradeDate: string;
   type: TransactionType;
@@ -31,7 +30,7 @@ export function useCashImpactPreview({
   form,
   consumeCash,
   isCashTab,
-  selectedInstrument,
+  assetCurrency,
   resolvedCashCurrency,
   availableCashOnTradeDate,
   type,
@@ -43,12 +42,12 @@ export function useCashImpactPreview({
   const isFxMismatch =
     consumeCash &&
     !isCashTab &&
-    Boolean(selectedInstrument) &&
-    resolvedCashCurrency !== (selectedInstrument?.currency ?? "");
+    Boolean(assetCurrency) &&
+    resolvedCashCurrency !== assetCurrency;
 
   const fxPreview = useFxPreview({
     enabled: isFxMismatch,
-    fromCurrency: selectedInstrument?.currency ?? null,
+    fromCurrency: assetCurrency || null,
     toCurrency: isFxMismatch ? resolvedCashCurrency : null,
   });
 
@@ -58,7 +57,7 @@ export function useCashImpactPreview({
     price,
     fee,
     fxFee,
-    assetCurrency: selectedInstrument?.currency ?? "",
+    assetCurrency,
     cashCurrency: resolvedCashCurrency,
     fxRate: fxPreview.data?.rate ?? null,
   });

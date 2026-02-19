@@ -27,6 +27,7 @@ export const normalizeCurrency = (value: string) => value.trim().toUpperCase();
 export type TransactionRow = Readonly<{
   trade_date: string;
   instrument_id: string | null;
+  custom_instrument_id: string | null;
   side: "BUY" | "SELL";
   quantity: string | number;
   price: string | number;
@@ -47,6 +48,7 @@ export type InstrumentRow = Readonly<{
   provider_key: string;
   logo_url: string | null;
   instrument_type: InstrumentType | null;
+  annual_rate_pct?: string | number | null;
 }>;
 
 export type NormalizedTransaction = Readonly<{
@@ -192,7 +194,7 @@ export async function fetchTransactionsUpToDate(
     const { data, error } = await supabase
       .from("transactions")
       .select(
-        "trade_date,instrument_id,side,quantity,price,fee,leg_role,cashflow_type,group_id,created_at"
+        "trade_date,instrument_id,custom_instrument_id,side,quantity,price,fee,leg_role,cashflow_type,group_id,created_at"
       )
       .eq("user_id", userId)
       .in("portfolio_id", portfolioIds)
@@ -239,21 +241,73 @@ export async function fetchInstrumentsByIds(
 
 export function toNormalizedTransactions(rows: readonly TransactionRow[]) {
   return rows
-    .filter((row): row is TransactionRow & { instrument_id: string } => Boolean(row.instrument_id))
-    .map(
-      (row) =>
-        ({
-          tradeDate: row.trade_date,
-          instrumentId: row.instrument_id,
-          side: row.side,
-          quantity: normalizeRequiredNumeric(row.quantity),
-          price: normalizeRequiredNumeric(row.price),
-          fee: normalizeOptionalNumeric(row.fee, "0"),
-          legRole: row.leg_role,
-          cashflowType: row.cashflow_type,
-          groupId: row.group_id,
-        }) satisfies NormalizedTransaction
-    );
+    .map((row) => {
+      const instrumentId = row.instrument_id
+        ? row.instrument_id
+        : row.custom_instrument_id
+          ? `custom:${row.custom_instrument_id}`
+          : null;
+
+      if (!instrumentId) {
+        return null;
+      }
+
+      return {
+        tradeDate: row.trade_date,
+        instrumentId,
+        side: row.side,
+        quantity: normalizeRequiredNumeric(row.quantity),
+        price: normalizeRequiredNumeric(row.price),
+        fee: normalizeOptionalNumeric(row.fee, "0"),
+        legRole: row.leg_role,
+        cashflowType: row.cashflow_type,
+        groupId: row.group_id,
+      } satisfies NormalizedTransaction;
+    })
+    .filter((row): row is NormalizedTransaction => Boolean(row));
+}
+
+export async function fetchCustomInstrumentsByIds(
+  supabase: SupabaseClient,
+  userId: string,
+  ids: readonly string[]
+) {
+  if (ids.length === 0) {
+    return [] as InstrumentRow[];
+  }
+
+  const { data, error } = await supabase
+    .from("custom_instruments")
+    .select("id,name,currency,annual_rate_pct")
+    .eq("user_id", userId)
+    .in("id", ids);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const rows = (data ?? []) as ReadonlyArray<{
+    id: string;
+    name: string;
+    currency: string;
+    annual_rate_pct: string | number;
+  }>;
+
+  return rows.map(
+    (row) =>
+      ({
+        id: `custom:${row.id}`,
+        symbol: "CUSTOM",
+        name: row.name,
+        currency: row.currency,
+        exchange: null,
+        provider: "custom",
+        provider_key: row.id,
+        logo_url: null,
+        instrument_type: null,
+        annual_rate_pct: row.annual_rate_pct,
+      }) satisfies InstrumentRow
+  );
 }
 
 export const buildFxPairs = (currencies: readonly string[]) => {
@@ -273,4 +327,3 @@ export const buildFxPairs = (currencies: readonly string[]) => {
 };
 
 export type { PortfolioHolding };
-

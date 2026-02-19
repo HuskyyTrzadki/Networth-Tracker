@@ -15,7 +15,8 @@ export type SupabaseServerClient = SupabaseClient;
 
 export type TransactionRow = Readonly<{
   user_id: string;
-  instrument_id: string;
+  instrument_id: string | null;
+  custom_instrument_id: string | null;
   portfolio_id: string;
   side: CreateTransactionRequest["type"];
   trade_date: string;
@@ -43,7 +44,7 @@ type InstrumentUpsertPayload = Readonly<{
   region: string | null;
   updated_at: string;
   logo_url?: string | null;
-  instrument_type?: CreateTransactionRequest["instrument"]["instrumentType"];
+  instrument_type?: NonNullable<CreateTransactionRequest["instrument"]>["instrumentType"];
 }>;
 
 export type NormalizedInstrument = Readonly<{
@@ -55,7 +56,7 @@ export type NormalizedInstrument = Readonly<{
   exchange: string | null;
   region: string | null;
   logoUrl: string | null;
-  instrumentType: CreateTransactionRequest["instrument"]["instrumentType"] | null;
+  instrumentType: NonNullable<CreateTransactionRequest["instrument"]>["instrumentType"] | null;
   isCashInstrument: boolean;
 }>;
 
@@ -77,7 +78,7 @@ export const resolveIsCashInstrument = (
 ) => instrumentType === "CURRENCY" || provider === "system";
 
 export const normalizeInstrument = (
-  instrument: CreateTransactionRequest["instrument"]
+  instrument: NonNullable<CreateTransactionRequest["instrument"]>
 ): NormalizedInstrument => {
   const provider = normalizeRequiredText(instrument.provider).toLowerCase();
   const providerKey = normalizeOptionalText(instrument.providerKey);
@@ -174,7 +175,8 @@ export const upsertInstrumentAndGetId = async (
 
 export const buildAssetLegRow = (input: Readonly<{
   userId: string;
-  instrumentId: string;
+  instrumentId: string | null;
+  customInstrumentId?: string | null;
   request: CreateTransactionRequest;
   groupId: string;
   isCashInstrument: boolean;
@@ -182,7 +184,8 @@ export const buildAssetLegRow = (input: Readonly<{
   notes: string | null;
 }>): TransactionRow => ({
   user_id: input.userId,
-  instrument_id: input.instrumentId,
+  instrument_id: input.instrumentId ?? null,
+  custom_instrument_id: input.customInstrumentId ?? null,
   portfolio_id: input.request.portfolioId,
   side: input.request.type,
   trade_date: input.request.date,
@@ -279,6 +282,7 @@ export const buildSettlementContext = async (input: Readonly<{
   const settlementRows: TransactionRow[] = settlementLegs.map((leg) => ({
     user_id: input.userId,
     instrument_id: cashInstrumentId,
+    custom_instrument_id: null,
     portfolio_id: input.request.portfolioId,
     side: leg.side,
     trade_date: input.request.date,

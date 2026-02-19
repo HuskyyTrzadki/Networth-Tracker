@@ -22,6 +22,7 @@ import {
   type SnapshotCurrency,
 } from "./supported-currencies";
 import type { SnapshotRowInsert, SnapshotScope, SnapshotTotals } from "./types";
+import { fetchCustomHoldingsAdminAsOf } from "./fetch-custom-holdings-admin-as-of";
 
 type PortfolioHoldingRow = Readonly<{
   instrument_id: string;
@@ -222,9 +223,10 @@ export async function computePortfolioSnapshot(
   bucketDate: string
 ): Promise<SnapshotComputeResult> {
   // Admin-side compute: build a snapshot row using cached quotes/FX.
-  const { data, error } = await supabase.rpc("get_portfolio_holdings_admin", {
+  const { data, error } = await supabase.rpc("get_portfolio_holdings_admin_as_of", {
     p_user_id: userId,
     p_portfolio_id: portfolioId,
+    p_bucket_date: bucketDate,
   });
 
   if (error) {
@@ -233,10 +235,18 @@ export async function computePortfolioSnapshot(
 
   const holdingRows = (data ?? []) as PortfolioHoldingRow[];
   const holdings = buildHoldings(holdingRows);
-  const hasHoldings = holdings.length > 0;
+  const custom = await fetchCustomHoldingsAdminAsOf({
+    supabase,
+    userId,
+    portfolioId: scope === "PORTFOLIO" ? portfolioId : null,
+    bucketDate,
+  });
+
+  const mergedHoldings = [...holdings, ...custom.holdings];
+  const hasHoldings = mergedHoldings.length > 0;
 
   const quoteRequests: InstrumentQuoteRequest[] = holdings
-    .filter((holding) => holding.instrumentType !== "CURRENCY")
+    .filter((holding) => holding.instrumentType !== "CURRENCY" && holding.provider === "yahoo")
     .map((holding) => ({
       instrumentId: holding.instrumentId,
       provider: "yahoo",
@@ -279,9 +289,13 @@ export async function computePortfolioSnapshot(
     supabase,
     quoteRequests
   );
+  const mergedQuotesByInstrument = new Map(quotesByInstrument);
+  custom.quotesByInstrument.forEach((quote, instrumentId) => {
+    mergedQuotesByInstrument.set(instrumentId, quote);
+  });
 
   const fxPairs = buildFxPairs(
-    collectCurrencies(holdings, [externalFlows, implicitTransfers])
+    collectCurrencies(mergedHoldings, [externalFlows, implicitTransfers])
   );
   const fxByPair = await getFxRatesCached(supabase, fxPairs);
 
@@ -315,8 +329,8 @@ export async function computePortfolioSnapshot(
     (acc, currency) => {
       const summary = buildPortfolioSummary({
         baseCurrency: currency,
-        holdings,
-        quotesByInstrument,
+        holdings: mergedHoldings,
+        quotesByInstrument: mergedQuotesByInstrument,
         fxByPair,
       });
 

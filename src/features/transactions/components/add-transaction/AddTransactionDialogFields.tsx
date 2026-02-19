@@ -8,6 +8,7 @@ import { useCashImpactPreview } from "./use-cash-impact-preview";
 import { useCashBalanceOnDate } from "./use-cash-balance-on-date";
 import { useSellQuantityGuard } from "./use-sell-quantity-guard";
 import { AddTransactionInstrumentSection } from "./AddTransactionInstrumentSection";
+import { AddTransactionCustomTradeFields } from "./AddTransactionCustomTradeFields";
 import { AddTransactionTradeFields } from "./AddTransactionTradeFields";
 import { AddTransactionSidebarSummary } from "./AddTransactionSidebarSummary";
 import {
@@ -20,7 +21,7 @@ import type { InstrumentSearchResult } from "../../lib/instrument-search";
 import { isSupportedCashCurrency, type CashCurrency } from "../../lib/system-currencies";
 import { getTradeDateLowerBound } from "../../lib/trade-date";
 import { buildEmptyBalances, type AssetTab } from "./constants";
-import { applyCashCurrencyChange, applyCashTabState, applyNonCashTabState } from "./tab-state";
+import { applyCashCurrencyChange, applyCashTabState, applyCustomTabState, applyMarketTabState } from "./tab-state";
 import type { FormValues } from "../AddTransactionDialogContent";
 
 export function AddTransactionDialogFields({
@@ -60,8 +61,10 @@ export function AddTransactionDialogFields({
   const fee = useWatch({ control: form.control, name: "fee" });
   const fxFee = useWatch({ control: form.control, name: "fxFee" });
   const date = useWatch({ control: form.control, name: "date" });
+  const customCurrency = useWatch({ control: form.control, name: "customCurrency" });
 
   const isCashTab = activeTab === "CASH";
+  const isCustomTab = activeTab === "CUSTOM";
   const resolvedPortfolioId = forcedPortfolioId ?? portfolioId;
   const resolvedCashCurrency = deriveResolvedCashCurrency(
     cashCurrency,
@@ -89,11 +92,14 @@ export function AddTransactionDialogFields({
     assetBalancesByPortfolio,
   });
   const displayCurrency = deriveDisplayCurrency(selectedInstrument, currency);
+  const assetCurrency = isCustomTab
+    ? (customCurrency?.trim().toUpperCase() ?? "")
+    : (selectedInstrument?.currency ?? "");
   const cashImpactPreview = useCashImpactPreview({
     form,
     consumeCash,
     isCashTab,
-    selectedInstrument,
+    assetCurrency,
     resolvedCashCurrency,
     availableCashOnTradeDate,
     type,
@@ -103,7 +109,7 @@ export function AddTransactionDialogFields({
     fxFee,
   });
   const historicalPriceAssist = useHistoricalPriceAssist({
-    enabled: !isCashTab,
+    enabled: !isCashTab && !isCustomTab,
     form,
     provider: selectedInstrument?.provider ?? null,
     providerKey: selectedInstrument?.providerKey ?? null,
@@ -128,7 +134,12 @@ export function AddTransactionDialogFields({
       return;
     }
 
-    applyNonCashTabState(form, setSelectedInstrument);
+    if (nextTab === "CUSTOM") {
+      applyCustomTabState(form, setSelectedInstrument, initialCashCurrency);
+      return;
+    }
+
+    applyMarketTabState(form, setSelectedInstrument);
   };
 
   const handleCashCurrencyChange = (nextCurrency: string) => {
@@ -170,6 +181,7 @@ export function AddTransactionDialogFields({
             forcedPortfolioId={forcedPortfolioId}
             portfolios={portfolios}
             isCashTab={isCashTab}
+            isCustomTab={isCustomTab}
             activeTab={activeTab}
             onTabChange={handleTabChange}
             onPortfolioChange={handlePortfolioChange}
@@ -184,24 +196,42 @@ export function AddTransactionDialogFields({
             availableAssetQuantity={availableAssetQuantity}
           />
 
-          <AddTransactionTradeFields
-            form={form}
-            minTradeDate={minTradeDate}
-            maxTradeDate={maxTradeDate}
-            isCashTab={isCashTab}
-            transactionType={type}
-            displayCurrency={displayCurrency}
-            historicalPriceAssist={historicalPriceAssist}
-            cashImpactPreview={cashImpactPreview}
-            cashBalanceOnDate={cashBalanceOnDate}
-            availableCashNow={availableCashNow}
-            availableCashOnTradeDate={availableCashOnTradeDate}
-            tradeDate={date}
-            cashCurrency={cashCurrency}
-            consumeCash={consumeCash}
-            resolvedCashCurrency={resolvedCashCurrency}
-            onCashCurrencyChange={handleCashCurrencyChange}
-          />
+          {isCustomTab ? (
+            <AddTransactionCustomTradeFields
+              form={form}
+              minTradeDate={minTradeDate}
+              maxTradeDate={maxTradeDate}
+              displayCurrency={customCurrency?.trim().toUpperCase() ?? ""}
+              cashImpactPreview={cashImpactPreview}
+              cashBalanceOnDate={cashBalanceOnDate}
+              availableCashNow={availableCashNow}
+              availableCashOnTradeDate={availableCashOnTradeDate}
+              tradeDate={date}
+              cashCurrency={cashCurrency}
+              consumeCash={consumeCash}
+              resolvedCashCurrency={resolvedCashCurrency}
+              onCashCurrencyChange={handleCashCurrencyChange}
+            />
+          ) : (
+            <AddTransactionTradeFields
+              form={form}
+              minTradeDate={minTradeDate}
+              maxTradeDate={maxTradeDate}
+              isCashTab={isCashTab}
+              transactionType={type}
+              displayCurrency={displayCurrency}
+              historicalPriceAssist={historicalPriceAssist}
+              cashImpactPreview={cashImpactPreview}
+              cashBalanceOnDate={cashBalanceOnDate}
+              availableCashNow={availableCashNow}
+              availableCashOnTradeDate={availableCashOnTradeDate}
+              tradeDate={date}
+              cashCurrency={cashCurrency}
+              consumeCash={consumeCash}
+              resolvedCashCurrency={resolvedCashCurrency}
+              onCashCurrencyChange={handleCashCurrencyChange}
+            />
+          )}
         </section>
 
         <AddTransactionSidebarSummary
@@ -211,6 +241,7 @@ export function AddTransactionDialogFields({
           price={price}
           quantity={quantity}
           type={type}
+          isCustomTab={isCustomTab}
         />
       </div>
     </div>

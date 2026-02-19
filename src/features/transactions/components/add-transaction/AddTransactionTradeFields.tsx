@@ -12,6 +12,7 @@ import {
 } from "@/features/design-system/components/ui/form";
 import { Input } from "@/features/design-system/components/ui/input";
 import { cn } from "@/lib/cn";
+import { formatNumericInputWithCursor } from "../../lib/format-numeric-input";
 
 import { MoneyInput } from "../MoneyInput";
 import { AddTransactionCashSection } from "./AddTransactionCashSection";
@@ -114,6 +115,18 @@ export function AddTransactionTradeFields({
                   {...field}
                   className="h-11 font-mono tabular-nums text-left"
                   inputMode="decimal"
+                  onChange={(event) => {
+                    const next = formatNumericInputWithCursor(
+                      event.target.value,
+                      event.target.selectionStart
+                    );
+                    field.onChange(next.value);
+                    if (next.cursor !== null) {
+                      requestAnimationFrame(() => {
+                        event.target.setSelectionRange(next.cursor, next.cursor);
+                      });
+                    }
+                  }}
                   placeholder="np. 1,5"
                   type="text"
                 />

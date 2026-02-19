@@ -11,6 +11,8 @@ import {
 import { getPortfolioAverageBuyPrices } from "./get-portfolio-average-buy-prices";
 import { getPortfolioHoldings } from "./get-portfolio-holdings";
 import { buildPortfolioSummary, type PortfolioSummary } from "./valuation";
+import { getBucketDate } from "./snapshots/bucket-date";
+import { getCustomInstrumentQuotesForPortfolio } from "./custom-instruments/get-custom-instrument-quotes";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -31,16 +33,34 @@ export async function getPortfolioSummary(
   );
 
   // For every holding we need a quote in its native currency.
-  const quoteRequests: InstrumentQuoteRequest[] = holdings.map((holding) => ({
-    instrumentId: holding.instrumentId,
-    provider: "yahoo",
-    providerKey: holding.providerKey,
-  }));
+  const quoteRequests: InstrumentQuoteRequest[] = holdings
+    .filter((holding) => holding.provider === "yahoo" && holding.instrumentType !== "CURRENCY")
+    .map((holding) => ({
+      instrumentId: holding.instrumentId,
+      provider: "yahoo",
+      providerKey: holding.providerKey,
+    }));
 
   const quotesByInstrument = await getInstrumentQuotesCached(
     supabase,
     quoteRequests
   );
+
+  const customHoldings = holdings.filter((holding) => holding.provider === "custom");
+  const asOfDate = getBucketDate(new Date());
+  const customQuotesByInstrument = await getCustomInstrumentQuotesForPortfolio(
+    supabase,
+    {
+      portfolioId: input.portfolioId,
+      customInstrumentIds: customHoldings.map((holding) => holding.providerKey),
+      asOfDate,
+    }
+  );
+
+  const mergedQuotesByInstrument = new Map(quotesByInstrument);
+  customQuotesByInstrument.forEach((quote, instrumentId) => {
+    mergedQuotesByInstrument.set(instrumentId, quote);
+  });
 
   // FX pairs are only needed when holding currency differs from base.
   const fxPairs = Array.from(
@@ -59,7 +79,7 @@ export async function getPortfolioSummary(
   return buildPortfolioSummary({
     baseCurrency: input.baseCurrency,
     holdings,
-    quotesByInstrument,
+    quotesByInstrument: mergedQuotesByInstrument,
     fxByPair,
     averageBuyPriceByInstrument,
   });

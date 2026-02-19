@@ -19,9 +19,62 @@ import {
 
 type CreateTransactionResult = Readonly<{
   transactionId: string;
-  instrumentId: string;
+  instrumentId: string | null;
+  customInstrumentId: string | null;
   deduped: boolean;
 }>;
+
+type CustomInstrumentKind = "REAL_ESTATE";
+type CustomInstrumentValuationKind = "COMPOUND_ANNUAL_RATE";
+
+const normalizeCurrency = (value: string) => value.trim().toUpperCase();
+
+const createCustomInstrumentAndGetId = async (input: Readonly<{
+  supabaseUser: SupabaseServerClient;
+  request: CreateTransactionRequest;
+  notes: string | null;
+}>) => {
+  const instrument = input.request.customInstrument;
+  if (!instrument) {
+    throw new Error("Missing customInstrument payload.");
+  }
+
+  const payload = {
+    name: instrument.name.trim(),
+    currency: normalizeCurrency(instrument.currency),
+    notes: input.notes,
+    kind: instrument.kind satisfies CustomInstrumentKind,
+    valuation_kind: instrument.valuationKind satisfies CustomInstrumentValuationKind,
+    annual_rate_pct: instrument.annualRatePct,
+    client_request_id: input.request.clientRequestId,
+  } as const;
+
+  const { data: inserted, error: insertError } = await input.supabaseUser
+    .from("custom_instruments")
+    .insert(payload)
+    .select("id")
+    .single();
+
+  if (!insertError && inserted) {
+    return inserted.id;
+  }
+
+  if (insertError?.code !== "23505") {
+    throw new Error(insertError?.message ?? "Custom instrument save failed.");
+  }
+
+  const { data: existing, error: existingError } = await input.supabaseUser
+    .from("custom_instruments")
+    .select("id")
+    .eq("client_request_id", input.request.clientRequestId)
+    .maybeSingle();
+
+  if (existingError || !existing) {
+    throw new Error(existingError?.message ?? "Custom instrument idempotency read failed.");
+  }
+
+  return existing.id;
+};
 
 export async function createTransaction(
   supabaseUser: SupabaseServerClient,
@@ -29,35 +82,53 @@ export async function createTransaction(
   userId: string,
   input: CreateTransactionRequest
 ): Promise<CreateTransactionResult> {
-  // Normalize and cache the instrument globally for stable identity.
-  const normalizedInstrument = normalizeInstrument(input.instrument);
-  const cashflowType = input.cashflowType ?? null;
-
-  if (normalizedInstrument.isCashInstrument && !cashflowType) {
-    throw new Error("Transakcja gotówkowa wymaga typu przepływu.");
+  if (!input.instrument && !input.customInstrument) {
+    throw new Error("Missing instrument payload.");
   }
 
-  const intent = resolveTransactionIntent({
-    isCashInstrument: normalizedInstrument.isCashInstrument,
-    side: input.type,
-  });
+  // Normalize and cache the instrument globally for stable identity.
+  const cashflowType = input.cashflowType ?? null;
 
   const groupId = crypto.randomUUID();
   const updatedAt = new Date().toISOString();
   const notes = normalizeNotes(input.notes);
 
-  const assetInstrumentId = await upsertInstrumentAndGetId(
-    supabaseAdmin,
-    buildAssetInstrumentUpsertPayload(normalizedInstrument, updatedAt),
-    "Instrument save failed."
-  );
+  const isCustom = Boolean(input.customInstrument);
+  const normalizedInstrument = input.instrument ? normalizeInstrument(input.instrument) : null;
+
+  if (normalizedInstrument?.isCashInstrument && !cashflowType) {
+    throw new Error("Transakcja gotówkowa wymaga typu przepływu.");
+  }
+
+  const isCashInstrument = normalizedInstrument?.isCashInstrument ?? false;
+  const intent = resolveTransactionIntent({
+    isCashInstrument,
+    side: input.type,
+  });
+
+  const assetCurrency = isCustom
+    ? normalizeCurrency(input.customInstrument?.currency ?? "")
+    : (normalizedInstrument?.currency ?? "");
+
+  const assetInstrumentId = normalizedInstrument
+    ? await upsertInstrumentAndGetId(
+        supabaseAdmin,
+        buildAssetInstrumentUpsertPayload(normalizedInstrument, updatedAt),
+        "Instrument save failed."
+      )
+    : null;
+
+  const customInstrumentId = isCustom
+    ? await createCustomInstrumentAndGetId({ supabaseUser, request: input, notes })
+    : null;
 
   const assetRow = buildAssetLegRow({
     userId,
     instrumentId: assetInstrumentId,
+    customInstrumentId,
     request: input,
     groupId,
-    isCashInstrument: normalizedInstrument.isCashInstrument,
+    isCashInstrument,
     cashflowType,
     notes,
   });
@@ -69,8 +140,8 @@ export async function createTransaction(
     request: input,
     groupId,
     notes,
-    assetCurrency: normalizedInstrument.currency,
-    isCashInstrument: normalizedInstrument.isCashInstrument,
+    assetCurrency,
+    isCashInstrument,
     updatedAt,
   });
 
@@ -81,13 +152,13 @@ export async function createTransaction(
     portfolioId: input.portfolioId,
     tradeDate: input.date,
     intent,
-    isCashInstrument: normalizedInstrument.isCashInstrument,
-    assetInstrumentId,
+    isCashInstrument,
+    assetInstrumentId: assetInstrumentId ?? "custom",
     requestedAssetQuantity: input.quantity,
     consumeCash: input.consumeCash ?? false,
     cashCurrency:
       settlementContext.requestedCashCurrency ??
-      (normalizedInstrument.isCashInstrument ? normalizedInstrument.currency : undefined),
+      (isCashInstrument ? assetCurrency : undefined),
     settlementLegs: settlementContext.settlementLegs,
   });
 
@@ -109,6 +180,7 @@ export async function createTransaction(
   return {
     transactionId: persisted.assetRow.id,
     instrumentId: persisted.assetRow.instrument_id,
+    customInstrumentId: persisted.assetRow.custom_instrument_id,
     deduped: persisted.deduped,
   };
 }

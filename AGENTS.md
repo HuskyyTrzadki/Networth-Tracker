@@ -1,6 +1,9 @@
 # Repository Guidelines
 Write in English. Keep code clean, simple, and production-grade.
+I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your best 102020% otherwise i ll be angry.
+CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
 im studying for BE interview, so please educate me while we code, espeically tech wise.  pls be interactive, shorter messages instead of huge raports. lets keep dialogue in.
+u are encouraged to use shadcn components we already have in storybook, when u add new component u think its worth to add to storybook , go for it.
 
 ## Core priorities
 - Code quality is the top priority.
@@ -31,6 +34,7 @@ Out of scope:
 
 ## Engineering rules
 - No file over 400 lines. Split/refactor when needed.
+- always try to write it simpler, simple is best. do not overengineer.
 - Server-first by default (Server Components + server data prep).
 - Keep business logic in repo; avoid SDK-driven logic leakage.
 - Every data-heavy route needs Suspense + `loading.tsx`.

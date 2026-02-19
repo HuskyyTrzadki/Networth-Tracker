@@ -61,6 +61,22 @@ const instrumentSchema = z
     }
   });
 
+const customInstrumentSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  currency: z.string().trim().length(3),
+  notes: z.string().trim().max(500).optional(),
+  kind: z.literal("REAL_ESTATE"),
+  valuationKind: z.literal("COMPOUND_ANNUAL_RATE"),
+  // Signed percentage, e.g. 5 = +5%/year, -2.5 = -2.5%/year.
+  annualRatePct: z
+    .union([z.string(), z.number()])
+    .transform((value) => (typeof value === "number" ? value.toString() : value))
+    .transform(normalizeDecimalInput)
+    .refine((value) => parseDecimalInput(value) !== null, {
+      message: "Nieprawidłowa wartość wzrostu rocznego.",
+    }),
+});
+
 // Server-side request schema for creating a transaction.
 export const createTransactionRequestSchema = z
   .object({
@@ -79,9 +95,20 @@ export const createTransactionRequestSchema = z
     // Required: every transaction must belong to a portfolio.
     portfolioId: z.string().uuid(),
     clientRequestId: z.string().uuid(),
-    instrument: instrumentSchema,
+    instrument: instrumentSchema.optional(),
+    customInstrument: customInstrumentSchema.optional(),
   })
   .superRefine((value, ctx) => {
+    const hasInstrument = Boolean(value.instrument);
+    const hasCustomInstrument = Boolean(value.customInstrument);
+    if (hasInstrument === hasCustomInstrument) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Wybierz instrument.",
+        path: ["instrument"],
+      });
+    }
+
     if (value.consumeCash && !value.cashCurrency?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -90,7 +117,7 @@ export const createTransactionRequestSchema = z
       });
     }
 
-    if (value.instrument.instrumentType === "CURRENCY") {
+    if (value.instrument?.instrumentType === "CURRENCY") {
       if (value.consumeCash) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -111,6 +138,14 @@ export const createTransactionRequestSchema = z
         code: z.ZodIssueCode.custom,
         message: "Typ przepływu gotówki dotyczy tylko walut.",
         path: ["cashflowType"],
+      });
+    }
+
+    if (value.customInstrument && value.type !== "BUY") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Pozycje nierynkowe obsługują tylko dodanie (BUY).",
+        path: ["type"],
       });
     }
   });

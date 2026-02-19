@@ -13,6 +13,7 @@ type Props = Readonly<{
   price: string;
   quantity: string;
   type: TransactionType;
+  isCustomTab: boolean;
 }>;
 
 export function AddTransactionSidebarSummary({
@@ -22,6 +23,7 @@ export function AddTransactionSidebarSummary({
   price,
   quantity,
   type,
+  isCustomTab,
 }: Props) {
   return (
     <aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
@@ -33,6 +35,7 @@ export function AddTransactionSidebarSummary({
           price={price}
           quantity={quantity}
           type={type}
+          variant={isCustomTab ? "custom" : "default"}
         />
       </section>
     </aside>

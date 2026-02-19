@@ -21,6 +21,7 @@ import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
 
 import {
   createAddTransactionFormSchema,
+  type AssetMode,
   type TransactionType,
 } from "../lib/add-transaction-form-schema";
 import type { CashflowTypeUi } from "../lib/cashflow-types";
@@ -40,6 +41,7 @@ import {
 import { AddTransactionDialogFields } from "./add-transaction/AddTransactionDialogFields";
 
 export type FormValues = Readonly<{
+  assetMode: AssetMode;
   type: TransactionType;
   portfolioId: string;
   assetId: string;
@@ -53,6 +55,10 @@ export type FormValues = Readonly<{
   price: string;
   fee: string;
   notes: string;
+  customAssetType?: string;
+  customName?: string;
+  customCurrency?: string;
+  customAnnualRatePct?: string;
 }>;
 
 type SubmitPayloadFields = Readonly<{
@@ -170,6 +176,7 @@ export function AddTransactionDialogContent({
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      assetMode: resolveInitialTab(initialInstrument),
       type: "BUY",
       portfolioId: initialPortfolioId,
       assetId: initialAssetId,
@@ -183,6 +190,10 @@ export function AddTransactionDialogContent({
       price: initialInstrument?.instrumentType === "CURRENCY" ? "1" : "",
       fee: initialInstrument?.instrumentType === "CURRENCY" ? "0" : "",
       notes: "",
+      customAssetType: undefined,
+      customName: "",
+      customCurrency: initialCashCurrency,
+      customAnnualRatePct: "",
       ...initialValues,
     },
     mode: "onChange",
@@ -193,14 +204,15 @@ export function AddTransactionDialogContent({
   const cashflowType = useWatch({ control: form.control, name: "cashflowType" });
 
   const isCashTab = activeTab === "CASH";
+  const isCustomTab = activeTab === "CUSTOM";
   const isSubmittable =
-    Boolean(selectedInstrument) &&
+    (isCustomTab || Boolean(selectedInstrument)) &&
     form.formState.isValid &&
     (!consumeCash || Boolean(cashCurrency)) &&
     (!isCashTab || Boolean(cashflowType));
 
   const submitTransaction = form.handleSubmit(async (values) => {
-    if (!selectedInstrument) {
+    if (!isCustomTab && !selectedInstrument) {
       form.setError("assetId", { message: "Wybierz instrument." });
       return;
     }
@@ -217,17 +229,30 @@ export function AddTransactionDialogContent({
       notes: values.notes,
       portfolioId: resolvedPortfolioId,
       clientRequestId: crypto.randomUUID(),
-      instrument: {
-        provider: selectedInstrument.provider,
-        providerKey: selectedInstrument.providerKey,
-        symbol: selectedInstrument.symbol,
-        name: selectedInstrument.name,
-        currency: selectedInstrument.currency,
-        instrumentType: selectedInstrument.instrumentType ?? undefined,
-        exchange: selectedInstrument.exchange ?? undefined,
-        region: selectedInstrument.region ?? undefined,
-        logoUrl: selectedInstrument.logoUrl ?? undefined,
-      },
+      ...(isCustomTab
+        ? {
+            customInstrument: {
+              name: values.customName ?? "",
+              currency: values.customCurrency ?? "",
+              notes: values.notes,
+              kind: "REAL_ESTATE" as const,
+              valuationKind: "COMPOUND_ANNUAL_RATE" as const,
+              annualRatePct: values.customAnnualRatePct ?? "0",
+            },
+          }
+        : {
+            instrument: {
+              provider: selectedInstrument!.provider,
+              providerKey: selectedInstrument!.providerKey,
+              symbol: selectedInstrument!.symbol,
+              name: selectedInstrument!.name,
+              currency: selectedInstrument!.currency,
+              instrumentType: selectedInstrument!.instrumentType ?? undefined,
+              exchange: selectedInstrument!.exchange ?? undefined,
+              region: selectedInstrument!.region ?? undefined,
+              logoUrl: selectedInstrument!.logoUrl ?? undefined,
+            },
+          }),
     }).catch((error: unknown) => {
       const message =
         error instanceof Error

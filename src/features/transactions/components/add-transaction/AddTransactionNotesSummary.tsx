@@ -15,6 +15,7 @@ export function AddTransactionNotesSummary({
   price,
   quantity,
   type,
+  variant = "default",
 }: Readonly<{
   form: UseFormReturn<FormValues>;
   displayCurrency: string;
@@ -22,7 +23,14 @@ export function AddTransactionNotesSummary({
   price: string;
   quantity: string;
   type: TransactionType;
+  variant?: "default" | "custom";
 }>) {
+  const label = variant === "custom" ? "Opis" : "Notatka";
+  const placeholder =
+    variant === "custom"
+      ? "Adres/miasto, metraz, standard, okolica, wszystko co pomoze wycenic…"
+      : "Dlaczego to kupiłem? (np. Spadło o 10% po wynikach)";
+
   return (
     <div className="space-y-4">
       <FormField
@@ -30,12 +38,12 @@ export function AddTransactionNotesSummary({
         name="notes"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Notatka</FormLabel>
+            <FormLabel>{label}</FormLabel>
             <FormControl>
               <Textarea
                 {...field}
                 className="min-h-24 resize-none"
-                placeholder="Dlaczego to kupiłem? (np. Spadło o 10% po wynikach)"
+                placeholder={placeholder}
               />
             </FormControl>
             <FormMessage />

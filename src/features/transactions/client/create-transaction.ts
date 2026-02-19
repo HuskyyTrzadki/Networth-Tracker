@@ -2,7 +2,7 @@ import type { TransactionType } from "../lib/add-transaction-form-schema";
 import type { CashflowType } from "../lib/cashflow-types";
 import type { InstrumentType } from "../lib/instrument-search";
 
-export type CreateTransactionPayload = Readonly<{
+type CommonPayload = Readonly<{
   type: TransactionType;
   date: string;
   quantity: string;
@@ -15,6 +15,9 @@ export type CreateTransactionPayload = Readonly<{
   notes: string;
   portfolioId: string;
   clientRequestId: string;
+}>;
+
+type MarketInstrumentPayload = Readonly<{
   instrument: Readonly<{
     provider: string;
     providerKey?: string;
@@ -26,11 +29,28 @@ export type CreateTransactionPayload = Readonly<{
     region?: string;
     logoUrl?: string | null;
   }>;
+  customInstrument?: never;
 }>;
+
+type CustomInstrumentPayload = Readonly<{
+  customInstrument: Readonly<{
+    name: string;
+    currency: string;
+    notes?: string;
+    kind: "REAL_ESTATE";
+    valuationKind: "COMPOUND_ANNUAL_RATE";
+    annualRatePct: string;
+  }>;
+  instrument?: never;
+}>;
+
+export type CreateTransactionPayload = CommonPayload &
+  (MarketInstrumentPayload | CustomInstrumentPayload);
 
 export type CreateTransactionResponse = Readonly<{
   transactionId: string;
-  instrumentId: string;
+  instrumentId: string | null;
+  customInstrumentId: string | null;
   deduped: boolean;
 }>;
 

@@ -19,6 +19,7 @@ export function AddTransactionPortfolioTypeFields({
   forcedPortfolioId,
   portfolios,
   isCashTab,
+  isCustomTab,
   onPortfolioChange,
   onTypeChange,
 }: Readonly<{
@@ -26,6 +27,7 @@ export function AddTransactionPortfolioTypeFields({
   forcedPortfolioId: string | null;
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   isCashTab: boolean;
+  isCustomTab: boolean;
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
 }>) {
@@ -70,29 +72,35 @@ export function AddTransactionPortfolioTypeFields({
           <FormItem>
             <FormLabel>{isCashTab ? "Typ przepływu" : "Typ transakcji"}</FormLabel>
             <FormControl>
-              <Tabs
-                onValueChange={(next) => {
-                  const nextType = next as "BUY" | "SELL";
-                  field.onChange(nextType);
-                  onTypeChange(nextType);
-                }}
-                value={field.value}
-              >
-                <TabsList className="grid h-10 w-full grid-cols-2 p-1">
-                  <TabsTrigger
-                    className="h-8 w-full rounded-sm"
-                    value="BUY"
-                  >
-                    {isCashTab ? "Wpłata" : "Kupno"}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="h-8 w-full rounded-sm"
-                    value="SELL"
-                  >
-                    {isCashTab ? "Wypłata" : "Sprzedaż"}
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              {isCustomTab ? (
+                <div className="flex h-10 items-center rounded-md border border-border/70 bg-muted/30 px-3 text-[13px] text-muted-foreground">
+                  Dodanie (BUY)
+                </div>
+              ) : (
+                <Tabs
+                  onValueChange={(next) => {
+                    const nextType = next as "BUY" | "SELL";
+                    field.onChange(nextType);
+                    onTypeChange(nextType);
+                  }}
+                  value={field.value}
+                >
+                  <TabsList className="grid h-10 w-full grid-cols-2 p-1">
+                    <TabsTrigger
+                      className="h-8 w-full rounded-sm"
+                      value="BUY"
+                    >
+                      {isCashTab ? "Wpłata" : "Kupno"}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      className="h-8 w-full rounded-sm"
+                      value="SELL"
+                    >
+                      {isCashTab ? "Wypłata" : "Sprzedaż"}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
             </FormControl>
             <FormMessage />
           </FormItem>

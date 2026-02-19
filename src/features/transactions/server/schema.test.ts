@@ -24,10 +24,57 @@ describe("createTransactionRequestSchema", () => {
   it("defaults provider to yahoo and normalizes decimals", () => {
     const parsed = createTransactionRequestSchema.parse(basePayload);
 
-    expect(parsed.instrument.provider).toBe("yahoo");
+    expect(parsed.instrument).toBeDefined();
+    expect(parsed.instrument!.provider).toBe("yahoo");
     expect(parsed.quantity).toBe("1.5");
     expect(parsed.price).toBe("100.00");
     expect(parsed.fee).toBe("0");
+  });
+
+  it("rejects payload without instrument selection", () => {
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      instrument: undefined,
+      customInstrument: undefined,
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects payload with both instrument and customInstrument", () => {
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      customInstrument: {
+        name: "Mieszkanie",
+        currency: "PLN",
+        kind: "REAL_ESTATE",
+        valuationKind: "COMPOUND_ANNUAL_RATE",
+        annualRatePct: "5",
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts customInstrument and normalizes annual rate pct", () => {
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      instrument: undefined,
+      type: "BUY",
+      customInstrument: {
+        name: "Mieszkanie",
+        currency: "pln",
+        kind: "REAL_ESTATE",
+        valuationKind: "COMPOUND_ANNUAL_RATE",
+        annualRatePct: "5,5",
+        notes: "Test",
+      },
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.customInstrument).toBeDefined();
+    expect(result.data.customInstrument!.annualRatePct).toBe("5.5");
   });
 
   it("requires portfolioId", () => {

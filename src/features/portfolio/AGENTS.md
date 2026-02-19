@@ -33,6 +33,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/list-portfolios.ts`
 - `src/features/portfolio/server/create-portfolio.ts`
 - `src/features/portfolio/server/get-portfolio-holdings.ts`
+- `src/features/portfolio/server/custom-instruments/compound-annual-rate.ts`
 - `src/features/portfolio/server/get-portfolio-average-buy-prices.ts`
 - `src/features/portfolio/server/average-buy-price.ts`
 - `src/features/portfolio/server/get-portfolio-summary.ts`
@@ -51,6 +52,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/snapshots/range-market-data-cursor.ts`
 - `src/features/portfolio/server/snapshots/rebuild-chunk-window.ts`
 - `src/features/portfolio/server/snapshots/snapshot-rebuild-range-session.ts`
+- `src/features/portfolio/server/snapshots/snapshot-rebuild-range-day.ts`
+- `src/features/portfolio/server/snapshots/fetch-custom-holdings-admin-as-of.ts`
 - `src/features/portfolio/server/snapshots/run-snapshot-rebuild.ts`
 - `src/features/portfolio/server/snapshots/rebuild-route-service.ts`
 - `src/app/api/portfolio-snapshots/rebuild/route.ts`
@@ -111,6 +114,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.
 - Net value hero and allocation/holdings widget use stronger typographic rhythm (monospace net value, cleaner heading/label contrast, calmer warning tones) without changing valuation logic.
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
+- Portfolio valuation includes per-user custom instruments (`custom_instruments`) as synthetic holdings with deterministic pricing (compounded annual rate) so they participate in totals and snapshot history.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.
 - Dashboard server payload (`summary`, `snapshots`, `live totals`, `recent transactions`) now uses Cache Components private caching with tags (`portfolio:all`, `portfolio:<id>`), so reads are reused between navigations and writes can invalidate deterministically.

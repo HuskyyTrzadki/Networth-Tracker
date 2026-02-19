@@ -15,6 +15,7 @@ import {
 } from "../lib/supported-currencies";
 import { getPortfolioHoldings } from "./get-portfolio-holdings";
 import { buildPortfolioSummary } from "./valuation";
+import { getCustomInstrumentQuotesForPortfolio } from "./custom-instruments/get-custom-instrument-quotes";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -68,26 +69,45 @@ export async function getPortfolioLiveTotals(
   const holdings = await getPortfolioHoldings(supabase, input.portfolioId);
   const hasHoldings = holdings.length > 0;
 
-  const quoteRequests: InstrumentQuoteRequest[] = holdings.map((holding) => ({
-    instrumentId: holding.instrumentId,
-    provider: "yahoo",
-    providerKey: holding.providerKey,
-  }));
+  const quoteRequests: InstrumentQuoteRequest[] = holdings
+    .filter((holding) => holding.provider === "yahoo" && holding.instrumentType !== "CURRENCY")
+    .map((holding) => ({
+      instrumentId: holding.instrumentId,
+      provider: "yahoo",
+      providerKey: holding.providerKey,
+    }));
 
   const quotesByInstrument = await getInstrumentQuotesCached(
     supabase,
     quoteRequests
   );
 
+  const todayBucketDate = getBucketDate(new Date());
+  const customQuotesByInstrument = await getCustomInstrumentQuotesForPortfolio(
+    supabase,
+    {
+      portfolioId: input.portfolioId,
+      customInstrumentIds: holdings
+        .filter((holding) => holding.provider === "custom")
+        .map((holding) => holding.providerKey),
+      asOfDate: todayBucketDate,
+    }
+  );
+
   const fxPairs = buildFxPairs(holdings);
   const fxByPair = await getFxRatesCached(supabase, fxPairs);
+
+  const mergedQuotesByInstrument = new Map(quotesByInstrument);
+  customQuotesByInstrument.forEach((quote, instrumentId) => {
+    mergedQuotesByInstrument.set(instrumentId, quote);
+  });
 
   const totalsByCurrency = SNAPSHOT_CURRENCIES.reduce(
     (acc, currency) => {
       const summary = buildPortfolioSummary({
         baseCurrency: currency,
         holdings,
-        quotesByInstrument,
+        quotesByInstrument: mergedQuotesByInstrument,
         fxByPair,
       });
 
@@ -105,7 +125,7 @@ export async function getPortfolioLiveTotals(
 
   return {
     hasHoldings,
-    todayBucketDate: getBucketDate(new Date()),
+    todayBucketDate,
     totalsByCurrency,
   };
 }

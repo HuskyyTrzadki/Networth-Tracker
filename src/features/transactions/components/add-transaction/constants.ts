@@ -3,31 +3,29 @@ import {
   getCurrencyFormatter,
 } from "@/lib/format-currency";
 
-import type { InstrumentSearchResult, InstrumentType } from "../../lib/instrument-search";
+import type { InstrumentSearchResult } from "../../lib/instrument-search";
 import {
   SUPPORTED_CASH_CURRENCIES,
   type CashCurrency,
 } from "../../lib/system-currencies";
 
-export type AssetTab = "EQUITY" | "CRYPTOCURRENCY" | "CASH";
+export type AssetTab = "MARKET" | "CASH" | "CUSTOM";
 
 export const ASSET_TABS: ReadonlyArray<{
   value: AssetTab;
   label: string;
-  types: readonly InstrumentType[] | null;
 }> = [
-  { value: "EQUITY", label: "Akcje/ETF", types: ["EQUITY", "ETF"] },
-  { value: "CRYPTOCURRENCY", label: "Krypto", types: ["CRYPTOCURRENCY"] },
-  { value: "CASH", label: "Gotówka", types: null },
+  { value: "MARKET", label: "Rynek" },
+  { value: "CASH", label: "Gotówka" },
+  { value: "CUSTOM", label: "Nierynkowe" },
 ];
 
 export const resolveInitialTab = (
   instrument?: InstrumentSearchResult
 ): AssetTab => {
-  if (!instrument?.instrumentType) return "EQUITY";
+  if (!instrument?.instrumentType) return "MARKET";
   if (instrument.instrumentType === "CURRENCY") return "CASH";
-  if (instrument.instrumentType === "CRYPTOCURRENCY") return "CRYPTOCURRENCY";
-  return "EQUITY";
+  return "MARKET";
 };
 
 export const formatMoney = (value: string, currency: string) => {

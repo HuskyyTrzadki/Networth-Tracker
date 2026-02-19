@@ -8,6 +8,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions list supports portfolio filtering (All vs. single portfolio).
 - Transactions are grouped by `group_id`, with legs labeled by `leg_role` and `leg_key`.
 - Cash instruments are `provider=system`, `instrument_type=CURRENCY`, used for settlement and cashflows.
+- Add-transaction dialog uses 3 top-level asset modes: `Rynek` (market search), `Gotówka`, and `Nierynkowe` (per-user manual assets).
+- `Nierynkowe` v1 supports `Nieruchomość` only and sends `customInstrument` to the write API (instead of provider-backed `instrument`).
+- For `Rynek`, the UI no longer filters by stock/ETF/crypto tabs; the search is a single combobox (excluding cash currencies).
 
 ## Main entrypoints
 - Dialog UI: `src/features/transactions/components/AddTransactionDialog.tsx`
@@ -16,6 +19,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/features/transactions/components/add-transaction/AddTransactionDialogFields.tsx`
   - `src/features/transactions/components/add-transaction/AddTransactionInstrumentSection.tsx`
   - `src/features/transactions/components/add-transaction/AddTransactionTradeFields.tsx`
+  - `src/features/transactions/components/add-transaction/AddTransactionCustomTradeFields.tsx`
   - `src/features/transactions/components/add-transaction/AddTransactionSidebarSummary.tsx`
   - `src/features/transactions/components/add-transaction/form-derivations.ts`
 - Instrument search UI: `src/features/transactions/components/InstrumentCombobox.tsx`

@@ -7,12 +7,14 @@ type TransactionRow = import("./create-transaction-context").TransactionRow;
 
 export type PersistedAssetRow = Readonly<{
   id: string;
-  instrument_id: string;
+  instrument_id: string | null;
+  custom_instrument_id: string | null;
 }>;
 
 type InsertedTransactionRow = Readonly<{
   id: string;
-  instrument_id: string;
+  instrument_id: string | null;
+  custom_instrument_id: string | null;
   leg_key: TransactionRow["leg_key"];
 }>;
 
@@ -60,6 +62,7 @@ const findAssetLegRow = (rows: readonly InsertedTransactionRow[]) => {
   return {
     id: assetRow.id,
     instrument_id: assetRow.instrument_id,
+    custom_instrument_id: assetRow.custom_instrument_id,
   } as PersistedAssetRow;
 };
 
@@ -70,7 +73,7 @@ const findExistingAssetLegForDuplicate = async (input: Readonly<{
 }>): Promise<PersistedAssetRow> => {
   const { data, error } = await input.supabaseUser
     .from("transactions")
-    .select("id, instrument_id")
+    .select("id, instrument_id, custom_instrument_id")
     .eq("user_id", input.userId)
     .eq("client_request_id", input.clientRequestId)
     .eq("leg_key", "ASSET")
@@ -92,7 +95,7 @@ export const insertTransactionRows = async (input: Readonly<{
   const { data, error } = await input.supabaseUser
     .from("transactions")
     .insert(input.rows)
-    .select("id, instrument_id, leg_key");
+    .select("id, instrument_id, custom_instrument_id, leg_key");
 
   if (!error) {
     const insertedRows = (data ?? []) as InsertedTransactionRow[];
