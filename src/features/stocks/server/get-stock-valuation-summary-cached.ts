@@ -194,7 +194,7 @@ const writeCache = async (summary: StockValuationSummary) => {
       payout_ratio: summary.payoutRatio,
       payout_date: summary.payoutDate,
       as_of: summary.asOf,
-      fetched_at: summary.fetchedAt,
+      fetched_at: summary.fetchedAt ?? new Date().toISOString(),
     },
     { onConflict: "provider,provider_key" }
   );

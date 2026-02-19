@@ -758,6 +758,55 @@ export type Database = {
           quantity: number
         }[]
       }
+      get_custom_portfolio_anchors: {
+        Args: { p_custom_instrument_ids?: string[]; p_portfolio_id?: string }
+        Returns: {
+          annual_rate_pct: number
+          created_at: string
+          currency: string
+          custom_instrument_id: string
+          price: number
+          trade_date: string
+        }[]
+      }
+      get_custom_portfolio_anchors_admin_as_of: {
+        Args: {
+          p_bucket_date: string
+          p_custom_instrument_ids?: string[]
+          p_portfolio_id?: string
+          p_user_id: string
+        }
+        Returns: {
+          annual_rate_pct: number
+          created_at: string
+          currency: string
+          custom_instrument_id: string
+          price: number
+          trade_date: string
+        }[]
+      }
+      get_custom_portfolio_holdings: {
+        Args: { p_portfolio_id?: string }
+        Returns: {
+          currency: string
+          custom_instrument_id: string
+          name: string
+          quantity: number
+        }[]
+      }
+      get_custom_portfolio_holdings_admin_as_of: {
+        Args: {
+          p_bucket_date: string
+          p_portfolio_id?: string
+          p_user_id: string
+        }
+        Returns: {
+          currency: string
+          custom_instrument_id: string
+          name: string
+          quantity: number
+        }[]
+      }
       get_external_cashflows_admin: {
         Args: {
           p_bucket_date: string

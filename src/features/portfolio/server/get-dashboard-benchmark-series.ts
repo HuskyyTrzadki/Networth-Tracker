@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { subtractIsoDays } from "@/features/market-data/server/lib/date-utils";
 import { fetchYahooDailySeries } from "@/features/market-data/server/providers/yahoo/yahoo-daily";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 
 import {
   BENCHMARK_IDS,
@@ -26,19 +27,18 @@ import {
   type InstrumentSeriesRow,
 } from "./benchmark-series-helpers";
 
-type InstrumentCacheRow = Readonly<{
-  provider_key: string;
-  price_date: string;
-  currency: string;
-  close: string | number;
-}>;
+type InstrumentCacheRow = Pick<
+  Tables<"instrument_daily_prices_cache">,
+  "provider_key" | "price_date" | "currency" | "close"
+>;
 
-type FxCacheRow = Readonly<{
-  base_currency: string;
-  quote_currency: string;
-  rate_date: string;
-  rate: string | number;
-}>;
+type FxCacheRow = Pick<
+  Tables<"fx_daily_rates_cache">,
+  "base_currency" | "quote_currency" | "rate_date" | "rate"
+>;
+
+type InstrumentDailyUpsertRow = TablesInsert<"instrument_daily_prices_cache">;
+type FxDailyUpsertRow = TablesInsert<"fx_daily_rates_cache">;
 
 const PROVIDER = "yahoo";
 const LOOKBACK_DAYS = 10;
@@ -51,7 +51,7 @@ const BENCHMARK_PROVIDER_KEYS: Readonly<Record<BenchmarkId, string>> = {
 };
 
 const readInstrumentRows = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   providerKeys: readonly string[],
   fromDate: string,
   toDate: string
@@ -65,11 +65,12 @@ const readInstrumentRows = async (
     .lte("price_date", toDate);
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as InstrumentCacheRow[];
+  const rows: InstrumentCacheRow[] = data ?? [];
+  return rows;
 };
 
 const readFxRows = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   currencies: readonly string[],
   fromDate: string,
   toDate: string
@@ -84,11 +85,18 @@ const readFxRows = async (
     .lte("rate_date", toDate);
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as FxCacheRow[];
+  const rows: FxCacheRow[] = data ?? [];
+  return rows;
 };
 
 const sortByDate = <T extends { date: string }>(rows: readonly T[]) =>
   [...rows].sort((left, right) => left.date.localeCompare(right.date));
+
+const toFiniteNumber = (value: string | number | null) => {
+  if (value === null) return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const groupRowsByKey = <TRow,>(
   rows: readonly TRow[],
@@ -163,7 +171,7 @@ const safeFetchYahooDailySeries = async (
 };
 
 export async function getDashboardBenchmarkSeries(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   bucketDates: readonly string[],
   options?: Readonly<{ benchmarkIds?: readonly BenchmarkId[] }>
 ): Promise<DashboardBenchmarkSeries> {
@@ -206,7 +214,7 @@ export async function getDashboardBenchmarkSeries(
     );
   });
 
-  const instrumentUpserts: Array<Record<string, string | null>> = [];
+  const instrumentUpserts: InstrumentDailyUpsertRow[] = [];
 
   for (const benchmarkId of requestedBenchmarkIds) {
     const providerKey = BENCHMARK_PROVIDER_KEYS[benchmarkId];
@@ -224,25 +232,33 @@ export async function getDashboardBenchmarkSeries(
     if (!fetched) continue;
 
     const fetchedAt = new Date().toISOString();
-    const fetchedSeriesRows = fetched.candles.map((candle) => ({
-      date: candle.date,
-      currency: fetched.currency.toUpperCase(),
-      close: candle.close,
-    }));
-    const fetchedUpserts = fetched.candles.map((candle) => ({
-      provider: PROVIDER,
-      provider_key: providerKey,
-      price_date: candle.date,
-      exchange_timezone: fetched.exchangeTimezone,
-      currency: fetched.currency.toUpperCase(),
-      open: candle.open,
-      high: candle.high,
-      low: candle.low,
-      close: candle.close,
-      volume: candle.volume,
-      as_of: candle.asOf,
-      fetched_at: fetchedAt,
-    }));
+    const fetchedSeriesRows: InstrumentSeriesRow[] = [];
+    const fetchedUpserts: InstrumentDailyUpsertRow[] = [];
+    fetched.candles.forEach((candle) => {
+      const close = toFiniteNumber(candle.close);
+      if (close === null) return;
+
+      fetchedSeriesRows.push({
+        date: candle.date,
+        currency: fetched.currency.toUpperCase(),
+        close: close.toString(),
+      });
+
+      fetchedUpserts.push({
+        provider: PROVIDER,
+        provider_key: providerKey,
+        price_date: candle.date,
+        exchange_timezone: fetched.exchangeTimezone,
+        currency: fetched.currency.toUpperCase(),
+        open: toFiniteNumber(candle.open),
+        high: toFiniteNumber(candle.high),
+        low: toFiniteNumber(candle.low),
+        close,
+        volume: toFiniteNumber(candle.volume),
+        as_of: candle.asOf,
+        fetched_at: fetchedAt,
+      });
+    });
 
     instrumentUpserts.push(...fetchedUpserts);
     benchmarkRowsByProviderKey.set(providerKey, sortByDate([...rows, ...fetchedSeriesRows]));
@@ -308,7 +324,7 @@ export async function getDashboardBenchmarkSeries(
     }
   });
 
-  const fxUpserts: Array<Record<string, string>> = [];
+  const fxUpserts: FxDailyUpsertRow[] = [];
 
   for (const pairKey of pairsToFetch) {
     const [from, to] = pairKey.split(":");
@@ -324,20 +340,28 @@ export async function getDashboardBenchmarkSeries(
     const rows = normalizedFxRowsByPair.get(pairKey) ?? [];
     const fetchedAt = new Date().toISOString();
 
-    const fetchedFxRows = fetched.candles.map((candle) => ({
-      date: candle.date,
-      rate: candle.close,
-    }));
-    const fetchedFxUpserts = fetched.candles.map((candle) => ({
-      provider: PROVIDER,
-      base_currency: from,
-      quote_currency: to,
-      rate_date: candle.date,
-      source_timezone: fetched.exchangeTimezone,
-      rate: candle.close,
-      as_of: candle.asOf,
-      fetched_at: fetchedAt,
-    }));
+    const fetchedFxRows: FxSeriesRow[] = [];
+    const fetchedFxUpserts: FxDailyUpsertRow[] = [];
+    fetched.candles.forEach((candle) => {
+      const rate = toFiniteNumber(candle.close);
+      if (rate === null) return;
+
+      fetchedFxRows.push({
+        date: candle.date,
+        rate: rate.toString(),
+      });
+
+      fetchedFxUpserts.push({
+        provider: PROVIDER,
+        base_currency: from,
+        quote_currency: to,
+        rate_date: candle.date,
+        source_timezone: fetched.exchangeTimezone,
+        rate,
+        as_of: candle.asOf,
+        fetched_at: fetchedAt,
+      });
+    });
 
     fxUpserts.push(...fetchedFxUpserts);
     normalizedFxRowsByPair.set(pairKey, sortByDate([...rows, ...fetchedFxRows]));

@@ -42,7 +42,7 @@ export async function fetchCustomHoldingsAdminAsOf(input: Readonly<{
     {
       p_user_id: input.userId,
       p_bucket_date: input.bucketDate,
-      p_portfolio_id: input.portfolioId,
+      p_portfolio_id: input.portfolioId ?? undefined,
     }
   );
   if (customHoldingsError) {
@@ -63,7 +63,7 @@ export async function fetchCustomHoldingsAdminAsOf(input: Readonly<{
     {
       p_user_id: input.userId,
       p_bucket_date: input.bucketDate,
-      p_portfolio_id: input.portfolioId,
+      p_portfolio_id: input.portfolioId ?? undefined,
       p_custom_instrument_ids: customIds,
     }
   );

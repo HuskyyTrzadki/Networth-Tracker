@@ -2,43 +2,40 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { decimalOne, divideDecimals, parseDecimalString } from "@/lib/decimal";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 
 import { subtractIsoDays } from "./lib/date-utils";
 import { fetchYahooDailySeries } from "./providers/yahoo/yahoo-daily";
 import type { FxDailyRate, FxPair } from "./types";
 
-type SupabaseServerClient = SupabaseClient;
+type SupabaseServerClient = SupabaseClient<Database>;
 
 const PROVIDER = "yahoo";
 const DEFAULT_LOOKBACK_DAYS = 21;
 const DEFAULT_TIMEOUT_MS = 5000;
 
-type DailyFxCacheRow = Readonly<{
-  provider: string;
-  base_currency: string;
-  quote_currency: string;
-  rate_date: string;
-  source_timezone: string;
-  rate: string | number;
-  as_of: string;
-  fetched_at: string;
-}>;
+type DailyFxCacheRow = Pick<
+  Tables<"fx_daily_rates_cache">,
+  | "provider"
+  | "base_currency"
+  | "quote_currency"
+  | "rate_date"
+  | "source_timezone"
+  | "rate"
+  | "as_of"
+  | "fetched_at"
+>;
 
-type FxCacheUpsertRow = Readonly<{
-  provider: string;
-  base_currency: string;
-  quote_currency: string;
-  rate_date: string;
-  source_timezone: string;
-  rate: string;
-  as_of: string;
-  fetched_at: string;
-}>;
+type FxCacheUpsertRow = TablesInsert<"fx_daily_rates_cache">;
 
 const buildFxSymbol = (from: string, to: string) => `${from}${to}=X`.toUpperCase();
 
-const normalizeRate = (value: string | number) =>
-  typeof value === "number" ? value.toString() : value;
+const normalizeRate = (value: number) => value.toString();
+
+const toFiniteNumber = (value: string | number) => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const toDirectRate = (
   row: DailyFxCacheRow,
@@ -126,7 +123,8 @@ const readCachedRows = async (
     throw new Error(error.message);
   }
 
-  return (data ?? []) as DailyFxCacheRow[];
+  const rows: DailyFxCacheRow[] = data ?? [];
+  return rows;
 };
 
 const fetchAndCacheRows = async (
@@ -164,13 +162,16 @@ const fetchAndCacheRows = async (
     }
 
     series.candles.forEach((candle) => {
+      const close = toFiniteNumber(candle.close);
+      if (close === null) return;
+
       upserts.push({
         provider: PROVIDER,
         base_currency: pair.from,
         quote_currency: pair.to,
         rate_date: candle.date,
         source_timezone: series.exchangeTimezone,
-        rate: candle.close,
+        rate: close,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });
@@ -181,7 +182,7 @@ const fetchAndCacheRows = async (
         quote_currency: pair.to,
         rate_date: candle.date,
         source_timezone: series.exchangeTimezone,
-        rate: candle.close,
+        rate: close,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });

@@ -1,11 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import type { Database, TablesInsert } from "@/lib/supabase/database.types";
 
 import { fetchYahooQuotes, normalizeYahooQuote } from "./providers/yahoo/yahoo-quote";
 import type { InstrumentQuote, InstrumentQuoteRequest } from "./types";
 
-type SupabaseServerClient = SupabaseClient;
+type SupabaseServerClient = SupabaseClient<Database>;
 
 const DEFAULT_TTL_MS = 15 * 60 * 1000;
 const PROVIDER = "yahoo";
@@ -15,47 +16,52 @@ type QuoteCacheRow = Readonly<{
   provider: string;
   provider_key: string;
   currency: string;
-  price: string | number;
-  day_change?: string | number | null;
-  day_change_percent?: string | number | null;
+  price: number;
+  day_change?: number | null;
+  day_change_percent?: number | null;
   as_of: string;
   fetched_at: string;
 }>;
 
-type QuoteCacheUpsertRow = Readonly<{
-  instrument_id: string;
-  provider: string;
-  provider_key: string;
-  currency: string;
-  price: string | number;
-  as_of: string;
-  fetched_at: string;
-  day_change?: string | null;
-  day_change_percent?: number | null;
-}>;
+type QuoteCacheUpsertRow = Required<
+  Pick<
+    TablesInsert<"instrument_quotes_cache">,
+    | "instrument_id"
+    | "provider"
+    | "provider_key"
+    | "currency"
+    | "price"
+    | "as_of"
+    | "fetched_at"
+  >
+> &
+  Pick<
+    TablesInsert<"instrument_quotes_cache">,
+    "day_change" | "day_change_percent"
+  >;
 
 const isFresh = (fetchedAt: string, ttlMs: number) =>
   Date.now() - new Date(fetchedAt).getTime() <= ttlMs;
 
-const normalizePrice = (value: string | number) =>
-  typeof value === "number" ? value.toString() : value;
+const normalizePrice = (value: number) => value.toString();
 
 const normalizeNullableString = (
-  value: string | number | null | undefined
+  value: number | null | undefined
 ): string | null => {
   if (value === null || value === undefined) return null;
-  return typeof value === "number" ? value.toString() : value;
+  return value.toString();
 };
 
 const normalizeNullableNumber = (
-  value: string | number | null | undefined
+  value: number | null | undefined
 ): number | null => {
   if (value === null || value === undefined) return null;
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
+  return Number.isFinite(value) ? value : null;
+};
 
-  const parsed = Number(value);
+const toFiniteNumber = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined) return null;
+  const parsed = typeof value === "number" ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
 
@@ -129,7 +135,7 @@ export async function getInstrumentQuotesCached(
     throw new Error(error.message);
   }
 
-  const cachedRows = (data ?? []) as QuoteCacheRow[];
+  const cachedRows: QuoteCacheRow[] = data ?? [];
   const cachedByInstrument = new Map(
     cachedRows.map((row) => [row.instrument_id, row])
   );
@@ -170,17 +176,23 @@ export async function getInstrumentQuotesCached(
       return;
     }
 
+    const price = toFiniteNumber(normalized.price);
+    if (price === null) {
+      results.set(request.instrumentId, null);
+      return;
+    }
+
     const row: QuoteCacheUpsertRow = {
       instrument_id: request.instrumentId,
       provider: PROVIDER,
       provider_key: request.providerKey,
       currency: normalized.currency,
-      price: normalized.price,
+      price,
       as_of: normalized.asOf,
       fetched_at: now,
       ...(supportsDayChangeColumns
         ? {
-            day_change: normalized.dayChange,
+            day_change: toFiniteNumber(normalized.dayChange),
             day_change_percent: normalized.dayChangePercent,
           }
         : {}),

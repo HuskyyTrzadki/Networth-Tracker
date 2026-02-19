@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { cookies } from "next/headers";
 
+import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -15,7 +16,7 @@ const isMutableCookieStore = (store: CookieStore): store is MutableCookieStore =
 export const createClient = (cookieStore: CookieStore) => {
   const { supabaseUrl, supabaseKey } = getSupabaseEnv();
 
-  return createServerClient(supabaseUrl, supabaseKey, {
+  return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

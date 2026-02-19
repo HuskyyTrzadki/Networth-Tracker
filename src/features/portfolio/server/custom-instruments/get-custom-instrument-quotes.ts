@@ -31,7 +31,7 @@ export async function getCustomInstrumentQuotesForPortfolio(
   }
 
   const { data, error } = await supabase.rpc("get_custom_portfolio_anchors", {
-    p_portfolio_id: input.portfolioId,
+    p_portfolio_id: input.portfolioId ?? undefined,
     p_custom_instrument_ids: customIds,
   });
 

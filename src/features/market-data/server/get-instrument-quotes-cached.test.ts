@@ -9,9 +9,9 @@ describe("getInstrumentQuotesCached helpers", () => {
       provider: "yahoo",
       provider_key: "AAPL",
       currency: "USD",
-      price: "100",
-      day_change: "-1.25",
-      day_change_percent: "-0.0125",
+      price: 100,
+      day_change: -1.25,
+      day_change_percent: -0.0125,
       as_of: "2026-02-09T10:00:00.000Z",
       fetched_at: "2026-02-09T10:01:00.000Z",
     });
@@ -28,7 +28,7 @@ describe("getInstrumentQuotesCached helpers", () => {
       currency: "USD",
       price: 220,
       day_change: null,
-      day_change_percent: "not-a-number",
+      day_change_percent: Number.NaN,
       as_of: "2026-02-09T10:00:00.000Z",
       fetched_at: "2026-02-09T10:01:00.000Z",
     });

@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+import type { Database } from "./database.types";
+
 // Admin client: uses service role key for backend-only tasks (cron, system writes).
 export const createAdminClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -11,7 +13,7 @@ export const createAdminClient = () => {
     );
   }
 
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
 };

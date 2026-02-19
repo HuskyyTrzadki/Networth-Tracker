@@ -4,33 +4,34 @@ import type { FxPair, InstrumentQuoteRequest } from "@/features/market-data";
 import { fetchYahooDailySeries } from "@/features/market-data/server/providers/yahoo/yahoo-daily";
 import { subtractIsoDays } from "@/features/market-data/server/lib/date-utils";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 import { hasSufficientDailyCoverage } from "./range-market-data-coverage";
 
 const DEFAULT_LOOKBACK_DAYS = 45;
 const DEFAULT_TIMEOUT_MS = 5000;
 
-type InstrumentDailyRow = Readonly<{
-  provider_key: string;
-  price_date: string;
-  exchange_timezone: string;
-  currency: string;
-  open: string | number | null;
-  high: string | number | null;
-  low: string | number | null;
-  close: string | number;
-  adj_close?: string | number | null;
-  as_of: string;
-  fetched_at: string;
-}>;
+type InstrumentDailyRow = Pick<
+  Tables<"instrument_daily_prices_cache">,
+  | "provider_key"
+  | "price_date"
+  | "exchange_timezone"
+  | "currency"
+  | "open"
+  | "high"
+  | "low"
+  | "close"
+  | "adj_close"
+  | "as_of"
+  | "fetched_at"
+>;
 
-type FxDailyRow = Readonly<{
-  base_currency: string;
-  quote_currency: string;
-  rate_date: string;
-  rate: string | number;
-  as_of: string;
-  fetched_at: string;
-}>;
+type FxDailyRow = Pick<
+  Tables<"fx_daily_rates_cache">,
+  "base_currency" | "quote_currency" | "rate_date" | "rate" | "as_of" | "fetched_at"
+>;
+
+type InstrumentDailyUpsertRow = TablesInsert<"instrument_daily_prices_cache">;
+type FxDailyUpsertRow = TablesInsert<"fx_daily_rates_cache">;
 
 const buildPairKey = (from: string, to: string) => `${from}:${to}`;
 
@@ -56,6 +57,12 @@ const buildRowsByKey = <T,>(rows: readonly T[], getKey: (row: T) => string) => {
 const sortByDateAsc = <T,>(rows: readonly T[], pickDate: (row: T) => string) =>
   [...rows].sort((left, right) => pickDate(left).localeCompare(pickDate(right)));
 
+const toFiniteNumber = (value: string | number | null) => {
+  if (value === null) return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const mergeRowMaps = <T,>(
   left: ReadonlyMap<string, readonly T[]>,
   right: ReadonlyMap<string, readonly T[]>,
@@ -77,7 +84,7 @@ const mergeRowMaps = <T,>(
 };
 
 async function readInstrumentRows(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   providerKeys: readonly string[],
   fromDate: string,
   toDate: string
@@ -100,11 +107,12 @@ async function readInstrumentRows(
     throw new Error(error.message);
   }
 
-  return (data ?? []) as InstrumentDailyRow[];
+  const rows: InstrumentDailyRow[] = data ?? [];
+  return rows;
 }
 
 async function readFxRows(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   currencies: readonly string[],
   fromDate: string,
   toDate: string
@@ -126,11 +134,12 @@ async function readFxRows(
     throw new Error(error.message);
   }
 
-  return (data ?? []) as FxDailyRow[];
+  const rows: FxDailyRow[] = data ?? [];
+  return rows;
 }
 
 export async function preloadInstrumentDailySeries(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   requests: readonly InstrumentQuoteRequest[],
   fromDate: string,
   toDate: string,
@@ -159,7 +168,7 @@ export async function preloadInstrumentDailySeries(
   });
 
   const fetchedRows: InstrumentDailyRow[] = [];
-  const upsertRows: Array<Record<string, string | null>> = [];
+  const upsertRows: InstrumentDailyUpsertRow[] = [];
   const fetchedAt = new Date().toISOString();
 
   for (const providerKey of keysToFetch) {
@@ -175,16 +184,19 @@ export async function preloadInstrumentDailySeries(
     }
 
     series.candles.forEach((candle) => {
+      const close = toFiniteNumber(candle.close);
+      if (close === null) return;
+
       fetchedRows.push({
         provider_key: providerKey,
         price_date: candle.date,
         exchange_timezone: series.exchangeTimezone,
         currency: series.currency,
-        open: candle.open,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-        adj_close: candle.adjClose,
+        open: toFiniteNumber(candle.open),
+        high: toFiniteNumber(candle.high),
+        low: toFiniteNumber(candle.low),
+        close,
+        adj_close: toFiniteNumber(candle.adjClose),
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });
@@ -195,12 +207,12 @@ export async function preloadInstrumentDailySeries(
         price_date: candle.date,
         exchange_timezone: series.exchangeTimezone,
         currency: series.currency,
-        open: candle.open,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-        adj_close: candle.adjClose,
-        volume: candle.volume,
+        open: toFiniteNumber(candle.open),
+        high: toFiniteNumber(candle.high),
+        low: toFiniteNumber(candle.low),
+        close,
+        adj_close: toFiniteNumber(candle.adjClose),
+        volume: toFiniteNumber(candle.volume),
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });
@@ -243,7 +255,7 @@ export async function preloadInstrumentDailySeries(
 }
 
 export async function preloadFxDailySeries(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   pairs: readonly FxPair[],
   fromDate: string,
   toDate: string,
@@ -291,7 +303,7 @@ export async function preloadFxDailySeries(
   });
 
   const fetchedRows: FxDailyRow[] = [];
-  const upsertRows: Array<Record<string, string>> = [];
+  const upsertRows: FxDailyUpsertRow[] = [];
   const fetchedAt = new Date().toISOString();
 
   for (const pairKey of uniquePairKeys) {
@@ -308,11 +320,14 @@ export async function preloadFxDailySeries(
     }
 
     series.candles.forEach((candle) => {
+      const rate = toFiniteNumber(candle.close);
+      if (rate === null) return;
+
       fetchedRows.push({
         base_currency: from,
         quote_currency: to,
         rate_date: candle.date,
-        rate: candle.close,
+        rate,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });
@@ -323,7 +338,7 @@ export async function preloadFxDailySeries(
         quote_currency: to,
         rate_date: candle.date,
         source_timezone: series.exchangeTimezone,
-        rate: candle.close,
+        rate,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });

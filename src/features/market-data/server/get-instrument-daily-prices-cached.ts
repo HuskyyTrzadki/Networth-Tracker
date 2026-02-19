@@ -1,55 +1,53 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 
 import { subtractIsoDays } from "./lib/date-utils";
 import { fetchYahooDailySeries } from "./providers/yahoo/yahoo-daily";
 import type { InstrumentDailyPrice, InstrumentQuoteRequest } from "./types";
 
-type SupabaseServerClient = SupabaseClient;
+type SupabaseServerClient = SupabaseClient<Database>;
 
 const PROVIDER = "yahoo";
 const DEFAULT_LOOKBACK_DAYS = 21;
 const DEFAULT_TIMEOUT_MS = 5000;
 
-type DailyPriceCacheRow = Readonly<{
-  provider: string;
-  provider_key: string;
-  price_date: string;
-  exchange_timezone: string;
-  currency: string;
-  open: string | number | null;
-  high: string | number | null;
-  low: string | number | null;
-  close: string | number;
-  adj_close?: string | number | null;
-  as_of: string;
-  fetched_at: string;
-}>;
+type DailyPriceCacheRow = Pick<
+  Tables<"instrument_daily_prices_cache">,
+  | "provider"
+  | "provider_key"
+  | "price_date"
+  | "exchange_timezone"
+  | "currency"
+  | "open"
+  | "high"
+  | "low"
+  | "close"
+  | "adj_close"
+  | "as_of"
+  | "fetched_at"
+>;
 
-type CacheUpsertRow = Readonly<{
-  provider: string;
-  provider_key: string;
-  price_date: string;
-  exchange_timezone: string;
-  currency: string;
-  open: string | null;
-  high: string | null;
-  low: string | null;
-  close: string;
-  adj_close: string | null;
-  volume: string | null;
-  as_of: string;
-  fetched_at: string;
-}>;
+type CacheUpsertRow = TablesInsert<"instrument_daily_prices_cache">;
 
-const normalizeNullableNumeric = (value: string | number | null) => {
+const toFiniteNullableNumber = (value: string | number | null) => {
   if (value === null) return null;
-  return typeof value === "number" ? value.toString() : value;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 };
 
-const normalizeRequiredNumeric = (value: string | number) =>
-  typeof value === "number" ? value.toString() : value;
+const toFiniteNumber = (value: string | number) => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeNullableNumeric = (value: number | null) => {
+  if (value === null) return null;
+  return value.toString();
+};
+
+const normalizeRequiredNumeric = (value: number) => value.toString();
 
 const buildResult = (
   instrumentId: string,
@@ -90,7 +88,8 @@ const readCachedRows = async (
     throw new Error(error.message);
   }
 
-  return (data ?? []) as DailyPriceCacheRow[];
+  const rows: DailyPriceCacheRow[] = data ?? [];
+  return rows;
 };
 
 const pickLatestRowsForRequestedDate = (
@@ -135,18 +134,27 @@ const fetchAndCacheMissingRows = async (
     if (!series) continue;
 
     series.candles.forEach((candle) => {
+      const close = toFiniteNumber(candle.close);
+      if (close === null) return;
+
+      const open = toFiniteNullableNumber(candle.open);
+      const high = toFiniteNullableNumber(candle.high);
+      const low = toFiniteNullableNumber(candle.low);
+      const adjClose = toFiniteNullableNumber(candle.adjClose);
+      const volume = toFiniteNullableNumber(candle.volume);
+
       upserts.push({
         provider: PROVIDER,
         provider_key: providerKey,
         price_date: candle.date,
         exchange_timezone: series.exchangeTimezone,
         currency: series.currency,
-        open: candle.open,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-        adj_close: candle.adjClose,
-        volume: candle.volume,
+        open,
+        high,
+        low,
+        close,
+        adj_close: adjClose,
+        volume,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });
@@ -157,11 +165,11 @@ const fetchAndCacheMissingRows = async (
         price_date: candle.date,
         exchange_timezone: series.exchangeTimezone,
         currency: series.currency,
-        open: candle.open,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-        adj_close: candle.adjClose,
+        open,
+        high,
+        low,
+        close,
+        adj_close: adjClose,
         as_of: candle.asOf,
         fetched_at: fetchedAt,
       });

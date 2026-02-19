@@ -45,7 +45,7 @@ export async function getPortfolioAssetHoldings(
 ): Promise<readonly PortfolioHolding[]> {
   // Server helper: fetch pre-aggregated holdings across asset classes.
   const { data, error } = await supabase.rpc("get_portfolio_holdings", {
-    p_portfolio_id: portfolioId,
+    p_portfolio_id: portfolioId ?? undefined,
   });
 
   if (error) {
@@ -71,7 +71,7 @@ export async function getPortfolioAssetHoldings(
   const { data: customData, error: customError } = await supabase.rpc(
     "get_custom_portfolio_holdings",
     {
-      p_portfolio_id: portfolioId,
+      p_portfolio_id: portfolioId ?? undefined,
     }
   );
 

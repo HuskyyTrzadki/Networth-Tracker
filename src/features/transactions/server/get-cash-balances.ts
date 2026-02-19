@@ -28,7 +28,7 @@ export async function getCashBalancesByPortfolio(
   // Server helper: fetch cash balances per portfolio in a single RPC call.
   const result: Record<string, Record<CashCurrency, string>> = {};
   const { data, error } = await supabase.rpc("get_cash_balances", {
-    p_portfolio_ids: portfolioIds.length > 0 ? portfolioIds : null,
+    p_portfolio_ids: portfolioIds.length > 0 ? [...portfolioIds] : undefined,
   });
 
   if (error) {
