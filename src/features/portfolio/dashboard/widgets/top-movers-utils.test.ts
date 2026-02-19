@@ -66,16 +66,31 @@ describe("buildTopMovers", () => {
     expect(movers).toHaveLength(1);
     expect(movers[0]?.instrumentId).toBe("valid");
   });
+
+  it("excludes custom instruments from top movers", () => {
+    const movers = buildTopMovers({
+      ...baseSummary,
+      holdings: [
+        holding("custom:house-1", "CUSTOM", "120", 0.04, "custom"),
+        holding("listed-1", "AAA", "90", 0.02),
+      ],
+    });
+
+    expect(movers).toHaveLength(1);
+    expect(movers[0]?.instrumentId).toBe("listed-1");
+  });
 });
 
 function holding(
   instrumentId: string,
   symbol: string,
   todayChangeBase: string,
-  todayChangePercent: number
+  todayChangePercent: number,
+  provider = "yahoo"
 ) {
   return {
     instrumentId,
+    provider,
     symbol,
     name: `${symbol} Corp`,
     exchange: null,

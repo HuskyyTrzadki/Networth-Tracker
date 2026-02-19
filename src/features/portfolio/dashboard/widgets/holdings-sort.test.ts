@@ -7,6 +7,7 @@ const holding = (
   input: Partial<ValuedHolding> & Pick<ValuedHolding, "instrumentId" | "symbol">
 ): ValuedHolding => ({
   instrumentId: input.instrumentId,
+  provider: input.provider ?? "yahoo",
   symbol: input.symbol,
   name: input.name ?? input.symbol,
   exchange: input.exchange ?? null,

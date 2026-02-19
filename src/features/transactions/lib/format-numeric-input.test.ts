@@ -17,6 +17,11 @@ describe("formatNumericInput", () => {
     expect(formatNumericInput("5,123456", { maxFractionDigits: 4 })).toBe("5,1234");
   });
 
+  it("supports signed formatting when enabled", () => {
+    expect(formatNumericInput("-12345.67", { allowNegative: true })).toBe("-12 345,67");
+    expect(formatNumericInput("-12345.67")).toBe("12 345,67");
+  });
+
   it("keeps cursor close to typed integer position after grouping", () => {
     const next = formatNumericInputWithCursor("12345", 5);
     expect(next.value).toBe("12 345");
@@ -27,5 +32,15 @@ describe("formatNumericInput", () => {
     const next = formatNumericInputWithCursor("12345,67", 8);
     expect(next.value).toBe("12 345,67");
     expect(next.cursor).toBe(9);
+  });
+
+  it("keeps minus sign and cursor for signed input", () => {
+    const signOnly = formatNumericInputWithCursor("-", 1, { allowNegative: true });
+    expect(signOnly.value).toBe("-");
+    expect(signOnly.cursor).toBe(1);
+
+    const value = formatNumericInputWithCursor("-12345", 6, { allowNegative: true });
+    expect(value.value).toBe("-12 345");
+    expect(value.cursor).toBe(7);
   });
 });

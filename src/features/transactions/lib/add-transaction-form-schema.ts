@@ -101,10 +101,10 @@ export function createAddTransactionFormSchema() {
       }
 
       const rate = parseDecimalInput(value.customAnnualRatePct ?? "");
-      if (rate === null || rate < 0) {
+      if (rate === null || rate <= -100 || rate >= 1000) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Wpisz dodatni wzrost roczny (%).",
+          message: "Wpisz roczny wzrost/spadek w zakresie (-100, 1000).",
           path: ["customAnnualRatePct"],
         });
       }

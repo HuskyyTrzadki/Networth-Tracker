@@ -41,6 +41,7 @@ const compareByMagnitudeDesc = (a: Candidate, b: Candidate) => {
 
 function toCandidate(holding: ValuedHolding): Candidate | null {
   if (holding.instrumentType === "CURRENCY") return null;
+  if (holding.provider === "custom") return null;
   if (!holding.todayChangeBase) return null;
 
   const change = parseDecimalString(holding.todayChangeBase);

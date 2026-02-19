@@ -72,8 +72,11 @@ const customInstrumentSchema = z.object({
     .union([z.string(), z.number()])
     .transform((value) => (typeof value === "number" ? value.toString() : value))
     .transform(normalizeDecimalInput)
-    .refine((value) => parseDecimalInput(value) !== null, {
-      message: "Nieprawidłowa wartość wzrostu rocznego.",
+    .refine((value) => {
+      const parsed = parseDecimalInput(value);
+      return parsed !== null && parsed > -100 && parsed < 1000;
+    }, {
+      message: "Roczny wzrost/spadek musi być w zakresie (-100, 1000).",
     }),
 });
 

@@ -19,6 +19,7 @@ describe("buildAllocationData", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -33,6 +34,7 @@ describe("buildAllocationData", () => {
         },
         {
           instrumentId: "b",
+          provider: "yahoo",
           symbol: "BBB",
           name: "BBB",
           exchange: null,
@@ -60,6 +62,7 @@ describe("buildAllocationData", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -74,6 +77,7 @@ describe("buildAllocationData", () => {
         },
         {
           instrumentId: "b",
+          provider: "yahoo",
           symbol: "BBB",
           name: "BBB",
           exchange: null,
@@ -88,6 +92,7 @@ describe("buildAllocationData", () => {
         },
         {
           instrumentId: "c",
+          provider: "yahoo",
           symbol: "CCC",
           name: "CCC",
           exchange: null,
@@ -102,6 +107,7 @@ describe("buildAllocationData", () => {
         },
         {
           instrumentId: "d",
+          provider: "yahoo",
           symbol: "DDD",
           name: "DDD",
           exchange: null,
@@ -116,6 +122,7 @@ describe("buildAllocationData", () => {
         },
         {
           instrumentId: "e",
+          provider: "yahoo",
           symbol: "EEE",
           name: "EEE",
           exchange: null,
@@ -130,6 +137,7 @@ describe("buildAllocationData", () => {
         },
         {
           instrumentId: "f",
+          provider: "yahoo",
           symbol: "FFF",
           name: "FFF",
           exchange: null,

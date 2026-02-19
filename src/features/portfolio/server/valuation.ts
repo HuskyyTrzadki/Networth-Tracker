@@ -6,6 +6,7 @@ import { toBaseHoldingDayChangeOrNull } from "./to-base-holding-day-change";
 
 export type ValuedHolding = Readonly<{
   instrumentId: string;
+  provider: string;
   symbol: string;
   name: string;
   exchange: string | null;
@@ -66,6 +67,7 @@ export function buildPortfolioSummary({
         missingQuotes += 1;
         return {
           instrumentId: holding.instrumentId,
+          provider: holding.provider,
           symbol: holding.symbol,
           name: holding.name,
           exchange: holding.exchange,
@@ -88,6 +90,7 @@ export function buildPortfolioSummary({
 
         return {
           instrumentId: holding.instrumentId,
+          provider: holding.provider,
           symbol: holding.symbol,
           name: holding.name,
           exchange: holding.exchange,
@@ -110,6 +113,7 @@ export function buildPortfolioSummary({
         missingFx += 1;
         return {
           instrumentId: holding.instrumentId,
+          provider: holding.provider,
           symbol: holding.symbol,
           name: holding.name,
           exchange: holding.exchange,
@@ -130,6 +134,7 @@ export function buildPortfolioSummary({
         missingFx += 1;
         return {
           instrumentId: holding.instrumentId,
+          provider: holding.provider,
           symbol: holding.symbol,
           name: holding.name,
           exchange: holding.exchange,
@@ -152,6 +157,7 @@ export function buildPortfolioSummary({
 
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -180,6 +186,7 @@ export function buildPortfolioSummary({
       missingQuotes += 1;
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -199,6 +206,7 @@ export function buildPortfolioSummary({
       missingQuotes += 1;
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -235,6 +243,7 @@ export function buildPortfolioSummary({
       missingQuotes += 1;
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -258,6 +267,7 @@ export function buildPortfolioSummary({
 
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -282,6 +292,7 @@ export function buildPortfolioSummary({
       missingFx += 1;
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -302,6 +313,7 @@ export function buildPortfolioSummary({
       missingFx += 1;
       return {
         instrumentId: holding.instrumentId,
+        provider: holding.provider,
         symbol: holding.symbol,
         name: holding.name,
         exchange: holding.exchange,
@@ -327,6 +339,7 @@ export function buildPortfolioSummary({
 
     return {
       instrumentId: holding.instrumentId,
+      provider: holding.provider,
       symbol: holding.symbol,
       name: holding.name,
       exchange: holding.exchange,

@@ -113,39 +113,39 @@ export function AddTransactionCustomTradeFields({
           name="customAnnualRatePct"
           render={({ field }) => (
             <FormItem>
-              <div className="flex min-h-6 items-center justify-between gap-2">
-                <FormLabel className="m-0">Szacowany wzrost roczny (%)</FormLabel>
-                <Button
-                  aria-label="Sugestia AI (wkrótce)"
-                  className="h-7 w-7 p-0"
-                  disabled
-                  type="button"
-                  variant="ghost"
-                >
-                  <Sparkles className="size-3.5 opacity-70" aria-hidden />
-                </Button>
-              </div>
+              <FormLabel>Szacowany wzrost/spadek roczny (%)</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  className="h-11 font-mono tabular-nums text-right"
-                  inputMode="decimal"
-                  onChange={(event) => {
-                    const next = formatNumericInputWithCursor(
-                      event.target.value,
-                      event.target.selectionStart,
-                      { maxFractionDigits: 4 }
-                    );
-                    field.onChange(next.value);
-                    if (next.cursor !== null) {
-                      requestAnimationFrame(() => {
-                        event.target.setSelectionRange(next.cursor, next.cursor);
-                      });
-                    }
-                  }}
-                  placeholder="np. 5"
-                  type="text"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    {...field}
+                    className="h-11 font-mono tabular-nums text-right"
+                    inputMode="decimal"
+                    onChange={(event) => {
+                      const next = formatNumericInputWithCursor(
+                        event.target.value,
+                        event.target.selectionStart,
+                        { allowNegative: true, maxFractionDigits: 4 }
+                      );
+                      field.onChange(next.value);
+                      if (next.cursor !== null) {
+                        requestAnimationFrame(() => {
+                          event.target.setSelectionRange(next.cursor, next.cursor);
+                        });
+                      }
+                    }}
+                    placeholder="np. 5% lub -5%"
+                    type="text"
+                  />
+                  <Button
+                    aria-label="Sugestia AI (wkrótce)"
+                    className="h-11 w-11 shrink-0 p-0"
+                    disabled
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Sparkles className="size-4 opacity-70" aria-hidden />
+                  </Button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

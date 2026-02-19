@@ -27,6 +27,7 @@ describe("PortfolioTopMoversWidget", () => {
           holdings: [
             {
               instrumentId: "a",
+              provider: "yahoo",
               symbol: "AAPL",
               name: "Apple",
               exchange: null,
@@ -44,6 +45,7 @@ describe("PortfolioTopMoversWidget", () => {
             },
             {
               instrumentId: "b",
+              provider: "yahoo",
               symbol: "MSFT",
               name: "Microsoft",
               exchange: null,

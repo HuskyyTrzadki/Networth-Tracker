@@ -77,6 +77,45 @@ describe("createTransactionRequestSchema", () => {
     expect(result.data.customInstrument!.annualRatePct).toBe("5.5");
   });
 
+  it("accepts customInstrument with negative annual rate pct", () => {
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      instrument: undefined,
+      type: "BUY",
+      customInstrument: {
+        name: "Samochód",
+        currency: "pln",
+        kind: "REAL_ESTATE",
+        valuationKind: "COMPOUND_ANNUAL_RATE",
+        annualRatePct: "-7,5",
+        notes: "Test",
+      },
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.customInstrument).toBeDefined();
+    expect(result.data.customInstrument!.annualRatePct).toBe("-7.5");
+  });
+
+  it("rejects customInstrument annual rate pct out of range", () => {
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      instrument: undefined,
+      type: "BUY",
+      customInstrument: {
+        name: "Samochód",
+        currency: "pln",
+        kind: "REAL_ESTATE",
+        valuationKind: "COMPOUND_ANNUAL_RATE",
+        annualRatePct: "-100",
+        notes: "Test",
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("requires portfolioId", () => {
     const result = createTransactionRequestSchema.safeParse({
       ...basePayload,

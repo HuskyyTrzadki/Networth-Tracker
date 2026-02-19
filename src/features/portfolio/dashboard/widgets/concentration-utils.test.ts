@@ -21,6 +21,7 @@ describe("getConcentrationWarning", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -45,6 +46,7 @@ describe("getConcentrationWarning", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "ETF",
           name: "ETF",
           exchange: null,
@@ -59,6 +61,7 @@ describe("getConcentrationWarning", () => {
         },
         {
           instrumentId: "b",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -83,6 +86,7 @@ describe("getConcentrationWarning", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -107,6 +111,7 @@ describe("getConcentrationWarning", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -121,6 +126,7 @@ describe("getConcentrationWarning", () => {
         },
         {
           instrumentId: "b",
+          provider: "yahoo",
           symbol: "BBB",
           name: "BBB",
           exchange: null,
@@ -148,6 +154,7 @@ describe("getConcentrationWarning", () => {
       holdings: [
         {
           instrumentId: "a",
+          provider: "yahoo",
           symbol: "AAA",
           name: "AAA",
           exchange: null,
@@ -162,6 +169,7 @@ describe("getConcentrationWarning", () => {
         },
         {
           instrumentId: "b",
+          provider: "yahoo",
           symbol: "BBB",
           name: "BBB",
           exchange: null,
@@ -176,6 +184,7 @@ describe("getConcentrationWarning", () => {
         },
         {
           instrumentId: "c",
+          provider: "yahoo",
           symbol: "CCC",
           name: "CCC",
           exchange: null,

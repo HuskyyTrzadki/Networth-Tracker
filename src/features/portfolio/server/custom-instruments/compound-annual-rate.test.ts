@@ -25,5 +25,15 @@ describe("computeCompoundedAnnualRateQuote", () => {
 
     expect(Number(quote.price)).toBeGreaterThan(100);
   });
-});
 
+  it("decreases price for negative annual rate", () => {
+    const quote = computeCompoundedAnnualRateQuote({
+      anchorPrice: "100",
+      anchorDate: "2026-01-01",
+      annualRatePct: "-36.5",
+      asOfDate: "2026-01-11",
+    });
+
+    expect(Number(quote.price)).toBeLessThan(100);
+  });
+});
