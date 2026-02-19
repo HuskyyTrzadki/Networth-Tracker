@@ -24,6 +24,10 @@ import {
   type AssetMode,
   type TransactionType,
 } from "../lib/add-transaction-form-schema";
+import {
+  DEFAULT_CUSTOM_ASSET_TYPE,
+  type CustomAssetType,
+} from "../lib/custom-asset-types";
 import type { CashflowTypeUi } from "../lib/cashflow-types";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
 import {
@@ -55,7 +59,7 @@ export type FormValues = Readonly<{
   price: string;
   fee: string;
   notes: string;
-  customAssetType?: string;
+  customAssetType?: CustomAssetType;
   customName?: string;
   customCurrency?: string;
   customAnnualRatePct?: string;
@@ -190,7 +194,7 @@ export function AddTransactionDialogContent({
       price: initialInstrument?.instrumentType === "CURRENCY" ? "1" : "",
       fee: initialInstrument?.instrumentType === "CURRENCY" ? "0" : "",
       notes: "",
-      customAssetType: undefined,
+      customAssetType: DEFAULT_CUSTOM_ASSET_TYPE,
       customName: "",
       customCurrency: initialCashCurrency,
       customAnnualRatePct: "",
@@ -235,7 +239,7 @@ export function AddTransactionDialogContent({
               name: values.customName ?? "",
               currency: values.customCurrency ?? "",
               notes: values.notes,
-              kind: "REAL_ESTATE" as const,
+              kind: values.customAssetType ?? DEFAULT_CUSTOM_ASSET_TYPE,
               valuationKind: "COMPOUND_ANNUAL_RATE" as const,
               annualRatePct: values.customAnnualRatePct ?? "0",
             },

@@ -5,6 +5,7 @@ import {
   isSupportedCashCurrency,
   type CashCurrency,
 } from "../../lib/system-currencies";
+import { DEFAULT_CUSTOM_ASSET_TYPE } from "../../lib/custom-asset-types";
 import type { FormValues } from "../AddTransactionDialogContent";
 import type { InstrumentSearchResult } from "../../lib/instrument-search";
 
@@ -67,8 +68,10 @@ export const applyCustomTabState = (
       ? currentCurrency
       : fallbackCurrency;
   form.setValue("customCurrency", resolvedCurrency, { shouldValidate: true });
-  form.setValue("customAssetType", "REAL_ESTATE", { shouldValidate: true });
-  form.setValue("assetId", "custom:REAL_ESTATE", { shouldValidate: true });
+  form.setValue("customAssetType", DEFAULT_CUSTOM_ASSET_TYPE, { shouldValidate: true });
+  form.setValue("assetId", `custom:${DEFAULT_CUSTOM_ASSET_TYPE}`, {
+    shouldValidate: true,
+  });
   form.setValue("currency", resolvedCurrency, { shouldValidate: true });
 };
 

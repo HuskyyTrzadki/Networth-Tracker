@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { transactionTypes } from "../lib/add-transaction-form-schema";
 import { cashflowTypes } from "../lib/cashflow-types";
+import { customAssetTypes } from "../lib/custom-asset-types";
 import { instrumentTypes } from "../lib/instrument-search";
 import { parseDecimalInput } from "../lib/parse-decimal";
 import {
@@ -65,7 +66,7 @@ const customInstrumentSchema = z.object({
   name: z.string().trim().min(1).max(200),
   currency: z.string().trim().length(3),
   notes: z.string().trim().max(500).optional(),
-  kind: z.literal("REAL_ESTATE"),
+  kind: z.enum(customAssetTypes),
   valuationKind: z.literal("COMPOUND_ANNUAL_RATE"),
   // Signed percentage, e.g. 5 = +5%/year, -2.5 = -2.5%/year.
   annualRatePct: z

@@ -1,5 +1,6 @@
 import type { TransactionType } from "../lib/add-transaction-form-schema";
 import type { CashflowType } from "../lib/cashflow-types";
+import type { CustomAssetType } from "../lib/custom-asset-types";
 import type { InstrumentType } from "../lib/instrument-search";
 
 type CommonPayload = Readonly<{
@@ -37,7 +38,7 @@ type CustomInstrumentPayload = Readonly<{
     name: string;
     currency: string;
     notes?: string;
-    kind: "REAL_ESTATE";
+    kind: CustomAssetType;
     valuationKind: "COMPOUND_ANNUAL_RATE";
     annualRatePct: string;
   }>;

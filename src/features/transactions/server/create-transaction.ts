@@ -16,6 +16,7 @@ import {
   runPostWriteSideEffects,
   shouldMarkSnapshotHistoryDirty,
 } from "./create-transaction-write";
+import type { CustomAssetType } from "../lib/custom-asset-types";
 
 type CreateTransactionResult = Readonly<{
   transactionId: string;
@@ -24,7 +25,7 @@ type CreateTransactionResult = Readonly<{
   deduped: boolean;
 }>;
 
-type CustomInstrumentKind = "REAL_ESTATE";
+type CustomInstrumentKind = CustomAssetType;
 type CustomInstrumentValuationKind = "COMPOUND_ANNUAL_RATE";
 
 const normalizeCurrency = (value: string) => value.trim().toUpperCase();

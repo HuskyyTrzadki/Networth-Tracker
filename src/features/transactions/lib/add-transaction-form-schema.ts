@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { parseDecimalInput } from "./parse-decimal";
 import { cashflowTypeUiOptions } from "./cashflow-types";
+import { customAssetTypes } from "./custom-asset-types";
 import {
   isValidTradeDate,
   tradeDateValidationMessage,
@@ -58,7 +59,7 @@ export function createAddTransactionFormSchema() {
         { message: "Wpisz wartość większą lub równą 0." }
       ),
       notes: z.string().max(500, { message: "Maks. 500 znaków." }),
-      customAssetType: z.string().optional(),
+      customAssetType: z.enum(customAssetTypes).optional(),
       customName: z.string().optional(),
       customCurrency: z.string().optional(),
       customAnnualRatePct: z.string().optional(),
@@ -76,7 +77,7 @@ export function createAddTransactionFormSchema() {
         });
       }
 
-      if (value.customAssetType !== "REAL_ESTATE") {
+      if (!value.customAssetType) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Wybierz typ pozycji.",

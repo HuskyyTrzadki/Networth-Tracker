@@ -98,6 +98,24 @@ describe("createTransactionRequestSchema", () => {
     expect(result.data.customInstrument!.annualRatePct).toBe("-7.5");
   });
 
+  it("accepts customInstrument for non-real-estate kind", () => {
+    const result = createTransactionRequestSchema.safeParse({
+      ...basePayload,
+      instrument: undefined,
+      type: "BUY",
+      customInstrument: {
+        name: "Samochód",
+        currency: "pln",
+        kind: "CAR",
+        valuationKind: "COMPOUND_ANNUAL_RATE",
+        annualRatePct: "-12",
+        notes: "Test",
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("rejects customInstrument annual rate pct out of range", () => {
     const result = createTransactionRequestSchema.safeParse({
       ...basePayload,

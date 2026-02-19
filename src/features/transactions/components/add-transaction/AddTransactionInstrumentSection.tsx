@@ -1,7 +1,18 @@
 "use client";
 
 import { format } from "date-fns";
-import { House, LineChart, Wallet } from "lucide-react";
+import {
+  Car,
+  CircleHelp,
+  HandCoins,
+  House,
+  Landmark,
+  Laptop,
+  LineChart,
+  PiggyBank,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 
 import {
@@ -22,6 +33,12 @@ import { InstrumentCombobox } from "../InstrumentCombobox";
 import type { InstrumentSearchClient } from "../../client/search-instruments";
 import type { InstrumentSearchResult } from "../../lib/instrument-search";
 import { instrumentTypes } from "../../lib/instrument-search";
+import {
+  customAssetTypes,
+  customAssetTypeLabels,
+  isCustomAssetType,
+  type CustomAssetType,
+} from "../../lib/custom-asset-types";
 import {
   SUPPORTED_CASH_CURRENCIES,
   isSupportedCashCurrency,
@@ -50,6 +67,16 @@ type Props = Readonly<{
   availableCashNow: string;
   availableAssetQuantity: string | null;
 }>;
+
+const customAssetTypeIcons: Readonly<Record<CustomAssetType, LucideIcon>> = {
+  REAL_ESTATE: House,
+  CAR: Car,
+  COMPUTER: Laptop,
+  TREASURY_BONDS: Landmark,
+  TERM_DEPOSIT: PiggyBank,
+  PRIVATE_LOAN: HandCoins,
+  OTHER: CircleHelp,
+};
 
 export function AddTransactionInstrumentSection({
   form,
@@ -124,23 +151,36 @@ export function AddTransactionInstrumentSection({
                     type="single"
                     value={field.value ?? ""}
                     onValueChange={(next) => {
+                      if (!next) {
+                        field.onChange(undefined);
+                        form.setValue("assetId", "", { shouldValidate: true });
+                        return;
+                      }
+                      if (!isCustomAssetType(next)) return;
+
                       field.onChange(next);
                       form.setValue("assetId", `custom:${next}`, { shouldValidate: true });
                     }}
                     className="flex flex-wrap gap-2"
                   >
-                    <ToggleGroupItem
-                      value="REAL_ESTATE"
-                      className={cn(
-                        "h-9 rounded-md border border-border/75 bg-background px-3 text-[13px]",
-                        "data-[state=on]:border-primary/40 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                      )}
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <House className="size-4" aria-hidden />
-                        Nieruchomość
-                      </span>
-                    </ToggleGroupItem>
+                    {customAssetTypes.map((assetType) => {
+                      const Icon = customAssetTypeIcons[assetType];
+                      return (
+                        <ToggleGroupItem
+                          key={assetType}
+                          value={assetType}
+                          className={cn(
+                            "h-9 rounded-md border border-border/75 bg-background px-3 text-[13px]",
+                            "data-[state=on]:border-primary/40 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                          )}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            <Icon className="size-4" aria-hidden />
+                            {customAssetTypeLabels[assetType]}
+                          </span>
+                        </ToggleGroupItem>
+                      );
+                    })}
                   </ToggleGroup>
                 </FormControl>
                 <FormMessage />
@@ -159,7 +199,7 @@ export function AddTransactionInstrumentSection({
                     <Input
                       {...field}
                       className="h-11"
-                      placeholder="np. Mieszkanie na wynajem"
+                      placeholder="np. Mieszkanie, auto, lokata"
                       type="text"
                     />
                   </FormControl>

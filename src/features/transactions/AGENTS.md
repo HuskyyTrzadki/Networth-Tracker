@@ -9,7 +9,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions are grouped by `group_id`, with legs labeled by `leg_role` and `leg_key`.
 - Cash instruments are `provider=system`, `instrument_type=CURRENCY`, used for settlement and cashflows.
 - Add-transaction dialog uses 3 top-level asset modes: `Rynek` (market search), `Gotówka`, and `Nierynkowe` (per-user manual assets).
-- `Nierynkowe` v1 supports `Nieruchomość` only and sends `customInstrument` to the write API (instead of provider-backed `instrument`).
+- `Nierynkowe` supports multiple manual asset kinds and sends `customInstrument` to the write API (instead of provider-backed `instrument`).
 - For `Rynek`, the UI no longer filters by stock/ETF/crypto tabs; the search is a single combobox (excluding cash currencies).
 
 ## Main entrypoints
