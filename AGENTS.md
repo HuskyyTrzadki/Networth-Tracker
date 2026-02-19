@@ -4,7 +4,7 @@ I will be let go of job if code is not clean, and i need to have it perfct cause
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
 im studying for BE interview, so please educate me while we code, espeically tech wise.  pls be interactive, shorter messages instead of huge raports. lets keep dialogue in.
 u are encouraged to use shadcn components we already have in storybook, when u add new component u think its worth to add to storybook , go for it.
-
+SUPER IMPORTANT, u are encouraged to ask question to tech lead, i will forward your message to him, anytime u struggle or not sure about something. please please let me know, and give me message, so just say something like "i m not sure, ask tech lead what is better here..."
 ## Core priorities
 - Code quality is the top priority.
 - Be assertive: propose better solutions when current approach is weak.

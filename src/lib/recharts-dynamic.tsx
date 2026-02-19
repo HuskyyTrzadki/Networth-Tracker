@@ -1,32 +1,24 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const loadRechartsComponent = (name: string) =>
-  dynamic(
-    async () => {
-      const rechartsLib = await import("recharts");
-      return rechartsLib[name as keyof typeof rechartsLib] as React.ComponentType<
-        Record<string, unknown>
-      >;
-    },
-    { ssr: false }
-  );
-
-export const Area = loadRechartsComponent("Area");
-export const AreaChart = loadRechartsComponent("AreaChart");
-export const Bar = loadRechartsComponent("Bar");
-export const BarChart = loadRechartsComponent("BarChart");
-export const CartesianGrid = loadRechartsComponent("CartesianGrid");
-export const Cell = loadRechartsComponent("Cell");
-export const ComposedChart = loadRechartsComponent("ComposedChart");
-export const Line = loadRechartsComponent("Line");
-export const LineChart = loadRechartsComponent("LineChart");
-export const Pie = loadRechartsComponent("Pie");
-export const PieChart = loadRechartsComponent("PieChart");
-export const ReferenceLine = loadRechartsComponent("ReferenceLine");
-export const ReferenceDot = loadRechartsComponent("ReferenceDot");
-export const ResponsiveContainer = loadRechartsComponent("ResponsiveContainer");
-export const Tooltip = loadRechartsComponent("Tooltip");
-export const XAxis = loadRechartsComponent("XAxis");
-export const YAxis = loadRechartsComponent("YAxis");
+// Recharts inspects child component types (e.g. XAxis, Line) inside chart roots.
+// Dynamic wrappers can hide those identities and lead to empty charts.
+// Keep this module client-only and re-export native Recharts components directly.
+export {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ReferenceDot,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";

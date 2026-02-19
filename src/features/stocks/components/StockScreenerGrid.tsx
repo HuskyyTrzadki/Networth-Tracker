@@ -4,7 +4,7 @@ import { ChangePill } from "@/features/design-system";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import type { StockScreenerCard } from "@/features/stocks";
 import { cn } from "@/lib/cn";
-import { StockScreenerPreviewChart } from "./StockScreenerPreviewChart";
+import { StockScreenerPreviewChartLazy } from "./StockScreenerPreviewChartLazy";
 
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
   style: "percent",
@@ -96,7 +96,10 @@ export function StockScreenerGrid({
               </div>
 
               <div className="mt-3 min-h-0 flex-1 rounded-md border border-border/50 bg-muted/15 px-1.5 py-1.5">
-                <StockScreenerPreviewChart data={card.monthChart} currency={card.currency} />
+                <StockScreenerPreviewChartLazy
+                  data={card.monthChart}
+                  currency={card.currency}
+                />
               </div>
             </div>
           </Link>

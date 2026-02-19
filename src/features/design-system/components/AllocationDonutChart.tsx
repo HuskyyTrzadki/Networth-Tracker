@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import type { TooltipProps } from "recharts";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "@/lib/recharts-dynamic";
 
@@ -108,13 +109,11 @@ export function AllocationDonutChart({
             content={({
               active,
               payload,
-            }: {
-              active?: boolean;
-              payload?: Array<{ payload: DonutSlice; value: string | number }>;
-            }) => {
+            }: TooltipProps<string | number, string | number>) => {
               if (!active || !payload?.length) return null;
               const entry = payload[0];
-              const dataPoint = entry.payload as DonutSlice;
+              const dataPoint = entry.payload as DonutSlice | undefined;
+              if (!dataPoint) return null;
               const label = dataPoint.tooltipLabel ?? dataPoint.id;
               const value =
                 dataPoint.tooltipValue ??

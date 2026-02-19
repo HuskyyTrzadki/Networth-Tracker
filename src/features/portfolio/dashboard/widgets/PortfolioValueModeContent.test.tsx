@@ -3,12 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PortfolioValueModeContent } from "./PortfolioValueModeContent";
 
-vi.mock("@/features/design-system", () => ({
+vi.mock("@/features/design-system/components/PortfolioComparisonChart", () => ({
   PortfolioComparisonChart: () => <div data-testid="portfolio-comparison-chart" />,
 }));
 
 describe("PortfolioValueModeContent", () => {
-  it("shows period summary for non-1D range", () => {
+  it("shows period summary for non-1D range", async () => {
     render(
       <PortfolioValueModeContent
         rebuildStatus="idle"
@@ -38,6 +38,6 @@ describe("PortfolioValueModeContent", () => {
 
     expect(screen.getByText("Zmiana za okres (YTD)")).toBeInTheDocument();
     expect(screen.getByText("+VAL(200) PLN")).toBeInTheDocument();
-    expect(screen.getByTestId("portfolio-comparison-chart")).toBeInTheDocument();
+    expect(await screen.findByTestId("portfolio-comparison-chart")).toBeInTheDocument();
   });
 });

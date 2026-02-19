@@ -77,6 +77,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
+- Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`, `AllocationDonutChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Koło/Tabela` (domyślnie `Koło`), zamiast dwóch osobnych kart 50/50.
 - Widok `Koło` renderuje donut jako pełną szerokość widgetu (bez stałej kolumny 220px), a legenda udziałów ma czytelniejsze kafelki z paskiem udziału.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).

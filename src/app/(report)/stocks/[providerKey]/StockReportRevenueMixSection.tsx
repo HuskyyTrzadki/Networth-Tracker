@@ -1,12 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { Button } from "@/features/design-system/components/ui/button";
 
-import { DonutCard, ProfitabilitySnapshot } from "./stock-report-revenue-mix-cards";
 import { StockReportRevenueSankeyCard } from "./StockReportRevenueSankeyCard";
 import {
   QUARTER_LABELS,
@@ -22,6 +22,38 @@ import {
   REVENUE_BY_PRODUCTS,
   type HowTheyMakeMoneyMode,
 } from "./stock-report-static-data";
+
+const ProfitabilitySnapshot = dynamic(
+  () =>
+    import("./stock-report-revenue-mix-cards").then(
+      (module) => module.ProfitabilitySnapshot
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[420px] w-full animate-pulse rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
+
+const DonutCard = dynamic(
+  () =>
+    import("./stock-report-revenue-mix-cards").then(
+      (module) => module.DonutCard
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[360px] w-full animate-pulse rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
 
 const GEO_COLOR_BY_ICON: Readonly<Record<string, string>> = {
   NA: "#4f5f75",

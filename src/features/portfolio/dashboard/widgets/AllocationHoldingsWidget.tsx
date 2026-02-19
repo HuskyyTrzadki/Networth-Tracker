@@ -1,7 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
-import { AllocationDonutChart, ChartCard } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system";
 import { Alert } from "@/features/design-system/components/ui/alert";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import {
@@ -29,6 +30,22 @@ import type { SnapshotRebuildStatus } from "../hooks/useSnapshotRebuild";
 import { buildAllocationData } from "./allocation-utils";
 import { getConcentrationWarning } from "./concentration-utils";
 import { sortHoldingsByValueDesc } from "./holdings-sort";
+
+const AllocationDonutChart = dynamic(
+  () =>
+    import("@/features/design-system/components/AllocationDonutChart").then(
+      (module) => module.AllocationDonutChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[300px] w-full animate-pulse rounded-lg border border-dashed border-border/70 bg-card/40"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
 
 type Props = Readonly<{
   summary: PortfolioSummary;

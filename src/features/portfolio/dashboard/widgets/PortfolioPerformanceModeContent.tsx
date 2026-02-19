@@ -1,7 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { DailyReturnsLineChart } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
 
@@ -14,6 +14,22 @@ import {
   getPortfolioChartEmptyStateClassName,
   SHARED_PORTFOLIO_CHART_HEIGHT,
 } from "./portfolio-value-over-time-chart-layout";
+
+const DailyReturnsLineChart = dynamic(
+  () =>
+    import("@/features/design-system/components/DailyReturnsLineChart").then(
+      (module) => module.DailyReturnsLineChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[360px] animate-pulse rounded-md border border-dashed border-border/70 bg-card/40"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
 
 type Point = Readonly<{
   label: string;

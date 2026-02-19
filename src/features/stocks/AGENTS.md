@@ -84,6 +84,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Stock chart/report modules are split into focused helpers (formatters, view-model mapping, hover card rendering, and revenue-mix section helpers/cards) to keep single-file complexity under repo limits.
+- Chart-heavy UI consumers use `next/dynamic` at whole-component boundaries (`StockChartPlot`, screener preview mini-chart, report insights widgets, revenue-mix donut cards) with `ssr: false`; avoid dynamic-wrapping Recharts primitives directly.
 - Screener cards render a larger 1-month (`1M`) preview chart with visible X/Y axes and a monthly percentage tag sourced from cache-first daily price series.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
 - Supported ranges: `1D`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `10Y`, `ALL`.

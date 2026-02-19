@@ -4,7 +4,7 @@ import { Line, LineChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } fro
 
 import { cn } from "@/lib/cn";
 
-type StockScreenerPreviewPoint = Readonly<{
+export type StockScreenerPreviewPoint = Readonly<{
   date: string;
   price: number;
 }>;

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 
-import InsightsWidgetsSection from "./InsightsWidgetsSection";
+import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
 import StockChartSection from "./StockChartSection";
 import StockReportCollapsible from "./StockReportCollapsible";
 import StockReportConceptSections from "./StockReportConceptSections";
@@ -269,7 +269,7 @@ export default function StockReportMainContent({
       <StockReportLeadershipSection />
 
       <section id="sekcja-widzety">
-        <InsightsWidgetsSection />
+        <InsightsWidgetsSectionLazy />
       </section>
 
       <EarningsSummarySection />

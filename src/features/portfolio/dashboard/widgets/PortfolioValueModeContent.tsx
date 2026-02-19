@@ -1,7 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { PortfolioComparisonChart } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
 
@@ -15,6 +15,22 @@ import {
   getPortfolioChartEmptyStateClassName,
   SHARED_PORTFOLIO_CHART_HEIGHT,
 } from "./portfolio-value-over-time-chart-layout";
+
+const PortfolioComparisonChart = dynamic(
+  () =>
+    import("@/features/design-system/components/PortfolioComparisonChart").then(
+      (module) => module.PortfolioComparisonChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[360px] animate-pulse rounded-md border border-dashed border-border/70 bg-card/40"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
 
 type Props = Readonly<{
   rebuildStatus: "idle" | "queued" | "running" | "failed";
