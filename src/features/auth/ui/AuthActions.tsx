@@ -128,9 +128,9 @@ export function AuthActions({
       dispatch({
         type: "set_notice",
         payload: {
-        kind: "error",
-        message:
-          "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie.",
+          kind: "error",
+          message:
+            "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie.",
         },
       });
     }
@@ -151,9 +151,9 @@ export function AuthActions({
       dispatch({
         type: "set_notice",
         payload: {
-        kind: "error",
-        message:
-          "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie.",
+          kind: "error",
+          message:
+            "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie.",
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -163,8 +163,9 @@ export function AuthActions({
     dispatch({
       type: "set_notice",
       payload: {
-      kind: "success",
-      message: "Zaktualizowano. Sprawdź skrzynkę, jeśli wymagana jest weryfikacja.",
+        kind: "success",
+        message:
+          "Zaktualizowano. Sprawdź skrzynkę, jeśli wymagana jest weryfikacja.",
       },
     });
     router.refresh();
@@ -181,8 +182,8 @@ export function AuthActions({
       dispatch({
         type: "set_notice",
         payload: {
-        kind: "error",
-        message: "Coś poszło nie tak. Spróbuj ponownie.",
+          kind: "error",
+          message: "Coś poszło nie tak. Spróbuj ponownie.",
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -205,8 +206,8 @@ export function AuthActions({
       dispatch({
         type: "set_notice",
         payload: {
-        kind: "error",
-        message: "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.",
+          kind: "error",
+          message: "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.",
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -216,8 +217,8 @@ export function AuthActions({
     dispatch({
       type: "set_notice",
       payload: {
-      kind: "success",
-      message: "Zalogowano.",
+        kind: "success",
+        message: "Zalogowano.",
       },
     });
     router.refresh();
@@ -237,9 +238,9 @@ export function AuthActions({
       dispatch({
         type: "set_notice",
         payload: {
-        kind: "error",
-        message:
-          "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie.",
+          kind: "error",
+          message:
+            "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie.",
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -252,8 +253,8 @@ export function AuthActions({
       dispatch({
         type: "set_notice",
         payload: {
-        kind: "success",
-        message: "Konto utworzone i zalogowano.",
+          kind: "success",
+          message: "Konto utworzone i zalogowano.",
         },
       });
       router.push("/onboarding");
@@ -264,8 +265,8 @@ export function AuthActions({
     dispatch({
       type: "set_notice",
       payload: {
-      kind: "success",
-      message: "Sprawdź skrzynkę, aby potwierdzić konto.",
+        kind: "success",
+        message: "Sprawdź skrzynkę, aby potwierdzić konto.",
       },
     });
     dispatch({ type: "set_pending_action", payload: null });
@@ -274,9 +275,10 @@ export function AuthActions({
   const showGoogleAction = Boolean(primaryGoogleActionLabel);
   const showGuestUpgradeForm = mode === "guest";
   const showEmailTabs = mode === "signedOut";
+  const showOauthDivider = showGoogleAction && showEmailTabs;
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-xl space-y-4">
       {notice ? (
         <div
           className={cn(
@@ -291,9 +293,13 @@ export function AuthActions({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {showGoogleAction ? (
-          <Button onClick={startGoogleAuth} disabled={pendingAction === "google"}>
+          <Button
+            onClick={startGoogleAuth}
+            disabled={pendingAction === "google"}
+            className="h-10 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
+          >
             {primaryGoogleActionLabel}
           </Button>
         ) : (
@@ -312,6 +318,14 @@ export function AuthActions({
           </Button>
         )}
       </div>
+
+      {showOauthDivider ? (
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 border-t border-dashed border-black/20" />
+          lub
+          <span className="h-px flex-1 border-t border-dashed border-black/20" />
+        </div>
+      ) : null}
 
       {showEmailTabs ? (
         <AuthEmailTabs

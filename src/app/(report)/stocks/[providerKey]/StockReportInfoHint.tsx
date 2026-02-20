@@ -26,7 +26,7 @@ export default function StockReportInfoHint({
           <Info className="size-4" aria-hidden />
         </button>
       </TooltipTrigger>
-      <TooltipContent className="max-w-xs border border-dashed border-[color:var(--report-rule)] bg-background text-foreground shadow-none">
+      <TooltipContent className="max-w-xs border border-dashed border-black/15 bg-background text-foreground shadow-none">
         {text}
       </TooltipContent>
     </Tooltip>

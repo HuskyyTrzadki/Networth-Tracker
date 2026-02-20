@@ -4,6 +4,7 @@ import { ArrowDown } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "@/lib/recharts-dynamic";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import { Card, CardContent } from "@/features/design-system/components/ui/card";
 
 import StockReportInfoHint from "./StockReportInfoHint";
 import {
@@ -14,8 +15,8 @@ import {
 import { clamp, type Slice } from "./stock-report-revenue-mix-helpers";
 
 const getChangeTone = (direction: "up" | "down" | "flat") => {
-  if (direction === "up") return "text-profit";
-  if (direction === "down") return "text-loss";
+  if (direction === "up") return "text-[#3f7255]";
+  if (direction === "down") return "text-[#a35f58]";
   return "text-muted-foreground";
 };
 
@@ -31,11 +32,15 @@ function MetricCard({
   changeDirection: "up" | "down" | "flat";
 }>) {
   return (
-    <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-xl font-semibold">{value}</p>
-      <p className={`text-xs font-semibold ${getChangeTone(changeDirection)}`}>{change}</p>
-    </div>
+    <Card className="border-black/5 bg-[#faf9f6] [background-image:linear-gradient(140deg,#ffffff_0%,#f3f1eb_100%)]">
+      <CardContent className="space-y-1.5 pt-3">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="font-mono text-xl font-semibold tabular-nums">{value}</p>
+        <p className={`font-mono text-xs font-semibold tabular-nums ${getChangeTone(changeDirection)}`}>
+          {change}
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -54,9 +59,9 @@ function MarginBar({
         <p className="text-sm font-semibold tracking-tight">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <div className="h-7 overflow-hidden rounded-sm border border-dashed border-[color:var(--report-rule)] bg-muted/20">
+      <div className="h-7 overflow-hidden border border-dashed border-black/15 bg-muted/20">
         <div
-          className="relative h-full bg-profit"
+          className="relative h-full bg-[#4a705e]"
           style={{ width: `${clamp(valuePercent, 0, 100)}%` }}
         >
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-white">
@@ -103,7 +108,7 @@ export function DonutCard({
   slices: readonly Slice[];
 }>) {
   return (
-    <article className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
+    <article className="border-t border-dashed border-black/15 pt-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="text-base font-semibold tracking-tight">{title}</h4>
@@ -144,7 +149,7 @@ export function DonutCard({
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 text-sm text-muted-foreground">
+            <div className="flex h-full items-center justify-center border-y border-dashed border-black/15 bg-card/35 text-sm text-muted-foreground">
               Brak danych do wykresu
             </div>
           )}
@@ -154,7 +159,7 @@ export function DonutCard({
           {slices.map((slice) => (
             <div
               key={slice.key}
-              className="flex items-center justify-between border-b border-dashed border-[color:var(--report-rule)] pb-2 last:border-b-0 last:pb-0"
+              className="flex items-center justify-between border-b border-dashed border-black/15 pb-2 last:border-b-0 last:pb-0"
             >
               <div className="inline-flex items-center gap-2 text-muted-foreground">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
@@ -206,7 +211,7 @@ export function ProfitabilitySnapshot({
       : "Marza netto jest umiarkowana, wiec dyscyplina kosztowa i monetyzacja nowych produktow maja duze znaczenie.";
 
   return (
-    <article className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
+    <article className="space-y-3 border-b border-dashed border-black/15 pb-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="text-base font-semibold tracking-tight">Jak firma zamienia przychody na zysk</h4>
@@ -218,7 +223,7 @@ export function ProfitabilitySnapshot({
         <div className="inline-flex items-center gap-2">
           <Button
             size="sm"
-            className="h-8 rounded-sm px-3 text-xs"
+            className="h-8 rounded-none px-3 text-xs"
             variant={mode === "lastQuarter" ? "default" : "outline"}
             onClick={() => onModeChange("lastQuarter")}
           >
@@ -226,7 +231,7 @@ export function ProfitabilitySnapshot({
           </Button>
           <Button
             size="sm"
-            className="h-8 rounded-sm px-3 text-xs"
+            className="h-8 rounded-none px-3 text-xs"
             variant={mode === "lastYear" ? "default" : "outline"}
             onClick={() => onModeChange("lastYear")}
           >
@@ -235,11 +240,11 @@ export function ProfitabilitySnapshot({
         </div>
       </div>
 
-      <div className="mt-4 rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 p-3">
+      <div className="mt-4 border-l border-dashed border-black/20 bg-amber-100/20 px-3 py-2">
         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Szybkie podsumowanie
         </p>
-        <p className="mt-1 text-sm text-foreground/90">{dataset.quickSummary}</p>
+        <p className="mt-1 text-sm italic leading-relaxed text-foreground/90">{dataset.quickSummary}</p>
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -267,17 +272,17 @@ export function ProfitabilitySnapshot({
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3 text-sm text-foreground/90">
+        <div className="border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2 text-sm text-foreground/90">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             Jak to czytac
           </p>
-          <p className="mt-1 leading-7">{explanation}</p>
+          <p className="mt-1 italic leading-relaxed">{explanation}</p>
         </div>
-        <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3 text-sm text-foreground/90">
+        <div className="border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2 text-sm text-foreground/90">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             Co to oznacza
           </p>
-          <p className="mt-1 leading-7">{implication}</p>
+          <p className="mt-1 italic leading-relaxed">{implication}</p>
         </div>
       </div>
 

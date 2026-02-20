@@ -172,7 +172,7 @@ export default async function StockDetailsPage({
 
   return (
     <main
-      className="grid min-h-[calc(100dvh-3.5rem)] grid-cols-1 gap-5 pb-12 lg:grid-cols-[minmax(320px,23rem)_minmax(0,1fr)]"
+      className="grid min-h-[calc(100dvh-3.5rem)] grid-cols-1 gap-5 rounded-lg bg-stone-100/40 pb-12 lg:grid-cols-[minmax(320px,23rem)_minmax(0,1fr)]"
       style={{ overflowAnchor: "none" }}
     >
       <StockReportSidebar
@@ -187,7 +187,9 @@ export default async function StockDetailsPage({
         dividendYield={formatPercent(summary.dividendYield)}
         asOf={formatDate(summary.asOf?.slice(0, 10) ?? null)}
       />
-      <StockReportMainContent providerKey={providerKey} metricCurrency={metricCurrency} />
+      <div className="flex min-w-0 w-full flex-1 justify-center">
+        <StockReportMainContent providerKey={providerKey} metricCurrency={metricCurrency} />
+      </div>
     </main>
   );
 }

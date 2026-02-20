@@ -107,13 +107,13 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
       {
         key: "primary",
         label: "Gotowka",
-        color: "#5f9f62",
+        color: "#5a8d60",
         layer: "bar",
       },
       {
         key: "secondary",
         label: "Dlug",
-        color: "#cf6a62",
+        color: "#b8756f",
         layer: "bar",
       },
     ],
@@ -215,7 +215,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
       {
         key: "primary",
         label: "P/E",
-        color: "#c85d6f",
+        color: "#b36b79",
         layer: "area",
       },
       {

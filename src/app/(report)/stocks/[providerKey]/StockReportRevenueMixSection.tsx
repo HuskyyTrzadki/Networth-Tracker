@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/features/design-system/components/ui/button";
 
 import { StockReportRevenueSankeyCard } from "./StockReportRevenueSankeyCard";
+import { ReportCard, SectionHeader } from "./ReportPrimitives";
 import {
   QUARTER_LABELS,
   getQuarterCell,
@@ -32,7 +33,7 @@ const ProfitabilitySnapshot = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="h-[420px] w-full animate-pulse rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35"
+        className="h-[420px] w-full animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]"
         aria-hidden="true"
       />
     ),
@@ -48,7 +49,7 @@ const DonutCard = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="h-[360px] w-full animate-pulse rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35"
+        className="h-[360px] w-full animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]"
         aria-hidden="true"
       />
     ),
@@ -183,114 +184,115 @@ export default function StockReportRevenueMixSection() {
 
   return (
     <TooltipProvider>
-      <section className="space-y-3 border-b border-dashed border-[color:var(--report-rule)] pb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="text-2xl font-semibold tracking-tight">Jak firma zarabia</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Najpierw wynik i marze, potem mix przychodow.</p>
-          </div>
-        </div>
+      <section className="space-y-3 border-b border-dashed border-black/15 pb-6">
+        <SectionHeader
+          as="h3"
+          title="Jak firma zarabia"
+          description="Najpierw wynik i marze, potem mix przychodow."
+        />
 
         <ProfitabilitySnapshot mode={profitMode} onModeChange={setProfitMode} />
 
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="min-w-0">
-            <h4 className="text-base font-semibold tracking-tight">
-              Mix przychodow ({mixVisual === "sankey" ? "diagram przeplywu" : "wykresy kolowe"})
-            </h4>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Widok: <span className="font-mono">{periodLabel}</span>
-            </p>
-          </div>
+        <ReportCard contentClassName="space-y-4 p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="min-w-0">
+                <h4 className="text-base font-semibold tracking-tight">
+                  Mix przychodow ({mixVisual === "sankey" ? "diagram przeplywu" : "wykresy kolowe"})
+                </h4>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Widok: <span className="font-mono tabular-nums">{periodLabel}</span>
+                </p>
+              </div>
 
-          <div className="inline-flex items-center gap-2">
-            <Button
-              size="sm"
-              className="h-8 rounded-sm px-3 text-[11px]"
-              variant={mixVisual === "sankey" ? "default" : "outline"}
-              onClick={() => setMixVisual("sankey")}
-            >
-              Sankey
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 rounded-sm px-3 text-[11px]"
-              variant={mixVisual === "donut" ? "default" : "outline"}
-              onClick={() => setMixVisual("donut")}
-            >
-              Kołowe
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 rounded-sm px-3 text-[11px]"
-              variant={mode === "now" ? "default" : "outline"}
-              onClick={() => setMode("now")}
-            >
-              Teraz
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 rounded-sm px-3 text-[11px]"
-              variant={mode === "quarterly" ? "default" : "outline"}
-              onClick={() => setMode("quarterly")}
-            >
-              Kwartalnie
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 rounded-sm px-3 text-[11px]"
-              variant={mode === "annual" ? "default" : "outline"}
-              onClick={() => setMode("annual")}
-            >
-              Rocznie
-            </Button>
-          </div>
-        </div>
+              <div className="inline-flex items-center gap-2">
+                <Button
+                  size="sm"
+                  className="h-8 rounded-none px-3 text-[11px]"
+                  variant={mixVisual === "sankey" ? "default" : "outline"}
+                  onClick={() => setMixVisual("sankey")}
+                >
+                  Sankey
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 rounded-none px-3 text-[11px]"
+                  variant={mixVisual === "donut" ? "default" : "outline"}
+                  onClick={() => setMixVisual("donut")}
+                >
+                  Kołowe
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 rounded-none px-3 text-[11px]"
+                  variant={mode === "now" ? "default" : "outline"}
+                  onClick={() => setMode("now")}
+                >
+                  Teraz
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 rounded-none px-3 text-[11px]"
+                  variant={mode === "quarterly" ? "default" : "outline"}
+                  onClick={() => setMode("quarterly")}
+                >
+                  Kwartalnie
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 rounded-none px-3 text-[11px]"
+                  variant={mode === "annual" ? "default" : "outline"}
+                  onClick={() => setMode("annual")}
+                >
+                  Rocznie
+                </Button>
+              </div>
+            </div>
 
-        {mode === "quarterly" ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {(["q1", "q2", "q3", "q4"] as const).map((nextQuarter) => (
-              <Button
-                key={nextQuarter}
-                size="sm"
-                className="h-7 rounded-sm px-2.5 text-[11px] font-mono"
-                variant={quarter === nextQuarter ? "default" : "outline"}
-                onClick={() => setQuarter(nextQuarter)}
-              >
-                {QUARTER_LABELS[nextQuarter]}
-              </Button>
-            ))}
-          </div>
-        ) : null}
+            {mode === "quarterly" ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {(["q1", "q2", "q3", "q4"] as const).map((nextQuarter) => (
+                  <Button
+                    key={nextQuarter}
+                    size="sm"
+                    className="h-7 rounded-none px-2.5 text-[11px] font-mono"
+                    variant={quarter === nextQuarter ? "default" : "outline"}
+                    onClick={() => setQuarter(nextQuarter)}
+                  >
+                    {QUARTER_LABELS[nextQuarter]}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
 
-        {mixVisual === "sankey" ? (
-          <div className="space-y-3">
-            <StockReportRevenueSankeyCard
-              revenueSegments={sankeySegments}
-              costSlices={costSlices}
-              netMarginPercent={netMarginPercent}
-              netProfitDescription={netSlice?.help}
-            />
-            <DonutCard
-              title="Geografia przychodow"
-              subtitle={`Osobny widok geograficzny (${periodLabel})`}
-              slices={geoSlices}
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            <DonutCard
-              title="Przychody wedlug produktow"
-              subtitle="Udzial segmentow w przychodach"
-              slices={productsSlices}
-            />
-            <DonutCard
-              title="Przychody wedlug regionu"
-              subtitle="Udzial regionow w przychodach"
-              slices={geoSlices}
-            />
-          </div>
-        )}
+            {mixVisual === "sankey" ? (
+              <div className="space-y-3">
+                <StockReportRevenueSankeyCard
+                  revenueSegments={sankeySegments}
+                  costSlices={costSlices}
+                  netMarginPercent={netMarginPercent}
+                  netProfitDescription={netSlice?.help}
+                />
+                <DonutCard
+                  title="Geografia przychodow"
+                  subtitle={`Osobny widok geograficzny (${periodLabel})`}
+                  slices={geoSlices}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                <DonutCard
+                  title="Przychody wedlug produktow"
+                  subtitle="Udzial segmentow w przychodach"
+                  slices={productsSlices}
+                />
+                <DonutCard
+                  title="Przychody wedlug regionu"
+                  subtitle="Udzial regionow w przychodach"
+                  slices={geoSlices}
+                />
+              </div>
+            )}
+        </ReportCard>
       </section>
     </TooltipProvider>
   );

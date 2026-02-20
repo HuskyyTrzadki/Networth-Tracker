@@ -51,9 +51,9 @@ const INSIDER_TIMELINE = [
 
 export default function StockReportLeadershipSection() {
   return (
-    <section id="sekcja-zarzad" className="space-y-3 border-b border-dashed border-[color:var(--report-rule)] pb-6">
+    <section id="sekcja-zarzad" className="space-y-3 border-b border-dashed border-black/15 pb-6">
       <div>
-        <h3 className="text-2xl font-semibold tracking-tight">Kto steruje statkiem</h3>
+        <h3 className="font-serif text-2xl font-bold tracking-tight">Kto steruje statkiem</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Profil zarzadu i aktywnosc insiderow pomagaja ocenic jakosc decyzji w dlugim terminie.
         </p>
@@ -63,7 +63,7 @@ export default function StockReportLeadershipSection() {
         {LEADERSHIP_CARDS.map((leader) => (
           <article
             key={leader.name}
-            className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3"
+            className="border-b border-dashed border-black/15 pb-3"
           >
             <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
               {leader.role}
@@ -78,13 +78,13 @@ export default function StockReportLeadershipSection() {
         ))}
       </div>
 
-      <article className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
+      <article className="border-b border-dashed border-black/15 pb-3">
         <h4 className="text-base font-semibold tracking-tight">Insiderzy na osi czasu</h4>
         <ol className="mt-3 space-y-2">
           {INSIDER_TIMELINE.map((item) => (
             <li
               key={`${item.date}-${item.person}-${item.action}`}
-              className="grid gap-2 border-b border-dashed border-[color:var(--report-rule)] pb-2 last:border-b-0 last:pb-0 md:grid-cols-[120px_minmax(0,1fr)]"
+              className="grid gap-2 border-b border-dashed border-black/15 pb-2 last:border-b-0 last:pb-0 md:grid-cols-[120px_minmax(0,1fr)]"
             >
               <p className="font-mono text-[11px] text-muted-foreground">{item.date}</p>
               <div className="space-y-0.5">
@@ -116,4 +116,3 @@ export default function StockReportLeadershipSection() {
     </section>
   );
 }
-

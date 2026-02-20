@@ -21,6 +21,12 @@ type Props = Readonly<{
   outerRadius?: number | string;
 }>;
 
+const sanitizeSvgIdToken = (value: string) =>
+  value
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 export function AllocationDonutChart({
   data,
   height = 240,
@@ -37,7 +43,8 @@ export function AllocationDonutChart({
           <defs>
             {chartData.map((slice, index) => {
               if (!slice.patternId || slice.patternId === "solid") return null;
-              const patternKey = `${chartId}-${slice.id}-${index}`;
+              const idToken = sanitizeSvgIdToken(slice.id) || `slice-${index}`;
+              const patternKey = `${chartId}-${idToken}-${index}`;
               return (
                 <pattern
                   key={patternKey}
@@ -89,7 +96,8 @@ export function AllocationDonutChart({
             animationEasing="ease-out"
           >
             {chartData.map((slice, index) => {
-              const patternKey = `${chartId}-${slice.id}-${index}`;
+              const idToken = sanitizeSvgIdToken(slice.id) || `slice-${index}`;
+              const patternKey = `${chartId}-${idToken}-${index}`;
               return (
                 <Cell
                   key={slice.id}

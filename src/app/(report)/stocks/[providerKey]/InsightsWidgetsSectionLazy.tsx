@@ -8,7 +8,7 @@ const InsightsWidgetsSection = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="h-[460px] animate-pulse rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35"
+        className="h-[460px] animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]"
         aria-hidden="true"
       />
     ),

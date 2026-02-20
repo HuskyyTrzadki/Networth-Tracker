@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
+import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/client";
 
@@ -140,119 +141,127 @@ export function AuthLoginPanel() {
   };
 
   return (
-    <section className="mx-auto w-full max-w-[460px] rounded-md border border-dashed border-border/90 bg-card/70 p-5 sm:p-6">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-semibold tracking-tight">Logowanie</h1>
-        <p className="text-sm text-muted-foreground">
-          Zaloguj sie, aby korzystac z raportow i portfolio na wielu urzadzeniach.
-        </p>
-      </div>
-
-      <div className="mt-6 space-y-4">
-        <Button
-          onClick={onGoogleSignIn}
-          disabled={pendingAction === "google"}
-          className="h-11 w-full justify-center text-sm"
-          variant="outline"
-        >
-          Kontynuuj z Google
-        </Button>
-
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 border-t border-dashed border-border/70" />
-          albo
-          <span className="h-px flex-1 border-t border-dashed border-border/70" />
-        </div>
-
-        <div className="inline-flex rounded-md border border-border/85 p-0.5">
-          <button
-            type="button"
-            onClick={() => dispatch({ type: "set_mode", payload: "signin" })}
-            className={cn(
-              "h-8 rounded-sm px-3 text-xs font-semibold uppercase tracking-[0.08em]",
-              mode === "signin" ? "bg-foreground text-background" : "text-foreground"
-            )}
-          >
+    <Card className="mx-auto w-full max-w-[560px] border-black/5 bg-white">
+      <CardContent className="p-6 sm:p-7">
+        <div className="space-y-2">
+          <h1 className="font-serif text-4xl font-semibold tracking-tight text-foreground">
             Logowanie
-          </button>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: "set_mode", payload: "signup" })}
-            className={cn(
-              "h-8 rounded-sm px-3 text-xs font-semibold uppercase tracking-[0.08em]",
-              mode === "signup" ? "bg-foreground text-background" : "text-foreground"
-            )}
-          >
-            Rejestracja
-          </button>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Zaloguj sie, aby korzystac z raportow i portfolio na wielu urzadzeniach.
+          </p>
         </div>
 
-        <div className="space-y-3">
-          <label className="block space-y-1.5" htmlFor="auth-login-email">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              E-mail
-            </span>
-            <Input
-              id="auth-login-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) =>
-                dispatch({ type: "set_email", payload: event.target.value })
-              }
-              placeholder="you@example.com"
-            />
-          </label>
-          <label className="block space-y-1.5" htmlFor="auth-login-password">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Haslo
-            </span>
-            <Input
-              id="auth-login-password"
-              type="password"
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(event) =>
-                dispatch({ type: "set_password", payload: event.target.value })
-              }
-              placeholder="Minimum 8 znakow"
-            />
-          </label>
+        <div className="mt-6 max-w-md space-y-4">
           <Button
-            className="h-11 w-full text-sm"
-            onClick={onSubmit}
-            disabled={pendingAction === "signin" || pendingAction === "signup"}
+            onClick={onGoogleSignIn}
+            disabled={pendingAction === "google"}
+            className="h-11 w-full justify-center rounded-sm text-sm"
+            variant="outline"
           >
-            {mode === "signin" ? "Zaloguj" : "Utworz konto"}
+            Kontynuuj z Google
           </Button>
-        </div>
 
-        {notice ? (
-          <div
-            role={notice.kind === "error" ? "alert" : "status"}
-            className={cn(
-              "rounded-md border px-3 py-2 text-sm",
-              notice.kind === "error"
-                ? "border-destructive/50 text-destructive"
-                : "border-profit/60 text-profit"
-            )}
-          >
-            {notice.message}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 border-t border-dashed border-border/70" />
+            albo
+            <span className="h-px flex-1 border-t border-dashed border-border/70" />
           </div>
-        ) : null}
 
-        <p className="text-xs text-muted-foreground">
-          Kontynuujac, akceptujesz{" "}
-          <Link href="/terms" className="underline">
-            regulamin
-          </Link>{" "}
-          i{" "}
-          <Link href="/privacy" className="underline">
-            polityke prywatnosci
-          </Link>
-          .
-        </p>
-      </div>
-    </section>
+          <div className="inline-flex items-center gap-5">
+            <button
+              type="button"
+              onClick={() => dispatch({ type: "set_mode", payload: "signin" })}
+              className={cn(
+                "border-b border-transparent pb-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground/80 transition-colors",
+                mode === "signin"
+                  ? "border-dashed border-foreground text-foreground"
+                  : "hover:text-foreground"
+              )}
+            >
+              Logowanie
+            </button>
+            <button
+              type="button"
+              onClick={() => dispatch({ type: "set_mode", payload: "signup" })}
+              className={cn(
+                "border-b border-transparent pb-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground/80 transition-colors",
+                mode === "signup"
+                  ? "border-dashed border-foreground text-foreground"
+                  : "hover:text-foreground"
+              )}
+            >
+              Rejestracja
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block space-y-1.5" htmlFor="auth-login-email">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                E-mail
+              </span>
+              <Input
+                id="auth-login-email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) =>
+                  dispatch({ type: "set_email", payload: event.target.value })
+                }
+                placeholder="you@example.com"
+              />
+            </label>
+            <label className="block space-y-1.5" htmlFor="auth-login-password">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Haslo
+              </span>
+              <Input
+                id="auth-login-password"
+                type="password"
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(event) =>
+                  dispatch({ type: "set_password", payload: event.target.value })
+                }
+                placeholder="Minimum 8 znakow"
+              />
+            </label>
+            <Button
+              className="h-11 w-full rounded-sm bg-[#1c1c1c] text-sm text-white hover:bg-[#151515]"
+              onClick={onSubmit}
+              disabled={pendingAction === "signin" || pendingAction === "signup"}
+            >
+              {mode === "signin" ? "Zaloguj" : "Utworz konto"}
+            </Button>
+          </div>
+
+          {notice ? (
+            <div
+              role={notice.kind === "error" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                notice.kind === "error"
+                  ? "border-destructive/50 text-destructive"
+                  : "border-profit/60 text-profit"
+              )}
+            >
+              {notice.message}
+            </div>
+          ) : null}
+
+          <p className="text-xs text-muted-foreground">
+            Kontynuujac, akceptujesz{" "}
+            <Link href="/terms" className="underline">
+              regulamin
+            </Link>{" "}
+            i{" "}
+            <Link href="/privacy" className="underline">
+              polityke prywatnosci
+            </Link>
+            .
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

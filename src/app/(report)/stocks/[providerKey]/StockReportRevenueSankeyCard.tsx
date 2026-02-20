@@ -22,7 +22,7 @@ type SankeyNodePattern = "solid" | "hatch" | "dots" | "cross";
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 1,
 });
-const NET_PROFIT_COLOR = "#5bb58a";
+const NET_PROFIT_COLOR = "#4f7a63";
 
 type SankeyLineType = "solid" | "dashed" | "dotted";
 
@@ -73,9 +73,9 @@ const buildOption = (
       decal: toDecal(node.pattern),
     },
     label: {
-      color: "#3b3b3b",
+      color: "#2f2c27",
       fontFamily: "var(--font-mono)",
-      fontSize: 11,
+      fontSize: 12,
       position: toLabelPosition(node.stage),
       align: toLabelAlign(node.stage),
       distance: node.stage === "collector" ? 6 : 10,
@@ -125,7 +125,7 @@ const buildOption = (
     tooltip: {
       trigger: "item",
       backgroundColor: "#f8f2e5",
-      borderColor: "#6b645a",
+      borderColor: "#5e584f",
       borderWidth: 1,
       textStyle: {
         color: "#393939",
@@ -218,7 +218,7 @@ export function StockReportRevenueSankeyCard({
   const option = buildOption(model);
 
   return (
-    <article className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
+    <article className="border-t border-dashed border-black/15 pt-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <div className="flex items-center gap-1">
@@ -240,7 +240,7 @@ export function StockReportRevenueSankeyCard({
         </p>
       </div>
 
-      <div className="mt-3 h-[336px] overflow-hidden rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card/35 p-2">
+      <div className="mt-3 h-[336px] overflow-hidden bg-white/70 p-2">
         <ReactECharts
           option={option}
           notMerge

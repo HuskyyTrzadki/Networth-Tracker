@@ -38,14 +38,24 @@ export function AuthEmailTabs({
   onSignUpSubmit,
 }: Props) {
   return (
-    <div className="rounded-lg border border-border/80 bg-background/75 p-4">
+    <div className="space-y-3">
       <Tabs defaultValue="signin">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signin">Zaloguj</TabsTrigger>
-          <TabsTrigger value="signup">Załóż konto</TabsTrigger>
+        <TabsList className="h-auto w-full justify-start gap-5 rounded-none border-0 bg-transparent p-0">
+          <TabsTrigger
+            value="signin"
+            className="!h-auto !rounded-none !border-0 !bg-transparent !px-0 !pb-1 text-xs font-semibold uppercase tracking-[0.08em] data-[state=active]:!border-b data-[state=active]:!border-dashed data-[state=active]:!border-foreground data-[state=active]:!bg-transparent data-[state=active]:!ring-0 data-[state=active]:!shadow-none"
+          >
+            Zaloguj
+          </TabsTrigger>
+          <TabsTrigger
+            value="signup"
+            className="!h-auto !rounded-none !border-0 !bg-transparent !px-0 !pb-1 text-xs font-semibold uppercase tracking-[0.08em] data-[state=active]:!border-b data-[state=active]:!border-dashed data-[state=active]:!border-foreground data-[state=active]:!bg-transparent data-[state=active]:!ring-0 data-[state=active]:!shadow-none"
+          >
+            Załóż konto
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="signin" className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="signin-email">E-mail</Label>
               <Input
@@ -70,13 +80,18 @@ export function AuthEmailTabs({
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" onClick={onSignInSubmit} disabled={pendingAction === "signin"}>
+            <Button
+              variant="outline"
+              onClick={onSignInSubmit}
+              disabled={pendingAction === "signin"}
+              className="h-10 min-w-32 rounded-sm"
+            >
               Zaloguj
             </Button>
           </div>
         </TabsContent>
         <TabsContent value="signup" className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="signup-email">E-mail</Label>
               <Input
@@ -101,7 +116,12 @@ export function AuthEmailTabs({
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" onClick={onSignUpSubmit} disabled={pendingAction === "signup"}>
+            <Button
+              variant="outline"
+              onClick={onSignUpSubmit}
+              disabled={pendingAction === "signup"}
+              className="h-10 min-w-36 rounded-sm"
+            >
               Utwórz konto
             </Button>
           </div>

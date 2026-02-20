@@ -5,12 +5,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
 export const cardVariants = cva(
-  "rounded-md border text-card-foreground shadow-[var(--surface-shadow)]",
+  "rounded-md border text-card-foreground shadow-[var(--surface-shadow)] [background-image:linear-gradient(135deg,var(--surface-card-peak)_0%,var(--card)_100%)]",
   {
     variants: {
       surface: {
-        default: "border-border/85 bg-card",
-        subtle: "border-border/70 bg-card/80",
+        default: "border-border/70 bg-card",
+        subtle: "border-border/55 bg-card/90",
       },
     },
     defaultVariants: {

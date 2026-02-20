@@ -37,7 +37,7 @@ export default function StockReportCollapsible({
     >
       <CollapsibleTrigger
         className={cn(
-          "group flex w-full cursor-pointer items-center justify-between gap-3 rounded-sm text-left text-base font-semibold tracking-tight transition-colors hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "group flex w-full cursor-pointer items-center justify-between gap-3 rounded-none text-left text-base font-semibold tracking-tight transition-colors hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           triggerClassName
         )}
       >

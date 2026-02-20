@@ -31,6 +31,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Auth callback and signup confirmation redirects now resolve origin via forwarded headers (`x-forwarded-host/proto`) to avoid accidental localhost redirects behind proxies.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.
 - Auth surfaces were visually normalized to shared UI rhythm (button heights, section radii, status panel shape) while preserving existing auth flow behavior and copy.
+- Auth settings and login wrappers now use the shared tactile `Card` primitive (`bg-white`, subtle shadow token, light border) instead of one-off container styling.
+- Auth forms now keep a constrained inner width (`max-w-md`) to avoid over-wide desktop inputs.
+- Login/register mode switch uses compact typography tabs with dashed underline active state; OAuth/email split uses explicit `lub` divider.
 
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.

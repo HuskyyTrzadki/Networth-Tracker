@@ -3,14 +3,15 @@ import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
 import type { PortfolioSummary, ValuedHolding } from "../../server/valuation";
 
 const chartColors = [
-  { color: "#2f2f2f", patternId: "solid" },
-  { color: "#556f85", patternId: "hatch" },
-  { color: "#8c6e50", patternId: "dots" },
-  { color: "#4f7865", patternId: "cross" },
-  { color: "#8d534e", patternId: "grid" },
+  { color: "#1f2430", patternId: "solid" },
+  { color: "#1f4e79", patternId: "hatch" },
+  { color: "#8a5a14", patternId: "dots" },
+  { color: "#17603d", patternId: "cross" },
+  { color: "#8b1e3f", patternId: "grid" },
 ] as const;
 
 const maxSlices = 5;
+const minimumVisibleShare = 0.04;
 
 export type AllocationRow = Readonly<{
   id: string;
@@ -32,6 +33,19 @@ const sumValues = (holdings: readonly ValuedHolding[]) =>
     return parsed ? addDecimals(sum, parsed) : sum;
   }, decimalZero());
 
+const getHoldingLabel = (holding: ValuedHolding) => {
+  if (holding.symbol === "CUSTOM" || holding.provider === "custom") {
+    const customName = holding.name.trim();
+    if (customName.length > 0) return customName;
+  }
+
+  const symbol = holding.symbol.trim();
+  if (symbol.length > 0) return symbol;
+
+  const fallbackName = holding.name.trim();
+  return fallbackName.length > 0 ? fallbackName : "—";
+};
+
 export function buildAllocationData(
   summary: PortfolioSummary
 ): readonly AllocationRow[] {
@@ -46,14 +60,22 @@ export function buildAllocationData(
   const sorted = [...valuedHoldings].sort(
     (a, b) => toShare(b.weight) - toShare(a.weight)
   );
-
-  const primaryCount = sorted.length > maxSlices ? maxSlices - 1 : sorted.length;
-  const primary = sorted.slice(0, primaryCount);
-  const remainder = sorted.slice(primaryCount);
+  const belowThreshold = sorted.filter(
+    (holding) => toShare(holding.weight) < minimumVisibleShare
+  );
+  const aboveThreshold = sorted.filter(
+    (holding) => toShare(holding.weight) >= minimumVisibleShare
+  );
+  const shouldReserveOtherSlot =
+    belowThreshold.length > 0 || aboveThreshold.length > maxSlices;
+  const maxPrimary = shouldReserveOtherSlot ? maxSlices - 1 : maxSlices;
+  const primary = aboveThreshold.slice(0, maxPrimary);
+  const overflow = aboveThreshold.slice(maxPrimary);
+  const remainder = [...overflow, ...belowThreshold];
 
   const rows: AllocationRow[] = primary.map((holding, index) => ({
     id: holding.instrumentId,
-    label: holding.symbol,
+    label: getHoldingLabel(holding),
     share: toShare(holding.weight),
     valueBase: holding.valueBase,
     color: chartColors[index % chartColors.length].color,
@@ -61,7 +83,7 @@ export function buildAllocationData(
   }));
 
   if (remainder.length > 0) {
-    const remainderShare = Math.max(0, 1 - sumWeights(primary));
+    const remainderShare = Math.max(0, sumWeights(remainder));
     const remainderValue = sumValues(remainder).toString();
     const styleToken = chartColors[(maxSlices - 1) % chartColors.length];
 

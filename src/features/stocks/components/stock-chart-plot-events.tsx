@@ -270,7 +270,7 @@ export const buildStockChartEventMarkerPoints = (
   const topDomainPrice = priceAxisDomain?.[1] ?? 0;
   const bottomDomainPrice = priceAxisDomain?.[0] ?? 0;
   const domainSpan = Math.max(topDomainPrice - bottomDomainPrice, 1);
-  const markerBandPrice = topDomainPrice - domainSpan * 0.015;
+  const markerBandPrice = topDomainPrice - domainSpan * 0.018;
   const priceFallback = markerBandPrice;
   const priceByTimestamp = new Map(
     chartData
@@ -289,21 +289,48 @@ export const buildStockChartEventMarkerPoints = (
   const maxUserTradeValue =
     userTradeValues.length > 0 ? Math.max(...userTradeValues) : null;
 
-  return eventMarkers.map((marker) => ({
-    ...marker,
-    markerY:
-      typeof priceByTimestamp.get(marker.t) === "number"
-        ? markerBandPrice
-        : priceFallback,
-    markerSizeScale:
-      marker.kind === "userTrade" &&
-      minUserTradeValue !== null &&
-      maxUserTradeValue !== null &&
-      maxUserTradeValue > minUserTradeValue
-        ? (marker.positionValue - minUserTradeValue) /
-          (maxUserTradeValue - minUserTradeValue)
+  let newsLane = 0;
+  let globalNewsLane = 0;
+
+  return eventMarkers.map((marker) => {
+    const baseOffset =
+      marker.kind === "earnings"
+        ? 0.026
         : marker.kind === "userTrade"
-          ? 0.55
-          : 0.6,
-  }));
+          ? 0.038
+          : marker.kind === "globalNews"
+            ? 0.098
+            : 0.058;
+    const laneOffset =
+      marker.kind === "news"
+        ? (newsLane++ % 3) * 0.022
+        : marker.kind === "globalNews"
+          ? (globalNewsLane++ % 3) * 0.028
+          : 0;
+    const markerY = Math.max(
+      bottomDomainPrice + domainSpan * 0.08,
+      topDomainPrice - domainSpan * (baseOffset + laneOffset)
+    );
+
+    return {
+      ...marker,
+      markerY:
+        typeof priceByTimestamp.get(marker.t) === "number"
+          ? markerY
+          : Math.max(
+              bottomDomainPrice + domainSpan * 0.08,
+              priceFallback - domainSpan * (baseOffset + laneOffset)
+            ),
+      markerSizeScale:
+        marker.kind === "userTrade" &&
+        minUserTradeValue !== null &&
+        maxUserTradeValue !== null &&
+        maxUserTradeValue > minUserTradeValue
+          ? (marker.positionValue - minUserTradeValue) /
+            (maxUserTradeValue - minUserTradeValue)
+          : marker.kind === "userTrade"
+            ? 0.55
+            : 0.6,
+    };
+  });
 };

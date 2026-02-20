@@ -122,7 +122,22 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Report concept section `Ten rok vs ostatni rok` uses ledger separators (`border-dotted`) between rows to stay consistent with transaction-table rhythm.
 - Report summary semantics are explicit: `Mocne strony` use positive icons/tone (green), while `Ryzyka` use warning/downside icons/tone (rose).
 - Stock report sidebar remains sticky on desktop (`top-8`, `self-start`) so ticker context + table-of-contents stay visible while reading long sections.
+- Stock report sidebar `Na tej stronie` links now include scrollspy active highlight (left rail + chevron) using a client-side, rAF-throttled scroll resolver for stable section tracking.
 - Revenue-allocation palette in `HOW_THEY_MAKE_MONEY` is intentionally muted (earth/editorial tones) to avoid saturated chart-library defaults on paper-like backgrounds.
+- Report architecture primitives live in `src/app/(report)/stocks/[providerKey]/ReportPrimitives.tsx`:
+  - `SectionHeader` for serif editorial section headings + optional actions area,
+  - `ReportCard` for shared tactile white surface wrapper (`border-black/5`, consistent content padding),
+  - `ReportSection` for vertical rhythm + faint dashed section rules,
+  - `EditorsNote` for educational marginalia blocks,
+  - `ReportDataRow` for strict label-left/value-right financial rows (`font-mono tabular-nums`).
+- Stock report chart controls are intentionally grouped as:
+  - tight range/mode strips with sharp corners,
+  - collapsible `Zaawansowane nakladki` panel for overlays/events (to avoid 8+ always-visible toggle buttons).
+- `StockChartCard.tsx` was split with extracted UI subcomponents (`StockChartCardHeader.tsx`, `StockChartAdvancedOverlays.tsx`, `stock-chart-card-state.ts`) to keep file size under repo limits and preserve readability.
+- Report shell styling follows the `Tactile Ledger` standard:
+  - desk/page uses warm paper tone while major report blocks sit on tactile white cards with layered shadows,
+  - chart/table internals keep faint dashed ledger separators (`border-black/15`) and strict mono numeric alignment,
+  - explanatory copy blocks use editorial marginalia treatment (`EditorsNote`: subtle tint + italic body) instead of generic gray boxes.
 - Balance snapshot summary now uses deterministic natural-language risk interpretation (`Niskie/Umiarkowane/Podwyzszone`) via helper module `stock-report-balance-summary.ts`.
 
 ## Tests

@@ -2,6 +2,7 @@ import type {
   StockValuationRangeContext,
   StockValuationSummary,
 } from "@/features/stocks";
+import { Card, CardContent } from "@/features/design-system/components/ui/card";
 
 const ratioFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 2,
@@ -66,9 +67,9 @@ function MetricRow({
   value: string;
 }>) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-dashed border-[color:var(--report-rule)] py-2 text-[13px] last:border-b-0">
+    <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-dashed border-black/15 px-2 py-2 text-[13px] last:border-b-0 hover:bg-emerald-900/5 before:absolute before:bottom-1 before:left-0 before:top-1 before:w-px before:bg-transparent hover:before:bg-emerald-700/35">
       <p className="text-muted-foreground">{label}</p>
-      <p className="font-mono text-[13px] font-semibold tabular-nums">{value}</p>
+      <p className="text-right font-mono text-[13px] font-semibold tabular-nums">{value}</p>
     </div>
   );
 }
@@ -101,7 +102,7 @@ function ValuationRangeBar({
       : "Brak zakresu";
 
   return (
-    <article className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
+    <article className="space-y-2 border-b border-dashed border-black/15 pb-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold tracking-tight">PE (TTM)</h3>
         <span className="font-mono text-sm font-semibold tabular-nums">
@@ -114,7 +115,7 @@ function ValuationRangeBar({
 
       <div className="mt-3">
         <div
-          className="relative h-7 overflow-hidden rounded-sm border border-dashed border-[color:var(--report-rule)] bg-card"
+          className="relative h-7 overflow-hidden border border-dashed border-black/15 bg-card"
           style={{
             backgroundImage:
               "linear-gradient(90deg, rgb(73 132 95 / 0.24) 0%, rgb(125 119 107 / 0.14) 50%, rgb(168 86 86 / 0.24) 100%), repeating-linear-gradient(90deg, transparent 0 14px, rgb(57 57 57 / 0.06) 14px 15px)",
@@ -191,41 +192,44 @@ export function StockMetricsGrid({
 
   return (
     <section className="space-y-3 pt-3">
-      <h2 className="text-2xl font-semibold tracking-tight">Wycena i fundamenty</h2>
+      <h2 className="font-serif text-2xl font-bold tracking-tight">Wycena i fundamenty</h2>
+      <Card className="border-black/5 bg-white">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+            <div className="space-y-2.5">
+              <p className="text-sm text-muted-foreground">
+                Kontekst 5Y: odczyt biezacy na tle historii spolki.
+              </p>
+              <ValuationRangeBar context={peContext} />
+              <div className="border-t border-dashed border-black/15 pt-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                  Dodatkowe mnozniki
+                </p>
+                <div className="mt-2">
+                  {valuationRows.length > 0 ? (
+                    valuationRows.map((metric) => (
+                      <MetricRow key={metric.label} label={metric.label} value={metric.value} />
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Brak dodatkowych mnoznikow.</p>
+                  )}
+                </div>
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <div className="space-y-2.5">
-          <p className="text-sm text-muted-foreground">
-            Kontekst 5Y: odczyt biezacy na tle historii spolki.
-          </p>
-          <ValuationRangeBar context={peContext} />
-          <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Dodatkowe mnozniki
-            </p>
-            <div className="mt-2">
-              {valuationRows.length > 0 ? (
-                valuationRows.map((metric) => (
+            <div className="border-t border-dashed border-black/15 pt-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Fundamenty
+              </p>
+              <div className="mt-2">
+                {fundamentalRows.map((metric) => (
                   <MetricRow key={metric.label} label={metric.label} value={metric.value} />
-                ))
-              ) : (
-                <p className="text-xs text-muted-foreground">Brak dodatkowych mnoznikow.</p>
-              )}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="rounded-sm border border-dashed border-[color:var(--report-rule)] p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            Fundamenty
-          </p>
-          <div className="mt-2">
-            {fundamentalRows.map((metric) => (
-              <MetricRow key={metric.label} label={metric.label} value={metric.value} />
-            ))}
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

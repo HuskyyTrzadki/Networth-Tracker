@@ -46,6 +46,18 @@ type VisibleMarker = Readonly<{
   price: number;
 }>;
 
+type NarrativeEventMarkerPoint = Extract<
+  StockChartEventMarkerPoint,
+  Readonly<{ kind: "news" | "globalNews" }>
+>;
+
+const isNarrativeEventMarker = (
+  marker: StockChartEventMarkerPoint
+): marker is NarrativeEventMarkerPoint =>
+  (marker.kind === "news" || marker.kind === "globalNews") &&
+  typeof marker.annotationLabel === "string" &&
+  marker.annotationLabel.length > 0;
+
 type Props = Readonly<{
   chart: StockChartResponse | null;
   chartData: readonly StockChartPlotDataPoint[];
@@ -174,6 +186,69 @@ export default function StockChartPlotImpl({
     eventMarkers,
     priceAxisDomainForChart
   );
+  const truncateNarrativeLabel = (label: string) =>
+    label.length > 26 ? `${label.slice(0, 26)}...` : label;
+  const narrativeLabelLayout = (() => {
+    const layout = new Map<
+      string,
+      Readonly<{
+        show: boolean;
+        dx: number;
+        dy: number;
+        textAnchor: "start" | "end";
+        text: string;
+      }>
+    >();
+    const labeledMarkers = eventMarkerPoints
+      .filter(isNarrativeEventMarker)
+      .sort((a, b) => Date.parse(a.t) - Date.parse(b.t));
+
+    let lastVisibleTs: number | null = null;
+    let visibleIndex = 0;
+    const minLabelGapMs = 320 * 24 * 60 * 60 * 1000;
+
+    for (const marker of labeledMarkers) {
+      const markerTs = Date.parse(marker.t);
+      const isTooCloseToPrevious =
+        Number.isFinite(markerTs) &&
+        lastVisibleTs !== null &&
+        markerTs - lastVisibleTs < minLabelGapMs;
+
+      if (isTooCloseToPrevious) {
+        layout.set(marker.id, {
+          show: false,
+          dx: 0,
+          dy: 0,
+          textAnchor: "start",
+          text: truncateNarrativeLabel(marker.annotationLabel ?? ""),
+        });
+        continue;
+      }
+
+      if (Number.isFinite(markerTs)) {
+        lastVisibleTs = markerTs;
+      }
+
+      const side = visibleIndex % 2 === 0 ? 1 : -1;
+      const tier = Math.floor(visibleIndex / 2) % 3;
+      const baseDx = 20;
+      const tierDx = 14;
+      const baseDy = marker.kind === "globalNews" ? -34 : -30;
+      const tierDy = 14;
+
+      layout.set(marker.id, {
+        show: true,
+        dx: side * (baseDx + tier * tierDx),
+        dy: baseDy - tier * tierDy,
+        textAnchor: side === 1 ? "start" : "end",
+        text: truncateNarrativeLabel(marker.annotationLabel ?? ""),
+      });
+
+      visibleIndex += 1;
+    }
+
+    return layout;
+  })();
   const overlayAxisLabelValue = overlayAxisLabel ?? undefined;
   const chartCurrency = chart?.currency ?? "USD";
   const hoveredEventId = hoveredEventMarker?.id ?? null;
@@ -193,12 +268,12 @@ export default function StockChartPlotImpl({
   };
 
   return (
-    <div className="relative h-[340px] w-full min-w-0">
+    <div className="relative h-[420px] w-full min-w-0">
       {chart ? (
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={mutableChartData}
-            margin={{ top: 28, right: 18, left: 6, bottom: 8 }}
+            margin={{ top: 56, right: 18, left: 6, bottom: 8 }}
           >
             <CartesianGrid
               stroke="var(--border)"
@@ -285,6 +360,9 @@ export default function StockChartPlotImpl({
               stroke={priceLineColor}
               strokeOpacity={hasEnabledOverlays ? 0.72 : 1}
               strokeWidth={2.4}
+              style={{
+                filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.22))",
+              }}
               dot={false}
               activeDot={false}
               connectNulls={false}
@@ -335,22 +413,10 @@ export default function StockChartPlotImpl({
                 strokeOpacity={hoveredEventId === marker.id ? 0.62 : 0.25}
                 strokeWidth={hoveredEventId === marker.id ? 1.4 : 1}
                 strokeDasharray={marker.kind === "userTrade" ? "2 4" : "3 5"}
-                label={
-                  showNarrativeLabels &&
-                  (marker.kind === "news" || marker.kind === "globalNews") &&
-                  marker.annotationLabel
-                    ? {
-                        value: marker.annotationLabel,
-                        position: "insideTop",
-                        fill: "var(--muted-foreground)",
-                        fontSize: 10,
-                      }
-                    : undefined
-                }
                 ifOverflow="discard"
               />
             ))}
-            {eventMarkerPoints.map((marker) => (
+            {eventMarkerPoints.map((marker, markerIndex) => (
               <ReferenceDot
                 key={`event-dot-${marker.id}`}
                 x={marker.t}
@@ -358,6 +424,27 @@ export default function StockChartPlotImpl({
                 yAxisId="price"
                 ifOverflow="discard"
                 isFront
+                label={
+                  showNarrativeLabels &&
+                  isNarrativeEventMarker(marker) &&
+                  narrativeLabelLayout.get(marker.id)?.show
+                    ? {
+                        ...(narrativeLabelLayout.get(marker.id) ?? {
+                          show: true,
+                          dx: markerIndex % 2 === 0 ? 18 : -18,
+                          dy: marker.kind === "globalNews" ? -28 : -24,
+                          textAnchor: markerIndex % 2 === 0 ? "start" : "end",
+                          text: truncateNarrativeLabel(marker.annotationLabel),
+                        }),
+                        value:
+                          narrativeLabelLayout.get(marker.id)?.text ??
+                          truncateNarrativeLabel(marker.annotationLabel),
+                        position: "top",
+                        fill: "var(--muted-foreground)",
+                        fontSize: 9,
+                      }
+                    : undefined
+                }
                 shape={(props: unknown) => (
                   <StockChartEventMarkerDot
                     {...(props as StockChartEventMarkerDotProps)}

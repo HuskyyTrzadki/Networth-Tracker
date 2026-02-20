@@ -207,7 +207,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         ) : mode === "ALLOCATION" ? (
           <div className="flex h-full flex-col gap-4 overflow-y-auto pr-1">
             <div className="grid gap-5 lg:grid-cols-[minmax(240px,40%)_minmax(0,1fr)] lg:items-stretch">
-              <div className="relative">
+              <div className="space-y-2">
                 {hasAllocation ? (
                   <AllocationDonutChart data={slices} height={250} />
                 ) : (
@@ -215,19 +215,17 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
                     Brak danych do alokacji
                   </div>
                 )}
-                <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                  <div className="text-center">
-                    <div className="text-[12px] font-medium text-muted-foreground">
-                      Wartość portfela
-                    </div>
-                    <div className="mt-1 inline-flex items-baseline gap-1 font-mono text-lg font-semibold tabular-nums text-foreground">
-                      <span>{totalAmountLabel}</span>
-                      {totalCurrencyLabel ? (
-                        <span className="text-[11px] font-medium text-muted-foreground/75">
-                          {totalCurrencyLabel}
-                        </span>
-                      ) : null}
-                    </div>
+                <div className="text-center">
+                  <div className="text-[12px] font-medium text-muted-foreground">
+                    Wartość portfela
+                  </div>
+                  <div className="mt-1 inline-flex items-baseline gap-1 font-mono text-lg font-semibold tabular-nums text-foreground">
+                    <span>{totalAmountLabel}</span>
+                    {totalCurrencyLabel ? (
+                      <span className="text-[11px] font-medium text-muted-foreground/75">
+                        {totalCurrencyLabel}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </div>

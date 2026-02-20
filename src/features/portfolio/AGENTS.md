@@ -152,6 +152,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Freshness badges remain only in the net-value hero; value/performance chart header no longer duplicates `Notowania z...` / `Kurs FX...` metadata.
 - Value comparison chart now renders as an area chart (thicker primary stroke + subtle gradient fill under `Wartość portfela`) to anchor trend perception.
 - Allocation mode uses desktop side-by-side composition in one panel: donut on the left (~40% width), allocation progress bars on the right to reduce wasted vertical space.
+- Allocation donut labels custom holdings by `name` (instead of raw `CUSTOM`) and merges slices below `4%` into `Pozostałe` to reduce micro-slice noise.
 - Value/performance filter groups (`Tryb`, `Zakres`, `Waluta`) were visually simplified by removing extra outer containers; segmented controls carry the hierarchy.
 - Performance mode chart now follows the same grounded treatment as value mode: primary cumulative-return curve rendered as area with subtle gradient fill and thicker stroke.
 - Portfolio chart control groups (`Tryb`, `Zakres`, `Waluta`, allocation `Koło/Tabela`) now use shared `ToggleGroup` `ledger` variant for stronger active-state hierarchy and lower border noise.
