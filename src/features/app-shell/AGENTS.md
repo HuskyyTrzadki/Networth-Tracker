@@ -36,6 +36,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `n` opens add-transaction route (portfolio-aware on `/portfolio/<id>`),
   - `Escape` requests modal close (`app:close-modal` event).
 - App shell renders a global toast host (`AppToastHost`) and listens for `app:toast` events so features can show success/error feedback without local toast wiring.
+- Active desktop sidebar items use an editorial anchor marker: a 2px vertical left rule on the active row in addition to active background/ring states.
 
 ## Boundaries
 - No domain business logic; UI/navigation only.

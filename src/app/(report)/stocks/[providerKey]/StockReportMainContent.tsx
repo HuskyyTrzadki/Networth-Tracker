@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Check } from "lucide-react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 
@@ -40,27 +41,54 @@ function SummaryStartSection() {
           <div>
             <h3 className="font-semibold">Mocne strony</h3>
             <ul className="mt-2 space-y-1 text-foreground/90">
-              <li>☑ Wysoka rentownosc operacyjna utrzymuje sie mimo skali inwestycji.</li>
-              <li>☑ Przeplywy operacyjne pozostaja mocne i stabilne kwartalnie.</li>
-              <li>☑ Konwersja przychodow na gotowke wspiera elastycznosc finansowa.</li>
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
+                Wysoka rentownosc operacyjna utrzymuje sie mimo skali inwestycji.
+              </li>
+              <li className="flex items-start gap-2">
+                <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
+                Przeplywy operacyjne pozostaja mocne i stabilne kwartalnie.
+              </li>
+              <li className="flex items-start gap-2">
+                <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
+                Konwersja przychodow na gotowke wspiera elastycznosc finansowa.
+              </li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold">Ryzyka</h3>
             <ul className="mt-2 space-y-1 text-foreground/90">
-              <li>☑ Rosnace koszty AI zwiekszaja presje na marze w slabszym cyklu.</li>
-              <li>☑ Wyzej ustawiona baza porownawcza utrudnia utrzymanie dynamiki wzrostu.</li>
-              <li>☑ Wysoki capex podnosi ryzyko opoznionego zwrotu z inwestycji.</li>
+              <li className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
+                Rosnace koszty AI zwiekszaja presje na marze w slabszym cyklu.
+              </li>
+              <li className="flex items-start gap-2">
+                <ArrowDownRight className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
+                Wyzej ustawiona baza porownawcza utrudnia utrzymanie dynamiki wzrostu.
+              </li>
+              <li className="flex items-start gap-2">
+                <ArrowDownRight className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
+                Wysoki capex podnosi ryzyko opoznionego zwrotu z inwestycji.
+              </li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold">Co zmienilo sie ostatnio</h3>
             <ul className="mt-2 space-y-1 text-foreground/90">
-              <li>☑ EPS nadal rosnie szybciej niz przychody.</li>
-              <li>☑ Naklady inwestycyjne wyraznie wzrosly kwartal do kwartalu.</li>
-              <li>☑ Priorytet strategiczny przesunal sie mocniej w strone AI i infrastruktury.</li>
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
+                EPS nadal rosnie szybciej niz przychody.
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
+                Naklady inwestycyjne wyraznie wzrosly kwartal do kwartalu.
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
+                Priorytet strategiczny przesunal sie mocniej w strone AI i infrastruktury.
+              </li>
             </ul>
           </div>
         </div>

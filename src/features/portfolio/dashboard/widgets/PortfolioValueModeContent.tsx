@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
+import { splitCurrencyLabel } from "@/lib/format-currency";
 
 import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ComparisonChartPoint, NullableSeriesPoint } from "../lib/chart-helpers";
@@ -56,6 +57,24 @@ type Props = Readonly<{
   bootstrapPending: boolean;
   onBootstrapRequest: () => void;
 }>;
+
+function EmphasizedCurrencyAmount({
+  value,
+  className,
+}: Readonly<{ value: string; className?: string }>) {
+  const { amount, currency } = splitCurrencyLabel(value);
+
+  return (
+    <span className={cn("inline-flex items-baseline gap-1", className)}>
+      <span>{amount}</span>
+      {currency ? (
+        <span className="text-[0.58em] font-medium text-muted-foreground/75">
+          {currency}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 export function PortfolioValueModeContent({
   rebuildStatus,
@@ -157,7 +176,7 @@ export function PortfolioValueModeContent({
             className={cn(
               "text-4xl font-semibold",
               selectedPeriodAbsoluteChange !== null && selectedPeriodAbsoluteChange > 0
-                ? "text-emerald-600"
+                ? "text-emerald-700"
                 : selectedPeriodAbsoluteChange !== null &&
                     selectedPeriodAbsoluteChange < 0
                   ? "text-rose-600"
@@ -165,16 +184,20 @@ export function PortfolioValueModeContent({
             )}
           >
             {selectedPeriodAbsoluteChange !== null
-              ? `${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
-                  selectedPeriodAbsoluteChange
-                )} ${currency}`
+              ? (
+                  <EmphasizedCurrencyAmount
+                    value={`${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
+                      selectedPeriodAbsoluteChange
+                    )}`}
+                  />
+                )
               : "—"}
           </div>
           <div
             className={cn(
               "font-mono text-sm tabular-nums",
               selectedPeriodChangePercent !== null && selectedPeriodChangePercent > 0
-                ? "text-emerald-600"
+                ? "text-emerald-700"
                 : selectedPeriodChangePercent !== null && selectedPeriodChangePercent < 0
                   ? "text-rose-600"
                   : "text-muted-foreground"
@@ -186,12 +209,13 @@ export function PortfolioValueModeContent({
           </div>
         </div>
       </div>
-      <PortfolioComparisonChart
-        data={comparisonChartData}
-        height={SHARED_PORTFOLIO_CHART_HEIGHT}
-        valueFormatter={formatCurrencyValue}
-        labelFormatter={formatDayLabelWithYear}
-      />
+      <div style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}>
+        <PortfolioComparisonChart
+          data={comparisonChartData}
+          valueFormatter={formatCurrencyValue}
+          labelFormatter={formatDayLabelWithYear}
+        />
+      </div>
       {hasInvestedCapitalGaps ? (
         <div className="text-xs text-muted-foreground">
           Zainwestowany kapitał ma luki historyczne, bo część dni nie ma danych

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { cardVariants } from "@/features/design-system/components/ui/card";
 
 type Props = Readonly<{
   label: string;
@@ -9,12 +10,7 @@ type Props = Readonly<{
 
 export function MetricCard({ label, value, right, className }: Props) {
   return (
-    <div
-      className={cn(
-        "rounded-md border border-border/80 bg-card p-4",
-        className
-      )}
-    >
+    <div className={cn(cardVariants(), "p-4", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-medium text-muted-foreground">{label}</div>

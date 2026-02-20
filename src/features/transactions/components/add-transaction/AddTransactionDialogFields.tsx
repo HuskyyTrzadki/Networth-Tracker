@@ -11,6 +11,7 @@ import { AddTransactionInstrumentSection } from "./AddTransactionInstrumentSecti
 import { AddTransactionCustomTradeFields } from "./AddTransactionCustomTradeFields";
 import { AddTransactionTradeFields } from "./AddTransactionTradeFields";
 import { AddTransactionSidebarSummary } from "./AddTransactionSidebarSummary";
+import { AddTransactionNotesField } from "./AddTransactionNotesField";
 import {
   deriveAvailableAssetQuantity,
   deriveDisplayCurrency,
@@ -173,9 +174,9 @@ export function AddTransactionDialogFields({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-muted/12 px-4 py-4 sm:px-6 sm:py-5">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <section className="space-y-6 rounded-lg border border-border/75 bg-background p-4 sm:p-5">
+    <div className="flex-1 overflow-y-auto bg-muted/12 px-3 py-3 sm:px-5 sm:py-4">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_292px]">
+        <section className="space-y-5 rounded-lg border border-border/75 bg-background p-4">
           <AddTransactionInstrumentSection
             form={form}
             forcedPortfolioId={forcedPortfolioId}
@@ -232,6 +233,11 @@ export function AddTransactionDialogFields({
               onCashCurrencyChange={handleCashCurrencyChange}
             />
           )}
+
+          <AddTransactionNotesField
+            form={form}
+            variant={isCustomTab ? "custom" : "default"}
+          />
         </section>
 
         <AddTransactionSidebarSummary
@@ -242,6 +248,7 @@ export function AddTransactionDialogFields({
           quantity={quantity}
           type={type}
           isCustomTab={isCustomTab}
+          selectedInstrument={selectedInstrument}
         />
       </div>
     </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { AnimatedReveal } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
+import { cardVariants } from "@/features/design-system/components/ui/card";
 import { StockSearchBar } from "@/features/stocks/components/StockSearchBar";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,7 +21,7 @@ function ScreenerFallback() {
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="h-56 animate-pulse rounded-lg border border-border/70 bg-card"
+          className={`${cardVariants()} h-52 animate-pulse`}
         />
       ))}
     </div>
@@ -36,7 +37,9 @@ export default async function StocksPage() {
     return (
       <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>
-        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
+        <div
+          className={`mt-6 px-6 py-6 text-sm text-muted-foreground ${cardVariants()}`}
+        >
           Zaloguj się, aby korzystać ze screenera akcji.
         </div>
         <Button asChild className="mt-4 h-11">

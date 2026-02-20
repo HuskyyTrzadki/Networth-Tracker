@@ -2,16 +2,9 @@
 
 import { format } from "date-fns";
 import {
-  Car,
-  CircleHelp,
-  HandCoins,
   House,
-  Landmark,
-  Laptop,
   LineChart,
-  PiggyBank,
   Wallet,
-  type LucideIcon,
 } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 
@@ -26,8 +19,6 @@ import { Label } from "@/features/design-system/components/ui/label";
 import { Input } from "@/features/design-system/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/features/design-system/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
-import { ToggleGroup, ToggleGroupItem } from "@/features/design-system/components/ui/toggle-group";
-import { cn } from "@/lib/cn";
 
 import { InstrumentCombobox } from "../InstrumentCombobox";
 import type { InstrumentSearchClient } from "../../client/search-instruments";
@@ -37,7 +28,6 @@ import {
   customAssetTypes,
   customAssetTypeLabels,
   isCustomAssetType,
-  type CustomAssetType,
 } from "../../lib/custom-asset-types";
 import {
   SUPPORTED_CASH_CURRENCIES,
@@ -68,16 +58,6 @@ type Props = Readonly<{
   availableAssetQuantity: string | null;
 }>;
 
-const customAssetTypeIcons: Readonly<Record<CustomAssetType, LucideIcon>> = {
-  REAL_ESTATE: House,
-  CAR: Car,
-  COMPUTER: Laptop,
-  TREASURY_BONDS: Landmark,
-  TERM_DEPOSIT: PiggyBank,
-  PRIVATE_LOAN: HandCoins,
-  OTHER: CircleHelp,
-};
-
 export function AddTransactionInstrumentSection({
   form,
   forcedPortfolioId,
@@ -97,6 +77,8 @@ export function AddTransactionInstrumentSection({
   availableCashNow,
   availableAssetQuantity,
 }: Props) {
+  const fieldLabelClass =
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
   const tabIcons = {
     MARKET: LineChart,
     CASH: Wallet,
@@ -116,16 +98,16 @@ export function AddTransactionInstrumentSection({
       />
 
       <div>
-        <Label className="text-sm font-medium">Rodzaj pozycji</Label>
+        <Label className={fieldLabelClass}>Rodzaj pozycji</Label>
         <Tabs onValueChange={(next) => onTabChange(next as AssetTab)} value={activeTab}>
-          <TabsList className="mt-2 grid h-auto w-full grid-cols-3 gap-2">
+          <TabsList className="mt-2 grid h-10 w-full grid-cols-3 gap-1 rounded-md border border-border/70 bg-muted/45 p-1">
             {ASSET_TABS.map((tab) => {
               const Icon = tabIcons[tab.value];
               return (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="h-9 rounded-md"
+                  className="h-8 rounded-sm px-2 text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Icon className="size-3.5" aria-hidden />
@@ -139,62 +121,46 @@ export function AddTransactionInstrumentSection({
       </div>
 
       {isCustomTab ? (
-        <div className="space-y-4 rounded-md border border-border/70 bg-muted/20 p-4">
+        <div className="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3.5">
           <FormField
             control={form.control}
             name="customAssetType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Typ aktywa</FormLabel>
+                <FormLabel className={fieldLabelClass}>Typ aktywa</FormLabel>
                 <FormControl>
-                  <ToggleGroup
-                    type="single"
-                    value={field.value ?? ""}
+                  <Select
                     onValueChange={(next) => {
-                      if (!next) {
-                        field.onChange(undefined);
-                        form.setValue("assetId", "", { shouldValidate: true });
-                        return;
-                      }
                       if (!isCustomAssetType(next)) return;
-
                       field.onChange(next);
                       form.setValue("assetId", `custom:${next}`, { shouldValidate: true });
                     }}
-                    className="flex flex-wrap gap-2"
+                    value={field.value ?? ""}
                   >
-                    {customAssetTypes.map((assetType) => {
-                      const Icon = customAssetTypeIcons[assetType];
-                      return (
-                        <ToggleGroupItem
-                          key={assetType}
-                          value={assetType}
-                          className={cn(
-                            "h-9 rounded-md border border-border/75 bg-background px-3 text-[13px]",
-                            "data-[state=on]:border-primary/40 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                          )}
-                        >
-                          <span className="inline-flex items-center gap-2">
-                            <Icon className="size-4" aria-hidden />
-                            {customAssetTypeLabels[assetType]}
-                          </span>
-                        </ToggleGroupItem>
-                      );
-                    })}
-                  </ToggleGroup>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Wybierz typ aktywa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customAssetTypes.map((assetType) => (
+                        <SelectItem key={assetType} value={assetType}>
+                          {customAssetTypeLabels[assetType]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="customName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nazwa</FormLabel>
+                  <FormLabel className={fieldLabelClass}>Nazwa</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -213,7 +179,7 @@ export function AddTransactionInstrumentSection({
               name="customCurrency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Waluta</FormLabel>
+                  <FormLabel className={fieldLabelClass}>Waluta</FormLabel>
                   <Select
                     onValueChange={(next) => {
                       field.onChange(next);
@@ -246,7 +212,9 @@ export function AddTransactionInstrumentSection({
           name="assetId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{isCashTab ? "Waluta" : "Instrument"}</FormLabel>
+              <FormLabel className={fieldLabelClass}>
+                {isCashTab ? "Waluta" : "Instrument"}
+              </FormLabel>
               <FormControl>
                 {isCashTab ? (
                   <Select
@@ -299,11 +267,11 @@ export function AddTransactionInstrumentSection({
                 )}
               </FormControl>
               {isCashTab ? (
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-2 text-[11px] text-muted-foreground">
                   Dostępne (na dziś): {formatMoney(availableCashNow, resolvedCashCurrency)}
                 </p>
               ) : availableAssetQuantity !== null ? (
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-2 text-[11px] text-muted-foreground">
                   Dostępne do sprzedaży (na teraz): {availableAssetQuantity}
                 </p>
               ) : null}

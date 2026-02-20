@@ -147,6 +147,20 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard visual surfaces (hero, switcher shell, allocation/rebuild cards, and skeletons) were normalized to the same rounded/border rhythm as shared primitives, with decorative shadows/gradients reduced for consistency.
 - Desktop polish follow-up tightened dashboard control density (`PortfolioValueOverTimeHeader`) and route-loading shell width alignment (`max-w-[1560px]`) for more consistent large-screen rhythm.
 - Allocation/holdings widget palette now uses differentiated ink accents plus patterned fills (hatch/dots/cross/grid) across donut + participation bars, improving category distinction without breaking editorial style.
+- Portfolio net-value hero now uses explicit typography split (sans labels + mono value) and `Badge` `stamp` freshness chips (`Notowania z...`, `Kurs FX z dnia...`) with calmer metadata contrast.
+- Portfolio hero/widget surfaces adopt shared light-theme depth token (`--surface-shadow`) for subtle paper-card lift without heavy decorative shadows.
+- Freshness badges remain only in the net-value hero; value/performance chart header no longer duplicates `Notowania z...` / `Kurs FX...` metadata.
+- Value comparison chart now renders as an area chart (thicker primary stroke + subtle gradient fill under `Wartość portfela`) to anchor trend perception.
+- Allocation mode uses desktop side-by-side composition in one panel: donut on the left (~40% width), allocation progress bars on the right to reduce wasted vertical space.
+- Value/performance filter groups (`Tryb`, `Zakres`, `Waluta`) were visually simplified by removing extra outer containers; segmented controls carry the hierarchy.
+- Performance mode chart now follows the same grounded treatment as value mode: primary cumulative-return curve rendered as area with subtle gradient fill and thicker stroke.
+- Portfolio chart control groups (`Tryb`, `Zakres`, `Waluta`, allocation `Koło/Tabela`) now use shared `ToggleGroup` `ledger` variant for stronger active-state hierarchy and lower border noise.
+- Allocation mode density was tightened for desktop scanning (`h-[420px]`, `lg:h-[500px]`, donut `250px`) while preserving side-by-side composition.
+- Currency units in hero + allocation numeric labels are visually subordinated (smaller/muted unit token) so users scan core numeric values first.
+- Hero eyebrow (`Wartość netto`) now follows strict ledger hierarchy (`text-xs uppercase tracked muted`), with the primary amount carrying dominant visual weight.
+- Net-value hero value now animates with a rapid count-up (`0 -> target`, ~0.6s) plus subtle fade-in-up (`10px`) on mount, with reduced-motion fallback.
+- Value and performance chart surfaces now run through a shared chart engine (`UnifiedPortfolioTrendChart`) to keep line weight, gradients, tooltip chrome, and axis behavior aligned between modes; performance primary area flips to loss tone when latest cumulative return is negative.
+- Portfolio widget chart height is parent-driven (`SHARED_PORTFOLIO_CHART_HEIGHT` wrappers in mode content), while chart primitives render at `h-full` for consistent sizing behavior across modes.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`

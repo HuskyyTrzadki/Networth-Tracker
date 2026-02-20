@@ -69,3 +69,22 @@ export const formatCurrencyString = (
 
   return formatCurrencyValue(parsed, formatter);
 };
+
+export type CurrencyLabelParts = Readonly<{
+  amount: string;
+  currency: string | null;
+}>;
+
+export const splitCurrencyLabel = (label: string): CurrencyLabelParts => {
+  const normalized = label.replace(/\s+/g, " ").trim();
+  const match = normalized.match(/^(.*?)[\s\u00A0\u202F]+([A-Z]{3}|zł)$/u);
+
+  if (!match) {
+    return { amount: normalized, currency: null };
+  }
+
+  return {
+    amount: match[1]?.trim() ?? normalized,
+    currency: match[2] ?? null,
+  };
+};

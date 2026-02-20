@@ -20,6 +20,7 @@ export const Variants: Story = {
       <Badge>Default</Badge>
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="outline">Outline</Badge>
+      <Badge variant="stamp">Notowania z 19.02.2026 21:30</Badge>
     </div>
   ),
 };

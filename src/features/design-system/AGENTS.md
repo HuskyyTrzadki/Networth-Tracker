@@ -10,12 +10,15 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Re-exports: `src/features/design-system/index.ts`
 - Stories: `src/features/design-system/stories/*`
 - UI primitives (example): `src/components/ui/badge.tsx` re-exported via `src/features/design-system/components/ui/badge.tsx`
+- UI primitive `Card` lives in `src/components/ui/card.tsx` and is re-exported via `src/features/design-system/components/ui/card.tsx`; default surface now carries the shared tactile paper depth (`--surface-shadow`) by default.
 - UI primitives (sidebar, collapsible) re-exported via `src/features/design-system/components/ui/sidebar.tsx` and `src/features/design-system/components/ui/collapsible.tsx`
 - UI primitives (alert, avatar) re-exported via `src/features/design-system/components/ui/alert.tsx` and `src/features/design-system/components/ui/avatar.tsx`
 - UI primitive `ToggleGroup` re-exported via `src/features/design-system/components/ui/toggle-group.tsx`
 - UI primitive `Checkbox` re-exported via `src/features/design-system/components/ui/checkbox.tsx`
 - UI primitive `Calendar` re-exported via `src/features/design-system/components/ui/calendar.tsx`
 - Shared `DatePicker` lives in `src/features/design-system/components/DatePicker.tsx` with stories in `src/features/design-system/stories/DatePicker.stories.tsx`
+- Shared portfolio trend chart engine lives in `src/features/design-system/components/UnifiedPortfolioTrendChart.tsx` and is reused by both `PortfolioComparisonChart` (value mode) and `DailyReturnsLineChart` (performance mode).
+- Shared trend tooltip primitives (`TrendTooltipShell`, `TrendTooltipRow`) live in `UnifiedPortfolioTrendChart.tsx` and are reused by custom value-mode tooltip rendering to avoid duplicated markup.
 
 ## Boundaries
 - UI only, no business logic.
@@ -36,6 +39,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Global tokens and controls were refreshed to a warmer neutral palette with muted teal accent, border-led depth, and consistent rounded-`lg` control chrome.
 - Global tokens now follow an editorial paper/ink system (warm paper background, ink-first typography, dashed-border module grammar) in both light and dark (`night paper`) themes.
 - Shared primitives (`button`, `input`, `table`, `badge`, `card`, `sheet`) were flattened to border-led chrome with minimal radius and no decorative shadows.
+- Shared `ToggleGroup` supports a `ledger` item variant (dark active block + calmer inactive states) for dense financial control bars without per-screen styling hacks.
+- Shared form primitives (`Input`, `Textarea`, `SelectTrigger`) support `aria-invalid` visual states (`border-destructive` + subtle destructive tint) so RHF/Zod errors are explicit without per-form overrides.
 - Shared primitives were re-aligned to a crisp editorial baseline: unified control heights (`h-9`/`h-10`/`h-11`), `rounded-md` controls, restrained `rounded-lg` containers, and consistent border/focus treatments across `ui/*`.
 - Base sidebar primitive internals are split by responsibility (`src/components/ui/sidebar-context.tsx`, `src/components/ui/sidebar-core.tsx`, `src/components/ui/sidebar-menu.tsx`) and re-exported through `src/components/ui/sidebar.tsx` to keep each file below repo size limits.
 - `ChartCard` uses symmetrical `p-4` spacing and a single internal rhythm (`header` + `content`) so widget chrome remains consistent across portfolio sections.
@@ -44,3 +49,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `AllocationDonutChart` supports responsive radius values (`innerRadius`/`outerRadius` as percent) so feature widgets can use full-width chart areas without hardcoded pixel donuts.
 - `AllocationDonutChart` now supports optional per-slice SVG patterns (`hatch`, `dots`, `cross`, `grid`) in addition to color fills, enabling print-like category distinction in allocation charts.
 - Chart stories live in `stories/Charts.stories.tsx`.
+- Typography split is explicit: UI/editorial copy uses Geist Sans (`--font-sans`), data/tickers/numerics use IBM Plex Mono (`--font-mono` + `tabular-nums`), and classes are applied directly in components (no global alias utilities).
+- `Badge` primitive includes a `stamp` variant (CVA-driven) for subdued metadata chips like valuation freshness labels.
+- Light-theme surface depth uses layered tokens (`--surface-base`, `--surface-card`, `--surface-interactive`) plus shared `--surface-shadow` (soft drop shadow + top inset highlight) reused by dashboard card surfaces.
+- `PortfolioComparisonChart` now uses `AreaChart` for portfolio value (stroke width `3` + subtle gradient fill) while invested-capital overlay remains a step line for clear comparison semantics.
+- `DailyReturnsLineChart` keeps its API but now renders the primary cumulative-return series as an area (stroke width `3` + subtle gradient fill), with benchmark overlays still rendered as line series.
+- Value and performance charts now share one rendering primitive (`UnifiedPortfolioTrendChart`), so axis/grid/tooltip/area-depth behavior stays consistent across both modes.
+- Shared trend engine uses one primary color policy (`var(--chart-1)` with automatic `var(--loss)` fallback when the latest primary value is negative) so value/performance visuals stay consistent.
+- Unified portfolio trend chart now choreographs dashboard motion: primary line draw (`~0.9s`) followed by delayed area-fill fade (`~0.3s`) using Recharts animation timing, with reduced-motion fallback.
+- `AllocationDonutChart` uses radial reveal timing (`~0.6s`, `ease-out`) for allocation-slice entrance.

@@ -3,7 +3,6 @@
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { Badge } from "@/features/design-system/components/ui/badge";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -39,7 +38,6 @@ type Props = Readonly<{
   valueIsPartial: boolean;
   missingQuotes: number;
   missingFx: number;
-  liveAsOf: string | null;
   rebuildStatus: "idle" | "queued" | "running" | "failed";
   rebuildMessage: string | null;
   isAllHistoryLoading?: boolean;
@@ -49,6 +47,9 @@ type Props = Readonly<{
 const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
 const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
 const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
+const LEDGER_TOGGLE_GROUP_CLASS =
+  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/70 bg-muted/35 p-1";
+const LEDGER_TOGGLE_ITEM_CLASS = "h-8 px-3 font-sans text-xs";
 
 export function PortfolioValueOverTimeHeader({
   mode,
@@ -66,45 +67,17 @@ export function PortfolioValueOverTimeHeader({
   valueIsPartial,
   missingQuotes,
   missingFx,
-  liveAsOf,
   rebuildStatus,
   rebuildMessage,
   isAllHistoryLoading = false,
   isAllHistoryTruncated = false,
 }: Props) {
   const selectedComparisonsCount = selectedComparisons.length;
-  const liveAsOfDate = liveAsOf ? new Date(liveAsOf) : null;
-  const quoteAsOfLabel =
-    liveAsOfDate && Number.isFinite(liveAsOfDate.getTime())
-      ? new Intl.DateTimeFormat("pl-PL", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(liveAsOfDate)
-      : null;
-  const fxAsOfLabel =
-    liveAsOfDate && Number.isFinite(liveAsOfDate.getTime())
-      ? new Intl.DateTimeFormat("pl-PL", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(liveAsOfDate)
-      : null;
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge className="rounded-md px-2 py-0.5 text-[11px]" variant="outline">
-          Notowania z {quoteAsOfLabel ?? "—"}
-        </Badge>
-        <Badge className="rounded-md px-2 py-0.5 text-[11px]" variant="outline">
-          Kurs FX z dnia {fxAsOfLabel ?? "—"}
-        </Badge>
-      </div>
       <div className="flex flex-wrap items-end gap-2.5 xl:flex-nowrap">
-        <div className="rounded-md border border-border/60 bg-card p-2.5">
+        <div className="space-y-1.5">
           <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
             Tryb
           </div>
@@ -116,18 +89,26 @@ export function PortfolioValueOverTimeHeader({
                 onModeChange(value);
               }
             }}
-            className="flex flex-wrap gap-1.5"
+            className={LEDGER_TOGGLE_GROUP_CLASS}
           >
-            <ToggleGroupItem className="h-8 px-3 text-xs" value="PERFORMANCE">
+            <ToggleGroupItem
+              className={LEDGER_TOGGLE_ITEM_CLASS}
+              value="PERFORMANCE"
+              variant="ledger"
+            >
               Performance
             </ToggleGroupItem>
-            <ToggleGroupItem className="h-8 px-3 text-xs" value="VALUE">
+            <ToggleGroupItem
+              className={LEDGER_TOGGLE_ITEM_CLASS}
+              value="VALUE"
+              variant="ledger"
+            >
               Wartość
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
 
-        <div className="rounded-md border border-border/60 bg-card p-2.5">
+        <div className="space-y-1.5">
           <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
             Zakres
           </div>
@@ -139,14 +120,15 @@ export function PortfolioValueOverTimeHeader({
               if (!next) return;
               onRangeChange(next);
             }}
-            className="flex flex-wrap gap-1.5"
+            className={LEDGER_TOGGLE_GROUP_CLASS}
           >
             {rangeOptions.map((option) => (
               <ToggleGroupItem
                 key={option.value}
-                className="h-8 px-3 text-xs"
+                className={LEDGER_TOGGLE_ITEM_CLASS}
                 value={option.value}
                 disabled={isRangeDisabled(option.value)}
+                variant="ledger"
               >
                 {formatRangeLabel(option.label)}
               </ToggleGroupItem>
@@ -154,7 +136,7 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className="rounded-md border border-border/60 bg-card p-2.5">
+        <div className="space-y-1.5">
           <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
             Waluta
           </div>
@@ -166,22 +148,34 @@ export function PortfolioValueOverTimeHeader({
                 onCurrencyChange(value);
               }
             }}
-            className="gap-1"
+            className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-muted/35 p-1"
           >
-            <ToggleGroupItem className="h-8 px-2.5 text-xs" value="PLN">
+            <ToggleGroupItem
+              className="h-8 px-2.5 text-xs"
+              value="PLN"
+              variant="ledger"
+            >
               PLN
             </ToggleGroupItem>
-            <ToggleGroupItem className="h-8 px-2.5 text-xs" value="USD">
+            <ToggleGroupItem
+              className="h-8 px-2.5 text-xs"
+              value="USD"
+              variant="ledger"
+            >
               USD
             </ToggleGroupItem>
-            <ToggleGroupItem className="h-8 px-2.5 text-xs" value="EUR">
+            <ToggleGroupItem
+              className="h-8 px-2.5 text-xs"
+              value="EUR"
+              variant="ledger"
+            >
               EUR
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
 
         {mode === "PERFORMANCE" && range !== "1D" && comparisonOptions.length > 0 ? (
-          <div className="rounded-md border border-border/60 bg-card p-2.5">
+          <div className="space-y-1.5">
             <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
               Porównania
             </div>

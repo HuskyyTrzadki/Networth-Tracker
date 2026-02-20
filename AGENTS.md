@@ -64,6 +64,10 @@ After larger changes run:
 - `npm run test`
 - `npm run lint`
 
+UI-only change exception (styling/layout/copy-only, no business logic/API/data-contract changes):
+- Required: `npm run typecheck` and `npm run lint`
+- Optional: `npm run test` (skip by default unless the UI change touches fragile flows/components)
+
 ## Package manager
 Use the package manager implied by the existing lockfile. Do not switch.
 
@@ -164,4 +168,3 @@ Keep these files aligned when touching a feature:
 - Transactions: positive `quantity`, explicit `side` enum.
 - 
 projectId supabse: ayeeksbqwyqkevbpdlef
-

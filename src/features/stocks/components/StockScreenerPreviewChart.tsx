@@ -1,6 +1,14 @@
 "use client";
 
-import { Line, LineChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "@/lib/recharts-dynamic";
+import { useId } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "@/lib/recharts-dynamic";
 
 import { cn } from "@/lib/cn";
 
@@ -41,6 +49,7 @@ export function StockScreenerPreviewChart({
   currency: string;
   className?: string;
 }>) {
+  const gradientId = useId().replace(/:/g, "");
   const safeData =
     data.length >= 2
       ? data
@@ -58,8 +67,20 @@ export function StockScreenerPreviewChart({
   return (
     <div className={cn("h-full w-full", className)}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-          <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.35} />
+        <AreaChart data={chartData} margin={{ top: 6, right: 8, bottom: 6, left: 8 }}>
+          <defs>
+            <linearGradient id={`screener-fill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.22} />
+              <stop offset="70%" stopColor="var(--chart-1)" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            vertical={false}
+            stroke="var(--border)"
+            strokeDasharray="3 3"
+            strokeOpacity={0.15}
+          />
           <XAxis
             dataKey="date"
             tickFormatter={formatXAxisTick}
@@ -76,15 +97,16 @@ export function StockScreenerPreviewChart({
             tickLine={false}
             axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
           />
-          <Line
+          <Area
             type="monotone"
             dataKey="price"
             stroke="var(--chart-1)"
-            strokeWidth={2}
+            strokeWidth={2.5}
+            fill={`url(#screener-fill-${gradientId})`}
             dot={false}
             isAnimationActive={false}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

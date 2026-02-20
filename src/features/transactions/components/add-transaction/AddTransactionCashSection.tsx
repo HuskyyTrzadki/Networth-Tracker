@@ -59,6 +59,8 @@ export function AddTransactionCashSection({
   handleCashCurrencyChange: (next: string) => void;
   isCashTab: boolean;
 }>) {
+  const fieldLabelClass =
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
   const cashSettlementLabel = resolveCashSettlementLabel(transactionType);
 
   if (isCashTab) {
@@ -66,13 +68,13 @@ export function AddTransactionCashSection({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <FormField
         control={form.control}
         name="consumeCash"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Rozliczenie gotówką</FormLabel>
+            <FormLabel className={fieldLabelClass}>Rozliczenie gotówką</FormLabel>
             <FormControl>
               <div className="flex h-11 items-center gap-3">
                 <Checkbox
@@ -99,14 +101,14 @@ export function AddTransactionCashSection({
       />
 
       {consumeCash ? (
-        <div className="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3">
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2.5 rounded-md border border-border/70 bg-muted/20 p-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="cashCurrency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Waluta gotówki</FormLabel>
+                  <FormLabel className={fieldLabelClass}>Waluta gotówki</FormLabel>
                   <Select
                     onValueChange={(next) => {
                       field.onChange(next);
@@ -138,7 +140,7 @@ export function AddTransactionCashSection({
                 name="fxFee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Opłata FX</FormLabel>
+                    <FormLabel className={fieldLabelClass}>Opłata FX</FormLabel>
                     <FormControl>
                       <MoneyInput
                         {...field}
@@ -154,28 +156,28 @@ export function AddTransactionCashSection({
             ) : null}
           </div>
 
-          <div className="space-y-2 text-xs text-muted-foreground">
+          <div className="space-y-1.5 text-[11px] text-muted-foreground">
             <div className="flex items-center justify-between gap-3">
               <span>Dostępna gotówka (na dziś)</span>
-              <span className="font-mono tabular-nums">
+              <span className="font-mono text-[12px] font-medium tabular-nums">
                 {formatMoney(availableCashNow, resolvedCashCurrency)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span>Dostępna gotówka (na dzień transakcji)</span>
-              <span className="font-mono tabular-nums">
+              <span className="font-mono text-[12px] font-medium tabular-nums">
                 {formatMoney(availableCashOnTradeDate, resolvedCashCurrency)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span>Zmiana gotówki</span>
-              <span className="font-mono tabular-nums">
+              <span className="font-mono text-[12px] font-medium tabular-nums">
                 {projectedCashDeltaLabel ?? "—"}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-2">
               <span>Po transakcji</span>
-              <span className="font-mono tabular-nums">
+              <span className="font-mono text-[12px] font-semibold tabular-nums">
                 {projectedCashAfterLabel ?? "—"}
               </span>
             </div>

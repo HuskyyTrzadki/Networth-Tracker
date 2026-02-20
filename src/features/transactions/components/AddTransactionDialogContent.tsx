@@ -39,6 +39,10 @@ import { createTransaction } from "../client/create-transaction";
 import { deleteTransaction } from "../client/delete-transaction";
 import type { InstrumentSearchClient } from "../client/search-instruments";
 import {
+  buildSubmitPayloadFields,
+  triggerSnapshotRebuild,
+} from "./add-transaction/submit-helpers";
+import {
   resolveInitialTab,
   type AssetTab,
 } from "./add-transaction/constants";
@@ -64,63 +68,6 @@ export type FormValues = Readonly<{
   customCurrency?: string;
   customAnnualRatePct?: string;
 }>;
-
-type SubmitPayloadFields = Readonly<{
-  price: string;
-  fee: string;
-  consumeCash: boolean;
-  cashCurrency?: string;
-  fxFee?: string;
-  cashflowType?: CashflowTypeUi;
-}>;
-
-const buildSubmitPayloadFields = (
-  values: FormValues,
-  isCashTab: boolean
-): SubmitPayloadFields => {
-  if (isCashTab) {
-    return {
-      price: "1",
-      fee: "0",
-      consumeCash: false,
-      cashflowType: values.cashflowType,
-    };
-  }
-
-  if (!values.consumeCash) {
-    return {
-      price: values.price,
-      fee: values.fee,
-      consumeCash: false,
-    };
-  }
-
-  return {
-    price: values.price,
-    fee: values.fee,
-    consumeCash: true,
-    cashCurrency: values.cashCurrency,
-    fxFee: values.fxFee,
-  };
-};
-
-const triggerSnapshotRebuild = (
-  scope: "PORTFOLIO" | "ALL",
-  portfolioId: string | null
-) => {
-  // Client kickoff: start a rebuild run immediately after transaction save
-  // so portfolio widgets show queued/running state without manual reload.
-  void fetch("/api/portfolio-snapshots/rebuild", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      scope,
-      portfolioId,
-      maxDaysPerRun: 90,
-      timeBudgetMs: 1_000,
-    }),
-  }).catch(() => undefined);
-};
 
 export function AddTransactionDialogContent({
   initialValues,
@@ -347,10 +294,12 @@ export function AddTransactionDialogContent({
           className="flex max-h-[92dvh] flex-col"
           onSubmit={submitTransaction}
         >
-          <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-background px-5 py-4 md:px-6 md:py-5">
+          <header className="flex items-start justify-between gap-3 border-b border-border/70 bg-background px-5 py-3.5 md:px-6 md:py-4">
             <div className="min-w-0">
-              <DialogTitle className="truncate">Dodaj transakcję</DialogTitle>
-              <DialogDescription className="mt-1 text-[13px]">
+              <DialogTitle className="truncate text-base font-semibold tracking-tight">
+                Dodaj transakcję
+              </DialogTitle>
+              <DialogDescription className="mt-0.5 text-[11px] text-muted-foreground/90">
                 Uzupełnij dane i zapisz transakcję w portfelu.
               </DialogDescription>
             </div>
@@ -381,7 +330,7 @@ export function AddTransactionDialogContent({
             setSelectedInstrument={setSelectedInstrument}
           />
 
-          <footer className="sticky bottom-0 z-10 border-t border-border/70 bg-background px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:static md:px-6 md:py-5">
+          <footer className="sticky bottom-0 z-10 border-t border-border bg-muted/35 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-h-5 text-sm text-destructive">
                 {rootError ?? ""}
@@ -392,14 +341,14 @@ export function AddTransactionDialogContent({
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}
-                  className="h-11 px-7"
+                  className="h-10 px-6"
                 >
                   Anuluj
                 </Button>
                 <Button
                   disabled={!isSubmittable || isSubmitting}
                   type="submit"
-                  className="h-11 min-w-36 px-7"
+                  className="h-10 min-w-32 px-6"
                 >
                   {isSubmitting ? (
                     <>

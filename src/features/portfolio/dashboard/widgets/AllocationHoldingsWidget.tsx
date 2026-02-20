@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { ChartCard } from "@/features/design-system";
-import { Alert } from "@/features/design-system/components/ui/alert";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import {
   Table,
@@ -22,8 +21,9 @@ import { cn } from "@/lib/cn";
 import {
   formatCurrencyString,
   getCurrencyFormatter,
+  splitCurrencyLabel,
 } from "@/lib/format-currency";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import type { PortfolioSummary } from "../../server/valuation";
 import type { SnapshotRebuildStatus } from "../hooks/useSnapshotRebuild";
@@ -107,18 +107,20 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   const rebuildProgress = clampProgress(rebuild.progressPercent);
   const rebuildFromDate = rebuild.fromDate ?? rebuild.dirtyFrom;
   const concentrationWarning = getConcentrationWarning(summary);
-  const warningTone =
+  const concentrationTone =
     concentrationWarning?.severity === "CRITICAL"
-      ? "text-destructive bg-destructive/10"
+      ? "border-l-loss bg-loss/16 text-loss"
       : concentrationWarning?.severity === "HARD"
-        ? "text-rose-700 bg-rose-50/80 dark:bg-rose-500/10"
+        ? "border-l-rose-700 bg-rose-100/70 text-rose-800 dark:border-l-rose-400 dark:bg-rose-500/14 dark:text-rose-200"
         : concentrationWarning
-          ? "text-amber-700 bg-amber-50/85 dark:bg-amber-500/10"
+          ? "border-l-amber-700 bg-amber-100/65 text-amber-800 dark:border-l-amber-400 dark:bg-amber-500/10 dark:text-amber-200"
           : "";
   const totalLabel =
     formatter && summary.totalValueBase
       ? formatCurrencyString(summary.totalValueBase, formatter) ?? "—"
       : "—";
+  const { amount: totalAmountLabel, currency: totalCurrencyLabel } =
+    splitCurrencyLabel(totalLabel);
 
   const allocationRows = buildAllocationData(summary);
   const holdingsRows = sortHoldingsByValueDesc(summary.holdings);
@@ -149,17 +151,25 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span>Alokacja i pozycje</span>
           <ToggleGroup
-            className="rounded-lg border border-border/70 bg-muted/45 p-0.5"
+            className="rounded-md border border-border/70 bg-muted/35 p-1"
             onValueChange={(value) => {
               if (value === "ALLOCATION" || value === "HOLDINGS") setMode(value);
             }}
             type="single"
             value={mode}
           >
-            <ToggleGroupItem className="h-8 px-3 text-sm" value="ALLOCATION">
+            <ToggleGroupItem
+              className="h-8 px-3 text-sm"
+              value="ALLOCATION"
+              variant="ledger"
+            >
               Koło
             </ToggleGroupItem>
-            <ToggleGroupItem className="h-8 px-3 text-sm" value="HOLDINGS">
+            <ToggleGroupItem
+              className="h-8 px-3 text-sm"
+              value="HOLDINGS"
+              variant="ledger"
+            >
               Tabela
             </ToggleGroupItem>
           </ToggleGroup>
@@ -178,7 +188,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         ) : null
       }
     >
-      <div className="h-[460px] lg:h-[560px]">
+      <div className="h-[420px] lg:h-[500px]">
         {isRebuildBusy ? (
           <div className="grid h-full place-items-center rounded-lg border border-border/70 bg-muted/10 p-6 text-center">
             <div className="space-y-3">
@@ -195,89 +205,104 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
             </div>
           </div>
         ) : mode === "ALLOCATION" ? (
-          <div className="flex h-full flex-col gap-5 overflow-y-auto pr-1">
-            <div className="rounded-lg border border-border/70 bg-muted/10 p-3">
-              <div className="relative w-full">
+          <div className="flex h-full flex-col gap-4 overflow-y-auto pr-1">
+            <div className="grid gap-5 lg:grid-cols-[minmax(240px,40%)_minmax(0,1fr)] lg:items-stretch">
+              <div className="relative">
                 {hasAllocation ? (
-                  <AllocationDonutChart data={slices} height={300} />
+                  <AllocationDonutChart data={slices} height={250} />
                 ) : (
-                    <div className="grid h-[300px] w-full place-items-center rounded-lg border border-dashed border-border text-[12px] text-muted-foreground">
-                      Brak danych do alokacji
-                    </div>
+                  <div className="grid h-[250px] w-full place-items-center rounded-lg border border-dashed border-border text-[12px] text-muted-foreground">
+                    Brak danych do alokacji
+                  </div>
                 )}
                 <div className="pointer-events-none absolute inset-0 grid place-items-center">
                   <div className="text-center">
                     <div className="text-[12px] font-medium text-muted-foreground">
                       Wartość portfela
                     </div>
-                    <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-foreground">
-                      {totalLabel}
+                    <div className="mt-1 inline-flex items-baseline gap-1 font-mono text-lg font-semibold tabular-nums text-foreground">
+                      <span>{totalAmountLabel}</span>
+                      {totalCurrencyLabel ? (
+                        <span className="text-[11px] font-medium text-muted-foreground/75">
+                          {totalCurrencyLabel}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {hasAllocation ? (
-              <div className="grid gap-2 sm:grid-cols-2">
-                {allocationRows.map((row) => {
-                  const valueLabel =
-                    formatter && row.valueBase
-                      ? formatCurrencyString(row.valueBase, formatter) ??
-                        `${row.valueBase} ${summary.baseCurrency}`
-                      : row.valueBase
-                        ? `${row.valueBase} ${summary.baseCurrency}`
-                        : "—";
 
-                  return (
-                    <div
-                      key={row.id}
-                      className="rounded-md border border-border/70 bg-card p-3"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ background: row.color }}
-                            aria-hidden="true"
+              {hasAllocation ? (
+                <div className="min-h-0 divide-y divide-dashed divide-border/55 overflow-y-auto pr-1">
+                  {allocationRows.map((row) => {
+                    const valueLabel =
+                      formatter && row.valueBase
+                        ? formatCurrencyString(row.valueBase, formatter) ??
+                          `${row.valueBase} ${summary.baseCurrency}`
+                        : row.valueBase
+                          ? `${row.valueBase} ${summary.baseCurrency}`
+                          : "—";
+                    const { amount: valueAmount, currency: valueCurrency } =
+                      splitCurrencyLabel(valueLabel);
+
+                    return (
+                      <div key={row.id} className="py-2.5">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ background: row.color }}
+                              aria-hidden="true"
+                            />
+                            <span className="truncate text-[13px] font-medium text-foreground">
+                              {row.label}
+                            </span>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <div className="font-mono text-[13px] font-semibold tabular-nums text-foreground">
+                              {formatPercent(row.share)}
+                            </div>
+                            <div className="mt-1 font-mono text-[12px] tabular-nums text-muted-foreground">
+                              {valueAmount}
+                              {valueCurrency ? (
+                                <span className="ml-1 text-[10px] font-medium text-muted-foreground/75">
+                                  {valueCurrency}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 h-1.5 rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              backgroundColor: row.color,
+                              backgroundImage: getPatternOverlay(row.patternId),
+                              backgroundSize:
+                                row.patternId === "dots" ? "8px 8px" : undefined,
+                              width: `${Math.max(0, Math.min(100, row.share * 100))}%`,
+                            }}
                           />
-                          <span className="truncate text-[13px] font-medium text-foreground">
-                            {row.label}
-                          </span>
-                        </div>
-                        <div className="shrink-0 font-mono text-[13px] font-semibold tabular-nums text-foreground">
-                          {formatPercent(row.share)}
                         </div>
                       </div>
-                      <div className="mt-2 h-1.5 rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            backgroundColor: row.color,
-                            backgroundImage: getPatternOverlay(row.patternId),
-                            backgroundSize:
-                              row.patternId === "dots" ? "8px 8px" : undefined,
-                            width: `${Math.max(0, Math.min(100, row.share * 100))}%`,
-                          }}
-                        />
-                      </div>
-                      <div className="mt-2 text-right">
-                        <div className="font-mono text-[12px] tabular-nums text-muted-foreground">
-                          {valueLabel}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
             {concentrationWarning ? (
-              <Alert className={cn("flex items-start gap-2 border-none px-2 py-1.5 text-[13px] shadow-none", warningTone)}>
-                <AlertTriangle className="mt-0.5 size-4" aria-hidden />
-                <span className="text-inherit">
+              <div
+                className={cn(
+                  "rounded-sm border-l-[3px] px-3 py-2 text-[13px] leading-5",
+                  concentrationTone
+                )}
+              >
+                <p>
+                  <span className="font-semibold">Uwaga dot. koncentracji:</span>{" "}
                   {concentrationWarning.symbol} stanowi{" "}
-                  {formatPercent(concentrationWarning.weight, 0)} portfela.
-                </span>
-              </Alert>
+                  {formatPercent(concentrationWarning.weight, 0)} Twojego portfela.
+                </p>
+              </div>
             ) : null}
           </div>
         ) : (

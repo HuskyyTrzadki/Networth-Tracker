@@ -36,7 +36,7 @@ export default function StockReportSidebar({
   );
 
   return (
-    <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-14 lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-[color:var(--report-rule)] lg:pr-4 lg:pt-4">
+    <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-8 lg:self-start lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-[color:var(--report-rule)] lg:pr-4 lg:pt-4">
       <div className="space-y-4 bg-background">
         <section className="border-b border-dashed border-[color:var(--report-rule)] pb-4">
           <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">

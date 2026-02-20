@@ -4,7 +4,6 @@ import { useEffect, useReducer, useState } from "react";
 
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 import { Button } from "@/features/design-system/components/ui/button";
-import { Checkbox } from "@/features/design-system/components/ui/checkbox";
 import { cn } from "@/lib/cn";
 import { LoaderCircle } from "lucide-react";
 
@@ -157,98 +156,78 @@ function StockChartOverlayEventsPanel({
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {OVERLAY_KEYS.map((overlay) => (
-          <label
+          <OverlayToggleChip
             key={overlay}
-            htmlFor={`stock-chart-overlay-${overlay}`}
-            className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-          >
-            <Checkbox
-              id={`stock-chart-overlay-${overlay}`}
-              checked={normalizedOverlays.includes(overlay)}
-              onCheckedChange={(checked) => onToggleOverlay(overlay, checked === true)}
-              disabled={isLoading || (mode === "raw" && overlay === "revenueTtm")}
-            />
-            {OVERLAY_CONTROL_LABELS[overlay]}
-          </label>
+            label={OVERLAY_CONTROL_LABELS[overlay]}
+            active={normalizedOverlays.includes(overlay)}
+            disabled={isLoading || (mode === "raw" && overlay === "revenueTtm")}
+            onToggle={(enabled) => onToggleOverlay(overlay, enabled)}
+          />
         ))}
-        <span className="text-xs text-muted-foreground/70">|</span>
-        <label
-          htmlFor="stock-chart-toggle-narration"
-          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-        >
-          <Checkbox
-            id="stock-chart-toggle-narration"
-            checked={isEventRangeEligible ? showNarration : false}
-            onCheckedChange={(checked) => {
-              if (!isEventRangeEligible) return;
-              onToggleNarration(checked === true);
-            }}
-            disabled={!isEventRangeEligible}
-          />
-          Narracja
-        </label>
-        <label
-          htmlFor="stock-chart-toggle-earnings"
-          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-        >
-          <Checkbox
-            id="stock-chart-toggle-earnings"
-            checked={isEventRangeEligible ? showEarningsEvents : false}
-            onCheckedChange={(checked) => {
-              if (!isEventRangeEligible) return;
-              onToggleEarnings(checked === true);
-            }}
-            disabled={!isEventRangeEligible}
-          />
-          Wyniki (konsensus vs raport)
-        </label>
-        <label
-          htmlFor="stock-chart-toggle-news"
-          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-        >
-          <Checkbox
-            id="stock-chart-toggle-news"
-            checked={isEventRangeEligible ? showNewsEvents : false}
-            onCheckedChange={(checked) => {
-              if (!isEventRangeEligible) return;
-              onToggleNews(checked === true);
-            }}
-            disabled={!isEventRangeEligible}
-          />
-          Wazne wydarzenia
-        </label>
-        <label
-          htmlFor="stock-chart-toggle-user-trades"
-          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-        >
-          <Checkbox
-            id="stock-chart-toggle-user-trades"
-            checked={isEventRangeEligible ? showUserTradeEvents : false}
-            onCheckedChange={(checked) => {
-              if (!isEventRangeEligible) return;
-              onToggleUserTrades(checked === true);
-            }}
-            disabled={!isEventRangeEligible}
-          />
-          BUY/SELL uzytkownika (mock)
-        </label>
-        <label
-          htmlFor="stock-chart-toggle-global-news"
-          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
-        >
-          <Checkbox
-            id="stock-chart-toggle-global-news"
-            checked={isEventRangeEligible ? showGlobalNewsEvents : false}
-            onCheckedChange={(checked) => {
-              if (!isEventRangeEligible) return;
-              onToggleGlobalNews(checked === true);
-            }}
-            disabled={!isEventRangeEligible}
-          />
-          Wazne wydarzenia globalne
-        </label>
+        <span className="h-5 w-px bg-border/60" aria-hidden />
+        <OverlayToggleChip
+          label="Narracja"
+          active={isEventRangeEligible ? showNarration : false}
+          disabled={!isEventRangeEligible}
+          onToggle={onToggleNarration}
+        />
+        <OverlayToggleChip
+          label="Wyniki (konsensus vs raport)"
+          active={isEventRangeEligible ? showEarningsEvents : false}
+          disabled={!isEventRangeEligible}
+          onToggle={onToggleEarnings}
+        />
+        <OverlayToggleChip
+          label="Wazne wydarzenia"
+          active={isEventRangeEligible ? showNewsEvents : false}
+          disabled={!isEventRangeEligible}
+          onToggle={onToggleNews}
+        />
+        <OverlayToggleChip
+          label="BUY/SELL uzytkownika (mock)"
+          active={isEventRangeEligible ? showUserTradeEvents : false}
+          disabled={!isEventRangeEligible}
+          onToggle={onToggleUserTrades}
+        />
+        <OverlayToggleChip
+          label="Wazne wydarzenia globalne"
+          active={isEventRangeEligible ? showGlobalNewsEvents : false}
+          disabled={!isEventRangeEligible}
+          onToggle={onToggleGlobalNews}
+        />
       </div>
     </div>
+  );
+}
+
+function OverlayToggleChip({
+  label,
+  active,
+  disabled,
+  onToggle,
+}: Readonly<{
+  label: string;
+  active: boolean;
+  disabled: boolean;
+  onToggle: (enabled: boolean) => void;
+}>) {
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant={active ? "default" : "outline"}
+      className={cn(
+        "h-7 rounded-sm px-2.5 text-[11px]",
+        active
+          ? "border-transparent bg-foreground text-background hover:bg-foreground"
+          : "border-border/70 bg-transparent text-muted-foreground hover:text-foreground"
+      )}
+      disabled={disabled}
+      onClick={() => onToggle(!active)}
+      aria-pressed={active}
+    >
+      {label}
+    </Button>
   );
 }
 

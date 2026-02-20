@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { Suspense } from "react";
@@ -9,14 +10,21 @@ type Props = Readonly<{
   children: React.ReactNode;
 }>;
 
+const geistSans = localFont({
+  src: "./fonts/geist-latin.woff2",
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
 const geistMono = localFont({
   src: "./fonts/geist-mono-latin.woff2",
   variable: "--font-geist-mono",
   display: "swap",
 });
 
-const ibmPlexMono = localFont({
-  src: "./fonts/geist-latin.woff2",
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-ibm-plex-mono",
   display: "swap",
 });
@@ -31,7 +39,7 @@ export default function RootLayout({ children }: Props) {
     <html
       lang="pl"
       suppressHydrationWarning
-      className={`${ibmPlexMono.variable} ${geistMono.variable}`}
+      className={`${ibmPlexMono.variable} ${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="antialiased">
         <Script id="theme-preference-init" strategy="beforeInteractive">

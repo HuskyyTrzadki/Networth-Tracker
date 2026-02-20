@@ -2,6 +2,7 @@
 
 export const SHARED_CHART_GRID_PROPS = {
   stroke: "var(--border)",
+  strokeOpacity: 0.15,
   strokeDasharray: "3 3",
   vertical: false,
 } as const;

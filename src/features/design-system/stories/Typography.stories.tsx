@@ -43,11 +43,18 @@ function TypographyStory() {
         </div>
 
         <div className="space-y-3 rounded-md border border-border/80 bg-card p-4">
-          <div className="text-sm font-medium text-muted-foreground">Monospace (dane)</div>
-          <div className="space-y-2 font-mono text-sm tabular-nums">
-            <div>Liczby (tabular-nums): 1 234 567.89</div>
-            <div>USD 10,245.32</div>
-            <div>PLN 4,205.10</div>
+          <div className="text-sm font-medium text-muted-foreground">
+            UI Sans vs Data Mono
+          </div>
+          <div className="space-y-1.5 font-sans text-sm">
+            <div>Nawigacja: Przegląd • Akcje • Transakcje</div>
+            <div>Opis: Wartość netto portfela w walucie bazowej</div>
+          </div>
+          <div className="space-y-1.5 font-mono text-sm tabular-nums">
+            <div>Ticker: AAPL</div>
+            <div>Wartość: 11 233,78 zł</div>
+            <div>Zmiana dzienna: -6,03%</div>
+            <div>Data: 2026-02-19</div>
           </div>
         </div>
       </Container>

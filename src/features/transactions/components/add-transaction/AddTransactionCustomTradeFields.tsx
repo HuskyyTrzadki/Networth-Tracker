@@ -11,8 +11,6 @@ import {
   FormMessage,
 } from "@/features/design-system/components/ui/form";
 import { Input } from "@/features/design-system/components/ui/input";
-import { Button } from "@/features/design-system/components/ui/button";
-import { Sparkles } from "lucide-react";
 
 import { MoneyInput } from "../MoneyInput";
 import { formatNumericInputWithCursor } from "../../lib/format-numeric-input";
@@ -67,6 +65,9 @@ export function AddTransactionCustomTradeFields({
   resolvedCashCurrency: CashCurrency;
   onCashCurrencyChange: (nextCurrency: string) => void;
 }>) {
+  const fieldLabelClass =
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+
   return (
     <>
       <FormField
@@ -74,7 +75,7 @@ export function AddTransactionCustomTradeFields({
         name="date"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Data wyceny</FormLabel>
+            <FormLabel className={fieldLabelClass}>Data wyceny</FormLabel>
             <FormControl>
               <DatePicker
                 maxDate={maxTradeDate}
@@ -88,13 +89,13 @@ export function AddTransactionCustomTradeFields({
         )}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         <FormField
           control={form.control}
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Aktualna wartość</FormLabel>
+              <FormLabel className={fieldLabelClass}>Aktualna wartość</FormLabel>
               <FormControl>
                 <MoneyInput
                   {...field}
@@ -113,12 +114,14 @@ export function AddTransactionCustomTradeFields({
           name="customAnnualRatePct"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Szacowany wzrost/spadek roczny (%)</FormLabel>
+              <FormLabel className={fieldLabelClass}>
+                Szacowany wzrost/spadek roczny (%)
+              </FormLabel>
               <FormControl>
-                <div className="flex items-center gap-2">
+                <div className="relative">
                   <Input
                     {...field}
-                    className="h-11 font-mono tabular-nums text-right"
+                    className="h-11 pr-8 font-mono tabular-nums text-right"
                     inputMode="decimal"
                     onChange={(event) => {
                       const next = formatNumericInputWithCursor(
@@ -133,18 +136,12 @@ export function AddTransactionCustomTradeFields({
                         });
                       }
                     }}
-                    placeholder="np. 5% lub -5%"
+                    placeholder="np. 5 lub -5"
                     type="text"
                   />
-                  <Button
-                    aria-label="Sugestia AI (wkrótce)"
-                    className="h-11 w-11 shrink-0 p-0"
-                    disabled
-                    type="button"
-                    variant="ghost"
-                  >
-                    <Sparkles className="size-4 opacity-70" aria-hidden />
-                  </Button>
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground">
+                    %
+                  </span>
                 </div>
               </FormControl>
               <FormMessage />

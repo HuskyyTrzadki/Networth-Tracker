@@ -1,29 +1,9 @@
 "use client";
 
 import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "@/lib/recharts-dynamic";
-
-import { buildPaddedDomain } from "../lib/chart-domain";
-import {
-  SHARED_CHART_ACTIVE_DOT_RADIUS,
-  createSharedTimeAxisConfig,
-  SHARED_CHART_AXIS_LINE,
-  SHARED_CHART_AXIS_TICK,
-  SHARED_CHART_AXIS_WIDTH,
-  SHARED_CHART_GRID_PROPS,
-  SHARED_CHART_MARGIN,
-  SHARED_CHART_PRIMARY_LINE_WIDTH,
-  SHARED_CHART_SECONDARY_LINE_WIDTH,
-  SHARED_CHART_TICK_LINE,
-} from "./chart-styles";
+  UnifiedPortfolioTrendChart,
+  type UnifiedTrendLine,
+} from "./UnifiedPortfolioTrendChart";
 
 type Point = Readonly<{
   label: string;
@@ -40,7 +20,6 @@ type ComparisonLine = Readonly<{
 
 type Props = Readonly<{
   data: readonly Point[];
-  height?: number;
   comparisonLines?: readonly ComparisonLine[];
 }>;
 
@@ -92,141 +71,33 @@ const buildYAxisTicks = (domain: readonly [number, number] | null) => {
 
 export function DailyReturnsLineChart({
   data,
-  height = 140,
   comparisonLines = EMPTY_COMPARISON_LINES,
 }: Props) {
-  const chartData = [...data];
-  const activeComparisonLines = comparisonLines.filter((line) =>
-    chartData.some((entry) => {
+  const chartData = data.map((entry) => ({
+    label: entry.label,
+    primary: entry.value,
+    lines: entry.comparisons,
+  }));
+  const activeComparisonLines: readonly UnifiedTrendLine[] = comparisonLines.filter((line) =>
+    data.some((entry) => {
       const value = entry.comparisons?.[line.id];
       return typeof value === "number" && Number.isFinite(value);
     })
   );
-  const yDomain = buildPaddedDomain(
-    chartData.flatMap((entry) => [
-      entry.value,
-      ...activeComparisonLines.map((line) => entry.comparisons?.[line.id] ?? null),
-    ]),
-    {
-      paddingRatio: 0.15,
-      minAbsolutePadding: 0.0025,
-      includeZero: true,
-    }
-  );
-  const yTicks = buildYAxisTicks(yDomain);
-  const timeAxisConfig = createSharedTimeAxisConfig(
-    chartData.map((entry) => entry.label)
-  );
-  const xTicks = timeAxisConfig.ticks ? [...timeAxisConfig.ticks] : undefined;
-  const yAxisDomain = yDomain
-    ? ([yDomain[0], yDomain[1]] as [number, number])
-    : (["auto", "auto"] as [string, string]);
-  const legendItems = [
-    ...activeComparisonLines.map((line) => ({
-      id: line.id,
-      label: line.label,
-      color: line.color,
-    })),
-    { id: "value", label: "Zwrot skumulowany", color: "var(--chart-1)" },
-  ];
 
   return (
-    <div className="min-w-0 w-full space-y-3">
-      {activeComparisonLines.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
-          {legendItems.map((item) => (
-            <div
-              key={item.id}
-              className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-background px-2.5 py-1"
-            >
-              <span
-                className="h-2.5 w-2.5 rounded-full ring-1 ring-background"
-                style={{ backgroundColor: item.color }}
-                aria-hidden="true"
-              />
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-      <div style={{ height }}>
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <LineChart
-            data={chartData}
-            margin={SHARED_CHART_MARGIN}
-          >
-            <CartesianGrid {...SHARED_CHART_GRID_PROPS} />
-            <XAxis
-              dataKey="label"
-              tickFormatter={(value: string | number) =>
-                timeAxisConfig.tickFormatter(String(value))
-              }
-              ticks={xTicks}
-              tick={SHARED_CHART_AXIS_TICK}
-              interval={timeAxisConfig.interval}
-              minTickGap={timeAxisConfig.minTickGap}
-              axisLine={SHARED_CHART_AXIS_LINE}
-              tickLine={SHARED_CHART_TICK_LINE}
-            />
-            <YAxis
-              domain={yAxisDomain}
-              ticks={yTicks}
-              tickFormatter={formatAxisPercent}
-              tick={SHARED_CHART_AXIS_TICK}
-              axisLine={SHARED_CHART_AXIS_LINE}
-              tickLine={SHARED_CHART_TICK_LINE}
-              width={SHARED_CHART_AXIS_WIDTH}
-            />
-            <ReferenceLine
-              y={0}
-              stroke="var(--foreground)"
-              strokeOpacity={0.45}
-              strokeWidth={1.5}
-              strokeDasharray="4 3"
-            />
-            <Tooltip
-              cursor={{ stroke: "var(--ring)" }}
-              labelFormatter={(value: string | number) => formatTooltipDate(String(value))}
-              formatter={(value: string | number, name: string | number) => [
-                formatPercent(Number(value)),
-                name === "value"
-                  ? "Zwrot skumulowany"
-                  : activeComparisonLines.find((line) => line.id === name)?.label ?? String(name),
-              ]}
-              contentStyle={{
-                background: "var(--popover)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                boxShadow: "var(--shadow)",
-                color: "var(--popover-foreground)",
-              }}
-              labelStyle={{ color: "var(--muted-foreground)" }}
-              itemStyle={{ color: "var(--popover-foreground)" }}
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="var(--chart-1)"
-              strokeWidth={SHARED_CHART_PRIMARY_LINE_WIDTH}
-              dot={false}
-              activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: "var(--chart-1)" }}
-            />
-            {activeComparisonLines.map((line) => (
-              <Line
-                key={line.id}
-                type={line.strokeStyle ?? "monotone"}
-                dataKey={(entry: Point) => entry.comparisons?.[line.id] ?? null}
-                name={line.id}
-                stroke={line.color}
-                strokeWidth={SHARED_CHART_SECONDARY_LINE_WIDTH}
-                dot={false}
-                activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: line.color }}
-                connectNulls={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+    <div className="h-full min-h-0">
+      <UnifiedPortfolioTrendChart
+        data={chartData}
+        variant="performance"
+        primaryFormatter={formatPercent}
+        yAxisFormatter={formatAxisPercent}
+        lines={activeComparisonLines}
+        tooltipLabelFormatter={formatTooltipDate}
+        showLegend
+        showPrimaryInLegend
+        yTickBuilder={buildYAxisTicks}
+      />
     </div>
   );
 }

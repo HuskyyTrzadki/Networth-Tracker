@@ -82,6 +82,9 @@ export function AddTransactionTradeFields({
   resolvedCashCurrency,
   onCashCurrencyChange,
 }: Props) {
+  const fieldLabelClass =
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+
   return (
     <>
       <FormField
@@ -89,7 +92,7 @@ export function AddTransactionTradeFields({
         name="date"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Data transakcji</FormLabel>
+            <FormLabel className={fieldLabelClass}>Data transakcji</FormLabel>
             <FormControl>
               <DatePicker
                 maxDate={maxTradeDate}
@@ -103,17 +106,19 @@ export function AddTransactionTradeFields({
         )}
       />
 
-      <div className={cn("grid gap-4", isCashTab ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
+      <div className={cn("grid gap-3", isCashTab ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
         <FormField
           control={form.control}
           name="quantity"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{isCashTab ? "Kwota" : "Ilość"}</FormLabel>
+              <FormLabel className={fieldLabelClass}>
+                {isCashTab ? "Kwota" : "Ilość"}
+              </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  className="h-11 font-mono tabular-nums text-left"
+                  className="h-11 font-mono tabular-nums text-right"
                   inputMode="decimal"
                   onChange={(event) => {
                     const next = formatNumericInputWithCursor(
@@ -142,7 +147,7 @@ export function AddTransactionTradeFields({
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cena jednostkowa</FormLabel>
+                <FormLabel className={fieldLabelClass}>Cena jednostkowa</FormLabel>
                 <FormControl>
                   <MoneyInput
                     {...field}
@@ -164,17 +169,17 @@ export function AddTransactionTradeFields({
       </div>
 
       {!isCashTab ? (
-        <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-3 lg:grid-cols-2">
           <FormField
             control={form.control}
             name="fee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Prowizja / opłaty</FormLabel>
+                <FormLabel className={fieldLabelClass}>Prowizja / opłaty</FormLabel>
                 <FormControl>
                   <MoneyInput
                     {...field}
-                    className="h-11 text-left"
+                    className="h-11"
                     currency={displayCurrency}
                     placeholder="np. 0,00"
                   />

@@ -120,7 +120,7 @@ function YearComparisonSection() {
           {HOW_THEY_MAKE_MONEY.lastYear.metrics.map((item) => (
             <div
               key={item.label}
-              className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-3 border-b border-dashed border-[color:var(--report-rule)] pb-2 last:border-b-0 last:pb-0"
+              className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-3 border-b border-dotted border-[color:var(--report-rule)] pb-2 last:border-b-0 last:pb-0"
             >
               <p className="truncate text-foreground/80">{item.label}</p>
               <p className="font-mono text-xl font-semibold tracking-tight tabular-nums">{item.value}</p>

@@ -169,19 +169,23 @@ function ChartsStory() {
           title="Wartość vs zainwestowany kapitał"
           subtitle="Linia smooth + linia schodkowa (step)."
         >
-          <PortfolioComparisonChart
-            data={portfolioComparison30d}
-            valueFormatter={(value) =>
-              formatMoney(locale, { amount: value, currency: "USD" })
-            }
-          />
+          <div className="h-[240px]">
+            <PortfolioComparisonChart
+              data={portfolioComparison30d}
+              valueFormatter={(value) =>
+                formatMoney(locale, { amount: value, currency: "USD" })
+              }
+            />
+          </div>
         </ChartCard>
 
         <ChartCard
           title="Zwroty dzienne (7D) - linia"
           subtitle="Wariant liniowy do dashboardu performance."
         >
-          <DailyReturnsLineChart data={dailyReturns7d} height={140} />
+          <div className="h-[140px]">
+            <DailyReturnsLineChart data={dailyReturns7d} />
+          </div>
         </ChartCard>
       </Container>
     </DesignSurface>

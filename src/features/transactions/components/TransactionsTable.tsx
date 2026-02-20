@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { LazyMotion, AnimatePresence, domAnimation, m, useReducedMotion } from "framer-motion";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { cn } from "@/lib/cn";
 
@@ -5,6 +9,7 @@ import {
   formatCurrencyString,
   formatCurrencyValue,
   getCurrencyFormatter,
+  splitCurrencyLabel,
 } from "@/lib/format-currency";
 import { multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 import type { TransactionListItem } from "../server/list-transactions";
@@ -17,18 +22,9 @@ type Props = Readonly<{
 }>;
 
 const GRID_TEMPLATE =
-  "minmax(110px,1fr) minmax(180px,2fr) minmax(120px,1fr) minmax(110px,1fr) minmax(120px,1fr) minmax(120px,1fr) minmax(90px,0.8fr)";
-const GROUP_ACCENT_BASE_CLASS = "border-l-2";
-const GROUP_TONE_BY_SIDE = {
-  BUY: {
-    accentClassName: "border-l-primary/35 dark:border-l-primary/45",
-    cashRowClassName: "bg-primary/[0.04] dark:bg-primary/[0.08]",
-  },
-  SELL: {
-    accentClassName: "border-l-rose-300/80 dark:border-l-rose-400/35",
-    cashRowClassName: "bg-rose-500/[0.04] dark:bg-rose-500/[0.08]",
-  },
-} as const;
+  "minmax(112px,1fr) minmax(220px,2.6fr) minmax(118px,1.2fr) minmax(96px,0.9fr) minmax(132px,1.1fr) minmax(150px,1.2fr) minmax(84px,0.75fr)";
+const HEADER_CELL_CLASS =
+  "px-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/85";
 
 const getTypeLabel = (item: TransactionListItem) => {
   if (item.cashflowType) {
@@ -135,120 +131,231 @@ const groupTransactions = (items: readonly TransactionListItem[]) => {
 
   return order.map((groupId) => {
     const sortedItems = sortGroupItems(groups.get(groupId) ?? []);
-    const primaryItem = sortedItems.find((item) => item.legRole === "ASSET");
 
     return {
       groupId,
       items: sortedItems,
-      primarySide: primaryItem?.side ?? sortedItems[0]?.side ?? "BUY",
     };
   });
 };
 
-export function TransactionsTable({ items }: Props) {
-  const groups = groupTransactions(items);
+type LedgerRow = Readonly<{
+  item: TransactionListItem;
+  isCashLeg: boolean;
+  hasGroupDivider: boolean;
+}>;
+
+const toLedgerRows = (items: readonly TransactionListItem[]): readonly LedgerRow[] =>
+  groupTransactions(items).flatMap((group) =>
+    group.items.map((item, index) => ({
+      item,
+      isCashLeg: item.legRole === "CASH",
+      hasGroupDivider: index === group.items.length - 1,
+    }))
+  );
+
+type TransactionsLedgerRowProps = Readonly<{
+  row: LedgerRow;
+  index: number;
+  isNew: boolean;
+  prefersReducedMotion: boolean;
+}>;
+
+function LedgerMonetaryValue({
+  label,
+  emphasized = false,
+}: Readonly<{ label: string; emphasized?: boolean }>) {
+  const { amount, currency } = splitCurrencyLabel(label);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border/85 bg-card">
+    <span className="inline-flex items-baseline justify-end gap-1">
+      <span>{amount}</span>
+      {currency ? (
+        <span
+          className={cn(
+            "text-[11px] font-medium text-muted-foreground/75",
+            emphasized && "text-muted-foreground/80"
+          )}
+        >
+          {currency}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function TransactionsLedgerRow({
+  row,
+  index,
+  isNew,
+  prefersReducedMotion,
+}: TransactionsLedgerRowProps) {
+  const { item, isCashLeg, hasGroupDivider } = row;
+  const priceLabel = formatPriceLabel(item.price, item.instrument.currency);
+  const valueLabel = formatValueLabel(item.quantity, item.price, item.instrument.currency);
+
+  return (
+    // Primary asset and its cash legs render as one continuous ledger.
+    <m.div
+      layout
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }}
+      transition={{
+        duration: prefersReducedMotion ? 0 : 0.16,
+        ease: [0.25, 1, 0.5, 1],
+        delay: prefersReducedMotion ? 0 : Math.min(index, 12) * 0.02,
+      }}
+      className={cn(
+        "grid min-h-[46px] items-center px-2 py-2 sm:px-4",
+        hasGroupDivider && "border-b border-dashed border-border/70",
+        isCashLeg && "text-muted-foreground",
+        isNew && "animate-ledger-stamp"
+      )}
+      style={{ gridTemplateColumns: GRID_TEMPLATE }}
+    >
+      <div
+        className={cn(
+          "px-2 font-mono text-[12px] tabular-nums text-muted-foreground",
+          isCashLeg && "pl-8"
+        )}
+      >
+        {item.tradeDate}
+      </div>
+      <div
+        className={cn(
+          "flex min-w-0 items-center gap-3 px-2",
+          isCashLeg && "pl-8"
+        )}
+      >
+        <div className="grid size-8 place-items-center text-sm leading-none">
+          <InstrumentLogoImage
+            className="size-6"
+            fallbackText={item.instrument.symbol}
+            size={24}
+            src={item.instrument.logoUrl}
+          />
+        </div>
+        <div className="flex min-w-0 flex-col">
+          <span
+            className={cn(
+              "font-sans text-[13px] font-semibold tracking-tight text-foreground",
+              isCashLeg && "text-muted-foreground"
+            )}
+          >
+            {item.instrument.symbol}
+          </span>
+          <span className="truncate font-sans text-xs text-muted-foreground">
+            {getInstrumentSubtitle(item)}
+          </span>
+        </div>
+      </div>
+      <div className="px-2">
+        <Badge
+          className={cn(
+            "rounded-md border px-2.5 py-0.5 font-sans text-[11px] font-medium",
+            getRowBadgeClassName(item)
+          )}
+          variant="outline"
+        >
+          {getTypeLabel(item)}
+        </Badge>
+      </div>
+      <div className="px-2">
+        <div className="w-full text-right font-mono text-sm tabular-nums">
+          {formatQuantityLabel(item)}
+        </div>
+      </div>
+      <div className="px-2">
+        <div className="w-full text-right font-mono text-sm tabular-nums">
+          <LedgerMonetaryValue label={priceLabel} />
+        </div>
+      </div>
+      <div className="px-2">
+        <div className="w-full text-right font-mono text-sm font-semibold tabular-nums">
+          <LedgerMonetaryValue emphasized label={valueLabel} />
+        </div>
+      </div>
+      <div className="px-2">
+        <TransactionsRowActions />
+      </div>
+    </m.div>
+  );
+}
+
+export function TransactionsTable({ items }: Props) {
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const rows = useMemo(() => toLedgerRows(items), [items]);
+  const previousRowIdsRef = useRef<ReadonlySet<string>>(new Set());
+  const [newRowIds, setNewRowIds] = useState<ReadonlySet<string>>(new Set());
+
+  useEffect(() => {
+    const nextIds = new Set(rows.map((row) => row.item.id));
+    if (previousRowIdsRef.current.size === 0) {
+      previousRowIdsRef.current = nextIds;
+      return;
+    }
+
+    const added = rows
+      .map((row) => row.item.id)
+      .filter((id) => !previousRowIdsRef.current.has(id));
+
+    previousRowIdsRef.current = nextIds;
+
+    if (added.length === 0) return;
+    const addedSet = new Set(added);
+    setNewRowIds(addedSet);
+
+    const timeout = window.setTimeout(() => {
+      setNewRowIds(new Set());
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [rows]);
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border/85 bg-card shadow-[var(--surface-shadow)]">
       <div className="overflow-x-auto">
         <div className="min-w-[860px]">
           <div
-            className="grid items-center bg-muted/35 px-2 py-3 sm:px-4"
+            className="grid items-center bg-muted/35 px-2 py-3 font-sans sm:px-4"
             style={{ gridTemplateColumns: GRID_TEMPLATE }}
           >
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">Data</div>
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
+            <div className={HEADER_CELL_CLASS}>Data</div>
+            <div className={HEADER_CELL_CLASS}>
               Instrument
             </div>
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">Typ</div>
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
+            <div className={HEADER_CELL_CLASS}>Typ</div>
+            <div className={cn(HEADER_CELL_CLASS, "flex justify-end text-right")}>
               Ilość
             </div>
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
+            <div className={cn(HEADER_CELL_CLASS, "flex justify-end text-right")}>
               Cena
             </div>
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
+            <div className={cn(HEADER_CELL_CLASS, "flex justify-end text-right")}>
               Wartość
             </div>
-            <div className="px-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/90">
+            <div className={HEADER_CELL_CLASS}>
               Akcje
             </div>
           </div>
-          <div className="space-y-3 p-3">
-            {groups.map((group) => (
-              <div
-                key={group.groupId}
-                className={cn(
-                  "overflow-hidden rounded-md border border-border/80 bg-background/45",
-                  GROUP_ACCENT_BASE_CLASS,
-                  GROUP_TONE_BY_SIDE[group.primarySide].accentClassName
-                )}
-              >
-                {group.items.map((item, index) => (
-                  // First row is the primary action (asset leg); cash legs are details.
-                  <div
-                    className={cn(
-                      "grid min-h-[58px] items-center px-2 sm:px-4",
-                      index > 0 && "border-t border-border",
-                      item.legRole === "CASH" &&
-                        GROUP_TONE_BY_SIDE[group.primarySide].cashRowClassName
-                    )}
-                    key={item.id}
-                    style={{ gridTemplateColumns: GRID_TEMPLATE }}
-                  >
-                    <div className="px-2 font-mono text-[12px] tabular-nums text-muted-foreground">
-                      {item.tradeDate}
-                    </div>
-                    <div className="flex min-w-0 items-center gap-3 px-2">
-                      <div className="grid size-8 place-items-center text-sm leading-none">
-                        <InstrumentLogoImage
-                          className="size-6"
-                          fallbackText={item.instrument.symbol}
-                          size={24}
-                          src={item.instrument.logoUrl}
-                        />
-                      </div>
-                      <div className="flex min-w-0 flex-col">
-                        <span className="text-[13px] font-semibold text-foreground">
-                          {item.instrument.symbol}
-                        </span>
-                        <span className="truncate text-xs text-muted-foreground">
-                          {getInstrumentSubtitle(item)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="px-2">
-                      <Badge
-                        className={cn(
-                          "rounded-md border px-2.5 py-0.5 text-[11px] font-medium",
-                          getRowBadgeClassName(item)
-                        )}
-                        variant="outline"
-                      >
-                        {getTypeLabel(item)}
-                      </Badge>
-                    </div>
-                    <div className="px-2 font-mono text-sm tabular-nums">
-                      {formatQuantityLabel(item)}
-                    </div>
-                    <div className="px-2 font-mono text-sm tabular-nums">
-                      {formatPriceLabel(item.price, item.instrument.currency)}
-                    </div>
-                    <div className="px-2 font-mono text-sm font-semibold tabular-nums">
-                      {formatValueLabel(
-                        item.quantity,
-                        item.price,
-                        item.instrument.currency
-                      )}
-                    </div>
-                    <div className="px-2">
-                      <TransactionsRowActions />
-                    </div>
-                  </div>
+          <LazyMotion features={domAnimation}>
+            <div>
+              <AnimatePresence initial={false}>
+                {rows.map((row, index) => (
+                  <TransactionsLedgerRow
+                    key={row.item.id}
+                    row={row}
+                    index={index}
+                    isNew={newRowIds.has(row.item.id)}
+                    prefersReducedMotion={prefersReducedMotion}
+                  />
                 ))}
-              </div>
-            ))}
-          </div>
+              </AnimatePresence>
+            </div>
+          </LazyMotion>
         </div>
       </div>
     </div>

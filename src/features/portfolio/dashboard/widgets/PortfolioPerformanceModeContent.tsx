@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
+import { splitCurrencyLabel } from "@/lib/format-currency";
 
-import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ChartRange } from "../lib/chart-helpers";
 import { formatPercent } from "../lib/chart-helpers";
 import { PortfolioSnapshotRebuildChartLoader } from "./PortfolioSnapshotRebuildChartLoader";
@@ -55,7 +55,6 @@ type Props = Readonly<{
   range: ChartRange;
   selectedPeriodReturn: number | null;
   selectedPeriodAbsoluteChange: number | null;
-  currency: SnapshotCurrency;
   dailyReturnValue: number | null;
   cumulativeChartData: readonly Point[];
   comparisonLines: readonly ComparisonLine[];
@@ -65,6 +64,24 @@ type Props = Readonly<{
   bootstrapPending: boolean;
   onBootstrapRequest: () => void;
 }>;
+
+function EmphasizedCurrencyAmount({
+  value,
+  className,
+}: Readonly<{ value: string; className?: string }>) {
+  const { amount, currency } = splitCurrencyLabel(value);
+
+  return (
+    <span className={cn("inline-flex items-baseline gap-1", className)}>
+      <span>{amount}</span>
+      {currency ? (
+        <span className="text-[0.62em] font-medium text-muted-foreground/75">
+          {currency}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 export function PortfolioPerformanceModeContent({
   rebuildStatus,
@@ -77,7 +94,6 @@ export function PortfolioPerformanceModeContent({
   range,
   selectedPeriodReturn,
   selectedPeriodAbsoluteChange,
-  currency,
   dailyReturnValue,
   cumulativeChartData,
   comparisonLines,
@@ -147,7 +163,7 @@ export function PortfolioPerformanceModeContent({
             className={cn(
               "text-4xl font-semibold",
               selectedPeriodReturn !== null && selectedPeriodReturn > 0
-                ? "text-emerald-600"
+                ? "text-emerald-700"
                 : selectedPeriodReturn !== null && selectedPeriodReturn < 0
                   ? "text-rose-600"
                   : "text-foreground"
@@ -161,7 +177,7 @@ export function PortfolioPerformanceModeContent({
             className={cn(
               "font-mono text-sm tabular-nums",
               selectedPeriodAbsoluteChange !== null && selectedPeriodAbsoluteChange > 0
-                ? "text-emerald-600"
+                ? "text-emerald-700"
                 : selectedPeriodAbsoluteChange !== null &&
                     selectedPeriodAbsoluteChange < 0
                   ? "text-rose-600"
@@ -169,9 +185,13 @@ export function PortfolioPerformanceModeContent({
             )}
           >
             {selectedPeriodAbsoluteChange !== null
-              ? `${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
-                  selectedPeriodAbsoluteChange
-                )} ${currency}`
+              ? (
+                  <EmphasizedCurrencyAmount
+                    value={`${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
+                      selectedPeriodAbsoluteChange
+                    )}`}
+                  />
+                )
               : "—"}
           </div>
         </div>
@@ -182,11 +202,12 @@ export function PortfolioPerformanceModeContent({
           dailyReturnValue={dailyReturnValue}
         />
       ) : (
-        <DailyReturnsLineChart
-          data={cumulativeChartData}
-          height={SHARED_PORTFOLIO_CHART_HEIGHT}
-          comparisonLines={comparisonLines}
-        />
+        <div style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}>
+          <DailyReturnsLineChart
+            data={cumulativeChartData}
+            comparisonLines={comparisonLines}
+          />
+        </div>
       )}
     </div>
   );

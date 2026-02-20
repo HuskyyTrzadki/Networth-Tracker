@@ -85,7 +85,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Stock chart/report modules are split into focused helpers (formatters, view-model mapping, hover card rendering, and revenue-mix section helpers/cards) to keep single-file complexity under repo limits.
 - Chart-heavy UI consumers use `next/dynamic` at whole-component boundaries (`StockChartPlot`, screener preview mini-chart, report insights widgets, revenue-mix donut cards) with `ssr: false`; avoid dynamic-wrapping Recharts primitives directly.
-- Screener cards render a larger 1-month (`1M`) preview chart with visible X/Y axes and a monthly percentage tag sourced from cache-first daily price series.
+- Screener cards use shared tactile card surface defaults (design-system `Card` token path), denser desktop geometry, and a compact monthly change badge for higher information density.
+- Screener preview chart keeps visible X/Y context but uses area + gradient fill and stronger stroke to avoid thin-wire sparklines.
+- Screener card borders use near-hairline contrast (`border-border/20`) so shadow depth carries the card separation without muddy double-border effect.
+- Screener card header spacing reserves clear breathing room above the mini-chart; price labels split amount/unit with muted currency token emphasis.
+- Screener cards now enter with a staggered “dealt cards” motion (fade + `y` offset) and use fast hover lift (`-2px`, ~0.15s) with slightly deepened shadow.
 - Daily chart ranges (`1M+`) are cache-first via `instrument_daily_prices_cache`; 1D uses direct intraday Yahoo fetch.
 - Supported ranges: `1D`, `1M`, `3M`, `6M`, `1Y`, `3Y`, `5Y`, `10Y`, `ALL`.
 - 1D chart uses `includePrePost=true`; if intraday data is unavailable, API returns fallback range `1M`.
@@ -104,6 +108,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - optional `BUY/SELL uzytkownika (mock)` markers use plus/minus icons with size scaled by mocked position value.
   - event overlays are enabled only on longer ranges (`3Y`, `5Y`, `10Y`, `ALL`) and are generated as yearly mocked markers.
 - `StockChartCard` remembers selected range in localStorage per instrument (`stocks:chart-range:<providerKey>`), preserving user preference across revisits.
+- Chart overlay/event controls (`Nakladki i wydarzenia`) intentionally use compact toggle-chip buttons (no native browser checkboxes) to keep report controls consistent with the ledger surface language.
 - Screener/search and chart hover tooltips were aligned with the shared editorial style baseline (consistent radii/borders, toned-down surface depth) without changing data behavior.
 - Stock search input (`StockSearchBar`) opts into global `/` focus shortcut via reusable `InstrumentCombobox` shortcut-listener mode.
 - Desktop polish follow-up adjusted `/stocks` shell/readability on large screens (search width containment, loader/skeleton geometry, and screener card density/rhythm).
@@ -114,6 +119,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - PE shown on a range bar with min/max/median markers and percentile-based wording (`history low/mid/high`),
   - additional multiples and fundamentals moved into calmer supporting lists.
 - Report concept section `Ten rok vs ostatni rok` now includes per-metric sparklines for trend context next to point-in-time YoY numbers.
+- Report concept section `Ten rok vs ostatni rok` uses ledger separators (`border-dotted`) between rows to stay consistent with transaction-table rhythm.
+- Report summary semantics are explicit: `Mocne strony` use positive icons/tone (green), while `Ryzyka` use warning/downside icons/tone (rose).
+- Stock report sidebar remains sticky on desktop (`top-8`, `self-start`) so ticker context + table-of-contents stay visible while reading long sections.
+- Revenue-allocation palette in `HOW_THEY_MAKE_MONEY` is intentionally muted (earth/editorial tones) to avoid saturated chart-library defaults on paper-like backgrounds.
 - Balance snapshot summary now uses deterministic natural-language risk interpretation (`Niskie/Umiarkowane/Podwyzszone`) via helper module `stock-report-balance-summary.ts`.
 
 ## Tests

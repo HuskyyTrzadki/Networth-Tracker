@@ -31,6 +31,9 @@ export function AddTransactionPortfolioTypeFields({
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
 }>) {
+  const fieldLabelClass =
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+
   return (
     <>
       <FormField
@@ -38,7 +41,7 @@ export function AddTransactionPortfolioTypeFields({
         name="portfolioId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Portfel</FormLabel>
+            <FormLabel className={fieldLabelClass}>Portfel</FormLabel>
             <Select
               disabled={Boolean(forcedPortfolioId)}
               onValueChange={(next) => {
@@ -70,11 +73,15 @@ export function AddTransactionPortfolioTypeFields({
         name="type"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{isCashTab ? "Typ przepływu" : "Typ transakcji"}</FormLabel>
+            <FormLabel className={fieldLabelClass}>
+              {isCashTab ? "Typ przepływu" : "Typ transakcji"}
+            </FormLabel>
             <FormControl>
               {isCustomTab ? (
-                <div className="flex h-10 items-center rounded-md border border-border/70 bg-muted/30 px-3 text-[13px] text-muted-foreground">
-                  Dodanie (BUY)
+                <div className="flex h-10 items-center">
+                  <span className="rounded-sm border border-current/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Dodanie
+                  </span>
                 </div>
               ) : (
                 <Tabs
@@ -85,15 +92,15 @@ export function AddTransactionPortfolioTypeFields({
                   }}
                   value={field.value}
                 >
-                  <TabsList className="grid h-10 w-full grid-cols-2 p-1">
+                  <TabsList className="grid h-10 w-full grid-cols-2 rounded-md border border-border/70 bg-muted/45 p-1">
                     <TabsTrigger
-                      className="h-8 w-full rounded-sm"
+                      className="h-8 w-full rounded-sm text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                       value="BUY"
                     >
                       {isCashTab ? "Wpłata" : "Kupno"}
                     </TabsTrigger>
                     <TabsTrigger
-                      className="h-8 w-full rounded-sm"
+                      className="h-8 w-full rounded-sm text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                       value="SELL"
                     >
                       {isCashTab ? "Wypłata" : "Sprzedaż"}

@@ -192,7 +192,6 @@ function PortfolioValueOverTimeChartContent({
         valueIsPartial={liveTotals.totalValue !== null && liveTotals.isPartial}
         missingQuotes={liveTotals.missingQuotes}
         missingFx={liveTotals.missingFx}
-        liveAsOf={liveTotals.asOf}
         rebuildStatus={rebuild.status}
         rebuildMessage={rebuild.message}
         isAllHistoryLoading={isAllHistoryLoading}
@@ -236,7 +235,6 @@ function PortfolioValueOverTimeChartContent({
           range={range}
           selectedPeriodReturn={viewModel.nominalPeriodReturn}
           selectedPeriodAbsoluteChange={viewModel.selectedPeriodAbsoluteChange}
-          currency={currency}
           dailyReturnValue={viewModel.dailyReturnValue}
           cumulativeChartData={viewModel.cumulativeChartData}
           comparisonLines={viewModel.activeComparisonLines}

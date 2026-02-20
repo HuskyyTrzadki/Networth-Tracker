@@ -84,10 +84,11 @@ export function AppSidebar({ className, portfolios }: Props) {
                       asChild
                       isActive={active}
                       className={cn(
-                        "h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/90",
+                        "relative h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/90",
                         "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
                         "data-[active=true]:bg-primary/14 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
                         "data-[active=true]:ring-1 data-[active=true]:ring-primary/30",
+                        "data-[active=true]:before:absolute data-[active=true]:before:bottom-1.5 data-[active=true]:before:left-0 data-[active=true]:before:top-1.5 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-foreground data-[active=true]:before:content-['']",
                         "[&[data-active=true]>svg]:text-primary"
                       )}
                     >
@@ -115,9 +116,10 @@ export function AppSidebar({ className, portfolios }: Props) {
                     asChild
                     isActive={activePortfolioId === portfolio.id}
                     className={cn(
-                      "h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
+                      "relative h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
                       "data-[active=true]:bg-primary/14 data-[active=true]:font-semibold data-[active=true]:text-sidebar-foreground",
-                      "data-[active=true]:ring-1 data-[active=true]:ring-primary/30"
+                      "data-[active=true]:ring-1 data-[active=true]:ring-primary/30",
+                      "data-[active=true]:before:absolute data-[active=true]:before:bottom-1.5 data-[active=true]:before:left-0 data-[active=true]:before:top-1.5 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-foreground data-[active=true]:before:content-['']"
                     )}
                   >
                     <Link href={`/portfolio/${portfolio.id}`}>
@@ -172,10 +174,11 @@ export function AppSidebar({ className, portfolios }: Props) {
                   asChild
                   isActive={active}
                   className={cn(
-                    "h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
+                    "relative h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
                     "[&>svg]:size-[18px] [&>svg]:text-sidebar-foreground/65",
                     "data-[active=true]:bg-primary/14 data-[active=true]:text-sidebar-foreground data-[active=true]:font-semibold",
                     "data-[active=true]:ring-1 data-[active=true]:ring-primary/30",
+                    "data-[active=true]:before:absolute data-[active=true]:before:bottom-1.5 data-[active=true]:before:left-0 data-[active=true]:before:top-1.5 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-foreground data-[active=true]:before:content-['']",
                     "[&[data-active=true]>svg]:text-primary"
                   )}
                 >

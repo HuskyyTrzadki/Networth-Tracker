@@ -85,7 +85,7 @@ export function AllocationDonutChart({
             outerRadius={outerRadius}
             paddingAngle={2}
             isAnimationActive
-            animationDuration={650}
+            animationDuration={600}
             animationEasing="ease-out"
           >
             {chartData.map((slice, index) => {
