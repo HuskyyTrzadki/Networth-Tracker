@@ -64,3 +64,49 @@ describe("isSelectedDateTodayInTimeZone", () => {
     expect(result).toBe(false);
   });
 });
+
+describe("shouldRevalidateExactSession", () => {
+  it("returns true for historical weekday fallback", () => {
+    const result = __test__.shouldRevalidateExactSession({
+      selectedDate: "2026-02-19",
+      marketDate: "2026-02-16",
+      exchangeTimezone: "Europe/Warsaw",
+      now: new Date("2026-02-20T10:00:00.000Z"),
+    });
+
+    expect(result).toBe(true);
+  });
+
+  it("returns false for weekend selected date", () => {
+    const result = __test__.shouldRevalidateExactSession({
+      selectedDate: "2026-02-08",
+      marketDate: "2026-02-06",
+      exchangeTimezone: "Europe/Warsaw",
+      now: new Date("2026-02-09T10:00:00.000Z"),
+    });
+
+    expect(result).toBe(false);
+  });
+
+  it("returns false for today fallback", () => {
+    const result = __test__.shouldRevalidateExactSession({
+      selectedDate: "2026-02-20",
+      marketDate: "2026-02-19",
+      exchangeTimezone: "Europe/Warsaw",
+      now: new Date("2026-02-20T10:00:00.000Z"),
+    });
+
+    expect(result).toBe(false);
+  });
+
+  it("returns false when market date already matches selected date", () => {
+    const result = __test__.shouldRevalidateExactSession({
+      selectedDate: "2026-02-19",
+      marketDate: "2026-02-19",
+      exchangeTimezone: "Europe/Warsaw",
+      now: new Date("2026-02-20T10:00:00.000Z"),
+    });
+
+    expect(result).toBe(false);
+  });
+});

@@ -35,6 +35,9 @@ export function AddTransactionDialogStandaloneRoute({
       assetBalancesByPortfolio={assetBalancesByPortfolio}
       initialPortfolioId={initialPortfolioId}
       forcedPortfolioId={forcedPortfolioId}
+      onSubmitSuccess={() => {
+        router.refresh();
+      }}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) router.replace("/transactions");
       }}

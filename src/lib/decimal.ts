@@ -1,6 +1,7 @@
 import Big from "big.js";
 
-Big.RM = 1;
+Big.DP = 8;
+Big.RM = Big.roundHalfUp;
 
 type DecimalValue = Big;
 

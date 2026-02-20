@@ -1,6 +1,14 @@
-import { addDecimals, decimalOne, multiplyDecimals, parseDecimalString } from "@/lib/decimal";
+import type { DecimalValue } from "@/lib/decimal";
+import {
+  addDecimals,
+  decimalOne,
+  multiplyDecimals,
+  parseDecimalString,
+} from "@/lib/decimal";
 
 const MS_PER_DAY = 86_400_000;
+const INTERNAL_SCALE = 8;
+const ROUND_HALF_UP = 1;
 
 const toIsoDay = (input: string) => input.trim().slice(0, 10);
 
@@ -15,12 +23,62 @@ const daysBetweenIsoDates = (fromIsoDate: string, toIsoDate: string) => {
   return diff < 0 ? 0 : diff;
 };
 
+const roundInternal = (value: DecimalValue) => value.round(INTERNAL_SCALE, ROUND_HALF_UP);
+
+const toDailyRateFactor = (annualRatePct: DecimalValue) => {
+  const dailyRate = roundInternal(annualRatePct.div(100).div(365));
+  return roundInternal(addDecimals(decimalOne(), dailyRate));
+};
+
+const computeDayChangePercent = (
+  dayChange: DecimalValue,
+  previousPrice: DecimalValue
+) => {
+  if (!previousPrice.gt(0)) {
+    return null;
+  }
+
+  const value = Number(dayChange.div(previousPrice).toString());
+  return Number.isFinite(value) ? value : null;
+};
+
 export type CompoundAnnualRateResult = Readonly<{
   price: string;
   dayChange: string | null;
   // Normalized ratio: 0.01 = +1.00%.
   dayChangePercent: number | null;
 }>;
+
+export const computeCompoundedAnnualRateDailyFactor = (
+  annualRatePct: string
+): string | null => {
+  const annualRate = parseDecimalString(annualRatePct);
+  if (!annualRate) {
+    return null;
+  }
+
+  return toDailyRateFactor(annualRate).toString();
+};
+
+export function computeCompoundedAnnualRateQuoteFromPreviousDay(input: Readonly<{
+  previousPrice: string;
+  dailyRateFactor: string;
+}>): CompoundAnnualRateResult | null {
+  const previousPrice = parseDecimalString(input.previousPrice);
+  const dailyRateFactor = parseDecimalString(input.dailyRateFactor);
+  if (!previousPrice || !dailyRateFactor) {
+    return null;
+  }
+
+  const nextPrice = roundInternal(multiplyDecimals(previousPrice, dailyRateFactor));
+  const dayChange = roundInternal(nextPrice.minus(previousPrice));
+
+  return {
+    price: nextPrice.toString(),
+    dayChange: dayChange.toString(),
+    dayChangePercent: computeDayChangePercent(dayChange, previousPrice),
+  };
+}
 
 export function computeCompoundedAnnualRateQuote(input: Readonly<{
   anchorPrice: string;
@@ -43,23 +101,22 @@ export function computeCompoundedAnnualRateQuote(input: Readonly<{
     return { price: anchor.toString(), dayChange: null, dayChangePercent: null };
   }
 
-  // Daily discrete compounding from an annual percentage rate.
-  const dailyRate = annualRatePct.div(100).div(365);
-  const factor = addDecimals(decimalOne(), dailyRate);
-  const price = multiplyDecimals(anchor, factor.pow(days));
+  const roundedAnchor = roundInternal(anchor);
+  const factor = toDailyRateFactor(annualRatePct);
+  const price = roundInternal(multiplyDecimals(roundedAnchor, factor.pow(days)));
 
   if (days === 0) {
     return { price: price.toString(), dayChange: "0", dayChangePercent: 0 };
   }
 
-  const prev = multiplyDecimals(anchor, factor.pow(days - 1));
-  const dayChange = price.minus(prev);
-  const pct = prev.gt(0) ? Number(dayChange.div(prev).toString()) : null;
+  const previousPrice = roundInternal(
+    multiplyDecimals(roundedAnchor, factor.pow(days - 1))
+  );
+  const dayChange = roundInternal(price.minus(previousPrice));
 
   return {
     price: price.toString(),
     dayChange: dayChange.toString(),
-    dayChangePercent: pct !== null && Number.isFinite(pct) ? pct : null,
+    dayChangePercent: computeDayChangePercent(dayChange, previousPrice),
   };
 }
-

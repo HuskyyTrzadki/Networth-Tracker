@@ -1,5 +1,9 @@
 import type { createClient } from "@/lib/supabase/server";
 import type { InstrumentType } from "@/features/market-data";
+import {
+  isCustomAssetType,
+  type CustomAssetType,
+} from "@/features/transactions/lib/custom-asset-types";
 
 export type PortfolioHolding = Readonly<{
   instrumentId: string;
@@ -11,6 +15,7 @@ export type PortfolioHolding = Readonly<{
   providerKey: string;
   logoUrl: string | null;
   instrumentType: InstrumentType | null;
+  customAssetType?: CustomAssetType | null;
   quantity: string;
 }>;
 
@@ -37,6 +42,11 @@ type CustomHoldingRow = Readonly<{
   name: string;
   currency: string;
   quantity: string | number;
+}>;
+
+type CustomInstrumentKindRow = Readonly<{
+  id: string;
+  kind: string | null;
 }>;
 
 export async function getPortfolioAssetHoldings(
@@ -80,6 +90,27 @@ export async function getPortfolioAssetHoldings(
   }
 
   const customRows = (customData ?? []) as CustomHoldingRow[];
+  const customIds = customRows.map((row) => row.custom_instrument_id);
+  const kindById = new Map<string, CustomAssetType>();
+
+  if (customIds.length > 0) {
+    const { data: kindRows, error: kindError } = await supabase
+      .from("custom_instruments")
+      .select("id, kind")
+      .in("id", customIds);
+
+    if (kindError) {
+      throw new Error(kindError.message);
+    }
+
+    const rows = (kindRows ?? []) as CustomInstrumentKindRow[];
+    for (const row of rows) {
+      if (row.kind && isCustomAssetType(row.kind)) {
+        kindById.set(row.id, row.kind);
+      }
+    }
+  }
+
   const customHoldings = customRows.map((row) => ({
     instrumentId: `custom:${row.custom_instrument_id}`,
     symbol: "CUSTOM",
@@ -90,6 +121,7 @@ export async function getPortfolioAssetHoldings(
     providerKey: row.custom_instrument_id,
     logoUrl: null,
     instrumentType: null,
+    customAssetType: kindById.get(row.custom_instrument_id) ?? null,
     quantity: normalizeNumeric(row.quantity),
   })) satisfies PortfolioHolding[];
 

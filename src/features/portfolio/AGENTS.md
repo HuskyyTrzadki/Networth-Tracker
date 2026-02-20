@@ -55,6 +55,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/snapshots/snapshot-rebuild-range-day.ts`
 - `src/features/portfolio/server/snapshots/fetch-custom-holdings-admin-as-of.ts`
 - `src/features/portfolio/server/snapshots/run-snapshot-rebuild.ts`
+- `src/features/portfolio/server/snapshots/snapshot-row-storage-rounding.ts`
 - `src/features/portfolio/server/snapshots/rebuild-route-service.ts`
 - `src/app/api/portfolio-snapshots/rebuild/route.ts`
 - `src/app/api/portfolio-snapshots/bootstrap/route.ts`
@@ -77,9 +78,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
-- Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`, `AllocationDonutChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
-- Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Koło/Tabela` (domyślnie `Koło`), zamiast dwóch osobnych kart 50/50.
-- Widok `Koło` renderuje donut jako pełną szerokość widgetu (bez stałej kolumny 220px), a legenda udziałów ma czytelniejsze kafelki z paskiem udziału.
+- Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
+- Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
+- Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.
 - Paleta linii porównań jest rozdzielona tak, aby nie mylić bazowej linii zwrotu z inflacją (większy kontrast kolorów między seriami).
@@ -141,22 +142,26 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Rebuild worker merges concurrent `dirty_from` updates at chunk finalize (prevents losing backdated writes that arrive during an active rebuild run).
 - Rebuild worker is adaptive per request: one POST can process multiple internal chunks under a server time budget (`timeBudgetMs`) with per-chunk day cap (`maxDaysPerRun`), reducing end-to-end rebuild latency.
 - Internal chunks in one run now share a single preloaded rebuild session (transactions + daily prices + daily FX loaded once, then reused in-memory across chunks), eliminating repeated DB/provider reads per chunk.
+- Rebuild custom-instrument pricing now carries previous day compounded price state and applies one daily multiply (`price_today = price_yesterday * daily_rate_factor`), resetting anchor state only when a new custom transaction updates the anchor.
+- Snapshot writes are normalized at persistence boundary: all money fields are rounded to 2 decimals before insert/update into `portfolio_snapshots`.
 - Daily cache preload validates range coverage quality (start/end + max internal gap), so sparse cache fragments trigger provider refetch instead of creating long flat carry-forward segments.
 - Portfolio value/performance chart compute is split into a dedicated view-model builder (`dashboard/lib/portfolio-value-over-time-view-model.ts`) so the widget component stays focused on orchestration and rendering.
 - Portfolio chart remembers selected range in localStorage per scope (`ALL` vs `PORTFOLIO:<id>`) so users keep their preferred timeframe between visits.
 - Dashboard visual surfaces (hero, switcher shell, allocation/rebuild cards, and skeletons) were normalized to the same rounded/border rhythm as shared primitives, with decorative shadows/gradients reduced for consistency.
 - Desktop polish follow-up tightened dashboard control density (`PortfolioValueOverTimeHeader`) and route-loading shell width alignment (`max-w-[1560px]`) for more consistent large-screen rhythm.
-- Allocation/holdings widget palette now uses differentiated ink accents plus patterned fills (hatch/dots/cross/grid) across donut + participation bars, improving category distinction without breaking editorial style.
+- Allocation `Mapa` now uses a light "tinted paper" palette (pastel green/rose/white by `todayChangePercent`, size = portfolio weight) with centered mono labels and beige background gaps so it integrates with the editorial light shell.
+- Treemap polish follow-up tightened hierarchy and anchoring: ticker/share/change labels now render centered with stronger IBM Plex Mono scale, change labels include directional arrows (`↑`/`↓`/`→`), floating category header strips are removed (`upperLabel` height forced to `0`), tooltip fallbacks prevent `undefined/NaN%` states, and beige separators are enforced at each treemap depth to avoid white seams.
+- Allocation mode now gates `Mapa` for larger datasets only (`assets > 4`); smaller sets fall back to `Słupki` by default while keeping `Tabela` available.
 - Portfolio net-value hero now uses explicit typography split (sans labels + mono value) and `Badge` `stamp` freshness chips (`Notowania z...`, `Kurs FX z dnia...`) with calmer metadata contrast.
 - Portfolio hero/widget surfaces adopt shared light-theme depth token (`--surface-shadow`) for subtle paper-card lift without heavy decorative shadows.
 - Freshness badges remain only in the net-value hero; value/performance chart header no longer duplicates `Notowania z...` / `Kurs FX...` metadata.
 - Value comparison chart now renders as an area chart (thicker primary stroke + subtle gradient fill under `Wartość portfela`) to anchor trend perception.
-- Allocation mode uses desktop side-by-side composition in one panel: donut on the left (~40% width), allocation progress bars on the right to reduce wasted vertical space.
-- Allocation donut labels custom holdings by `name` (instead of raw `CUSTOM`) and merges slices below `4%` into `Pozostałe` to reduce micro-slice noise.
+- Allocation module now prioritizes high-variance portfolios with `Mapa` (hierarchical treemap by category) and `Słupki` (ranked horizontal share bars), while `Tabela` stays as the precision ledger view.
+- Treemap groups assets by category (`Nieruchomości` / `Akcje` / `Lokaty i Obligacje` / `Gotówka` / `Inne`) so concentration is visible at category and instrument level in one view.
 - Value/performance filter groups (`Tryb`, `Zakres`, `Waluta`) were visually simplified by removing extra outer containers; segmented controls carry the hierarchy.
 - Performance mode chart now follows the same grounded treatment as value mode: primary cumulative-return curve rendered as area with subtle gradient fill and thicker stroke.
-- Portfolio chart control groups (`Tryb`, `Zakres`, `Waluta`, allocation `Koło/Tabela`) now use shared `ToggleGroup` `ledger` variant for stronger active-state hierarchy and lower border noise.
-- Allocation mode density was tightened for desktop scanning (`h-[420px]`, `lg:h-[500px]`, donut `250px`) while preserving side-by-side composition.
+- Portfolio chart control groups (`Tryb`, `Zakres`, `Waluta`, allocation `Mapa/Słupki/Tabela`) now use shared `ToggleGroup` `ledger` variant for stronger active-state hierarchy and lower border noise.
+- Allocation views keep a fixed desktop workspace (`h-[420px]`, `lg:h-[500px]`) with internal scroll to handle long holdings lists without layout jumps.
 - Currency units in hero + allocation numeric labels are visually subordinated (smaller/muted unit token) so users scan core numeric values first.
 - Hero eyebrow (`Wartość netto`) now follows strict ledger hierarchy (`text-xs uppercase tracked muted`), with the primary amount carrying dominant visual weight.
 - Net-value hero value now animates with a rapid count-up (`0 -> target`, ~0.6s) plus subtle fade-in-up (`10px`) on mount, with reduced-motion fallback.
@@ -170,7 +175,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/create-portfolio.test.ts`
 - `src/features/portfolio/server/valuation.test.ts`
 - `src/features/portfolio/server/average-buy-price.test.ts`
+- `src/features/portfolio/server/custom-instruments/compound-annual-rate.test.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.test.ts`
+- `src/features/portfolio/server/snapshots/snapshot-row-storage-rounding.test.ts`
 - `src/features/portfolio/dashboard/lib/twr.test.ts`
 - `src/features/portfolio/dashboard/lib/chart-helpers.test.ts`
 - `src/features/portfolio/dashboard/lib/portfolio-value-over-time-view-model.test.ts`

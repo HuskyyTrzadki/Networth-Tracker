@@ -8,7 +8,11 @@ import {
   type DecimalValue as DecimalValueType,
 } from "@/lib/decimal";
 
-import { computeCompoundedAnnualRateQuote } from "../custom-instruments/compound-annual-rate";
+import {
+  computeCompoundedAnnualRateDailyFactor,
+  computeCompoundedAnnualRateQuote,
+  computeCompoundedAnnualRateQuoteFromPreviousDay,
+} from "../custom-instruments/compound-annual-rate";
 import { buildPortfolioSummary } from "../valuation";
 import type { InstrumentQuote } from "@/features/market-data";
 
@@ -31,6 +35,33 @@ export type CustomAnchorState = Readonly<{
   tradeDate: string;
   price: string;
 }>;
+
+export type CustomQuoteState = Readonly<{
+  bucketDate: string;
+  anchorTradeDate: string;
+  anchorPrice: string;
+  dailyRateFactor: string;
+  price: string;
+}>;
+
+const MS_PER_DAY = 86_400_000;
+
+const isNextIsoDate = (previousDate: string, nextDate: string) => {
+  const previousMs = Date.parse(previousDate);
+  const nextMs = Date.parse(nextDate);
+  if (!Number.isFinite(previousMs) || !Number.isFinite(nextMs)) {
+    return false;
+  }
+
+  return nextMs - previousMs === MS_PER_DAY;
+};
+
+const normalizeAnnualRatePct = (value: string | number | null | undefined) =>
+  value === null || value === undefined
+    ? "0"
+    : typeof value === "number"
+      ? value.toString()
+      : value;
 
 const buildFlowMapsForDay = (input: Readonly<{
   dailyTransactions: readonly NormalizedTransaction[];
@@ -152,6 +183,7 @@ export const buildDaySnapshotRow = (input: Readonly<{
   instrumentCursor: ReturnType<typeof createInstrumentSeriesCursor>;
   fxCursor: ReturnType<typeof createFxSeriesCursor>;
   customAnchorByInstrumentId: ReadonlyMap<string, CustomAnchorState>;
+  customQuoteStateByInstrumentId: Map<string, CustomQuoteState>;
 }>): SnapshotRowInsert | null => {
   input.instrumentCursor.advanceTo(input.bucketDate);
   input.fxCursor.advanceTo(input.bucketDate);
@@ -167,22 +199,56 @@ export const buildDaySnapshotRow = (input: Readonly<{
 
         if (instrument.provider === "custom") {
           const anchor = input.customAnchorByInstrumentId.get(holding.instrumentId);
-          const annualRatePct =
-            instrument.annual_rate_pct === null || instrument.annual_rate_pct === undefined
-              ? "0"
-              : typeof instrument.annual_rate_pct === "number"
-                ? instrument.annual_rate_pct.toString()
-                : instrument.annual_rate_pct;
+          if (!anchor) {
+            input.customQuoteStateByInstrumentId.delete(holding.instrumentId);
+            return [holding.instrumentId, null] as const;
+          }
 
-          if (!anchor) return [holding.instrumentId, null] as const;
+          const annualRatePct = normalizeAnnualRatePct(instrument.annual_rate_pct);
+          const dailyRateFactor = computeCompoundedAnnualRateDailyFactor(annualRatePct);
+          if (!dailyRateFactor) {
+            input.customQuoteStateByInstrumentId.delete(holding.instrumentId);
+            return [holding.instrumentId, null] as const;
+          }
 
-          const quote = computeCompoundedAnnualRateQuote({
+          const previousQuoteState =
+            input.customQuoteStateByInstrumentId.get(holding.instrumentId);
+          const canCarryForward = previousQuoteState
+            ? previousQuoteState.anchorTradeDate === anchor.tradeDate &&
+              previousQuoteState.anchorPrice === anchor.price &&
+              previousQuoteState.dailyRateFactor === dailyRateFactor &&
+              isNextIsoDate(previousQuoteState.bucketDate, input.bucketDate)
+            : false;
+
+          const quote = (() => {
+            if (canCarryForward && previousQuoteState) {
+              const incrementalQuote =
+                computeCompoundedAnnualRateQuoteFromPreviousDay({
+                  previousPrice: previousQuoteState.price,
+                  dailyRateFactor: previousQuoteState.dailyRateFactor,
+                });
+              if (incrementalQuote) {
+                return incrementalQuote;
+              }
+            }
+
+            return computeCompoundedAnnualRateQuote({
+              anchorPrice: anchor.price,
+              anchorDate: anchor.tradeDate,
+              annualRatePct,
+              asOfDate: input.bucketDate,
+            });
+          })();
+
+          input.customQuoteStateByInstrumentId.set(holding.instrumentId, {
+            bucketDate: input.bucketDate,
+            anchorTradeDate: anchor.tradeDate,
             anchorPrice: anchor.price,
-            anchorDate: anchor.tradeDate,
-            annualRatePct,
-            asOfDate: input.bucketDate,
+            dailyRateFactor,
+            price: quote.price,
           });
 
+          const quoteAsOf = `${input.bucketDate}T00:00:00.000Z`;
           return [
             holding.instrumentId,
             {
@@ -191,8 +257,8 @@ export const buildDaySnapshotRow = (input: Readonly<{
               price: quote.price,
               dayChange: quote.dayChange,
               dayChangePercent: quote.dayChangePercent,
-              asOf: `${input.bucketDate}T00:00:00.000Z`,
-              fetchedAt: `${input.bucketDate}T00:00:00.000Z`,
+              asOf: quoteAsOf,
+              fetchedAt: quoteAsOf,
             },
           ] as const;
         }
@@ -296,4 +362,3 @@ export const buildDaySnapshotRow = (input: Readonly<{
     flowTotalsByCurrency.implicit
   );
 };
-

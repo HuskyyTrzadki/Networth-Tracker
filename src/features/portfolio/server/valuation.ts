@@ -1,6 +1,7 @@
 import { addDecimals, decimalZero, multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 
 import type { CurrencyCode, FxRate, InstrumentQuote, InstrumentType } from "@/features/market-data";
+import type { CustomAssetType } from "@/features/transactions/lib/custom-asset-types";
 import type { PortfolioHolding } from "./get-portfolio-holdings";
 import { toBaseHoldingDayChangeOrNull } from "./to-base-holding-day-change";
 
@@ -13,6 +14,7 @@ export type ValuedHolding = Readonly<{
   currency: CurrencyCode;
   logoUrl: string | null;
   instrumentType: InstrumentType | null;
+  customAssetType?: CustomAssetType | null;
   quantity: string;
   averageBuyPriceBase?: string | null;
   price: string | null;
@@ -59,6 +61,9 @@ export function buildPortfolioSummary({
   let missingQuotes = 0;
   let missingFx = 0;
   const usedTimestamps: string[] = [];
+  const customAssetTypeByInstrumentId = new Map(
+    holdings.map((holding) => [holding.instrumentId, holding.customAssetType ?? null] as const)
+  );
 
   const valuedHoldings: ValuedHolding[] = holdings.map((holding) => {
     if (holding.instrumentType === "CURRENCY") {
@@ -362,13 +367,14 @@ export function buildPortfolioSummary({
     hasValued && totalValue.toString() !== "0" ? totalValue : null;
 
   const holdingsWithWeights = valuedHoldings.map((holding) => {
+    const customAssetType = customAssetTypeByInstrumentId.get(holding.instrumentId) ?? null;
     if (!holding.valueBase || !totalDecimal) {
-      return holding;
+      return { ...holding, customAssetType };
     }
     const valueDecimal = parseDecimalString(holding.valueBase);
-    if (!valueDecimal) return holding;
+    if (!valueDecimal) return { ...holding, customAssetType };
     const weight = Number(valueDecimal.div(totalDecimal).toString());
-    return { ...holding, weight };
+    return { ...holding, weight, customAssetType };
   });
 
   const asOf = minIso(usedTimestamps);

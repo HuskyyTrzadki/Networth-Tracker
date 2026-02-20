@@ -73,7 +73,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Cash settlement uses FX cache at write-time; rate is stored on the cash leg for auditability.
 - Cash settlement for `consumeCash=true` uses daily FX as-of `trade_date` (with previous-session carry-forward) so backdated writes stay historically correct.
 - Create-transaction guards enforce no oversell (asset/cash withdrawals) and prevent negative cash after settlement as-of `trade_date`.
-- Past-date transaction support uses a 5-year cap (UI + backend validation).
+- Past-date transaction support uses a hard lower bound (`2023-12-01`) + upper bound `today` (UI + backend validation).
 - Add-transaction form fetches Yahoo daily session data (on date/instrument change) to suggest price and show low/high range.
 - Add-transaction async client requests use shared keyed resource hook (`use-keyed-async-resource`) to avoid duplicated stale-request/loading logic.
 - Add-transaction modal exposes a calendar date picker field with lower bound from `getTradeDateLowerBound()` and upper bound set to `today`.
@@ -85,6 +85,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - selected `today` (exchange timezone) + fallback to prior candle => "session may still be in progress / daily close not available yet"
   - other fallback cases (weekend/holiday/past no-session day) => "no session day"
 - Historical price assist for `trade_date = today` now prefers fresh live/cache quote (`instrument_quotes_cache` + Yahoo fallback) over previous daily close; when live quote is used, day-range validation is skipped (`range=null`) to avoid false "price out of session range" errors against prior-session OHLC.
+- Historical price assist now performs an exact-day weekday revalidation when fallback session is older than selected date (`marketDate < selectedDate`) to prevent stale-cache false positives (e.g., selected weekday reported as no-session despite existing candle).
 - On writes with `trade_date <= today`, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state` (`PORTFOLIO` + `ALL`), so both same-day and past-dated changes use one rebuild flow.
 - Add-transaction modal uses a wider desktop layout with two-pane composition (main form + side summary/cash panel), plus explicit loading states for both historical price assist and submit action.
 - Add-transaction modal shows live cash impact preview (`dostępne / zmiana / po transakcji`) with FX preview for mismatched currencies and inline insufficient-cash warning.
@@ -115,6 +116,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Modal receipt summary (`TransactionLiveSummary`) also splits amount/unit tokens and keeps all monetary rows right-aligned with `font-mono tabular-nums`.
 - Transactions table rows use motion choreography: quick top-to-bottom stagger on mount, layout animation for insertion reflow, and a short “fresh stamp” highlight (`~0.5s`) on newly added rows.
 - Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.
+- Add-transaction route wrappers trigger `router.refresh()` on submit success before closing/navigation, so transactions list reflects newly saved rows immediately.
 - Add-transaction close guard uses an in-app confirmation dialog (`Odrzucić niezapisane zmiany?`) instead of `window.confirm`, so behavior stays consistent with design-system modals.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).

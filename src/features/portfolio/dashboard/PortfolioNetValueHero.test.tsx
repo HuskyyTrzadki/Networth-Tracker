@@ -16,8 +16,9 @@ describe("PortfolioNetValueHero", () => {
     );
 
     expect(screen.getByText("Portfel: XYZ")).toBeInTheDocument();
-    expect(screen.getByText("Wartość netto (PLN)")).toBeInTheDocument();
-    expect(screen.getByText("12 345,67 zł")).toBeInTheDocument();
+    expect(screen.getByText("Wartość netto")).toBeInTheDocument();
+    expect(screen.getByText("12 345,67")).toBeInTheDocument();
+    expect(screen.getByText("zł")).toBeInTheDocument();
   });
 
   it("renders partial valuation note when summary is partial", () => {

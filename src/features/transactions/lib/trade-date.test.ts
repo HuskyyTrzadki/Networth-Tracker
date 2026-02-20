@@ -1,18 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  TRADE_DATE_MAX_YEARS_BACK,
+  TRADE_DATE_MIN_ISO,
   getTradeDateLowerBound,
   isValidTradeDate,
 } from "./trade-date";
 
 describe("trade-date", () => {
-  it("returns lower bound exactly N years back", () => {
+  it("returns fixed lower bound", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-02-06T12:00:00Z"));
 
-    expect(getTradeDateLowerBound()).toBe("2021-02-06");
-    expect(TRADE_DATE_MAX_YEARS_BACK).toBe(5);
+    expect(getTradeDateLowerBound()).toBe(TRADE_DATE_MIN_ISO);
 
     vi.useRealTimers();
   });
@@ -20,7 +19,7 @@ describe("trade-date", () => {
   it("accepts boundary date and rejects one day before", () => {
     const now = new Date("2026-02-06T12:00:00Z");
 
-    expect(isValidTradeDate("2021-02-06", now)).toBe(true);
-    expect(isValidTradeDate("2021-02-05", now)).toBe(false);
+    expect(isValidTradeDate("2023-12-01", now)).toBe(true);
+    expect(isValidTradeDate("2023-11-30", now)).toBe(false);
   });
 });

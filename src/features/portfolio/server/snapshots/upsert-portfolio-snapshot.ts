@@ -1,6 +1,7 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 
 import type { SnapshotRowInsert } from "./types";
+import { roundSnapshotRowForStorage } from "./snapshot-row-storage-rounding";
 
 const buildMatchFilter = (row: SnapshotRowInsert) => {
   if (row.scope === "ALL") {
@@ -22,7 +23,8 @@ export async function upsertPortfolioSnapshot(
   row: SnapshotRowInsert
 ): Promise<void> {
   // Admin-side write: emulate upsert to support partial unique indexes.
-  const match = buildMatchFilter(row);
+  const rowToPersist = roundSnapshotRowForStorage(row);
+  const match = buildMatchFilter(rowToPersist);
 
   const { data, error } = await supabase
     .from("portfolio_snapshots")
@@ -37,7 +39,7 @@ export async function upsertPortfolioSnapshot(
   if (data?.id) {
     const { error: updateError } = await supabase
       .from("portfolio_snapshots")
-      .update(row)
+      .update(rowToPersist)
       .match({ id: data.id });
 
     if (updateError) {
@@ -48,7 +50,7 @@ export async function upsertPortfolioSnapshot(
 
   const { error: insertError } = await supabase
     .from("portfolio_snapshots")
-    .insert(row);
+    .insert(rowToPersist);
 
   if (!insertError) {
     return;
@@ -74,7 +76,7 @@ export async function upsertPortfolioSnapshot(
 
   const { error: retryUpdateError } = await supabase
     .from("portfolio_snapshots")
-    .update(row)
+    .update(rowToPersist)
     .match({ id: existing.id });
 
   if (retryUpdateError) {

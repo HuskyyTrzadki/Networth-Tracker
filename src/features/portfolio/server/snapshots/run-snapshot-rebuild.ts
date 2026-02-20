@@ -9,6 +9,7 @@ import {
 } from "./rebuild-state";
 import { createSnapshotRebuildRangeSession } from "./snapshot-rebuild-range-session";
 import type { SnapshotRowInsert, SnapshotScope } from "./types";
+import { roundSnapshotRowForStorage } from "./snapshot-row-storage-rounding";
 
 type RunInput = Readonly<{
   userId: string;
@@ -128,9 +129,11 @@ const replaceSnapshotChunk = async (
     return;
   }
 
+  const roundedRows = rows.map(roundSnapshotRowForStorage);
+
   const { error: insertError } = await supabase
     .from("portfolio_snapshots")
-    .insert(rows);
+    .insert(roundedRows);
 
   if (insertError) {
     throw new Error(insertError.message);

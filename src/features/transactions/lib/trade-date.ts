@@ -1,11 +1,10 @@
-import { format, isValid, parseISO, subYears } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
-export const TRADE_DATE_MAX_YEARS_BACK = 5;
+export const TRADE_DATE_MIN_ISO = "2023-12-01";
 
 const toLocalIsoDate = (value: Date) => format(value, "yyyy-MM-dd");
 
-export const getTradeDateLowerBound = (referenceDate: Date = new Date()) =>
-  toLocalIsoDate(subYears(referenceDate, TRADE_DATE_MAX_YEARS_BACK));
+export const getTradeDateLowerBound = () => TRADE_DATE_MIN_ISO;
 
 export const isValidTradeDate = (
   value: string,
@@ -19,7 +18,7 @@ export const isValidTradeDate = (
     return false;
   }
 
-  const lowerBound = getTradeDateLowerBound(referenceDate);
+  const lowerBound = getTradeDateLowerBound();
   if (parsedDay < lowerBound) {
     return false;
   }
@@ -33,4 +32,4 @@ export const isValidTradeDate = (
 };
 
 export const tradeDateValidationMessage =
-  "Nieprawidłowa data. Możesz dodać transakcję maksymalnie 5 lat wstecz.";
+  "Nieprawidłowa data. Możesz dodać transakcję od 2023-12-01 do dzisiaj.";

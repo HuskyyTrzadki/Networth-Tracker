@@ -37,7 +37,7 @@ describe("PortfolioValueModeContent", () => {
     );
 
     expect(screen.getByText("Zmiana za okres (YTD)")).toBeInTheDocument();
-    expect(screen.getByText("+VAL(200) PLN")).toBeInTheDocument();
+    expect(screen.getByText("+VAL(200)")).toBeInTheDocument();
     expect(await screen.findByTestId("portfolio-comparison-chart")).toBeInTheDocument();
   });
 });

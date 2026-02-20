@@ -11,6 +11,7 @@ export {
   CartesianGrid,
   Cell,
   ComposedChart,
+  LabelList,
   Line,
   LineChart,
   Pie,

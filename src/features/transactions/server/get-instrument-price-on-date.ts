@@ -116,6 +116,26 @@ const isSelectedDateTodayInTimeZone = ({
   now?: Date;
 }>) => selectedDate === getIsoDateInTimeZone(now, exchangeTimezone);
 
+const shouldRevalidateExactSession = ({
+  selectedDate,
+  marketDate,
+  exchangeTimezone,
+  now = new Date(),
+}: Readonly<{
+  selectedDate: string;
+  marketDate: string;
+  exchangeTimezone: string;
+  now?: Date;
+}>) => {
+  if (marketDate >= selectedDate) return false;
+  if (isWeekendIsoDate(selectedDate)) return false;
+
+  const todayInExchange = getIsoDateInTimeZone(now, exchangeTimezone);
+  if (selectedDate === todayInExchange) return false;
+
+  return true;
+};
+
 const resolveInstrumentId = async (
   supabase: SupabaseServerClient,
   input: InstrumentPriceOnDateInput
@@ -227,6 +247,52 @@ export async function getInstrumentPriceOnDate(
     };
   }
 
+  if (
+    price.isFilledFromPreviousSession &&
+    shouldRevalidateExactSession({
+      selectedDate: input.date,
+      marketDate: price.marketDate,
+      exchangeTimezone: price.exchangeTimezone,
+    })
+  ) {
+    // If fallback landed on an older weekday candle, force an exact-day refresh
+    // to avoid stale-cache false positives for valid past sessions.
+    const exactDayPrices = await getInstrumentDailyPricesCached(
+      supabase,
+      [
+        {
+          instrumentId: "lookup",
+          provider: input.provider,
+          providerKey: input.providerKey,
+        },
+      ],
+      input.date,
+      {
+        lookbackDays: 0,
+        fetchRangeStart: input.date,
+        fetchRangeEnd: input.date,
+      }
+    );
+
+    const exactDayPrice = exactDayPrices.get("lookup") ?? null;
+    if (exactDayPrice && exactDayPrice.marketDate === input.date) {
+      return {
+        selectedDate: input.date,
+        marketDate: exactDayPrice.marketDate,
+        ohlc: {
+          open: exactDayPrice.open,
+          high: exactDayPrice.high,
+          low: exactDayPrice.low,
+          close: exactDayPrice.close,
+        },
+        suggestedPrice: formatSuggestedPriceForInput(exactDayPrice.close),
+        range: buildRange(exactDayPrice.low, exactDayPrice.high, exactDayPrice.close),
+        isFilledFromPreviousSession: false,
+        warning: null,
+      };
+    }
+  }
+
   return {
     selectedDate: input.date,
     marketDate: price.marketDate,
@@ -252,6 +318,7 @@ export async function getInstrumentPriceOnDate(
 export const __test__ = {
   resolveFallbackWarning,
   isSelectedDateTodayInTimeZone,
+  shouldRevalidateExactSession,
   isWeekendIsoDate,
   getIsoDateInTimeZone,
 };

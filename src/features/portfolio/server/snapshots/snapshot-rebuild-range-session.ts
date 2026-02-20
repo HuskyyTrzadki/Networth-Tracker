@@ -23,6 +23,7 @@ import {
   applyTransactionsToState,
   buildDaySnapshotRow,
   type CustomAnchorState,
+  type CustomQuoteState,
 } from "./snapshot-rebuild-range-day";
 
 export type SnapshotRangeDayResult = Readonly<{
@@ -115,6 +116,7 @@ export async function createSnapshotRebuildRangeSession(
 
   const holdingsQtyByInstrument = new Map<string, import("@/lib/decimal").DecimalValue>();
   const customAnchorByInstrumentId = new Map<string, CustomAnchorState>();
+  const customQuoteStateByInstrumentId = new Map<string, CustomQuoteState>();
   const transactionsByDate = new Map<string, NormalizedTransaction[]>();
 
   transactions.forEach((transaction) => {
@@ -160,6 +162,7 @@ export async function createSnapshotRebuildRangeSession(
           instrumentCursor,
           fxCursor,
           customAnchorByInstrumentId,
+          customQuoteStateByInstrumentId,
         });
 
         dayResults.push({ bucketDate, row });
