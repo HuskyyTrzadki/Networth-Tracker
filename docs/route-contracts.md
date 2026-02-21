@@ -41,6 +41,7 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/api/portfolio-snapshots/rows` | `private-no-store-api` | Lazy full-history snapshot rows for authenticated user. |
 | `/api/portfolio-snapshots/bootstrap` | `private-no-store-api` | User-scoped bootstrap trigger. |
 | `/api/portfolios` | `private-no-store-api` | Portfolio list/create is user-specific. |
+| `/api/portfolios/[portfolioId]` | `private-no-store-api` | Portfolio delete endpoint (auth + ownership + invalidation). |
 | `/api/transactions` | `private-no-store-api` | Mutation endpoint with cache invalidation. |
 | `/api/transactions/fx-preview` | `private-no-store-api` | User-scoped transaction preview inputs. |
 | `/api/transactions/cash-balance-on-date` | `private-no-store-api` | User cash balance lookup. |

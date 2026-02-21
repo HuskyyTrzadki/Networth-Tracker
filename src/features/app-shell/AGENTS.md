@@ -8,6 +8,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Main entrypoints
 - UI: `src/features/app-shell/components/AppShell.tsx`
 - UI: `src/features/app-shell/components/AppSidebar.tsx`
+- UI: `src/features/app-shell/components/PortfolioSidebarItem.tsx`
+- UI: `src/features/app-shell/components/SidebarLinkLabel.tsx`
 - UI: `src/features/app-shell/components/ThemeSwitch.tsx`
 - UI: `src/features/app-shell/components/ReportShell.tsx`
 - Nav config: `src/features/app-shell/lib/nav-items.ts`
@@ -37,6 +39,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `Escape` requests modal close (`app:close-modal` event).
 - App shell renders a global toast host (`AppToastHost`) and listens for `app:toast` events so features can show success/error feedback without local toast wiring.
 - Active desktop sidebar items use an editorial anchor marker: a 2px vertical left rule on the active row in addition to active background/ring states.
+- Desktop sidebar portfolio rows expose per-item actions via a 3-dot popover; `Usuń` opens a compact confirmation dialog before portfolio deletion.
 
 ## Boundaries
 - No domain business logic; UI/navigation only.

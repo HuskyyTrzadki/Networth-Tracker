@@ -32,6 +32,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/lib/benchmark-performance.ts`
 - `src/features/portfolio/server/list-portfolios.ts`
 - `src/features/portfolio/server/create-portfolio.ts`
+- `src/features/portfolio/server/delete-portfolio.ts`
 - `src/features/portfolio/server/get-portfolio-holdings.ts`
 - `src/features/portfolio/server/custom-instruments/compound-annual-rate.ts`
 - `src/features/portfolio/server/get-portfolio-average-buy-prices.ts`
@@ -59,6 +60,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/snapshots/rebuild-route-service.ts`
 - `src/app/api/portfolio-snapshots/rebuild/route.ts`
 - `src/app/api/portfolio-snapshots/bootstrap/route.ts`
+- `src/app/api/portfolios/[portfolioId]/route.ts`
 - `src/features/portfolio/dashboard/hooks/useSnapshotRebuild.ts`
 - `src/features/portfolio/dashboard/hooks/use-snapshot-rebuild-events.ts`
 - `src/features/portfolio/dashboard/hooks/use-snapshot-rebuild-state-polling.ts`
@@ -98,6 +100,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Aggregate and single-portfolio routes share one loading skeleton (`src/app/(app)/portfolio/PortfolioRouteLoading.tsx`) so switching portfolios displays immediate pending feedback.
 - Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to canonical `/portfolio/<id>`.
 - Portfolio create flows (`sidebar`, `mobile header`, `onboarding`) navigate with `router.push` only; cache freshness relies on server-side `revalidateTag/revalidatePath` from portfolio write APIs instead of client `router.refresh()`.
+- Portfolio delete flow (desktop sidebar 3-dot menu) uses `DELETE /api/portfolios/<id>` and removes the portfolio plus its transactions, then revalidates portfolio/transaction tags and paths.
 - Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
@@ -173,6 +176,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/components/CreatePortfolioDialog.test.tsx`
 - `src/features/portfolio/server/list-portfolios.test.ts`
 - `src/features/portfolio/server/create-portfolio.test.ts`
+- `src/features/portfolio/server/delete-portfolio.test.ts`
 - `src/features/portfolio/server/valuation.test.ts`
 - `src/features/portfolio/server/average-buy-price.test.ts`
 - `src/features/portfolio/server/custom-instruments/compound-annual-rate.test.ts`

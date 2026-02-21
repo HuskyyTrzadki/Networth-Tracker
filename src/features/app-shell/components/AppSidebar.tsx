@@ -1,7 +1,7 @@
 "use client";
 
-import { BriefcaseBusiness, Loader2, Plus } from "lucide-react";
-import Link, { useLinkStatus } from "next/link";
+import { BriefcaseBusiness, Plus } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { CreatePortfolioDialog } from "@/features/portfolio";
@@ -18,7 +18,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/features/design-system/components/ui/sidebar";
 import { cn } from "@/lib/cn";
@@ -26,6 +25,8 @@ import { cn } from "@/lib/cn";
 import { useAppPathname } from "../hooks/useAppPathname";
 import { primaryNavItems, secondaryNavItems } from "../lib/nav-items";
 import { getPortfolioIdFromPathname, isHrefActive } from "../lib/path";
+import { PortfolioSidebarItem } from "./PortfolioSidebarItem";
+import { LinkLabel } from "./SidebarLinkLabel";
 import { ThemeSwitch } from "./ThemeSwitch";
 
 type Props = Readonly<{
@@ -111,27 +112,17 @@ export function AppSidebar({ className, portfolios }: Props) {
           <SidebarGroupContent>
             <SidebarMenuSub className="mx-0 translate-x-0 border-l-0 px-1 py-1">
               {portfolios.map((portfolio) => (
-                <SidebarMenuSubItem key={portfolio.id}>
-                  <SidebarMenuSubButton
-                    asChild
-                    isActive={activePortfolioId === portfolio.id}
-                    className={cn(
-                      "relative h-10 rounded-md px-4 text-sm font-medium text-sidebar-foreground/85",
-                      "data-[active=true]:bg-primary/14 data-[active=true]:font-semibold data-[active=true]:text-sidebar-foreground",
-                      "data-[active=true]:ring-1 data-[active=true]:ring-primary/30",
-                      "data-[active=true]:before:absolute data-[active=true]:before:bottom-1.5 data-[active=true]:before:left-0 data-[active=true]:before:top-1.5 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-foreground data-[active=true]:before:content-['']"
-                    )}
-                  >
-                    <Link href={`/portfolio/${portfolio.id}`}>
-                      <LinkLabel className="min-w-0 flex-1 truncate">
-                        {portfolio.name}
-                      </LinkLabel>
-                      <span className="ml-auto font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
-                        {portfolio.baseCurrency}
-                      </span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
+                <PortfolioSidebarItem
+                  key={portfolio.id}
+                  isActive={activePortfolioId === portfolio.id}
+                  onDeleted={(deletedPortfolioId) => {
+                    if (activePortfolioId === deletedPortfolioId) {
+                      router.push("/portfolio", { scroll: false });
+                    }
+                    router.refresh();
+                  }}
+                  portfolio={portfolio}
+                />
               ))}
               <SidebarMenuSubItem>
                 <CreatePortfolioDialog
@@ -193,23 +184,5 @@ export function AppSidebar({ className, portfolios }: Props) {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
-}
-
-type LinkLabelProps = Readonly<{
-  children: React.ReactNode;
-  className?: string;
-}>;
-
-function LinkLabel({ children, className }: LinkLabelProps) {
-  const { pending } = useLinkStatus();
-
-  return (
-    <span className={cn("inline-flex items-center gap-1.5", className)}>
-      <span className="truncate">{children}</span>
-      {pending ? (
-        <Loader2 className="size-3 shrink-0 animate-spin text-primary" aria-hidden />
-      ) : null}
-    </span>
   );
 }
