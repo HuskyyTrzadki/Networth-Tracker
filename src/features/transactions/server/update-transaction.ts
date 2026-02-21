@@ -3,6 +3,7 @@ import { getBucketDate } from "@/features/portfolio/server/snapshots/bucket-date
 import { markSnapshotRebuildDirty } from "@/features/portfolio/server/snapshots/rebuild-state";
 import { DEFAULT_CUSTOM_ASSET_TYPE, isCustomAssetType, type CustomAssetType } from "../lib/custom-asset-types";
 import { instrumentTypes, type InstrumentType } from "../lib/instrument-search";
+import { parseDecimalInput } from "../lib/parse-decimal";
 
 import type { UpdateTransactionRequest } from "./schema";
 import { createTransactionRequestSchema } from "./schema";
@@ -118,6 +119,10 @@ const buildFullUpdateRequest = (
   const customInstrument = assetLeg.customInstrument;
 
   if (customInstrument) {
+    const annualRatePct =
+      input.request.customAnnualRatePct ??
+      normalizeCustomInstrumentRate(customInstrument.annual_rate_pct);
+
     return {
       ...input.request,
       portfolioId: input.portfolioId,
@@ -128,7 +133,7 @@ const buildFullUpdateRequest = (
         notes: customInstrument.notes ?? undefined,
         kind: normalizeCustomInstrumentKind(customInstrument.kind),
         valuationKind: "COMPOUND_ANNUAL_RATE" as const,
-        annualRatePct: normalizeCustomInstrumentRate(customInstrument.annual_rate_pct),
+        annualRatePct,
       },
     } satisfies FullUpdateRequest;
   }
@@ -160,12 +165,23 @@ const replaceTransactionGroup = async (input: Readonly<{
   userId: string;
   groupId: string;
   rows: readonly ReturnType<typeof buildAssetLegRow>[];
+  customInstrumentId?: string | null;
+  customAnnualRatePct?: string;
 }>): Promise<ReplaceTransactionGroupRpcRow> => {
-  const { data, error } = await input.supabaseAdmin.rpc("replace_transaction_group", {
-    p_user_id: input.userId,
-    p_group_id: input.groupId,
-    p_new_legs: input.rows,
-  });
+  const parsedCustomAnnualRatePct = input.customAnnualRatePct
+    ? parseDecimalInput(input.customAnnualRatePct)
+    : null;
+
+  const { data, error } = await input.supabaseAdmin.rpc(
+    "replace_transaction_group_with_custom_rate",
+    {
+      p_user_id: input.userId,
+      p_group_id: input.groupId,
+      p_new_legs: input.rows,
+      p_custom_instrument_id: input.customInstrumentId ?? null,
+      p_custom_annual_rate_pct: parsedCustomAnnualRatePct,
+    }
+  );
 
   if (error) {
     throw new Error(error.message);
@@ -262,6 +278,8 @@ export async function updateTransactionById(
     userId,
     groupId: group.groupId,
     rows: [assetRow, ...settlementContext.settlementRows],
+    customInstrumentId: assetLeg.customInstrumentId,
+    customAnnualRatePct: parsed.customInstrument?.annualRatePct,
   });
 
   await Promise.all([

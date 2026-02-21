@@ -97,6 +97,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Historical price assist now performs an exact-day weekday revalidation when fallback session is older than selected date (`marketDate < selectedDate`) to prevent stale-cache false positives (e.g., selected weekday reported as no-session despite existing candle).
 - On writes with `trade_date <= today`, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state` (`PORTFOLIO` + `ALL`), so both same-day and past-dated changes use one rebuild flow.
 - Edit flow keeps instrument and portfolio identity fixed in v1; only trade fields are editable (date/qty/price/fee/notes/cash settlement).
+- For custom assets, edit also allows changing annual gain/loss percent (`customAnnualRatePct`), persisted atomically with group replace via `replace_transaction_group_with_custom_rate`.
 - Edit persistence is atomic delete-and-recreate of one `group_id` via RPC (`replace_transaction_group`) after TypeScript normalization/guards.
 - Edit dirty range uses `min(old_trade_date, new_trade_date)` before marking snapshot rebuild state, so moving a transaction forward in time still rebuilds from the original earlier date.
 - Add-transaction modal uses a wider desktop layout with two-pane composition (main form + side summary/cash panel), plus explicit loading states for both historical price assist and submit action.

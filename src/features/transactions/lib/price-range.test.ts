@@ -24,6 +24,15 @@ describe("isPriceWithinSessionRange", () => {
     ).toBe(false);
   });
 
+  it("accepts tiny float artifacts around candle boundaries", () => {
+    expect(
+      isPriceWithinSessionRange("88.52", {
+        low: "87",
+        high: "88.5199966430664",
+      })
+    ).toBe(true);
+  });
+
   it("returns null when one value is invalid", () => {
     expect(
       isPriceWithinSessionRange("abc", { low: "24.10", high: "25.00" })
@@ -33,4 +42,3 @@ describe("isPriceWithinSessionRange", () => {
     ).toBeNull();
   });
 });
-

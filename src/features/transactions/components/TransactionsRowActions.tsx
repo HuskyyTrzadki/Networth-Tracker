@@ -42,7 +42,7 @@ export function TransactionsRowActions({
         {canEdit ? (
           <Link
             className={menuItemClasses}
-            href={`/transactions/${transaction.id}/edit`}
+            href={`/transactions/${transaction.groupId}/edit`}
             scroll={false}
           >
             Edytuj

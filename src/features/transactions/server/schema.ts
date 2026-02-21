@@ -40,6 +40,23 @@ const optionalNonNegativeDecimalString = z
   }, { message: "Wpisz wartość większą lub równą 0." })
   .transform((value) => (value ? normalizeDecimalInput(value) : "0"));
 
+const optionalAnnualRatePctString = z
+  .union([z.string(), z.number()])
+  .optional()
+  .transform((value) => {
+    if (value === undefined) return undefined;
+    const normalized = typeof value === "number" ? value.toString() : value.trim();
+    if (!normalized) return undefined;
+    return normalizeDecimalInput(normalized);
+  })
+  .refine((value) => {
+    if (value === undefined) return true;
+    const parsed = parseDecimalInput(value);
+    return parsed !== null && parsed > -100 && parsed < 1000;
+  }, {
+    message: "Roczny wzrost/spadek musi być w zakresie (-100, 1000).",
+  });
+
 const instrumentSchema = z
   .object({
     provider: z.string().trim().min(1).optional().default("yahoo"),
@@ -94,6 +111,7 @@ const transactionWriteFields = {
   cashCurrency: z.string().trim().length(3).optional(),
   fxFee: optionalNonNegativeDecimalString.optional(),
   cashflowType: z.enum(cashflowTypes).optional(),
+  customAnnualRatePct: optionalAnnualRatePctString,
 } as const;
 
 // Server-side request schema for creating a transaction.

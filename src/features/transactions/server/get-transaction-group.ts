@@ -78,6 +78,11 @@ type TransactionGroupResult = Readonly<{
   assetLeg: TransactionGroupLeg;
 }>;
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const isUuid = (value: string) => UUID_RE.test(value);
+
 const toSingleRelation = <T>(value: T | T[] | null): T | null =>
   Array.isArray(value) ? (value[0] ?? null) : value;
 
@@ -120,23 +125,52 @@ const toTransactionGroupLeg = (row: TransactionGroupLegRow): TransactionGroupLeg
   customInstrument: toSingleRelation(row.custom_instrument),
 });
 
+const resolveGroupId = async (
+  supabase: SupabaseServerClient,
+  userId: string,
+  transactionIdentifier: string
+) => {
+  if (!isUuid(transactionIdentifier)) {
+    return null;
+  }
+
+  const { data: byTransactionId, error: byTransactionIdError } = await supabase
+    .from("transactions")
+    .select("group_id")
+    .eq("id", transactionIdentifier)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (byTransactionIdError) {
+    throw new Error(byTransactionIdError.message);
+  }
+
+  if (byTransactionId?.group_id) {
+    return byTransactionId.group_id;
+  }
+
+  const { data: byGroupId, error: byGroupIdError } = await supabase
+    .from("transactions")
+    .select("group_id")
+    .eq("group_id", transactionIdentifier)
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (byGroupIdError) {
+    throw new Error(byGroupIdError.message);
+  }
+
+  return byGroupId?.group_id ?? null;
+};
+
 export async function getTransactionGroupByTransactionId(
   supabase: SupabaseServerClient,
   userId: string,
   transactionId: string
 ): Promise<TransactionGroupResult> {
-  const { data: identityRow, error: identityError } = await supabase
-    .from("transactions")
-    .select("group_id")
-    .eq("id", transactionId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (identityError) {
-    throw new Error(identityError.message);
-  }
-
-  if (!identityRow?.group_id) {
+  const resolvedGroupId = await resolveGroupId(supabase, userId, transactionId);
+  if (!resolvedGroupId) {
     throw new Error("Transakcja nie istnieje albo nie masz do niej dostępu.");
   }
 
@@ -144,7 +178,7 @@ export async function getTransactionGroupByTransactionId(
     .from("transactions")
     .select(selectColumns)
     .eq("user_id", userId)
-    .eq("group_id", identityRow.group_id)
+    .eq("group_id", resolvedGroupId)
     .order("created_at", { ascending: true })
     .order("leg_key", { ascending: true });
 
@@ -166,7 +200,7 @@ export async function getTransactionGroupByTransactionId(
   }
 
   return {
-    groupId: identityRow.group_id,
+    groupId: resolvedGroupId,
     legs: normalized,
     assetLeg,
   };

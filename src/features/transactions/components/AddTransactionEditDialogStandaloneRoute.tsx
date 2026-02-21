@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { AddTransactionDialog } from "./AddTransactionDialog";
@@ -24,6 +25,7 @@ export function AddTransactionEditDialogStandaloneRoute({
   initialInstrument?: InstrumentSearchResult;
 }>) {
   const router = useRouter();
+  const didSubmitRef = useRef(false);
 
   return (
     <AddTransactionDialog
@@ -38,10 +40,20 @@ export function AddTransactionEditDialogStandaloneRoute({
       initialPortfolioId={initialPortfolioId}
       forcedPortfolioId={initialPortfolioId}
       onSubmitSuccess={() => {
-        router.refresh();
+        didSubmitRef.current = true;
       }}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) router.replace("/transactions");
+        if (nextOpen) {
+          return;
+        }
+
+        router.replace("/transactions");
+        if (didSubmitRef.current) {
+          didSubmitRef.current = false;
+          requestAnimationFrame(() => {
+            router.refresh();
+          });
+        }
       }}
     />
   );

@@ -140,6 +140,7 @@ const groupTransactions = (items: readonly TransactionListItem[]) => {
 };
 
 type LedgerRow = Readonly<{
+  rowKey: string;
   item: TransactionListItem;
   isCashLeg: boolean;
   hasGroupDivider: boolean;
@@ -148,6 +149,7 @@ type LedgerRow = Readonly<{
 const toLedgerRows = (items: readonly TransactionListItem[]): readonly LedgerRow[] =>
   groupTransactions(items).flatMap((group) =>
     group.items.map((item, index) => ({
+      rowKey: `${item.groupId}:${item.legKey}`,
       item,
       isCashLeg: item.legRole === "CASH",
       hasGroupDivider: index === group.items.length - 1,
@@ -286,28 +288,28 @@ function TransactionsLedgerRow({
 export function TransactionsTable({ items }: Props) {
   const prefersReducedMotion = useReducedMotion() ?? false;
   const rows = useMemo(() => toLedgerRows(items), [items]);
-  const previousRowIdsRef = useRef<ReadonlySet<string>>(new Set());
-  const [newRowIds, setNewRowIds] = useState<ReadonlySet<string>>(new Set());
+  const previousRowKeysRef = useRef<ReadonlySet<string>>(new Set());
+  const [newRowKeys, setNewRowKeys] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
-    const nextIds = new Set(rows.map((row) => row.item.id));
-    if (previousRowIdsRef.current.size === 0) {
-      previousRowIdsRef.current = nextIds;
+    const nextKeys = new Set(rows.map((row) => row.rowKey));
+    if (previousRowKeysRef.current.size === 0) {
+      previousRowKeysRef.current = nextKeys;
       return;
     }
 
     const added = rows
-      .map((row) => row.item.id)
-      .filter((id) => !previousRowIdsRef.current.has(id));
+      .map((row) => row.rowKey)
+      .filter((rowKey) => !previousRowKeysRef.current.has(rowKey));
 
-    previousRowIdsRef.current = nextIds;
+    previousRowKeysRef.current = nextKeys;
 
     if (added.length === 0) return;
     const addedSet = new Set(added);
-    setNewRowIds(addedSet);
+    setNewRowKeys(addedSet);
 
     const timeout = window.setTimeout(() => {
-      setNewRowIds(new Set());
+      setNewRowKeys(new Set());
     }, 500);
 
     return () => {
@@ -346,10 +348,10 @@ export function TransactionsTable({ items }: Props) {
               <AnimatePresence initial={false}>
                 {rows.map((row, index) => (
                   <TransactionsLedgerRow
-                    key={row.item.id}
+                    key={row.rowKey}
                     row={row}
                     index={index}
-                    isNew={newRowIds.has(row.item.id)}
+                    isNew={newRowKeys.has(row.rowKey)}
                     prefersReducedMotion={prefersReducedMotion}
                   />
                 ))}

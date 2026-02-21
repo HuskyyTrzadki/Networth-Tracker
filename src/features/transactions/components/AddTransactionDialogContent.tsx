@@ -181,6 +181,9 @@ export function AddTransactionDialogContent({
         quantity: values.quantity,
         ...payloadFields,
         notes: values.notes,
+        ...(isCustomTab
+          ? { customAnnualRatePct: values.customAnnualRatePct ?? "" }
+          : {}),
       }).catch((error: unknown) => {
         const message =
           error instanceof Error

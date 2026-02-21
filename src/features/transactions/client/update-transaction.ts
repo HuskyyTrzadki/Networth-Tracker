@@ -11,6 +11,7 @@ type UpdateTransactionPayload = Readonly<{
   cashCurrency?: string;
   fxFee?: string;
   cashflowType?: CashflowType;
+  customAnnualRatePct?: string;
   notes: string;
 }>;
 

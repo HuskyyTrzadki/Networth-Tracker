@@ -5,6 +5,8 @@ type SessionRange = Readonly<{
   high: string;
 }>;
 
+const SESSION_RANGE_TOLERANCE = parseDecimalString("0.0001");
+
 export const isPriceWithinSessionRange = (
   priceValue: string,
   range: SessionRange
@@ -13,10 +15,12 @@ export const isPriceWithinSessionRange = (
   const low = parseDecimalString(range.low);
   const high = parseDecimalString(range.high);
 
-  if (!price || !low || !high) {
+  if (!price || !low || !high || !SESSION_RANGE_TOLERANCE) {
     return null;
   }
 
-  return price.gte(low) && price.lte(high);
+  // Yahoo candles can carry tiny float artifacts (e.g. 88.519996) while user input
+  // is rounded (e.g. 88.52). Keep strict validation, but tolerate sub-cent noise.
+  return price.gte(low.minus(SESSION_RANGE_TOLERANCE)) &&
+    price.lte(high.plus(SESSION_RANGE_TOLERANCE));
 };
-

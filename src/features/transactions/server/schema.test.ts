@@ -192,4 +192,15 @@ describe("updateTransactionRequestSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("accepts and normalizes custom annual rate pct", () => {
+    const result = updateTransactionRequestSchema.safeParse({
+      ...baseUpdatePayload,
+      customAnnualRatePct: "-7,25",
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.customAnnualRatePct).toBe("-7.25");
+  });
 });

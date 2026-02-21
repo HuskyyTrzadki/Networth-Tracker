@@ -215,7 +215,6 @@ export function AddTransactionDialogFields({
               consumeCash={consumeCash}
               resolvedCashCurrency={resolvedCashCurrency}
               onCashCurrencyChange={handleCashCurrencyChange}
-              isEditMode={isEditMode}
             />
           ) : (
             <AddTransactionTradeFields
