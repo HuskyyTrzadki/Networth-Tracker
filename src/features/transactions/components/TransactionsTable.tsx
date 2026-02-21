@@ -161,6 +161,7 @@ type TransactionsLedgerRowProps = Readonly<{
   index: number;
   isNew: boolean;
   prefersReducedMotion: boolean;
+  onDeleted: (deletedGroupId: string) => void;
 }>;
 
 function LedgerMonetaryValue({
@@ -191,6 +192,7 @@ function TransactionsLedgerRow({
   index,
   isNew,
   prefersReducedMotion,
+  onDeleted,
 }: TransactionsLedgerRowProps) {
   const { item, isCashLeg, hasGroupDivider } = row;
   const priceLabel = formatPriceLabel(item.price, item.instrument.currency);
@@ -279,7 +281,7 @@ function TransactionsLedgerRow({
         </div>
       </div>
       <div className="px-2">
-        <TransactionsRowActions transaction={item} />
+        <TransactionsRowActions transaction={item} onDeleted={onDeleted} />
       </div>
     </m.div>
   );
@@ -287,9 +289,26 @@ function TransactionsLedgerRow({
 
 export function TransactionsTable({ items }: Props) {
   const prefersReducedMotion = useReducedMotion() ?? false;
-  const rows = useMemo(() => toLedgerRows(items), [items]);
+  const [hiddenGroupIds, setHiddenGroupIds] = useState<ReadonlySet<string>>(
+    new Set()
+  );
+  const visibleItems = useMemo(
+    () => items.filter((item) => !hiddenGroupIds.has(item.groupId)),
+    [items, hiddenGroupIds]
+  );
+  const rows = useMemo(() => toLedgerRows(visibleItems), [visibleItems]);
   const previousRowKeysRef = useRef<ReadonlySet<string>>(new Set());
   const [newRowKeys, setNewRowKeys] = useState<ReadonlySet<string>>(new Set());
+  const handleDeletedGroup = (deletedGroupId: string) => {
+    setHiddenGroupIds((previous) => {
+      if (previous.has(deletedGroupId)) {
+        return previous;
+      }
+      const next = new Set(previous);
+      next.add(deletedGroupId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const nextKeys = new Set(rows.map((row) => row.rowKey));
@@ -353,6 +372,7 @@ export function TransactionsTable({ items }: Props) {
                     index={index}
                     isNew={newRowKeys.has(row.rowKey)}
                     prefersReducedMotion={prefersReducedMotion}
+                    onDeleted={handleDeletedGroup}
                   />
                 ))}
               </AnimatePresence>
