@@ -24,10 +24,12 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/stocks/[providerKey]` | `dynamic + cached parts` | Public report page composes cached instrument/summary/chart server sections. |
 | `/(app)/transactions` | `dynamic-private-cached` | Uses private cache (`"use cache: private"`) for list/filter reads. |
 | `/(app)/transactions/new` | `dynamic-private` | Reads portfolios/balances for authenticated user. |
+| `/(app)/transactions/[transactionId]/edit` | `dynamic-private` | Reads authenticated user transaction group + balances for edit modal/route. |
 | `/(app)/transactions/import` | `dynamic-private` | Uses server connection/auth flow; not shareable. |
 | `/(app)/portfolio` | `dynamic-private-cached` | Portfolio dashboard data is private and tag-invalidated. |
 | `/(app)/portfolio/[portfolioId]` | `dynamic-private-cached` | Same as aggregate view but portfolio-scoped tags. |
 | `/(app)/@modal/(.)transactions/new` | `dynamic-private` | Authenticated modal route with user balances/portfolios. |
+| `/(app)/@modal/(.)transactions/[transactionId]/edit` | `dynamic-private` | Authenticated intercepted edit modal route. |
 | `/(app)/@modal/(.)transactions/import` | `dynamic-private` | Authenticated modal route. |
 
 ## API Routes
@@ -43,6 +45,7 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/api/portfolios` | `private-no-store-api` | Portfolio list/create is user-specific. |
 | `/api/portfolios/[portfolioId]` | `private-no-store-api` | Portfolio delete endpoint (auth + ownership + invalidation). |
 | `/api/transactions` | `private-no-store-api` | Mutation endpoint with cache invalidation. |
+| `/api/transactions/[transactionId]` | `private-no-store-api` | Authenticated transaction edit/delete endpoint with cache invalidation. |
 | `/api/transactions/fx-preview` | `private-no-store-api` | User-scoped transaction preview inputs. |
 | `/api/transactions/cash-balance-on-date` | `private-no-store-api` | User cash balance lookup. |
 | `/api/instruments/search` | `private-no-store-api` | App-auth scoped instrument search flow. |
@@ -64,7 +67,7 @@ Primary tags:
 
 Write flows that must invalidate:
 
-- Transaction writes: portfolio + transactions tags and path revalidation.
+- Transaction writes (create/edit/delete): portfolio + transactions tags and path revalidation.
 - Portfolio create: portfolio + transactions tags and path revalidation.
 - Snapshot rebuild updates: portfolio tags and portfolio paths.
 

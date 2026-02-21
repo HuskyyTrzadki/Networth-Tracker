@@ -20,6 +20,8 @@ import {
 } from "./AddTransactionDialogContent";
 
 export function AddTransactionDialog({
+  mode = "create",
+  editTransactionId,
   initialValues,
   initialInstrument,
   searchClient,
@@ -32,6 +34,8 @@ export function AddTransactionDialog({
   open,
   onOpenChange,
 }: Readonly<{
+  mode?: "create" | "edit";
+  editTransactionId?: string;
   initialValues?: Partial<FormValues>;
   initialInstrument?: InstrumentSearchResult;
   searchClient?: InstrumentSearchClient;
@@ -95,6 +99,8 @@ export function AddTransactionDialog({
           <AddTransactionDialogContent
             assetBalancesByPortfolio={assetBalancesByPortfolio}
             cashBalancesByPortfolio={cashBalancesByPortfolio}
+            mode={mode}
+            editTransactionId={editTransactionId}
             forcedPortfolioId={forcedPortfolioId}
             initialInstrument={initialInstrument}
             initialPortfolioId={initialPortfolioId}

@@ -277,7 +277,7 @@ function TransactionsLedgerRow({
         </div>
       </div>
       <div className="px-2">
-        <TransactionsRowActions />
+        <TransactionsRowActions transaction={item} />
       </div>
     </m.div>
   );

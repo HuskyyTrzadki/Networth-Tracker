@@ -17,6 +17,7 @@ import type { FormValues } from "../AddTransactionDialogContent";
 export function AddTransactionPortfolioTypeFields({
   form,
   forcedPortfolioId,
+  isEditMode = false,
   portfolios,
   isCashTab,
   isCustomTab,
@@ -25,6 +26,7 @@ export function AddTransactionPortfolioTypeFields({
 }: Readonly<{
   form: UseFormReturn<FormValues>;
   forcedPortfolioId: string | null;
+  isEditMode?: boolean;
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   isCashTab: boolean;
   isCustomTab: boolean;
@@ -43,7 +45,7 @@ export function AddTransactionPortfolioTypeFields({
           <FormItem>
             <FormLabel className={fieldLabelClass}>Portfel</FormLabel>
             <Select
-              disabled={Boolean(forcedPortfolioId)}
+              disabled={Boolean(forcedPortfolioId) || isEditMode}
               onValueChange={(next) => {
                 field.onChange(next);
                 onPortfolioChange(next);

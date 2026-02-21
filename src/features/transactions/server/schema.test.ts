@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createTransactionRequestSchema } from "./schema";
+import { createTransactionRequestSchema, updateTransactionRequestSchema } from "./schema";
 
 const basePayload = {
   type: "BUY",
@@ -155,6 +155,39 @@ describe("createTransactionRequestSchema", () => {
     const result = createTransactionRequestSchema.safeParse({
       ...basePayload,
       date: "2023-11-30",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("updateTransactionRequestSchema", () => {
+  const baseUpdatePayload = {
+    type: "BUY",
+    date: "2024-01-01",
+    quantity: "1,5",
+    price: "100,00",
+    fee: "",
+    notes: "Test",
+    consumeCash: true,
+    cashCurrency: "usd",
+    fxFee: "1,25",
+  } as const;
+
+  it("normalizes decimals and cash currency when consumeCash is enabled", () => {
+    const parsed = updateTransactionRequestSchema.parse(baseUpdatePayload);
+
+    expect(parsed.quantity).toBe("1.5");
+    expect(parsed.price).toBe("100.00");
+    expect(parsed.fee).toBe("0");
+    expect(parsed.fxFee).toBe("1.25");
+    expect(parsed.cashCurrency).toBe("usd");
+  });
+
+  it("rejects consumeCash without cash currency", () => {
+    const result = updateTransactionRequestSchema.safeParse({
+      ...baseUpdatePayload,
+      cashCurrency: undefined,
     });
 
     expect(result.success).toBe(false);

@@ -50,6 +50,7 @@ export function AddTransactionCustomTradeFields({
   consumeCash,
   resolvedCashCurrency,
   onCashCurrencyChange,
+  isEditMode = false,
 }: Readonly<{
   form: UseFormReturn<FormValues>;
   minTradeDate: Date;
@@ -64,6 +65,7 @@ export function AddTransactionCustomTradeFields({
   consumeCash: boolean;
   resolvedCashCurrency: CashCurrency;
   onCashCurrencyChange: (nextCurrency: string) => void;
+  isEditMode?: boolean;
 }>) {
   const fieldLabelClass =
     "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
@@ -122,6 +124,7 @@ export function AddTransactionCustomTradeFields({
                   <Input
                     {...field}
                     className="h-11 pr-8 font-mono tabular-nums text-right"
+                    disabled={isEditMode}
                     inputMode="decimal"
                     onChange={(event) => {
                       const next = formatNumericInputWithCursor(

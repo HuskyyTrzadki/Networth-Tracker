@@ -1,5 +1,7 @@
 export { AddTransactionDialogRoute } from "./components/AddTransactionDialogRoute";
 export { AddTransactionDialogStandaloneRoute } from "./components/AddTransactionDialogStandaloneRoute";
+export { AddTransactionEditDialogRoute } from "./components/AddTransactionEditDialogRoute";
+export { AddTransactionEditDialogStandaloneRoute } from "./components/AddTransactionEditDialogStandaloneRoute";
 export { AddTransactionDialog } from "./components/AddTransactionDialog";
 export { AddTransactionDialogSkeleton } from "./components/AddTransactionDialogSkeleton";
 export { ImportCsvDialogRoute } from "./components/ImportCsvDialogRoute";

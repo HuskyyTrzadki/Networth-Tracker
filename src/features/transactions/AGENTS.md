@@ -25,6 +25,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Instrument search UI: `src/features/transactions/components/InstrumentCombobox.tsx`
 - Instrument logo: `src/features/transactions/components/InstrumentLogoImage.tsx`
 - Routes: `src/features/transactions/components/AddTransactionDialogRoute.tsx`
+- Edit routes:
+  - `src/features/transactions/components/AddTransactionEditDialogRoute.tsx`
+  - `src/features/transactions/components/AddTransactionEditDialogStandaloneRoute.tsx`
 - List UI: `src/features/transactions/components/TransactionsTable.tsx`
 - Filters UI: `src/features/transactions/components/TransactionsSearchToolbar.tsx`
 - Pagination UI: `src/features/transactions/components/TransactionsPagination.tsx`
@@ -36,6 +39,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Client FX preview API: `src/features/transactions/client/get-fx-preview.ts`
 - Client cash as-of API: `src/features/transactions/client/get-cash-balance-on-date.ts`
 - Server service: `src/features/transactions/server/create-transaction.ts`
+- Server edit service: `src/features/transactions/server/update-transaction.ts`
+- Server edit preload:
+  - `src/features/transactions/server/get-transaction-group.ts`
+  - `src/features/transactions/server/get-transaction-edit-preset.ts`
+  - `src/features/transactions/server/get-transaction-edit-dialog-data.ts`
 - Server helpers (create transaction):
   - `src/features/transactions/server/create-transaction-context.ts`
   - `src/features/transactions/server/create-transaction-write.ts`
@@ -50,6 +58,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - API schema: `src/features/transactions/server/schema.ts`
 - FX preview API: `src/app/api/transactions/fx-preview/route.ts`
 - Cash balance as-of API: `src/app/api/transactions/cash-balance-on-date/route.ts`
+- Transaction group API: `src/app/api/transactions/[transactionId]/route.ts`
 - Trade date rules: `src/features/transactions/lib/trade-date.ts`
 - Instrument search service: `src/features/transactions/server/search-instruments.ts`
 - Instrument search internals:
@@ -65,7 +74,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - UI should not depend on provider-specific market data shapes.
-- Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts`.
+- Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts` and `src/app/api/transactions/[transactionId]/route.ts`.
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
 - Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
 - Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
@@ -87,6 +96,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Historical price assist for `trade_date = today` now prefers fresh live/cache quote (`instrument_quotes_cache` + Yahoo fallback) over previous daily close; when live quote is used, day-range validation is skipped (`range=null`) to avoid false "price out of session range" errors against prior-session OHLC.
 - Historical price assist now performs an exact-day weekday revalidation when fallback session is older than selected date (`marketDate < selectedDate`) to prevent stale-cache false positives (e.g., selected weekday reported as no-session despite existing candle).
 - On writes with `trade_date <= today`, backend marks snapshot dirty range via `portfolio_snapshot_rebuild_state` (`PORTFOLIO` + `ALL`), so both same-day and past-dated changes use one rebuild flow.
+- Edit flow keeps instrument and portfolio identity fixed in v1; only trade fields are editable (date/qty/price/fee/notes/cash settlement).
+- Edit persistence is atomic delete-and-recreate of one `group_id` via RPC (`replace_transaction_group`) after TypeScript normalization/guards.
+- Edit dirty range uses `min(old_trade_date, new_trade_date)` before marking snapshot rebuild state, so moving a transaction forward in time still rebuilds from the original earlier date.
 - Add-transaction modal uses a wider desktop layout with two-pane composition (main form + side summary/cash panel), plus explicit loading states for both historical price assist and submit action.
 - Add-transaction modal shows live cash impact preview (`dostępne / zmiana / po transakcji`) with FX preview for mismatched currencies and inline insufficient-cash warning.
 - Add-transaction modal also shows cash balance on selected trade date (API as-of lookup) alongside current balance, and uses the as-of value for projected post-trade cash.
@@ -122,6 +134,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.
 - Save success UX includes global toast feedback with undo (`Cofnij` for 10s). Undo calls `DELETE /api/transactions/[transactionId]` and re-triggers snapshot rebuild events.
+- Edit success UX reuses the same modal and rebuild trigger flow, with save CTA/text switched to edit mode.
+- Row action `Edytuj` is shown only for `ASSET` legs and opens `/transactions/<transactionId>/edit` (standalone or intercepted modal).
 - Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.
 - Search surfaces that use `InstrumentCombobox` can opt into global `/` focus shortcut via `listenForFocusShortcut`.
 - `InstrumentLogoImage` routes remote logo URLs through shared app proxy (`/api/public/image`) to keep `next/image` optimization enabled without custom passthrough loaders.

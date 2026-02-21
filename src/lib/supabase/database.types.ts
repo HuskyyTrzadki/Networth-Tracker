@@ -878,6 +878,16 @@ export type Database = {
           symbol: string
         }[]
       }
+      replace_transaction_group: {
+        Args: { p_group_id: string; p_new_legs: Json; p_user_id: string }
+        Returns: {
+          group_id: string
+          new_trade_date: string
+          old_trade_date: string
+          portfolio_id: string
+          replaced_count: number
+        }[]
+      }
     }
     Enums: {
       cashflow_type:

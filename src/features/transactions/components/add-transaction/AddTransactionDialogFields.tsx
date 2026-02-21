@@ -37,6 +37,7 @@ export function AddTransactionDialogFields({
   assetBalancesByPortfolio,
   forcedPortfolioId,
   initialCashCurrency,
+  isEditMode = false,
 }: Readonly<{
   form: UseFormReturn<FormValues>;
   selectedInstrument: InstrumentSearchResult | null;
@@ -49,6 +50,7 @@ export function AddTransactionDialogFields({
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   forcedPortfolioId: string | null;
   initialCashCurrency: CashCurrency;
+  isEditMode?: boolean;
 }>) {
   const minTradeDate = parseISO(getTradeDateLowerBound());
   const maxTradeDate = new Date();
@@ -195,6 +197,7 @@ export function AddTransactionDialogFields({
             initialCashCurrency={initialCashCurrency}
             availableCashNow={availableCashNow}
             availableAssetQuantity={availableAssetQuantity}
+            isEditMode={isEditMode}
           />
 
           {isCustomTab ? (
@@ -212,6 +215,7 @@ export function AddTransactionDialogFields({
               consumeCash={consumeCash}
               resolvedCashCurrency={resolvedCashCurrency}
               onCashCurrencyChange={handleCashCurrencyChange}
+              isEditMode={isEditMode}
             />
           ) : (
             <AddTransactionTradeFields

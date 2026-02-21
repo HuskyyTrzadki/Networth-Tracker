@@ -81,21 +81,25 @@ const customInstrumentSchema = z.object({
     }),
 });
 
+const transactionWriteFields = {
+  type: z.enum(transactionTypes),
+  date: z.string().refine((value) => isValidTradeDate(value), {
+    message: tradeDateValidationMessage,
+  }),
+  quantity: positiveDecimalString,
+  price: nonNegativeDecimalString,
+  fee: optionalNonNegativeDecimalString,
+  notes: z.string().trim().max(500).optional(),
+  consumeCash: z.boolean().optional().default(false),
+  cashCurrency: z.string().trim().length(3).optional(),
+  fxFee: optionalNonNegativeDecimalString.optional(),
+  cashflowType: z.enum(cashflowTypes).optional(),
+} as const;
+
 // Server-side request schema for creating a transaction.
 export const createTransactionRequestSchema = z
   .object({
-    type: z.enum(transactionTypes),
-    date: z.string().refine((value) => isValidTradeDate(value), {
-      message: tradeDateValidationMessage,
-    }),
-    quantity: positiveDecimalString,
-    price: nonNegativeDecimalString,
-    fee: optionalNonNegativeDecimalString,
-    notes: z.string().trim().max(500).optional(),
-    consumeCash: z.boolean().optional().default(false),
-    cashCurrency: z.string().trim().length(3).optional(),
-    fxFee: optionalNonNegativeDecimalString.optional(),
-    cashflowType: z.enum(cashflowTypes).optional(),
+    ...transactionWriteFields,
     // Required: every transaction must belong to a portfolio.
     portfolioId: z.string().uuid(),
     clientRequestId: z.string().uuid(),
@@ -156,4 +160,20 @@ export const createTransactionRequestSchema = z
 
 export type CreateTransactionRequest = z.infer<
   typeof createTransactionRequestSchema
+>;
+
+export const updateTransactionRequestSchema = z
+  .object(transactionWriteFields)
+  .superRefine((value, ctx) => {
+    if (value.consumeCash && !value.cashCurrency?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Wybierz walutę gotówki.",
+        path: ["cashCurrency"],
+      });
+    }
+  });
+
+export type UpdateTransactionRequest = z.infer<
+  typeof updateTransactionRequestSchema
 >;

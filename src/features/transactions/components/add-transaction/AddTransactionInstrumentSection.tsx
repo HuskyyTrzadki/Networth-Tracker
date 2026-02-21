@@ -56,6 +56,7 @@ type Props = Readonly<{
   initialCashCurrency: CashCurrency;
   availableCashNow: string;
   availableAssetQuantity: string | null;
+  isEditMode?: boolean;
 }>;
 
 export function AddTransactionInstrumentSection({
@@ -76,6 +77,7 @@ export function AddTransactionInstrumentSection({
   initialCashCurrency,
   availableCashNow,
   availableAssetQuantity,
+  isEditMode = false,
 }: Props) {
   const fieldLabelClass =
     "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
@@ -90,6 +92,7 @@ export function AddTransactionInstrumentSection({
       <AddTransactionPortfolioTypeFields
         form={form}
         forcedPortfolioId={forcedPortfolioId}
+        isEditMode={isEditMode}
         portfolios={portfolios}
         isCashTab={isCashTab}
         isCustomTab={isCustomTab}
@@ -107,6 +110,7 @@ export function AddTransactionInstrumentSection({
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
+                  disabled={isEditMode}
                   className="h-8 rounded-sm px-2 text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                 >
                   <span className="inline-flex items-center gap-1.5">
@@ -130,6 +134,7 @@ export function AddTransactionInstrumentSection({
                 <FormLabel className={fieldLabelClass}>Typ aktywa</FormLabel>
                 <FormControl>
                   <Select
+                    disabled={isEditMode}
                     onValueChange={(next) => {
                       if (!isCustomAssetType(next)) return;
                       field.onChange(next);
@@ -165,6 +170,7 @@ export function AddTransactionInstrumentSection({
                     <Input
                       {...field}
                       className="h-11"
+                      disabled={isEditMode}
                       placeholder="np. Mieszkanie, auto, lokata"
                       type="text"
                     />
@@ -181,7 +187,9 @@ export function AddTransactionInstrumentSection({
                 <FormItem>
                   <FormLabel className={fieldLabelClass}>Waluta</FormLabel>
                   <Select
+                    disabled={isEditMode}
                     onValueChange={(next) => {
+                      if (isEditMode) return;
                       field.onChange(next);
                       form.setValue("currency", next, { shouldValidate: true });
                     }}
@@ -218,6 +226,7 @@ export function AddTransactionInstrumentSection({
               <FormControl>
                 {isCashTab ? (
                   <Select
+                    disabled={isEditMode}
                     onValueChange={onCashCurrencyChange}
                     value={resolvedCashCurrency}
                   >
@@ -232,6 +241,15 @@ export function AddTransactionInstrumentSection({
                       ))}
                     </SelectContent>
                   </Select>
+                ) : isEditMode ? (
+                  <div className="flex h-11 items-center justify-between rounded-md border border-input bg-muted/35 px-3 text-sm">
+                    <span className="font-mono tabular-nums">
+                      {selectedInstrument?.ticker ?? selectedInstrument?.symbol ?? "—"}
+                    </span>
+                    <span className="truncate text-muted-foreground">
+                      {selectedInstrument?.name ?? "Instrument"}
+                    </span>
+                  </div>
                 ) : (
                   <InstrumentCombobox
                     allowedTypes={instrumentTypes.filter((type) => type !== "CURRENCY")}
