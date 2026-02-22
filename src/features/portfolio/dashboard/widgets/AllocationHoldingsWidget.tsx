@@ -12,7 +12,7 @@ import {
   getCurrencyFormatter,
   splitCurrencyLabel,
 } from "@/lib/format-currency";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 import type { PortfolioSummary } from "../../server/valuation";
 import type { SnapshotRebuildStatus } from "../hooks/useSnapshotRebuild";
@@ -29,6 +29,7 @@ type Props = Readonly<{
 }>;
 
 type Mode = "TREEMAP" | "BARS" | "HOLDINGS";
+const CONCENTRATION_WARNING_DISMISSED_KEY = "portfolio:concentration-warning:dismissed:v1";
 
 const formatPercent = (value: number, maxFractionDigits = 1) =>
   new Intl.NumberFormat("pl-PL", {
@@ -49,6 +50,11 @@ const clampProgress = (value: number | null) => {
 
 export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   const [mode, setMode] = useState<Mode>("TREEMAP");
+  const [isConcentrationWarningDismissed, setIsConcentrationWarningDismissed] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(CONCENTRATION_WARNING_DISMISSED_KEY) === "1"
+  );
   const formatter = getCurrencyFormatter(summary.baseCurrency);
   const isRebuildBusy = rebuild.status === "queued" || rebuild.status === "running";
   const rebuildProgress = clampProgress(rebuild.progressPercent);
@@ -163,18 +169,29 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
           <AllocationHoldingsTableView holdingsRows={holdingsRows} summary={summary} />
         )}
       </div>
-      {mode !== "HOLDINGS" && concentrationWarning ? (
+      {mode !== "HOLDINGS" && concentrationWarning && !isConcentrationWarningDismissed ? (
         <div
           className={cn(
-            "mt-3 rounded-sm border-l-[3px] px-3 py-2 text-[13px] leading-5",
+            "mt-3 flex items-start justify-between gap-3 rounded-sm border-l-[3px] px-3 py-2 text-[13px] leading-5",
             concentrationTone
           )}
         >
-          <p>
+          <p className="min-w-0">
             <span className="font-semibold">Uwaga dot. koncentracji:</span>{" "}
             {concentrationWarning.symbol} stanowi {formatPercent(concentrationWarning.weight, 0)}
             {" "}Twojego portfela.
           </p>
+          <button
+            aria-label="Zamknij ostrzeżenie o koncentracji"
+            className="shrink-0 rounded-sm p-1 transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/35"
+            onClick={() => {
+              setIsConcentrationWarningDismissed(true);
+              window.localStorage.setItem(CONCENTRATION_WARNING_DISMISSED_KEY, "1");
+            }}
+            type="button"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
         </div>
       ) : null}
       {summary.isPartial ? (

@@ -88,7 +88,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction modal exposes a calendar date picker field with lower bound from `getTradeDateLowerBound()` and upper bound set to `today`.
 - Add-transaction modal follows a strict two-pane contract: left side is data entry (including `Notatka`/`Opis`), right side is a sticky financial receipt (`AddTransactionSidebarSummary`) that only shows impact math and transaction context.
 - Add-transaction custom (`Nierynkowe`) asset type selection uses a compact `Select` (not icon grids), preserving modal density and consistent control grammar with portfolio/currency selectors.
+- Add-transaction custom (`Nierynkowe`) asset type `Select` uses compact inline icons (both dropdown options and selected trigger value) for faster scanning without changing control density.
 - Add-transaction custom annual-rate input uses plain numeric entry with `%` suffix and no decorative icons.
+- Walidacja pola `Aktualna wartość` w sekcji `Nierynkowe` jest pokazywana dopiero po dotknięciu pola lub po próbie zapisu (brak czerwonego stanu od razu po zmianie daty).
 - Add-transaction form blocks submit when entered price is outside fetched day-session range (low/high), with inline field error on `price`.
 - Historical price assist warning now distinguishes same-day fallback from no-session fallback:
   - selected `today` (exchange timezone) + fallback to prior candle => "session may still be in progress / daily close not available yet"

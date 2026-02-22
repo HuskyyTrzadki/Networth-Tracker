@@ -16,6 +16,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/PortfolioDashboard.tsx`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.tsx`
 - `src/features/portfolio/dashboard/widgets/AllocationHoldingsWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/PortfolioAllocationsByPortfolioWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeChart.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeHeader.tsx`
@@ -38,6 +39,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/get-portfolio-average-buy-prices.ts`
 - `src/features/portfolio/server/average-buy-price.ts`
 - `src/features/portfolio/server/get-portfolio-summary.ts`
+- `src/features/portfolio/server/get-portfolio-allocation-donut-cards.ts`
 - `src/features/portfolio/server/valuation.ts`
 - `src/features/portfolio/server/to-base-holding-day-change.ts`
 - `src/features/portfolio/server/get-dashboard-benchmark-series.ts`
@@ -82,6 +84,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
+- W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje osobny donut z kategoriami.
 - Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.

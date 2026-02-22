@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
 import { DatePicker } from "@/features/design-system/components/DatePicker";
@@ -11,6 +12,7 @@ import {
   FormMessage,
 } from "@/features/design-system/components/ui/form";
 import { Input } from "@/features/design-system/components/ui/input";
+import { Label } from "@/features/design-system/components/ui/label";
 
 import { MoneyInput } from "../MoneyInput";
 import { formatNumericInputWithCursor } from "../../lib/format-numeric-input";
@@ -67,6 +69,7 @@ export function AddTransactionCustomTradeFields({
 }>) {
   const fieldLabelClass =
     "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+  const customPriceInputId = useId();
 
   return (
     <>
@@ -93,20 +96,31 @@ export function AddTransactionCustomTradeFields({
         <FormField
           control={form.control}
           name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className={fieldLabelClass}>Aktualna wartość</FormLabel>
-              <FormControl>
+          render={({ field, fieldState, formState }) => {
+            const shouldShowError = fieldState.isTouched || formState.isSubmitted;
+            const errorMessage = shouldShowError ? fieldState.error?.message : null;
+
+            return (
+              <FormItem>
+                <Label className={fieldLabelClass} htmlFor={customPriceInputId}>
+                  Aktualna wartość
+                </Label>
                 <MoneyInput
                   {...field}
+                  aria-invalid={errorMessage ? true : undefined}
                   className="h-11"
                   currency={displayCurrency}
+                  id={customPriceInputId}
                   placeholder="np. 500 000,00"
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+                {errorMessage ? (
+                  <p className="text-[0.8rem] font-medium text-destructive">
+                    {errorMessage}
+                  </p>
+                ) : null}
+              </FormItem>
+            );
+          }}
         />
 
         <FormField

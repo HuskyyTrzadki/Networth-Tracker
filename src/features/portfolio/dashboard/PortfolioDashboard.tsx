@@ -12,6 +12,7 @@ import type { TransactionListItem } from "@/features/transactions/server/list-tr
 import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
 import { PortfolioDashboardClientWidgets } from "./PortfolioDashboardClientWidgets";
 import { PortfolioNetValueHero } from "./PortfolioNetValueHero";
+import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
 
 type Props = Readonly<{
   portfolios: readonly {
@@ -30,6 +31,7 @@ type Props = Readonly<{
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
   recentTransactions: readonly TransactionListItem[];
+  portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
   className?: string;
 }>;
 
@@ -42,6 +44,7 @@ export function PortfolioDashboard({
   polishCpiSeries,
   benchmarkSeries,
   recentTransactions,
+  portfolioAllocationDonutCards,
   className,
 }: Props) {
   const selectedPortfolioName = selectedPortfolioId
@@ -94,6 +97,7 @@ export function PortfolioDashboard({
           polishCpiSeries={polishCpiSeries}
           benchmarkSeries={benchmarkSeries}
           recentTransactions={recentTransactions}
+          portfolioAllocationDonutCards={portfolioAllocationDonutCards}
         />
       </AnimatedReveal>
     </div>

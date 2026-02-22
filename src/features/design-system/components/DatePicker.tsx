@@ -76,10 +76,16 @@ export function DatePicker({
           {selectedDate ? format(selectedDate, "dd.MM.yyyy") : placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-1.5">
+      <PopoverContent
+        align="start"
+        avoidCollisions={false}
+        className="w-auto p-1.5"
+        side="bottom"
+      >
         <Calendar
           className="[--cell-size:2.4rem] p-2"
           disabled={isDayDisabled}
+          fixedWeeks
           initialFocus
           mode="single"
           onSelect={(nextDate) => {

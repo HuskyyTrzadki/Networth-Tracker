@@ -8,6 +8,8 @@ import type { SnapshotChartRow } from "../server/snapshots/types";
 import type { TransactionListItem } from "@/features/transactions/server/list-transactions";
 import { useSnapshotRebuild } from "./hooks/useSnapshotRebuild";
 import { AllocationHoldingsWidget } from "./widgets/AllocationHoldingsWidget";
+import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
+import { PortfolioAllocationsByPortfolioWidget } from "./widgets/PortfolioAllocationsByPortfolioWidget";
 import { PortfolioTopMoversWidget } from "./widgets/PortfolioTopMoversWidget";
 import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
 import { PortfolioRecentTransactionsWidget } from "./widgets/PortfolioRecentTransactionsWidget";
@@ -24,6 +26,7 @@ type Props = Readonly<{
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
   recentTransactions: readonly TransactionListItem[];
+  portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
 }>;
 
 export function PortfolioDashboardClientWidgets({
@@ -34,6 +37,7 @@ export function PortfolioDashboardClientWidgets({
   polishCpiSeries,
   benchmarkSeries,
   recentTransactions,
+  portfolioAllocationDonutCards,
 }: Props) {
   const scope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
   const rebuild = useSnapshotRebuild(scope, selectedPortfolioId, true);
@@ -54,6 +58,9 @@ export function PortfolioDashboardClientWidgets({
         rebuild={rebuild}
       />
       <AllocationHoldingsWidget summary={summary} rebuild={rebuild} />
+      {!selectedPortfolioId &&
+        <PortfolioAllocationsByPortfolioWidget items={portfolioAllocationDonutCards} />
+      }
       <PortfolioTopMoversWidget summary={summary} />
       <PortfolioRecentTransactionsWidget
         selectedPortfolioId={selectedPortfolioId}
