@@ -25,7 +25,12 @@ describe("createPortfolioStrict", () => {
   it("returns created portfolio data", async () => {
     const supabase = createSupabaseStub(
       Promise.resolve({
-        data: { id: "p1", name: "Nowy", base_currency: "USD" },
+        data: {
+          id: "p1",
+          name: "Nowy",
+          base_currency: "USD",
+          is_tax_advantaged: true,
+        },
         error: null,
       })
     );
@@ -34,11 +39,13 @@ describe("createPortfolioStrict", () => {
       createPortfolioStrict(supabase as never, "user-1", {
         name: "Nowy",
         baseCurrency: "USD",
+        isTaxAdvantaged: true,
       })
     ).resolves.toEqual({
       id: "p1",
       name: "Nowy",
       baseCurrency: "USD",
+      isTaxAdvantaged: true,
     });
   });
 
@@ -54,6 +61,7 @@ describe("createPortfolioStrict", () => {
       createPortfolioStrict(supabase as never, "user-1", {
         name: "Główny",
         baseCurrency: "PLN",
+        isTaxAdvantaged: false,
       })
     ).rejects.toThrow("Masz już portfel o takiej nazwie.");
   });

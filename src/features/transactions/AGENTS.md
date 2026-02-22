@@ -77,6 +77,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts` and `src/app/api/transactions/[transactionId]/route.ts`.
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
 - Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
+- `transactions.dividend_event_key` is reserved for dividend booking idempotency (unique per user+portfolio+event for `cashflow_type=DIVIDEND`, `leg_role=ASSET`).
 - Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
 - Global instruments cache stores canonical Yahoo quoteType in `public.instruments.instrument_type` for allocation/grouping.
 - Cash settlement uses FX cache at write-time; rate is stored on the cash leg for auditability.

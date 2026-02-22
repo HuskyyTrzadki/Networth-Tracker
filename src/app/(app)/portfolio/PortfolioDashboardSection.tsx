@@ -9,6 +9,7 @@ import { emptyDashboardBenchmarkSeries } from "@/features/portfolio/dashboard/li
 import { getPortfolioLiveTotals } from "@/features/portfolio/server/get-portfolio-live-totals";
 import { getPortfolioAllocationDonutCards } from "@/features/portfolio/server/get-portfolio-allocation-donut-cards";
 import { getPortfolioSummary } from "@/features/portfolio/server/get-portfolio-summary";
+import { getDividendInbox } from "@/features/portfolio/server/dividends/get-dividend-inbox";
 import { getPortfolioSnapshotRows } from "@/features/portfolio/server/snapshots/get-portfolio-snapshot-rows";
 import { listTransactions } from "@/features/transactions/server/list-transactions";
 import { createClient } from "@/lib/supabase/server";
@@ -34,13 +35,7 @@ export default async function PortfolioDashboardSection({
     <PortfolioDashboard
       portfolios={portfolios}
       selectedPortfolioId={selectedPortfolioId}
-      summary={dashboardData.summary}
-      snapshotRows={dashboardData.snapshotRows}
-      liveTotals={dashboardData.liveTotals}
-      polishCpiSeries={dashboardData.polishCpiSeries}
-      benchmarkSeries={dashboardData.benchmarkSeries}
-      recentTransactions={dashboardData.recentTransactions}
-      portfolioAllocationDonutCards={dashboardData.portfolioAllocationDonutCards}
+      {...dashboardData}
     />
   );
 }
@@ -49,6 +44,7 @@ type DashboardData = Readonly<{
   summary: Awaited<ReturnType<typeof getPortfolioSummary>>;
   snapshotRows: Awaited<ReturnType<typeof getPortfolioSnapshotRows>>;
   liveTotals: Awaited<ReturnType<typeof getPortfolioLiveTotals>>;
+  dividendInbox: Awaited<ReturnType<typeof getDividendInbox>>;
   portfolioAllocationDonutCards: Awaited<
     ReturnType<typeof getPortfolioAllocationDonutCards>
   >;
@@ -75,11 +71,18 @@ const getPortfolioDashboardDataCached = async (
 
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) {
+    throw new Error("User not authenticated.");
+  }
+
+  const userId = authData.user.id;
   const [
     summary,
     snapshotRows,
     liveTotals,
     recentTransactions,
+    dividendInbox,
     portfolioAllocationDonutCards,
   ] = await Promise.all([
     getPortfolioSummary(supabase, {
@@ -102,6 +105,13 @@ const getPortfolioDashboardDataCached = async (
       page: 1,
       pageSize: 10,
       portfolioId: selectedPortfolioId,
+    }),
+    getDividendInbox({
+      supabase,
+      userId,
+      portfolioId: selectedPortfolioId,
+      pastDays: 60,
+      futureDays: 60,
     }),
     selectedPortfolioId === null
       ? getPortfolioAllocationDonutCards(supabase, {
@@ -129,6 +139,7 @@ const getPortfolioDashboardDataCached = async (
     summary,
     snapshotRows,
     liveTotals,
+    dividendInbox,
     portfolioAllocationDonutCards,
     polishCpiSeries,
     benchmarkSeries,

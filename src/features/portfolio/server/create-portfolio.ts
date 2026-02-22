@@ -10,12 +10,14 @@ type PortfolioRow = Readonly<{
   id: string;
   name: string;
   base_currency: string;
+  is_tax_advantaged: boolean;
 }>;
 
 export type CreatePortfolioResult = Readonly<{
   id: string;
   name: string;
   baseCurrency: string;
+  isTaxAdvantaged: boolean;
 }>;
 
 const getErrorMessage = (error: PostgrestError | null) => {
@@ -43,8 +45,9 @@ export async function createPortfolioStrict(
       user_id: userId,
       name: input.name,
       base_currency: input.baseCurrency,
+      is_tax_advantaged: input.isTaxAdvantaged,
     })
-    .select("id, name, base_currency")
+    .select("id, name, base_currency, is_tax_advantaged")
     .single();
 
   if (error || !data) {
@@ -57,5 +60,6 @@ export async function createPortfolioStrict(
     id: row.id,
     name: row.name,
     baseCurrency: row.base_currency,
+    isTaxAdvantaged: row.is_tax_advantaged,
   };
 }

@@ -20,6 +20,7 @@ type Props = Readonly<{
 }>;
 
 type TreemapNode = Readonly<{
+  id: string;
   name: string;
   value?: number;
   share: number;
@@ -28,8 +29,11 @@ type TreemapNode = Readonly<{
   dayChangePercent: number | null;
   dayChangeLabel: string;
   labelMode: "NONE" | "NAME" | "NAME_SHARE" | "FULL";
-  labelScale: "SM" | "MD" | "LG";
+  labelScale: "XS" | "SM" | "MD" | "LG";
   leafTone: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  showIcon: boolean;
+  iconRichKey?: string;
+  iconImageUrl?: string;
   isLeaf: boolean;
   itemStyle?: Readonly<{
     color: string;
@@ -75,27 +79,32 @@ const formatDirectionalChange = (value: number | null) => {
 };
 
 const resolveLabelMode = (share: number): TreemapNode["labelMode"] => {
-  if (share >= 0.055) return "FULL";
-  if (share >= 0.02) return "NAME_SHARE";
-  if (share >= 0.01) return "NAME";
+  if (share >= 0.03) return "FULL";
+  if (share >= 0.015) return "NAME_SHARE";
+  if (share >= 0.005) return "NAME";
   return "NONE";
 };
 
 const formatLeafLabel = (data: TreemapNode) => {
   if (data.labelMode === "NONE") return "";
+  const scale = data.labelScale;
   const toneSuffix =
     data.leafTone === "POSITIVE"
       ? "Pos"
       : data.leafTone === "NEGATIVE"
         ? "Neg"
         : "Neutral";
-  const tickerToken = `{ticker${data.labelScale}${toneSuffix}|${data.name.toUpperCase()}}`;
+  const iconToken = data.showIcon && data.iconRichKey ? `{${data.iconRichKey}|}` : "";
+  const tickerToken = `{ticker${scale}${toneSuffix}|${data.name.toUpperCase()}}`;
+  const shareToken = `{share${scale}${toneSuffix}|${data.shareLabel}}`;
+  const changeToken = `{change${scale}${toneSuffix}|${data.dayChangeLabel}}`;
+  const iconLinePrefix = iconToken.length > 0 ? `${iconToken} ` : "";
 
-  if (data.labelMode === "NAME") return tickerToken;
+  if (data.labelMode === "NAME") return `${iconLinePrefix}${tickerToken}`;
   if (data.labelMode === "NAME_SHARE") {
-    return `${tickerToken}\n{share${toneSuffix}|${data.shareLabel}}`;
+    return `${iconLinePrefix}${tickerToken}\n${shareToken}`;
   }
-  return `${tickerToken}\n{share${toneSuffix}|${data.shareLabel}}\n{change${toneSuffix}|${data.dayChangeLabel}}`;
+  return `${iconLinePrefix}${tickerToken}\n${shareToken}\n${changeToken}`;
 };
 
 const pageBackgroundBeige = "#f6f2ec";
@@ -110,7 +119,13 @@ const negativeLeafInkMuted = "rgba(76, 5, 25, 0.7)";
 const neutralLeafFill = "#ffffff";
 const neutralLeafInk = "#111827";
 const neutralLeafInkMuted = "rgba(17, 24, 39, 0.7)";
-const treemapGap = 4;
+const treemapBorderColor = "#FFFFFF";
+const treemapGap = 2;
+const treemapBorderWidth = 2;
+const cashIconRichKey = "iconCash";
+const cashIconSvg =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2f2b27" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></svg>';
+const cashIconDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(cashIconSvg)}`;
 
 const toNodeValue = (valueBase: string, share: number) => {
   const parsed = toNumberValue(valueBase);
@@ -130,15 +145,41 @@ const resolveLeafTone = (
 };
 
 const resolveLabelScale = (share: number): TreemapNode["labelScale"] => {
-  if (share >= 0.18) return "LG";
-  if (share >= 0.06) return "MD";
-  return "SM";
+  if (share >= 0.12) return "LG";
+  if (share >= 0.04) return "MD";
+  if (share >= 0.015) return "SM";
+  return "XS";
 };
 
 const resolveLeafFill = (tone: TreemapNode["leafTone"]) => {
   if (tone === "POSITIVE") return positiveLeafFill;
   if (tone === "NEGATIVE") return negativeLeafFill;
   return neutralLeafFill;
+};
+
+const collectLeafNodes = (nodes: readonly TreemapNode[]): TreemapNode[] =>
+  nodes.flatMap((node) => {
+    if (node.isLeaf) return [node];
+    return node.children ? collectLeafNodes(node.children) : [];
+  });
+
+const buildIconRichStyles = (nodes: readonly TreemapNode[]) => {
+  const iconStyles: Record<string, unknown> = {
+    [cashIconRichKey]: {
+      width: 14,
+      height: 14,
+      backgroundColor: { image: cashIconDataUrl },
+    },
+  };
+  for (const leaf of collectLeafNodes(nodes)) {
+    if (!leaf.showIcon || !leaf.iconRichKey || !leaf.iconImageUrl) continue;
+    iconStyles[leaf.iconRichKey] = {
+      width: 14,
+      height: 14,
+      backgroundColor: { image: leaf.iconImageUrl },
+    };
+  }
+  return iconStyles;
 };
 
 const buildOption = (nodes: readonly TreemapNode[]) => ({
@@ -152,7 +193,7 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
     textStyle: {
       color: "#2f2f2f",
       fontSize: 11,
-      fontFamily: "var(--font-mono)",
+      fontFamily: "'IBM Plex Mono', monospace",
     },
     formatter: (params: unknown) => {
       const data = (params as { data?: Partial<TreemapNode> | null }).data;
@@ -194,13 +235,12 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           if (!data || !data.isLeaf) return "";
           return formatLeafLabel(data);
         },
-        position: "inside",
-        align: "center",
-        verticalAlign: "middle",
-        padding: 0,
-        fontFamily: "var(--font-mono)",
-        fontSize: 14,
-        lineHeight: 20,
+        position: "insideTopLeft",
+        align: "left",
+        verticalAlign: "top",
+        padding: [12, 12, 12, 12],
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 18,
         overflow: "truncate",
         rich: {
           tickerLGPos: {
@@ -208,118 +248,266 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
             fontSize: 28,
             fontWeight: 700,
             lineHeight: 32,
-            fontFamily: "var(--font-mono)",
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerMDPos: {
             color: positiveLeafInk,
-            fontSize: 23,
+            fontSize: 20,
             fontWeight: 700,
-            lineHeight: 27,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 24,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerSMPos: {
             color: positiveLeafInk,
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: 700,
-            lineHeight: 22,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
-          sharePos: {
-            color: positiveLeafInkMuted,
-            fontSize: 17,
-            fontWeight: 400,
-            lineHeight: 21,
-            fontFamily: "var(--font-mono)",
-          },
-          changePos: {
+          tickerXSPos: {
             color: positiveLeafInk,
-            fontSize: 17,
+            fontSize: 11,
+            fontWeight: 700,
+            lineHeight: 14,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareLGPos: {
+            color: positiveLeafInkMuted,
+            fontSize: 16,
+            fontWeight: 400,
+            lineHeight: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareMDPos: {
+            color: positiveLeafInkMuted,
+            fontSize: 14,
+            fontWeight: 400,
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareSMPos: {
+            color: positiveLeafInkMuted,
+            fontSize: 12,
+            fontWeight: 400,
+            lineHeight: 16,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareXSPos: {
+            color: positiveLeafInkMuted,
+            fontSize: 10,
+            fontWeight: 400,
+            lineHeight: 13,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeLGPos: {
+            color: positiveLeafInk,
+            fontSize: 16,
             fontWeight: 500,
-            lineHeight: 21,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeMDPos: {
+            color: positiveLeafInk,
+            fontSize: 14,
+            fontWeight: 500,
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeSMPos: {
+            color: positiveLeafInk,
+            fontSize: 12,
+            fontWeight: 500,
+            lineHeight: 16,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeXSPos: {
+            color: positiveLeafInk,
+            fontSize: 10,
+            fontWeight: 500,
+            lineHeight: 13,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerLGNeg: {
             color: negativeLeafInk,
             fontSize: 28,
             fontWeight: 700,
             lineHeight: 32,
-            fontFamily: "var(--font-mono)",
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerMDNeg: {
             color: negativeLeafInk,
-            fontSize: 23,
+            fontSize: 20,
             fontWeight: 700,
-            lineHeight: 27,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 24,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerSMNeg: {
             color: negativeLeafInk,
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: 700,
-            lineHeight: 22,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
-          shareNeg: {
-            color: negativeLeafInkMuted,
-            fontSize: 17,
-            fontWeight: 400,
-            lineHeight: 21,
-            fontFamily: "var(--font-mono)",
-          },
-          changeNeg: {
+          tickerXSNeg: {
             color: negativeLeafInk,
-            fontSize: 17,
+            fontSize: 11,
+            fontWeight: 700,
+            lineHeight: 14,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareLGNeg: {
+            color: negativeLeafInkMuted,
+            fontSize: 16,
+            fontWeight: 400,
+            lineHeight: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareMDNeg: {
+            color: negativeLeafInkMuted,
+            fontSize: 14,
+            fontWeight: 400,
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareSMNeg: {
+            color: negativeLeafInkMuted,
+            fontSize: 12,
+            fontWeight: 400,
+            lineHeight: 16,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareXSNeg: {
+            color: negativeLeafInkMuted,
+            fontSize: 10,
+            fontWeight: 400,
+            lineHeight: 13,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeLGNeg: {
+            color: negativeLeafInk,
+            fontSize: 16,
             fontWeight: 500,
-            lineHeight: 21,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeMDNeg: {
+            color: negativeLeafInk,
+            fontSize: 14,
+            fontWeight: 500,
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeSMNeg: {
+            color: negativeLeafInk,
+            fontSize: 12,
+            fontWeight: 500,
+            lineHeight: 16,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeXSNeg: {
+            color: negativeLeafInk,
+            fontSize: 10,
+            fontWeight: 500,
+            lineHeight: 13,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerLGNeutral: {
             color: neutralLeafInk,
             fontSize: 28,
             fontWeight: 700,
             lineHeight: 32,
-            fontFamily: "var(--font-mono)",
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerMDNeutral: {
             color: neutralLeafInk,
-            fontSize: 23,
+            fontSize: 20,
             fontWeight: 700,
-            lineHeight: 27,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 24,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerSMNeutral: {
             color: neutralLeafInk,
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: 700,
-            lineHeight: 22,
-            fontFamily: "var(--font-mono)",
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
-          shareNeutral: {
-            color: neutralLeafInkMuted,
-            fontSize: 17,
-            fontWeight: 400,
-            lineHeight: 21,
-            fontFamily: "var(--font-mono)",
-          },
-          changeNeutral: {
+          tickerXSNeutral: {
             color: neutralLeafInk,
-            fontSize: 17,
-            fontWeight: 500,
-            lineHeight: 21,
-            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            fontWeight: 700,
+            lineHeight: 14,
+            fontFamily: "'IBM Plex Mono', monospace",
           },
+          shareLGNeutral: {
+            color: neutralLeafInkMuted,
+            fontSize: 16,
+            fontWeight: 400,
+            lineHeight: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareMDNeutral: {
+            color: neutralLeafInkMuted,
+            fontSize: 14,
+            fontWeight: 400,
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareSMNeutral: {
+            color: neutralLeafInkMuted,
+            fontSize: 12,
+            fontWeight: 400,
+            lineHeight: 16,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          shareXSNeutral: {
+            color: neutralLeafInkMuted,
+            fontSize: 10,
+            fontWeight: 400,
+            lineHeight: 13,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeLGNeutral: {
+            color: neutralLeafInk,
+            fontSize: 16,
+            fontWeight: 500,
+            lineHeight: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeMDNeutral: {
+            color: neutralLeafInk,
+            fontSize: 14,
+            fontWeight: 500,
+            lineHeight: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeSMNeutral: {
+            color: neutralLeafInk,
+            fontSize: 12,
+            fontWeight: 500,
+            lineHeight: 16,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          changeXSNeutral: {
+            color: neutralLeafInk,
+            fontSize: 10,
+            fontWeight: 500,
+            lineHeight: 13,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
+          ...buildIconRichStyles(nodes),
         },
       },
       itemStyle: {
-        borderColor: pageBackgroundBeige,
-        borderWidth: treemapGap,
+        borderColor: treemapBorderColor,
+        borderWidth: treemapBorderWidth,
         gapWidth: treemapGap,
       },
       levels: [
         {
           itemStyle: {
-            borderColor: pageBackgroundBeige,
-            borderWidth: 1,
+            borderColor: treemapBorderColor,
+            borderWidth: treemapBorderWidth,
             gapWidth: treemapGap,
             color: categoryHeaderTint,
           },
@@ -334,16 +522,23 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
             height: 0,
           },
           itemStyle: {
-            borderColor: pageBackgroundBeige,
+            borderColor: treemapBorderColor,
             gapWidth: treemapGap,
-            borderWidth: 1,
+            borderWidth: treemapBorderWidth,
           },
         },
         {
           itemStyle: {
-            borderColor: pageBackgroundBeige,
+            borderColor: treemapBorderColor,
             gapWidth: treemapGap,
-            borderWidth: 1,
+            borderWidth: treemapBorderWidth,
+          },
+          label: {
+            show: true,
+            position: "insideTopLeft",
+            align: "left",
+            verticalAlign: "top",
+            padding: [12, 12, 12, 12],
           },
         },
       ],
@@ -363,6 +558,7 @@ export function AllocationTreemapView({
 }: Props) {
   const formatter = getCurrencyFormatter(baseCurrency);
   const nodes: TreemapNode[] = categories.map((category) => ({
+    id: category.id,
     name: category.label,
     value: undefined,
     share: category.share,
@@ -377,16 +573,24 @@ export function AllocationTreemapView({
     labelMode: "NONE",
     labelScale: "SM",
     leafTone: "NEUTRAL",
+    showIcon: false,
+    iconRichKey: undefined,
+    iconImageUrl: undefined,
     isLeaf: false,
     itemStyle: {
       color: categoryHeaderTint,
-      borderColor: pageBackgroundBeige,
-      borderWidth: 1,
+      borderColor: treemapBorderColor,
+      borderWidth: treemapBorderWidth,
     },
     children: category.assets.map((asset) => {
       const leafTone = resolveLeafTone(asset.todayChangePercent);
+      const iconRichKey = asset.isCurrencyCash ? cashIconRichKey : undefined;
+      const labelMode = resolveLabelMode(asset.share);
+      const labelScale = resolveLabelScale(asset.share);
+      const showIcon = labelMode === "FULL";
 
       return {
+        id: asset.id,
         name: asset.label,
         value: toNodeValue(asset.valueBase, asset.share),
         share: asset.share,
@@ -398,14 +602,17 @@ export function AllocationTreemapView({
             : `${asset.valueBase} ${baseCurrency}`,
         dayChangePercent: asset.todayChangePercent,
         dayChangeLabel: formatDirectionalChange(asset.todayChangePercent),
-        labelMode: resolveLabelMode(asset.share),
-        labelScale: resolveLabelScale(asset.share),
+        labelMode,
+        labelScale,
         leafTone,
+        showIcon,
+        iconRichKey,
+        iconImageUrl: undefined,
         isLeaf: true,
         itemStyle: {
           color: resolveLeafFill(leafTone),
-          borderColor: pageBackgroundBeige,
-          borderWidth: 1,
+          borderColor: treemapBorderColor,
+          borderWidth: treemapBorderWidth,
         },
       };
     }),

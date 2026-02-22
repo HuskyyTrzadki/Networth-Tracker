@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/features/design-system/components/ui/select";
+import { Switch } from "@/features/design-system/components/ui/switch";
 
 import { createPortfolio } from "../client/create-portfolio";
 import {
@@ -56,6 +57,7 @@ export function CreatePortfolioDialog({
     defaultValues: {
       name: "",
       baseCurrency: portfolioBaseCurrencies[0],
+      isTaxAdvantaged: false,
     },
     mode: "onChange",
   });
@@ -64,6 +66,7 @@ export function CreatePortfolioDialog({
     form.reset({
       name: "",
       baseCurrency: portfolioBaseCurrencies[0],
+      isTaxAdvantaged: false,
     });
     form.clearErrors();
   };
@@ -158,6 +161,31 @@ export function CreatePortfolioDialog({
                         </SelectContent>
                       </Select>
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isTaxAdvantaged"
+                render={({ field }) => (
+                  <FormItem className="rounded-md border border-border/70 bg-muted/20 px-3 py-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <FormLabel className="text-sm">Konto emerytalne (IKE/IKZE)</FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Używane do sugestii netto dla dywidend.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={Boolean(field.value)}
+                          onCheckedChange={field.onChange}
+                          aria-label="Konto emerytalne IKE lub IKZE"
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

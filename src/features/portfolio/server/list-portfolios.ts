@@ -4,6 +4,7 @@ export type PortfolioSummary = Readonly<{
   id: string;
   name: string;
   baseCurrency: string;
+  isTaxAdvantaged: boolean;
   createdAt: string;
 }>;
 
@@ -13,6 +14,7 @@ type PortfolioRow = Readonly<{
   id: string;
   name: string;
   base_currency: string;
+  is_tax_advantaged: boolean;
   created_at: string;
 }>;
 
@@ -22,7 +24,7 @@ export async function listPortfolios(
   // Server helper: list active portfolios (RLS enforces ownership).
   const { data, error } = await supabase
     .from("portfolios")
-    .select("id, name, base_currency, created_at")
+    .select("id, name, base_currency, is_tax_advantaged, created_at")
     .is("archived_at", null)
     .order("created_at", { ascending: true });
 
@@ -36,6 +38,7 @@ export async function listPortfolios(
     id: row.id,
     name: row.name,
     baseCurrency: row.base_currency,
+    isTaxAdvantaged: row.is_tax_advantaged,
     createdAt: row.created_at,
   }));
 }

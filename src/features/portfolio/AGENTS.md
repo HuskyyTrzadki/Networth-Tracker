@@ -24,6 +24,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioValueDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioPerformanceDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/DividendInboxWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/DividendInboxBookAction.tsx`
+- `src/features/portfolio/dashboard/widgets/DividendBookingDialog.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioRecentTransactionsWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/top-movers-utils.ts`
 - `src/features/portfolio/dashboard/lib/twr.ts`
@@ -44,7 +47,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/to-base-holding-day-change.ts`
 - `src/features/portfolio/server/get-dashboard-benchmark-series.ts`
 - `src/features/portfolio/server/benchmark-series-helpers.ts`
+- `src/features/portfolio/server/dividends/get-dividend-inbox.ts`
+- `src/features/portfolio/server/dividends/book-dividend.ts`
+- `src/features/portfolio/server/dividends/dividend-utils.ts`
 - `src/app/api/benchmarks/series/route.ts`
+- `src/app/api/dividends/inbox/route.ts`
+- `src/app/api/dividends/book/route.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.ts`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.ts`
 - `src/features/portfolio/server/snapshots/run-portfolio-snapshots-cron.ts`
@@ -71,6 +79,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/lib/snapshot-rebuild-contract.ts`
 - `src/features/portfolio/lib/snapshot-rebuild-events.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.ts`
+- `src/features/portfolio/lib/dividend-inbox.ts`
 - `src/features/portfolio/lib/portfolio-url.ts`
 - `src/features/portfolio/lib/rebuild-progress.ts`
 
@@ -102,8 +111,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Single-portfolio view (`/portfolio/<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
 - Aggregate and single-portfolio routes share one loading skeleton (`src/app/(app)/portfolio/PortfolioRouteLoading.tsx`) so switching portfolios displays immediate pending feedback.
 - Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to canonical `/portfolio/<id>`.
-- Portfolio create flows (`sidebar`, `mobile header`, `onboarding`) navigate with `router.push` only; cache freshness relies on server-side `revalidateTag/revalidatePath` from portfolio write APIs instead of client `router.refresh()`.
+- Portfolio create flows (`sidebar`, `mobile header`, `onboarding`) navigate with `router.push` and immediately call `router.refresh()` so the persistent app-shell sidebar picks up newly created portfolios without stale router cache.
+- Portfolio create/edit model includes tax profile flag `is_tax_advantaged` (UI label: `Konto emerytalne (IKE/IKZE)`), used by dividend smart-default hints.
 - Portfolio delete flow (desktop sidebar 3-dot menu) uses `DELETE /api/portfolios/<id>` and removes the portfolio plus its transactions, then revalidates portfolio/transaction tags and paths.
+- Dividend inbox is split by scope: `/portfolio/<id>` is actionable (`Zaksięguj`), while aggregate `/portfolio` is awareness-only (upcoming list without booking action).
+- Dividend inbox is server-first on dashboard render; only booking action/modal is client-side (`DividendInboxBookAction` + `DividendBookingDialog`), and success uses `router.refresh()` for fresh server data.
+- Dividend inbox provider fetch is abstracted behind `market-data` (`getInstrumentDividendSignalsCached`); portfolio layer composes holdings/tax/idempotency only and does not call Yahoo directly.
+- Yahoo dividend data is treated as discovery signal only; booked ledger values come from user-confirmed net amount in modal.
+- Dividend booking writes a single cash transaction (`cashflow_type=DIVIDEND`, `side=BUY`, `price=1`) with idempotency key `dividend_event_key` scoped to `(user_id, portfolio_id)`.
 - Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
@@ -183,6 +198,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/delete-portfolio.test.ts`
 - `src/features/portfolio/server/valuation.test.ts`
 - `src/features/portfolio/server/average-buy-price.test.ts`
+- `src/features/portfolio/server/dividends/dividend-utils.test.ts`
 - `src/features/portfolio/server/custom-instruments/compound-annual-rate.test.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.test.ts`
 - `src/features/portfolio/server/snapshots/snapshot-row-storage-rounding.test.ts`

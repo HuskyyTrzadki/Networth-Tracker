@@ -130,6 +130,7 @@ export function AppSidebar({ className, portfolios }: Props) {
                     router.push(`/portfolio/${createdId}`, {
                       scroll: false,
                     });
+                    router.refresh();
                   }}
                   trigger={({ open, disabled }) => (
                     <Button

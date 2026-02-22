@@ -100,6 +100,7 @@ When shipping feature/architecture changes:
   - net value hero,
   - value/performance chart modes,
   - allocation + holdings,
+  - dividend inbox (single-portfolio booking + aggregate awareness),
   - top movers,
   - recent transactions.
 - Snapshot system for history:
@@ -131,6 +132,8 @@ When shipping feature/architecture changes:
 - Stock details support ranges + overlays (PE / EPS TTM / Revenue TTM) with Trend(100) and Raw modes, plus authenticated BUY/SELL markers from user transactions.
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
+- Portfolio model includes `is_tax_advantaged` (IKE/IKZE) used by dividend smart-default hints.
+- Dividend booking is user-confirmed (`/api/dividends/book`) with idempotency key `dividend_event_key`; Yahoo is discovery-only (`/api/dividends/inbox`).
 
 
 ## Quality bar
@@ -164,7 +167,9 @@ Keep these files aligned when touching a feature:
 - Instruments cache is global (no `user_id`).
 - Instrument uniqueness: `provider` + `provider_key`.
 - Idempotency: unique `(user_id, client_request_id)`.
+- Dividend booking idempotency: unique `(user_id, portfolio_id, dividend_event_key)` for `cashflow_type=DIVIDEND` asset legs.
 - UI money math: no float math; use decimal-safe approach.
 - Transactions: positive `quantity`, explicit `side` enum.
 - 
 projectId supabse: ayeeksbqwyqkevbpdlef
+pls update this file whenever something important needs to be added as rule.

@@ -5,14 +5,12 @@ import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
 import type { PortfolioSummary } from "../server/valuation";
 import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../server/snapshots/types";
-import type { TransactionListItem } from "@/features/transactions/server/list-transactions";
 import { useSnapshotRebuild } from "./hooks/useSnapshotRebuild";
 import { AllocationHoldingsWidget } from "./widgets/AllocationHoldingsWidget";
 import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
 import { PortfolioAllocationsByPortfolioWidget } from "./widgets/PortfolioAllocationsByPortfolioWidget";
 import { PortfolioTopMoversWidget } from "./widgets/PortfolioTopMoversWidget";
 import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
-import { PortfolioRecentTransactionsWidget } from "./widgets/PortfolioRecentTransactionsWidget";
 
 type Props = Readonly<{
   selectedPortfolioId: string | null;
@@ -25,7 +23,6 @@ type Props = Readonly<{
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
-  recentTransactions: readonly TransactionListItem[];
   portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
 }>;
 
@@ -36,7 +33,6 @@ export function PortfolioDashboardClientWidgets({
   liveTotals,
   polishCpiSeries,
   benchmarkSeries,
-  recentTransactions,
   portfolioAllocationDonutCards,
 }: Props) {
   const scope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
@@ -62,10 +58,6 @@ export function PortfolioDashboardClientWidgets({
         <PortfolioAllocationsByPortfolioWidget items={portfolioAllocationDonutCards} />
       }
       <PortfolioTopMoversWidget summary={summary} />
-      <PortfolioRecentTransactionsWidget
-        selectedPortfolioId={selectedPortfolioId}
-        items={recentTransactions}
-      />
     </>
   );
 }

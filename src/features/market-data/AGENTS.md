@@ -11,18 +11,22 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - FX cache: `src/features/market-data/server/get-fx-rates-cached.ts`
 - Daily instrument prices cache: `src/features/market-data/server/get-instrument-daily-prices-cached.ts`
 - Daily FX rates cache: `src/features/market-data/server/get-fx-daily-rates-cached.ts`
+- Dividend signals cache: `src/features/market-data/server/get-instrument-dividend-signals-cached.ts`
 - Polish CPI cache: `src/features/market-data/server/get-polish-cpi-series-cached.ts`
 - Shared types: `src/features/market-data/lib/instrument-types.ts`
 - Yahoo provider helpers:
   - `src/features/market-data/server/providers/yahoo/yahoo-quote.ts`
   - `src/features/market-data/server/providers/yahoo/yahoo-fx.ts`
   - `src/features/market-data/server/providers/yahoo/yahoo-daily.ts`
+  - `src/features/market-data/server/providers/yahoo/yahoo-dividend-signals.ts`
 
 ## Boundaries
 - Server-only: no client components here.
 - Provider-specific shapes stay in provider files.
 - Cache tables are global (no `user_id`); writes use service role, reads use RLS.
 - Quote cache stores normalized daily quote deltas (`dayChange`, `dayChangePercent`) for portfolio daily-movers UI.
+- Dividend signals are cache-component based (`use cache` + `cacheLife("days")`) keyed by instrument/providerKey and fetched with bounded concurrency to protect provider/API limits.
+- Dividend fetch is fault-tolerant per symbol: one Yahoo failure logs and returns empty signals for that ticker only.
 - Yahoo quote normalization falls back to `regularMarketPreviousClose` when provider omits direct day-change fields, so daily movers remain populated.
 - Historical daily caches store only real trading sessions. Weekend/holiday carry-forward is resolved at lookup time, not persisted as synthetic rows.
 - Historical instrument cache stores optional `adj_close` alongside OHLC, enabling split-safe derived metrics (e.g. PE overlays).
@@ -32,7 +36,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Tests
 - `src/features/market-data/server/get-instrument-quotes-cached.test.ts`
+- `src/features/market-data/server/get-instrument-dividend-signals-cached.test.ts`
 - `src/features/market-data/server/providers/yahoo/yahoo-quote.test.ts`
+- `src/features/market-data/server/providers/yahoo/yahoo-dividend-signals.test.ts`
 - `src/features/market-data/server/get-fx-rates-cached.test.ts`
 - `src/features/market-data/server/get-instrument-daily-prices-cached.test.ts`
 - `src/features/market-data/server/get-fx-daily-rates-cached.test.ts`

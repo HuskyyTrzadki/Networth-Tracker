@@ -4,6 +4,7 @@ export type CreatePortfolioResponse = Readonly<{
   id: string;
   name: string;
   baseCurrency: string;
+  isTaxAdvantaged: boolean;
 }>;
 
 export async function createPortfolio(

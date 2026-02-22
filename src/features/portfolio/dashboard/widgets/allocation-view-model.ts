@@ -33,6 +33,8 @@ export type AllocationAssetRow = Readonly<{
   id: string;
   label: string;
   symbol: string;
+  logoUrl: string | null;
+  isCurrencyCash: boolean;
   share: number;
   valueBase: string;
   todayChangePercent: number | null;
@@ -65,6 +67,7 @@ type CategoryAccumulator = {
 };
 
 const toShare = (value: number | null) => Math.max(0, value ?? 0);
+const cashSymbols = new Set(["PLN", "USD", "EUR"]);
 
 const asDecimalOrNull = (value: string) => parseDecimalString(value);
 
@@ -210,6 +213,10 @@ export function buildAllocationViewModel(summary: PortfolioSummary): AllocationV
         id: holding.instrumentId,
         label: resolveLabel(holding),
         symbol: holding.symbol,
+        logoUrl: holding.logoUrl,
+        isCurrencyCash:
+          holding.instrumentType === "CURRENCY" &&
+          cashSymbols.has(holding.symbol.trim().toUpperCase()),
         share: toShare(holding.weight),
         valueBase: holding.valueBase ?? "0",
         todayChangePercent,

@@ -29,6 +29,7 @@ describe("listPortfolios", () => {
             id: "p1",
             name: "Główny",
             base_currency: "PLN",
+            is_tax_advantaged: true,
             created_at: "2026-01-01",
           },
         ],
@@ -41,6 +42,7 @@ describe("listPortfolios", () => {
         id: "p1",
         name: "Główny",
         baseCurrency: "PLN",
+        isTaxAdvantaged: true,
         createdAt: "2026-01-01",
       },
     ]);

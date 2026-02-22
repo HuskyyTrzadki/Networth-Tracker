@@ -11,6 +11,7 @@ export const createPortfolioSchema = z.object({
   baseCurrency: z.enum(portfolioBaseCurrencies, {
     message: "Wybierz walutę bazową.",
   }),
+  isTaxAdvantaged: z.boolean(),
 });
 
 export type CreatePortfolioInput = z.infer<typeof createPortfolioSchema>;

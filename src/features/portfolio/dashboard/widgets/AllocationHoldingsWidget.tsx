@@ -138,7 +138,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         ) : null
       }
     >
-      <div className="h-[420px] lg:h-[500px]">
+      <div className="h-[500px] lg:h-[650px]">
         {isRebuildBusy ? (
           <div className="grid h-full place-items-center rounded-lg border border-border/70 bg-muted/10 p-6 text-center">
             <div className="space-y-3">

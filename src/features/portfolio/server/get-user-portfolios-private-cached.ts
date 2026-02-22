@@ -9,6 +9,7 @@ type UserPortfolio = Readonly<{
   id: string;
   name: string;
   baseCurrency: string;
+  isTaxAdvantaged: boolean;
 }>;
 
 type UserPortfoliosResult = Readonly<{

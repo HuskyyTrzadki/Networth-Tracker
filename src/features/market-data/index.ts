@@ -2,7 +2,12 @@ export { getInstrumentQuotesCached } from "./server/get-instrument-quotes-cached
 export { getFxRatesCached } from "./server/get-fx-rates-cached";
 export { getInstrumentDailyPricesCached } from "./server/get-instrument-daily-prices-cached";
 export { getFxDailyRatesCached } from "./server/get-fx-daily-rates-cached";
+export { getInstrumentDividendSignalsCached } from "./server/get-instrument-dividend-signals-cached";
 export { getPolishCpiSeriesCached } from "./server/get-polish-cpi-series-cached";
+export type {
+  InstrumentDividendSignalRequest,
+  InstrumentDividendSignals,
+} from "./server/get-instrument-dividend-signals-cached";
 export type {
   CurrencyCode,
   FxDailyRate,

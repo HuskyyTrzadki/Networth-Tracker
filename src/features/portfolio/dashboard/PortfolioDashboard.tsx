@@ -13,6 +13,9 @@ import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
 import { PortfolioDashboardClientWidgets } from "./PortfolioDashboardClientWidgets";
 import { PortfolioNetValueHero } from "./PortfolioNetValueHero";
 import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
+import type { DividendInboxResult } from "../lib/dividend-inbox";
+import { DividendInboxWidget } from "./widgets/DividendInboxWidget";
+import { PortfolioRecentTransactionsWidget } from "./widgets/PortfolioRecentTransactionsWidget";
 
 type Props = Readonly<{
   portfolios: readonly {
@@ -32,6 +35,7 @@ type Props = Readonly<{
   benchmarkSeries: DashboardBenchmarkSeries;
   recentTransactions: readonly TransactionListItem[];
   portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
+  dividendInbox: DividendInboxResult;
   className?: string;
 }>;
 
@@ -45,6 +49,7 @@ export function PortfolioDashboard({
   benchmarkSeries,
   recentTransactions,
   portfolioAllocationDonutCards,
+  dividendInbox,
   className,
 }: Props) {
   const selectedPortfolioName = selectedPortfolioId
@@ -96,8 +101,12 @@ export function PortfolioDashboard({
           liveTotals={liveTotals}
           polishCpiSeries={polishCpiSeries}
           benchmarkSeries={benchmarkSeries}
-          recentTransactions={recentTransactions}
           portfolioAllocationDonutCards={portfolioAllocationDonutCards}
+        />
+        <DividendInboxWidget data={dividendInbox} selectedPortfolioId={selectedPortfolioId} />
+        <PortfolioRecentTransactionsWidget
+          selectedPortfolioId={selectedPortfolioId}
+          items={recentTransactions}
         />
       </AnimatedReveal>
     </div>

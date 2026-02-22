@@ -609,6 +609,7 @@ export type Database = {
           base_currency: string
           created_at: string
           id: string
+          is_tax_advantaged: boolean
           name: string
           updated_at: string
           user_id: string
@@ -618,6 +619,7 @@ export type Database = {
           base_currency?: string
           created_at?: string
           id?: string
+          is_tax_advantaged?: boolean
           name: string
           updated_at?: string
           user_id?: string
@@ -627,6 +629,7 @@ export type Database = {
           base_currency?: string
           created_at?: string
           id?: string
+          is_tax_advantaged?: boolean
           name?: string
           updated_at?: string
           user_id?: string
@@ -660,6 +663,7 @@ export type Database = {
           client_request_id: string
           created_at: string
           custom_instrument_id: string | null
+          dividend_event_key: string | null
           fee: number
           group_id: string
           id: string
@@ -682,6 +686,7 @@ export type Database = {
           client_request_id: string
           created_at?: string
           custom_instrument_id?: string | null
+          dividend_event_key?: string | null
           fee?: number
           group_id: string
           id?: string
@@ -704,6 +709,7 @@ export type Database = {
           client_request_id?: string
           created_at?: string
           custom_instrument_id?: string | null
+          dividend_event_key?: string | null
           fee?: number
           group_id?: string
           id?: string

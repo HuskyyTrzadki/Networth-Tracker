@@ -50,6 +50,8 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/api/transactions/cash-balance-on-date` | `private-no-store-api` | User cash balance lookup. |
 | `/api/instruments/search` | `private-no-store-api` | App-auth scoped instrument search flow. |
 | `/api/instruments/price-on-date` | `private-no-store-api` | Authenticated historical price helper. |
+| `/api/dividends/inbox` | `private-no-store-api` | Authenticated dividend inbox (past + upcoming signals, scoped by portfolio/all). |
+| `/api/dividends/book` | `private-no-store-api` | Authenticated dividend booking write (single-portfolio, idempotent by event key). |
 | `/api/benchmarks/series` | `private-no-store-api` | User dashboard benchmark series by requested dates. |
 | `/api/auth/*` | `private-no-store-api` | Session/auth lifecycle endpoints. |
 | `/api/cron/portfolio-snapshots/run` | `private-no-store-api` (token-protected) | Operational job endpoint, never public-cacheable. |
@@ -68,6 +70,7 @@ Primary tags:
 Write flows that must invalidate:
 
 - Transaction writes (create/edit/delete): portfolio + transactions tags and path revalidation.
+- Dividend booking writes (`POST /api/dividends/book`): portfolio + transactions tags and path revalidation.
 - Portfolio create: portfolio + transactions tags and path revalidation.
 - Snapshot rebuild updates: portfolio tags and portfolio paths.
 

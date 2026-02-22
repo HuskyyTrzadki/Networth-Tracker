@@ -36,6 +36,7 @@ function PortfolioMobileHeaderActionsInner({
       }),
       { scroll: false }
     );
+    router.refresh();
   };
 
   return (

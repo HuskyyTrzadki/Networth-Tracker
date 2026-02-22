@@ -50,7 +50,14 @@ export async function POST(request: Request) {
     return parsedBody.response;
   }
 
-  const parsed = createPortfolioSchema.safeParse(parsedBody.body);
+  const rawBody =
+    parsedBody.body && typeof parsedBody.body === "object"
+      ? ({
+          isTaxAdvantaged: false,
+          ...(parsedBody.body as Record<string, unknown>),
+        } satisfies Record<string, unknown>)
+      : parsedBody.body;
+  const parsed = createPortfolioSchema.safeParse(rawBody);
   if (!parsed.success) {
     return NextResponse.json(
       { message: "Invalid input.", issues: parsed.error.issues },

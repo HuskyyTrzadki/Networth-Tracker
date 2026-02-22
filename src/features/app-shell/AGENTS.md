@@ -40,6 +40,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - App shell renders a global toast host (`AppToastHost`) and listens for `app:toast` events so features can show success/error feedback without local toast wiring.
 - Active desktop sidebar items use an editorial anchor marker: a 2px vertical left rule on the active row in addition to active background/ring states.
 - Desktop sidebar portfolio rows expose per-item actions via a 3-dot popover; `Usuń` opens a compact confirmation dialog before portfolio deletion.
+- Sidebar `Nowy portfel` create flow navigates to `/portfolio/<id>` and calls `router.refresh()` to refresh layout-level portfolio props immediately.
 
 ## Boundaries
 - No domain business logic; UI/navigation only.
