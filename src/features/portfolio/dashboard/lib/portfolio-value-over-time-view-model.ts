@@ -187,6 +187,9 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
 
   const dailyReturn = dailyReturns[dailyReturns.length - 1] ?? null;
   const dailyReturnValue = dailyReturn?.value ?? null;
+  const latestPerformanceValue =
+    [...performanceRows].reverse().find((row) => row.totalValue !== null)?.totalValue ??
+    null;
 
   const rangeValuedRows = rangeMeta.rows.filter(
     (row) => getTotalValue(row, currency) !== null
@@ -211,6 +214,10 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     rangeStartValue !== 0 &&
     selectedPeriodAbsoluteChange !== null
       ? selectedPeriodAbsoluteChange / rangeStartValue
+      : null;
+  const selectedPeriodPerformanceAbsoluteChange =
+    nominalPeriodReturn !== null && latestPerformanceValue !== null
+      ? latestPerformanceValue * nominalPeriodReturn
       : null;
 
   const isRangeDisabled = (option: ChartRange) => {
@@ -267,6 +274,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     nominalPeriodReturn,
     dailyReturnValue,
     selectedPeriodAbsoluteChange,
+    selectedPeriodPerformanceAbsoluteChange,
     selectedPeriodChangePercent,
     hasInflationData,
     comparisonOptions,

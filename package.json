@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "supabase:types": "npx --yes supabase gen types typescript --project-id ayeeksbqwyqkevbpdlef --schema public > src/lib/supabase/database.types.ts",
+    "tradingview:revenue-geo:batch": "node scripts/tradingview-revenue-geo-batch.mjs",
+    "tradingview:revenue-geo:all-stocks": "node scripts/tradingview-revenue-geo-batch.mjs --all-exchanges --instrument-type=EQUITY",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "knip": "knip"
@@ -54,6 +56,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@storybook/addon-a11y": "^10.1.11",
     "@storybook/addon-docs": "^10.1.11",
     "@storybook/nextjs": "^10.1.11",

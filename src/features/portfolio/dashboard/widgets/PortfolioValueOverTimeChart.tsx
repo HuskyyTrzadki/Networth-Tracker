@@ -234,7 +234,9 @@ function PortfolioValueOverTimeChartContent({
           hasPerformanceData={viewModel.hasPerformanceData}
           range={range}
           selectedPeriodReturn={viewModel.nominalPeriodReturn}
-          selectedPeriodAbsoluteChange={viewModel.selectedPeriodAbsoluteChange}
+          selectedPeriodPerformanceAbsoluteChange={
+            viewModel.selectedPeriodPerformanceAbsoluteChange
+          }
           dailyReturnValue={viewModel.dailyReturnValue}
           cumulativeChartData={viewModel.cumulativeChartData}
           comparisonLines={viewModel.activeComparisonLines}

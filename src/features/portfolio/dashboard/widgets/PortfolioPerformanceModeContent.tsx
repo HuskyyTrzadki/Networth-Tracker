@@ -54,7 +54,7 @@ type Props = Readonly<{
   hasPerformanceData: boolean;
   range: ChartRange;
   selectedPeriodReturn: number | null;
-  selectedPeriodAbsoluteChange: number | null;
+  selectedPeriodPerformanceAbsoluteChange: number | null;
   dailyReturnValue: number | null;
   cumulativeChartData: readonly Point[];
   comparisonLines: readonly ComparisonLine[];
@@ -93,7 +93,7 @@ export function PortfolioPerformanceModeContent({
   hasPerformanceData,
   range,
   selectedPeriodReturn,
-  selectedPeriodAbsoluteChange,
+  selectedPeriodPerformanceAbsoluteChange,
   dailyReturnValue,
   cumulativeChartData,
   comparisonLines,
@@ -176,19 +176,20 @@ export function PortfolioPerformanceModeContent({
           <div
             className={cn(
               "font-mono text-sm tabular-nums",
-              selectedPeriodAbsoluteChange !== null && selectedPeriodAbsoluteChange > 0
+              selectedPeriodPerformanceAbsoluteChange !== null &&
+                  selectedPeriodPerformanceAbsoluteChange > 0
                 ? "text-emerald-700"
-                : selectedPeriodAbsoluteChange !== null &&
-                    selectedPeriodAbsoluteChange < 0
+                : selectedPeriodPerformanceAbsoluteChange !== null &&
+                    selectedPeriodPerformanceAbsoluteChange < 0
                   ? "text-rose-600"
                   : "text-muted-foreground"
             )}
           >
-            {selectedPeriodAbsoluteChange !== null
+            {selectedPeriodPerformanceAbsoluteChange !== null
               ? (
                   <EmphasizedCurrencyAmount
-                    value={`${selectedPeriodAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
-                      selectedPeriodAbsoluteChange
+                    value={`${selectedPeriodPerformanceAbsoluteChange > 0 ? "+" : ""}${formatCurrencyValue(
+                      selectedPeriodPerformanceAbsoluteChange
                     )}`}
                   />
                 )

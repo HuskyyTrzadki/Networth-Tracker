@@ -307,6 +307,42 @@ export type Database = {
           },
         ]
       }
+      instrument_revenue_geo_breakdown_cache: {
+        Row: {
+          fetched_at: string
+          history_by_country: Json
+          id: string
+          latest_by_country: Json
+          metadata: Json
+          provider: string
+          provider_key: string
+          series_order: string[]
+          source: string
+        }
+        Insert: {
+          fetched_at?: string
+          history_by_country?: Json
+          id?: string
+          latest_by_country?: Json
+          metadata?: Json
+          provider?: string
+          provider_key: string
+          series_order?: string[]
+          source?: string
+        }
+        Update: {
+          fetched_at?: string
+          history_by_country?: Json
+          id?: string
+          latest_by_country?: Json
+          metadata?: Json
+          provider?: string
+          provider_key?: string
+          series_order?: string[]
+          source?: string
+        }
+        Relationships: []
+      }
       instrument_valuation_summary_cache: {
         Row: {
           as_of: string | null

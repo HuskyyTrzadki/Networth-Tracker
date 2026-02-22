@@ -121,7 +121,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dividend booking writes a single cash transaction (`cashflow_type=DIVIDEND`, `side=BUY`, `price=1`) with idempotency key `dividend_event_key` scoped to `(user_id, portfolio_id)`.
 - Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
-- Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejsza kwota bezwzględna za wybrany okres.
+- Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejszą kwotę bezwzględną liczoną jako `wartość końcowa zakresu * zwrot %` (cashflow-adjusted), a nie prostą różnicę `koniec - start`.
 - Tryb wartości dla zakresów >1D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
 - Dla historii z jednym punktem domyślny zakres wykresu to `ALL` (zamiast disabled `YTD`), a `Zmiana za okres` pozostaje pusta (`—`) do czasu pojawienia się co najmniej 2 punktów.
 - Nagłówek wykresu pokazuje też komunikat o skróconej historii, gdy dane są chwilowo obcięte i pełny zakres `ALL` nie jest jeszcze dociągnięty.

@@ -69,6 +69,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - centered modal drill-down per widget with larger chart and explanatory copy,
   - v1 data source is intentionally hardcoded and shared across all tickers.
 - Report content sections (`What They Own & Owe`, `Revenue by Products`, `Revenue by Geography`, `Earnings Call Summary`, peers, and deep dives) are currently hardcoded mock content pending provider wiring.
+- TradingView geography ingestion groundwork exists in market-data (`instrument_revenue_geo_breakdown_cache` + batch Playwright script), but report geo widgets are still fed by static mock data until dedicated read wiring is added.
 - Report content includes additional hardcoded concept blocks with quarter/year toggles:
   - revenue allocation ("Gdzie trafia kazda zlotowka przychodu"),
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),
