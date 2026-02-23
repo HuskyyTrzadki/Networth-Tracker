@@ -134,6 +134,8 @@ When shipping feature/architecture changes:
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
 - Portfolio model includes `is_tax_advantaged` (IKE/IKZE) used by dividend smart-default hints.
 - Dividend booking is user-confirmed (`/api/dividends/book`) with idempotency key `dividend_event_key`; Yahoo is discovery-only (`/api/dividends/inbox`).
+- Dashboard includes `Ekspozycja walutowa` widget with `Notowania | Gospodarcza` toggle; `Gospodarcza` is user-triggered via `/api/portfolio/currency-exposure/economic` and uses deterministic AI config (`temperature: 0`).
+- Economic exposure cache uses instrument-set fingerprint only (sorted `instrumentId`s + scope/model/prompt version), then reweights cached per-asset splits with fresh `valueBase` on each request.
 
 
 ## Quality bar

@@ -85,6 +85,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Stock chart/report modules are split into focused helpers (formatters, view-model mapping, hover card rendering, and revenue-mix section helpers/cards) to keep single-file complexity under repo limits.
+- Revenue-mix donut charts in report (`stock-report-revenue-mix-cards.tsx`) now render inline slice labels with percentages (small-slice cutoff) directly on the chart, not only in the adjacent legend list.
 - Chart-heavy UI consumers use `next/dynamic` at whole-component boundaries (`StockChartPlot`, screener preview mini-chart, report insights widgets, revenue-mix donut cards) with `ssr: false`; avoid dynamic-wrapping Recharts primitives directly.
 - Screener cards use shared tactile card surface defaults (design-system `Card` token path), denser desktop geometry, and a compact monthly change badge for higher information density.
 - Screener preview chart keeps visible X/Y context but uses area + gradient fill and stronger stroke to avoid thin-wire sparklines.

@@ -12,6 +12,7 @@ import {
   splitCurrencyLabel,
 } from "@/lib/format-currency";
 import { multiplyDecimals, parseDecimalString } from "@/lib/decimal";
+import { formatGroupedNumber } from "@/lib/format-number";
 import type { TransactionListItem } from "../server/list-transactions";
 import { cashflowTypeLabels, type CashflowType } from "../lib/cashflow-types";
 import { InstrumentLogoImage } from "./InstrumentLogoImage";
@@ -87,27 +88,29 @@ const formatValueLabel = (quantity: string, price: string, currency: string) => 
   return formatCurrencyValue(value, formatter);
 };
 
-const trimTrailingZeros = (value: string) => {
-  if (!value.includes(".")) {
-    return value;
-  }
-
-  return value.replace(/\.?0+$/, "");
-};
-
 const formatQuantityLabel = (item: TransactionListItem) => {
-  const parsedQuantity = parseDecimalString(item.quantity);
-  if (!parsedQuantity) {
+  if (!parseDecimalString(item.quantity)) {
     return item.quantity;
   }
 
   // Cash settlement quantities should be money-like in the table: fixed 2 decimals.
   if (item.legRole === "CASH") {
-    return parsedQuantity.toFixed(2).replace(".", ",");
+    return (
+      formatGroupedNumber(item.quantity, {
+        minFractionDigits: 2,
+        maxFractionDigits: 2,
+        trimTrailingZeros: false,
+      }) ?? item.quantity
+    );
   }
 
   // Asset quantity keeps fractional precision but avoids noisy trailing zeros.
-  return trimTrailingZeros(parsedQuantity.toFixed(8)).replace(".", ",");
+  return (
+    formatGroupedNumber(item.quantity, {
+      maxFractionDigits: 8,
+      trimTrailingZeros: true,
+    }) ?? item.quantity
+  );
 };
 
 const sortGroupItems = (items: readonly TransactionListItem[]) =>

@@ -43,6 +43,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Macro CPI (Eurostat HICP index level, PL) is cached globally in monthly buckets (`macro_cpi_pl_cache`) and is used to derive cumulative inflation + real return overlays for PLN performance.
 - CPI service logs explicit backend diagnostics for cache-read, missing-table, and fetch/parse failures (`[market-data][cpi-pl] ...`) and gracefully falls back to non-cached fetch or empty overlay data.
 - TradingView revenue geography ingestion is currently batch-only (local Playwright script), not request-path runtime, and persists into `instrument_revenue_geo_breakdown_cache`.
+- `instrument_revenue_geo_breakdown_cache` is also read by portfolio economic currency-exposure analysis (`/api/portfolio/currency-exposure/economic`) as an enrichment source for per-asset LLM splits.
 - TradingView symbol mapping uses instrument exchanges (`NASDAQ`, `NYSE`, `WSE`) with `WSE` translated to TradingView venue code `GPW` and `.WA` suffix trimmed from Yahoo provider keys.
 - TradingView geography values are parsed from hydrated DOM rows (`By country` / `Według kraju`) and normalized to numeric latest + history payloads per country.
 

@@ -154,6 +154,16 @@ export function PortfolioPerformanceModeContent({
     );
   }
 
+  if (range === "1D") {
+    return (
+      <PortfolioPerformanceDailySummaryCard
+        absoluteChange={selectedPeriodPerformanceAbsoluteChange}
+        dailyReturnValue={dailyReturnValue}
+        formatCurrencyValue={formatCurrencyValue}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -198,18 +208,12 @@ export function PortfolioPerformanceModeContent({
         </div>
       </div>
 
-      {range === "1D" ? (
-        <PortfolioPerformanceDailySummaryCard
-          dailyReturnValue={dailyReturnValue}
+      <div style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}>
+        <DailyReturnsLineChart
+          data={cumulativeChartData}
+          comparisonLines={comparisonLines}
         />
-      ) : (
-        <div style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}>
-          <DailyReturnsLineChart
-            data={cumulativeChartData}
-            comparisonLines={comparisonLines}
-          />
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -24,6 +24,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioValueDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioPerformanceDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/CurrencyExposureWidget.tsx`
+- `src/features/portfolio/dashboard/widgets/currency-exposure-view-model.ts`
 - `src/features/portfolio/dashboard/widgets/DividendInboxWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/DividendInboxBookAction.tsx`
 - `src/features/portfolio/dashboard/widgets/DividendBookingDialog.tsx`
@@ -50,9 +52,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/dividends/get-dividend-inbox.ts`
 - `src/features/portfolio/server/dividends/book-dividend.ts`
 - `src/features/portfolio/server/dividends/dividend-utils.ts`
+- `src/features/portfolio/server/currency-exposure/get-economic-currency-exposure.ts`
+- `src/features/portfolio/server/currency-exposure/fingerprint.ts`
+- `src/features/portfolio/server/currency-exposure/weighting.ts`
 - `src/app/api/benchmarks/series/route.ts`
 - `src/app/api/dividends/inbox/route.ts`
 - `src/app/api/dividends/book/route.ts`
+- `src/app/api/portfolio/currency-exposure/economic/route.ts`
 - `src/features/portfolio/server/snapshots/compute-portfolio-snapshot.ts`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.ts`
 - `src/features/portfolio/server/snapshots/run-portfolio-snapshots-cron.ts`
@@ -80,6 +86,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/lib/snapshot-rebuild-events.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.ts`
 - `src/features/portfolio/lib/dividend-inbox.ts`
+- `src/features/portfolio/lib/currency-exposure.ts`
 - `src/features/portfolio/lib/portfolio-url.ts`
 - `src/features/portfolio/lib/rebuild-progress.ts`
 
@@ -93,6 +100,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
+- Dashboard includes widget `Ekspozycja walutowa` z przełącznikiem `Notowania | Gospodarcza`; first `Gospodarcza` run is user-triggered by `Oblicz ekspozycję gospodarczą` with inline analyzer loader.
+- Endpoint `/api/portfolio/currency-exposure/economic` caches only per-asset AI currency splits (fingerprint by instrument set), then recomputes final portfolio currency weights from current `valueBase` on every request.
+- Economic currency exposure flow now emits structured trace logs on each request (`[currency-exposure][economic]`) and returns `X-Currency-Exposure-Trace-Id` header; set `CURRENCY_EXPOSURE_VERBOSE_LOGS=1` to include full prompt/response payloads in server logs. Client-side response logs are enabled outside production, or in production when `NEXT_PUBLIC_CURRENCY_EXPOSURE_CLIENT_LOGS=1`.
+- Dashboard content is constrained to `max-w-7xl` and follows newspaper rhythm: full-width hero + main chart, then `xl:grid-cols-2` row (`Alokacja i pozycje` vs `Ekspozycja walutowa`), with `Ostatnie transakcje` as the next full-width row.
+- `Alokacja i pozycje` in `Mapa` mode exposes `Powiększ mapę` action (Lucide maximize icon) that opens a large dialog with treemap rendered on expanded height for detailed inspection.
 - W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje osobny donut z kategoriami.
 - Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
 - W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
@@ -208,11 +220,16 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.test.ts`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueModeContent.test.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.test.tsx`
+- `src/features/portfolio/dashboard/widgets/AllocationHoldingsWidget.test.tsx`
+- `src/features/portfolio/dashboard/widgets/CurrencyExposureWidget.test.tsx`
+- `src/features/portfolio/dashboard/widgets/currency-exposure-view-model.test.ts`
 - `src/features/portfolio/dashboard/widgets/top-movers-utils.test.ts`
 - `src/features/portfolio/dashboard/widgets/portfolio-value-over-time-chart-helpers.test.ts`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.test.tsx`
 - `src/features/portfolio/server/snapshots/get-portfolio-snapshot-rows.test.ts`
 - `src/features/portfolio/server/snapshots/snapshot-rows-route-service.test.ts`
+- `src/features/portfolio/server/currency-exposure/fingerprint.test.ts`
+- `src/features/portfolio/server/currency-exposure/weighting.test.ts`
 - `src/features/portfolio/lib/create-portfolio-schema.test.ts`
 - `src/features/portfolio/lib/portfolio-url.test.ts`
 - `src/features/portfolio/lib/snapshot-rebuild-events.test.ts`

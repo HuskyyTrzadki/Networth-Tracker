@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "value-realization": {
+      "source": "Done-0/value-realization",
+      "sourceType": "github",
+      "computedHash": "2340a3e462f90bc37f69f34cb4067d92ce62931c5cbe3441b6b5e30665fd2a4d"
+    }
+  }
+}

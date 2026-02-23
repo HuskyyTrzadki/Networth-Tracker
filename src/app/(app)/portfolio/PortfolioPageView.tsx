@@ -20,7 +20,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   const pageData = await getUserPortfoliosPrivateCached();
   if (!pageData.isAuthenticated) {
     return (
-      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
           Zaloguj się, aby zobaczyć portfel.
@@ -54,7 +54,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
     : "Wszystkie portfele";
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] flex-col px-5 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-7xl flex-col px-5 py-6 sm:px-6 sm:py-8">
       <AnimatedReveal>
         <header className="flex flex-col gap-3">
           <div className="space-y-1">

@@ -52,6 +52,7 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/api/instruments/price-on-date` | `private-no-store-api` | Authenticated historical price helper. |
 | `/api/dividends/inbox` | `private-no-store-api` | Authenticated dividend inbox (past + upcoming signals, scoped by portfolio/all). |
 | `/api/dividends/book` | `private-no-store-api` | Authenticated dividend booking write (single-portfolio, idempotent by event key). |
+| `/api/portfolio/currency-exposure/economic` | `private-no-store-api` | Authenticated economic FX analyzer; deterministic per-asset splits with user-scoped cache. |
 | `/api/benchmarks/series` | `private-no-store-api` | User dashboard benchmark series by requested dates. |
 | `/api/auth/*` | `private-no-store-api` | Session/auth lifecycle endpoints. |
 | `/api/cron/portfolio-snapshots/run` | `private-no-store-api` (token-protected) | Operational job endpoint, never public-cacheable. |

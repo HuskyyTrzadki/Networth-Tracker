@@ -4,6 +4,7 @@ import { useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 
 import { getCurrencyFormatter } from "@/lib/format-currency";
+import { cn } from "@/lib/cn";
 
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { LiveTotals } from "../../server/get-portfolio-live-totals";
@@ -35,6 +36,7 @@ import {
   toIsoDayMs,
   toLiveSnapshotRow,
 } from "./portfolio-value-over-time-chart-helpers";
+import { SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS } from "./portfolio-value-over-time-chart-layout";
 
 type PortfolioChartViewModel = ReturnType<typeof buildPortfolioValueOverTimeViewModel>;
 
@@ -175,7 +177,12 @@ function PortfolioValueOverTimeChartContent({
   formatCurrencyValue: (value: number) => string;
 }>) {
   return (
-    <div className="space-y-4">
+    <div
+      className={cn(
+        "space-y-4",
+        range === "1D" ? "" : SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS
+      )}
+    >
       <PortfolioValueOverTimeHeader
         mode={mode}
         onModeChange={onModeChange}

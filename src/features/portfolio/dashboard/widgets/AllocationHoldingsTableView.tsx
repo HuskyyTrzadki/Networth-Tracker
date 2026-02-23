@@ -9,6 +9,7 @@ import {
 } from "@/features/design-system/components/ui/table";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { cn } from "@/lib/cn";
+import { formatGroupedNumber } from "@/lib/format-number";
 
 import type { PortfolioSummary, ValuedHolding } from "../../server/valuation";
 
@@ -26,13 +27,40 @@ const formatPercent = (value: number, maxFractionDigits = 1) =>
 const formatMissingValue = (reason: "MISSING_QUOTE" | "MISSING_FX") =>
   reason === "MISSING_QUOTE" ? "Brak ceny" : "Brak FX";
 
-const formatDecimalValue = (value: string) => {
-  const asNumber = Number(value);
-  if (!Number.isFinite(asNumber)) return value;
-  return new Intl.NumberFormat("pl-PL", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(asNumber);
+const formatMoneyValue = (value: string) =>
+  formatGroupedNumber(value, {
+    minFractionDigits: 2,
+    maxFractionDigits: 2,
+    trimTrailingZeros: false,
+  }) ?? value;
+
+const formatQuantityValue = (value: string) =>
+  formatGroupedNumber(value, {
+    maxFractionDigits: 4,
+    trimTrailingZeros: true,
+  }) ?? value;
+
+const formatQuantity = (row: ValuedHolding) => {
+  if (row.instrumentType === "CURRENCY") {
+    return (
+      formatGroupedNumber(row.quantity, {
+        minFractionDigits: 2,
+        maxFractionDigits: 2,
+        trimTrailingZeros: false,
+      }) ?? row.quantity
+    );
+  }
+
+  if (row.instrumentType === "CRYPTOCURRENCY") {
+    return (
+      formatGroupedNumber(row.quantity, {
+        maxFractionDigits: 8,
+        trimTrailingZeros: true,
+      }) ?? row.quantity
+    );
+  }
+
+  return formatQuantityValue(row.quantity);
 };
 
 export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
@@ -59,11 +87,11 @@ export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
         <TableBody>
           {holdingsRows.map((row) => {
             const averageBuyPriceLabel = row.averageBuyPriceBase
-              ? formatDecimalValue(row.averageBuyPriceBase)
+              ? formatMoneyValue(row.averageBuyPriceBase)
               : "—";
             const valueLabel =
               row.valueBase
-                ? formatDecimalValue(row.valueBase)
+                ? formatMoneyValue(row.valueBase)
                 : row.missingReason
                   ? formatMissingValue(row.missingReason)
                   : "—";
@@ -111,7 +139,7 @@ export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
                   className="px-4 font-mono text-[13px] tabular-nums text-foreground"
                   data-align="right"
                 >
-                  {row.quantity}
+                  {formatQuantity(row)}
                 </TableCell>
                 <TableCell
                   className="px-4 font-mono text-[13px] tabular-nums text-foreground"

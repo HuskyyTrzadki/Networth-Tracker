@@ -107,19 +107,19 @@ const formatLeafLabel = (data: TreemapNode) => {
   return `${iconLinePrefix}${tickerToken}\n${shareToken}\n${changeToken}`;
 };
 
-const pageBackgroundBeige = "#f6f2ec";
-const categoryHeaderTint = pageBackgroundBeige;
+const pageBackgroundBeige = "var(--muted)";
+const categoryHeaderTint = "var(--muted)";
 
-const positiveLeafFill = "#dcfce7";
-const positiveLeafInk = "#052e16";
-const positiveLeafInkMuted = "rgba(5, 46, 22, 0.7)";
-const negativeLeafFill = "#ffe4e6";
-const negativeLeafInk = "#4c0519";
-const negativeLeafInkMuted = "rgba(76, 5, 25, 0.7)";
-const neutralLeafFill = "#ffffff";
-const neutralLeafInk = "#111827";
-const neutralLeafInkMuted = "rgba(17, 24, 39, 0.7)";
-const treemapBorderColor = "#FFFFFF";
+const positiveLeafFill = "color-mix(in srgb, var(--profit) 22%, var(--card) 78%)";
+const positiveLeafInk = "var(--foreground)";
+const positiveLeafInkMuted = "var(--muted-foreground)";
+const negativeLeafFill = "color-mix(in srgb, var(--loss) 22%, var(--card) 78%)";
+const negativeLeafInk = "var(--foreground)";
+const negativeLeafInkMuted = "var(--muted-foreground)";
+const neutralLeafFill = "var(--card)";
+const neutralLeafInk = "var(--foreground)";
+const neutralLeafInkMuted = "var(--muted-foreground)";
+const treemapBorderColor = "var(--background)";
 const treemapGap = 2;
 const treemapBorderWidth = 2;
 const cashIconRichKey = "iconCash";
@@ -187,11 +187,11 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
   animationDurationUpdate: 220,
   tooltip: {
     trigger: "item",
-    backgroundColor: "#faf7f2",
-    borderColor: "#d8d1c8",
+    backgroundColor: "var(--popover)",
+    borderColor: "var(--border)",
     borderWidth: 1,
     textStyle: {
-      color: "#2f2f2f",
+      color: "var(--popover-foreground)",
       fontSize: 11,
       fontFamily: "'IBM Plex Mono', monospace",
     },

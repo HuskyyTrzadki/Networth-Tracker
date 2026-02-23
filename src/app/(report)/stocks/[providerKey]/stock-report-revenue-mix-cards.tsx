@@ -14,6 +14,26 @@ import {
 } from "./stock-report-static-data";
 import { clamp, type Slice } from "./stock-report-revenue-mix-helpers";
 
+const donutLabelPercentFormatter = new Intl.NumberFormat("pl-PL", {
+  style: "percent",
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const MIN_DONUT_LABEL_SHARE = 0.045;
+const MAX_DONUT_LABEL_LENGTH = 18;
+
+const formatDonutLabelName = (value: unknown) => {
+  const raw = typeof value === "string" ? value.trim() : String(value ?? "").trim();
+  if (raw.length <= MAX_DONUT_LABEL_LENGTH) return raw;
+  return `${raw.slice(0, MAX_DONUT_LABEL_LENGTH - 1)}…`;
+};
+
+const buildDonutLabel = (name: unknown, percent: unknown) => {
+  if (typeof percent !== "number" || percent < MIN_DONUT_LABEL_SHARE) return "";
+  return `${formatDonutLabelName(name)}\n${donutLabelPercentFormatter.format(percent)}`;
+};
+
 const getChangeTone = (direction: "up" | "down" | "flat") => {
   if (direction === "up") return "text-[#3f7255]";
   if (direction === "down") return "text-[#a35f58]";
@@ -128,6 +148,8 @@ export function DonutCard({
                   innerRadius={76}
                   outerRadius={112}
                   paddingAngle={2}
+                  labelLine
+                  label={({ name, percent }) => buildDonutLabel(name, percent)}
                   stroke="var(--background)"
                   strokeWidth={2}
                   isAnimationActive={false}

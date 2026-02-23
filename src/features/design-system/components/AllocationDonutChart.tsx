@@ -27,6 +27,26 @@ const sanitizeSvgIdToken = (value: string) =>
     .replace(/[^a-zA-Z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+const donutLabelPercentFormatter = new Intl.NumberFormat("pl-PL", {
+  style: "percent",
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const MIN_LABEL_SHARE = 0.045;
+const MAX_DONUT_LABEL_LENGTH = 18;
+
+const formatDonutLabelName = (value: unknown) => {
+  const raw = typeof value === "string" ? value.trim() : String(value ?? "").trim();
+  if (raw.length <= MAX_DONUT_LABEL_LENGTH) return raw;
+  return `${raw.slice(0, MAX_DONUT_LABEL_LENGTH - 1)}…`;
+};
+
+const buildDonutLabel = (name: unknown, percent: unknown) => {
+  if (typeof percent !== "number" || percent < MIN_LABEL_SHARE) return "";
+  return `${formatDonutLabelName(name)}\n${donutLabelPercentFormatter.format(percent)}`;
+};
+
 export function AllocationDonutChart({
   data,
   height = 240,
@@ -91,6 +111,8 @@ export function AllocationDonutChart({
             innerRadius={innerRadius}
             outerRadius={outerRadius}
             paddingAngle={2}
+            labelLine
+            label={({ name, percent }) => buildDonutLabel(name, percent)}
             isAnimationActive
             animationDuration={600}
             animationEasing="ease-out"

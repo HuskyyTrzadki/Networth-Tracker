@@ -48,6 +48,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
 - `AllocationDonutChart` supports responsive radius values (`innerRadius`/`outerRadius` as percent) so feature widgets can use full-width chart areas without hardcoded pixel donuts.
 - `AllocationDonutChart` now supports optional per-slice SVG patterns (`hatch`, `dots`, `cross`, `grid`) in addition to color fills, enabling print-like category distinction in allocation charts.
+- `AllocationDonutChart` now renders on-chart slice labels with percentages (with leader lines, small-slice cutoff) so donut charts remain readable without relying only on external legends.
 - Chart stories live in `stories/Charts.stories.tsx`.
 - Typography split is explicit: UI/editorial copy uses Geist Sans (`--font-sans`), data/tickers/numerics use IBM Plex Mono (`--font-mono` + `tabular-nums`), and classes are applied directly in components (no global alias utilities).
 - `Badge` primitive includes a `stamp` variant (CVA-driven) for subdued metadata chips like valuation freshness labels.

@@ -9,6 +9,7 @@ import { useSnapshotRebuild } from "./hooks/useSnapshotRebuild";
 import { AllocationHoldingsWidget } from "./widgets/AllocationHoldingsWidget";
 import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
 import { PortfolioAllocationsByPortfolioWidget } from "./widgets/PortfolioAllocationsByPortfolioWidget";
+import { CurrencyExposureWidget } from "./widgets/CurrencyExposureWidget";
 import { PortfolioTopMoversWidget } from "./widgets/PortfolioTopMoversWidget";
 import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
 
@@ -39,7 +40,7 @@ export function PortfolioDashboardClientWidgets({
   const rebuild = useSnapshotRebuild(scope, selectedPortfolioId, true);
 
   return (
-    <>
+    <div className="space-y-6">
       <PortfolioValueOverTimeWidget
         key={`${scope}:${selectedPortfolioId ?? "all"}`}
         scope={scope}
@@ -53,11 +54,17 @@ export function PortfolioDashboardClientWidgets({
         benchmarkSeries={benchmarkSeries}
         rebuild={rebuild}
       />
-      <AllocationHoldingsWidget summary={summary} rebuild={rebuild} />
-      {!selectedPortfolioId &&
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <AllocationHoldingsWidget summary={summary} rebuild={rebuild} />
+        <CurrencyExposureWidget
+          selectedPortfolioId={selectedPortfolioId}
+          summary={summary}
+        />
+      </div>
+      {!selectedPortfolioId ? (
         <PortfolioAllocationsByPortfolioWidget items={portfolioAllocationDonutCards} />
-      }
+      ) : null}
       <PortfolioTopMoversWidget summary={summary} />
-    </>
+    </div>
   );
 }

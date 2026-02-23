@@ -488,6 +488,53 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_currency_exposure_cache: {
+        Row: {
+          as_of: string | null
+          fetched_at: string
+          holdings_fingerprint: string
+          id: string
+          model: string
+          portfolio_id: string | null
+          prompt_version: string
+          result_json: Json
+          scope: Database["public"]["Enums"]["portfolio_snapshot_scope"]
+          user_id: string
+        }
+        Insert: {
+          as_of?: string | null
+          fetched_at?: string
+          holdings_fingerprint: string
+          id?: string
+          model: string
+          portfolio_id?: string | null
+          prompt_version: string
+          result_json?: Json
+          scope: Database["public"]["Enums"]["portfolio_snapshot_scope"]
+          user_id: string
+        }
+        Update: {
+          as_of?: string | null
+          fetched_at?: string
+          holdings_fingerprint?: string
+          id?: string
+          model?: string
+          portfolio_id?: string | null
+          prompt_version?: string
+          result_json?: Json
+          scope?: Database["public"]["Enums"]["portfolio_snapshot_scope"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_currency_exposure_cache_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_snapshot_rebuild_state: {
         Row: {
           created_at: string

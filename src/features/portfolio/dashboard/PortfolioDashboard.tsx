@@ -61,7 +61,7 @@ export function PortfolioDashboard({
     : "Portfel: Wszystkie portfele";
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn("mx-auto w-full max-w-7xl space-y-6", className)}>
       <AnimatedReveal>
         <PortfolioNetValueHero
           portfolioLabel={portfolioLabel}
@@ -94,20 +94,22 @@ export function PortfolioDashboard({
         </AnimatedReveal>
       ) : null}
       <AnimatedReveal delay={0.06}>
-        <PortfolioDashboardClientWidgets
-          selectedPortfolioId={selectedPortfolioId}
-          summary={summary}
-          snapshotRows={snapshotRows}
-          liveTotals={liveTotals}
-          polishCpiSeries={polishCpiSeries}
-          benchmarkSeries={benchmarkSeries}
-          portfolioAllocationDonutCards={portfolioAllocationDonutCards}
-        />
-        <DividendInboxWidget data={dividendInbox} selectedPortfolioId={selectedPortfolioId} />
-        <PortfolioRecentTransactionsWidget
-          selectedPortfolioId={selectedPortfolioId}
-          items={recentTransactions}
-        />
+        <div className="space-y-6">
+          <PortfolioDashboardClientWidgets
+            selectedPortfolioId={selectedPortfolioId}
+            summary={summary}
+            snapshotRows={snapshotRows}
+            liveTotals={liveTotals}
+            polishCpiSeries={polishCpiSeries}
+            benchmarkSeries={benchmarkSeries}
+            portfolioAllocationDonutCards={portfolioAllocationDonutCards}
+          />
+          <PortfolioRecentTransactionsWidget
+            selectedPortfolioId={selectedPortfolioId}
+            items={recentTransactions}
+          />
+          <DividendInboxWidget data={dividendInbox} selectedPortfolioId={selectedPortfolioId} />
+        </div>
       </AnimatedReveal>
     </div>
   );
