@@ -191,6 +191,28 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
     mode === "GOSPODARCZA" ? economicResponse?.details ?? [] : investorData.details;
 
   const calculateEconomicExposure = async () => {
+    if (isLoading || economicResponse) return;
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await getEconomicCurrencyExposure({
+        portfolioId: selectedPortfolioId,
+      });
+      setEconomicResponse(response);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nie udało się obliczyć ekspozycji gospodarczej."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const retryEconomicExposure = async () => {
     if (isLoading) return;
 
     setIsLoading(true);
@@ -201,7 +223,6 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
         portfolioId: selectedPortfolioId,
       });
       setEconomicResponse(response);
-      setMode("GOSPODARCZA");
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -226,6 +247,9 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
             onValueChange={(value) => {
               if (value === "NOTOWANIA" || value === "GOSPODARCZA") {
                 setMode(value);
+                if (value === "GOSPODARCZA") {
+                  void calculateEconomicExposure();
+                }
               }
             }}
           >
@@ -236,7 +260,6 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
               value="GOSPODARCZA"
               variant="ledger"
               className="h-8 px-3 text-sm"
-              disabled={!economicResponse}
             >
               Gospodarcza
             </ToggleGroupItem>
@@ -246,37 +269,42 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
       subtitle="Notowania: waluta instrumentu. Gospodarcza: ekspozycja przychodowa i geograficzna."
     >
       <div className="space-y-4">
-        {!economicResponse ? (
+        <div className="rounded-md border border-border/70 bg-muted/15 px-3 py-2.5">
+          <p className="text-xs text-muted-foreground">
+            Gospodarcza: po przełączeniu analizator łączy waluty instrumentów, geograficzną
+            strukturę przychodów i przybliżenia dla ETF-ów, aby pokazać realną ekspozycję portfela.
+          </p>
+        </div>
+
+        {mode === "GOSPODARCZA" && isLoading ? (
           <div className="rounded-md border border-border/70 bg-muted/15 p-3">
-            <Button
-              className="h-9"
-              disabled={isLoading}
-              onClick={calculateEconomicExposure}
-              type="button"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-                  Obliczam...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 size-4" aria-hidden />
-                  Oblicz ekspozycję gospodarczą
-                </>
-              )}
-            </Button>
-            {isLoading ? (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Analizator sprawdza ekspozycję geograficzną i walutową portfela...
-              </p>
-            ) : null}
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              Obliczam ekspozycję gospodarczą...
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Analizator sprawdza ekspozycję geograficzną i walutową portfela.
+            </p>
           </div>
         ) : null}
 
         {errorMessage ? (
           <div className="rounded-md border border-loss/25 bg-loss/10 px-3 py-2 text-sm text-loss">
-            {errorMessage}
+            <p>{errorMessage}</p>
+            {mode === "GOSPODARCZA" ? (
+              <Button
+                className="mt-2 h-8"
+                onClick={() => {
+                  void retryEconomicExposure();
+                }}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                <Sparkles className="mr-1.5 size-3.5" aria-hidden />
+                Spróbuj ponownie
+              </Button>
+            ) : null}
           </div>
         ) : null}
 

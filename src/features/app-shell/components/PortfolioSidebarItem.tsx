@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -100,6 +100,15 @@ export function PortfolioSidebarItem({ portfolio, isActive, onDeleted }: Props) 
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-36 p-1.5">
+          <Link
+            className={cn(menuItemClasses, "justify-between")}
+            href={`/transactions/new?portfolio=${portfolio.id}`}
+            onClick={() => setIsPopoverOpen(false)}
+            scroll={false}
+          >
+            <span>Dodaj transakcję</span>
+            <Plus className="size-4 shrink-0" aria-hidden />
+          </Link>
           <button
             className={cn(menuItemClasses, "text-destructive")}
             onClick={() => {

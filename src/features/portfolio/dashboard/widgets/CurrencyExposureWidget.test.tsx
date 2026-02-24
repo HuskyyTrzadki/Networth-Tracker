@@ -59,12 +59,15 @@ describe("CurrencyExposureWidget", () => {
     render(<CurrencyExposureWidget summary={summary} selectedPortfolioId={null} />);
 
     expect(screen.getByText("Ekspozycja walutowa")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Oblicz ekspozycję gospodarczą" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Gospodarcza" })).toBeInTheDocument();
+    expect(
+      screen.getByText(/po przełączeniu analizator łączy waluty instrumentów/i)
+    ).toBeInTheDocument();
     expect(screen.getAllByText("Dolar amerykański (USD)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Polski Złoty (PLN)").length).toBeGreaterThan(0);
   });
 
-  it("loads economic mode after button click", async () => {
+  it("loads economic mode after switching toggle", async () => {
     vi.mocked(getEconomicCurrencyExposure).mockResolvedValueOnce({
       scope: "ALL",
       portfolioId: null,
@@ -102,7 +105,7 @@ describe("CurrencyExposureWidget", () => {
 
     render(<CurrencyExposureWidget summary={summary} selectedPortfolioId={null} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Oblicz ekspozycję gospodarczą" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gospodarcza" }));
 
     await waitFor(() => {
       expect(vi.mocked(getEconomicCurrencyExposure)).toHaveBeenCalledWith(
