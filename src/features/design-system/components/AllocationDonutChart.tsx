@@ -7,6 +7,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "@/lib/rechart
 
 export type DonutSlice = Readonly<{
   id: string;
+  label?: string;
   value: number;
   color: string;
   patternId?: "solid" | "hatch" | "dots" | "cross" | "grid";
@@ -54,7 +55,10 @@ export function AllocationDonutChart({
   outerRadius = "88%",
 }: Props) {
   const chartId = useId().replace(/:/g, "");
-  const chartData = [...data];
+  const chartData = data.map((slice) => ({
+    ...slice,
+    label: slice.label ?? slice.id,
+  }));
 
   return (
     <div className="w-full" style={{ height }}>
@@ -107,7 +111,7 @@ export function AllocationDonutChart({
           <Pie
             data={chartData}
             dataKey="value"
-            nameKey="id"
+            nameKey="label"
             innerRadius={innerRadius}
             outerRadius={outerRadius}
             paddingAngle={2}

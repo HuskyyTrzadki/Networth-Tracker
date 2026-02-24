@@ -39,6 +39,7 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
         {items.map((item) => {
           const chartData: DonutSlice[] = item.slices.map((slice) => ({
             id: slice.id,
+            label: slice.label,
             value: slice.share,
             color: slice.color,
             tooltipLabel: slice.label,

@@ -36,6 +36,7 @@ function ChartsStory() {
 
   const donutData: readonly DonutSlice[] = allocation.map((row) => ({
     id: row.symbol,
+    label: row.symbol,
     value: row.value,
     color: row.color,
     tooltipLabel: row.symbol,
