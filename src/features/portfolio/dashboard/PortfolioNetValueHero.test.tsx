@@ -10,8 +10,8 @@ describe("PortfolioNetValueHero", () => {
         portfolioLabel="Portfel: XYZ"
         baseCurrency="PLN"
         totalValueBase="12345.67"
+        dailyChangeBase="10"
         isPartial={false}
-        asOf={null}
       />
     );
 
@@ -19,6 +19,7 @@ describe("PortfolioNetValueHero", () => {
     expect(screen.getByText("Wartość netto")).toBeInTheDocument();
     expect(screen.getByText("12 345,67")).toBeInTheDocument();
     expect(screen.getByText("zł")).toBeInTheDocument();
+    expect(screen.getByText(/\+10/)).toBeInTheDocument();
   });
 
   it("renders partial valuation note when summary is partial", () => {
@@ -27,8 +28,8 @@ describe("PortfolioNetValueHero", () => {
         portfolioLabel="Portfel: XYZ"
         baseCurrency="PLN"
         totalValueBase="100"
+        dailyChangeBase={null}
         isPartial
-        asOf={null}
       />
     );
 

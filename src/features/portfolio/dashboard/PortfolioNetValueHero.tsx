@@ -7,23 +7,23 @@ import {
   getCurrencyFormatter,
   splitCurrencyLabel,
 } from "@/lib/format-currency";
-import { Badge } from "@/features/design-system/components/ui/badge";
 import { parseDecimalString } from "@/lib/decimal";
+import { cn } from "@/lib/cn";
 
 type Props = Readonly<{
   portfolioLabel: string;
   baseCurrency: string;
   totalValueBase: string | null;
+  dailyChangeBase: string | null;
   isPartial: boolean;
-  asOf: string | null;
 }>;
 
 export function PortfolioNetValueHero({
   portfolioLabel,
   baseCurrency,
   totalValueBase,
+  dailyChangeBase,
   isPartial,
-  asOf,
 }: Props) {
   const prefersReducedMotion = useReducedMotion() ?? false;
   const formatter = getCurrencyFormatter(baseCurrency);
@@ -39,6 +39,48 @@ export function PortfolioNetValueHero({
   const [animatedAmount, setAnimatedAmount] = useState<number | null>(targetAmount);
   const rafRef = useRef<number | null>(null);
   const animationStartRef = useRef<number | null>(null);
+
+  const dailyChangeDecimal = parseDecimalString(dailyChangeBase);
+  const totalValueDecimal = parseDecimalString(totalValueBase);
+  const formattedDailyChange =
+    dailyChangeDecimal && formatter
+      ? formatCurrencyString(dailyChangeDecimal.abs().toString(), formatter)
+      : dailyChangeDecimal
+        ? `${dailyChangeDecimal.abs().toString()} ${baseCurrency}`
+        : null;
+  const dailyChangeLabel =
+    dailyChangeDecimal && formattedDailyChange
+      ? dailyChangeDecimal.gt(0)
+        ? `+${formattedDailyChange}`
+        : dailyChangeDecimal.lt(0)
+          ? `-${formattedDailyChange}`
+          : formattedDailyChange
+      : null;
+  const dailyChangePercentValue =
+    dailyChangeDecimal && totalValueDecimal && !totalValueDecimal.eq(0)
+      ? Number(dailyChangeDecimal.div(totalValueDecimal).toString())
+      : null;
+  const dailyChangePercentLabel =
+    dailyChangePercentValue !== null
+      ? new Intl.NumberFormat("pl-PL", {
+          style: "percent",
+          maximumFractionDigits: 2,
+        }).format(dailyChangePercentValue)
+      : null;
+  const dailyChangePercentSigned =
+    dailyChangePercentValue !== null && dailyChangePercentValue > 0
+      ? `+${dailyChangePercentLabel}`
+      : dailyChangePercentLabel;
+  const dailyChangeCombined =
+    dailyChangeLabel && dailyChangePercentSigned
+      ? `${dailyChangeLabel} (${dailyChangePercentSigned})`
+      : dailyChangeLabel;
+  const dailyChangeTone =
+    dailyChangeDecimal && dailyChangeDecimal.gt(0)
+      ? "text-emerald-700"
+      : dailyChangeDecimal
+        ? "text-rose-600"
+        : "text-muted-foreground";
 
   useEffect(() => {
     if (prefersReducedMotion || targetAmount === null || !Number.isFinite(targetAmount)) {
@@ -96,22 +138,6 @@ export function PortfolioNetValueHero({
 
   const { amount: totalValueAmount, currency: totalValueCurrency } =
     splitCurrencyLabel(animatedTotalLabel);
-  const quoteAsOfLabel = asOf
-    ? new Intl.DateTimeFormat("pl-PL", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(asOf))
-    : null;
-  const fxAsOfLabel = asOf
-    ? new Intl.DateTimeFormat("pl-PL", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }).format(new Date(asOf))
-    : null;
 
   return (
     <section className="rounded-lg border border-border/85 bg-card px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
@@ -122,28 +148,29 @@ export function PortfolioNetValueHero({
         Wartość netto
       </div>
       <LazyMotion features={domAnimation}>
-        <m.div
-          className="mb-5 mt-1 font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-        >
-          <span>{totalValueAmount}</span>
-          {totalValueCurrency ? (
-            <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
-              {totalValueCurrency}
-            </span>
+        <div className="mb-5 mt-1 flex flex-wrap items-end gap-3">
+          <m.div
+            className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+          >
+            <span>{totalValueAmount}</span>
+            {totalValueCurrency ? (
+              <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
+                {totalValueCurrency}
+              </span>
+            ) : null}
+          </m.div>
+          {dailyChangeCombined ? (
+            <div
+              className={cn("pb-0.5 font-mono text-sm tabular-nums", dailyChangeTone)}
+            >
+              {dailyChangeCombined}
+            </div>
           ) : null}
-        </m.div>
+        </div>
       </LazyMotion>
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge className="rounded-md px-2 py-0.5 text-[11px]" variant="stamp">
-          Notowania z {quoteAsOfLabel ?? "—"}
-        </Badge>
-        <Badge className="rounded-md px-2 py-0.5 text-[11px]" variant="stamp">
-          Kurs FX z dnia {fxAsOfLabel ?? "—"}
-        </Badge>
-      </div>
       {isPartial ? (
         <p className="mt-2 font-sans text-[13px] text-muted-foreground">
           Częściowa wycena: część instrumentów nie ma aktualnych notowań lub FX.

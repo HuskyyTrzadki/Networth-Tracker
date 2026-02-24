@@ -144,7 +144,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard renders `Ostatnie transakcje` below `Alokacja i pozycje`, reusing the transactions table view and fetching newest rows (`date_desc`) with portfolio scope.
 - Portfolio page header adds small context eyebrow (`Dashboard`) and uses centered max-width layout for cleaner visual rhythm on large screens.
 - Dashboard content starts with a dedicated net-value hero (`Portfel: ...` + `Wartość netto`) rendered from `summary.totalValueBase` in the selected portfolio base currency.
-- Net-value hero and chart header expose valuation freshness badges (`Notowania z ...`, `Kurs FX z dnia ...`) using `summary/liveTotals.asOf`.
+- Net-value hero shows dzienna zmiana wartości (suma `todayChangeBase` z wyceny) obok kwoty głównej, z zielonym/czerwonym kolorem dla dodatnich/ujemnych zmian.
 - Dashboard shows a dedicated partial-valuation warning banner when quotes/FX are missing, with explicit counts (`missingQuotes`, `missingFx`).
 - Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.
 - Net value hero and allocation/holdings widget use stronger typographic rhythm (monospace net value, cleaner heading/label contrast, calmer warning tones) without changing valuation logic.
@@ -186,9 +186,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Allocation `Mapa` now uses a light "tinted paper" palette (pastel green/rose/white by `todayChangePercent`, size = portfolio weight) with centered mono labels and beige background gaps so it integrates with the editorial light shell.
 - Treemap polish follow-up tightened hierarchy and anchoring: ticker/share/change labels now render centered with stronger IBM Plex Mono scale, change labels include directional arrows (`↑`/`↓`/`→`), floating category header strips are removed (`upperLabel` height forced to `0`), tooltip fallbacks prevent `undefined/NaN%` states, and beige separators are enforced at each treemap depth to avoid white seams.
 - Allocation mode now gates `Mapa` for larger datasets only (`assets > 4`); smaller sets fall back to `Słupki` by default while keeping `Tabela` available.
-- Portfolio net-value hero now uses explicit typography split (sans labels + mono value) and `Badge` `stamp` freshness chips (`Notowania z...`, `Kurs FX z dnia...`) with calmer metadata contrast.
+- Portfolio net-value hero now uses explicit typography split (sans labels + mono value) with a compact daily-change label placed next to the main amount.
 - Portfolio hero/widget surfaces adopt shared light-theme depth token (`--surface-shadow`) for subtle paper-card lift without heavy decorative shadows.
-- Freshness badges remain only in the net-value hero; value/performance chart header no longer duplicates `Notowania z...` / `Kurs FX...` metadata.
+- Freshness badges (`Notowania z...`, `Kurs FX...`) are no longer shown in the hero or chart header.
 - Value comparison chart now renders as an area chart (thicker primary stroke + subtle gradient fill under `Wartość portfela`) to anchor trend perception.
 - Allocation module now prioritizes high-variance portfolios with `Mapa` (hierarchical treemap by category) and `Słupki` (ranked horizontal share bars), while `Tabela` stays as the precision ledger view.
 - Treemap groups assets by category (`Nieruchomości` / `Akcje` / `Lokaty i Obligacje` / `Gotówka` / `Inne`) so concentration is visible at category and instrument level in one view.

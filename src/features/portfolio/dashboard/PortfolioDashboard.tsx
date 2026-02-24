@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
 import { AnimatedReveal } from "@/features/design-system";
 import { Alert } from "@/features/design-system/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
@@ -39,6 +40,22 @@ type Props = Readonly<{
   className?: string;
 }>;
 
+const resolveDailyChangeBase = (
+  holdings: readonly { todayChangeBase?: string | null }[]
+) => {
+  let total = decimalZero();
+  let hasChange = false;
+
+  holdings.forEach((holding) => {
+    const parsed = parseDecimalString(holding.todayChangeBase);
+    if (!parsed) return;
+    total = addDecimals(total, parsed);
+    hasChange = true;
+  });
+
+  return hasChange ? total.toString() : null;
+};
+
 export function PortfolioDashboard({
   portfolios,
   selectedPortfolioId,
@@ -59,6 +76,7 @@ export function PortfolioDashboard({
   const portfolioLabel = selectedPortfolioId
     ? `Portfel: ${selectedPortfolioName}`
     : "Portfel: Wszystkie portfele";
+  const dailyChangeBase = resolveDailyChangeBase(summary.holdings);
 
   return (
     <div className={cn("mx-auto w-full max-w-7xl space-y-6", className)}>
@@ -67,8 +85,8 @@ export function PortfolioDashboard({
           portfolioLabel={portfolioLabel}
           baseCurrency={summary.baseCurrency}
           totalValueBase={summary.totalValueBase}
+          dailyChangeBase={dailyChangeBase}
           isPartial={summary.isPartial}
-          asOf={summary.asOf}
         />
       </AnimatedReveal>
       {summary.isPartial ? (
