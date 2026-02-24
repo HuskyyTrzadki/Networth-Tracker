@@ -3,7 +3,7 @@ import type { SnapshotChartRow } from "../../server/snapshots/types";
 import type { PerformanceInputRow } from "./twr";
 
 export type ChartMode = "VALUE" | "PERFORMANCE";
-export type ChartRange = "1D" | "7D" | "1M" | "3M" | "YTD" | "1Y" | "ALL";
+export type ChartRange = "7D" | "1M" | "3M" | "YTD" | "1Y" | "ALL";
 
 export type RangeOption = Readonly<{
   value: ChartRange;
@@ -27,7 +27,6 @@ export type ComparisonChartPoint = Readonly<{
 }>;
 
 export const rangeOptions: readonly RangeOption[] = [
-  { value: "1D", label: "1D" },
   { value: "7D", label: "7D" },
   { value: "1M", label: "1M" },
   { value: "3M", label: "3M" },
@@ -47,7 +46,6 @@ const dayDiff = (later: Date, earlier: Date) =>
 const MAX_PREVIOUS_ROW_GAP_DAYS = 7;
 
 const rangeLengthDays: Record<ChartRange, number> = {
-  "1D": 1,
   "7D": 7,
   "1M": 30,
   "3M": 90,

@@ -101,27 +101,27 @@ describe("toInvestedCapitalSeries", () => {
   it("keeps absolute invested-capital baseline when chart is sliced to a shorter range", () => {
     const rows = [
       row({
-        bucketDate: "2026-01-01",
+        bucketDate: "2025-12-01",
         netExternalCashflowPln: 1000,
         netImplicitTransferPln: 0,
       }),
       row({
-        bucketDate: "2026-01-02",
+        bucketDate: "2025-12-02",
         netExternalCashflowPln: 0,
         netImplicitTransferPln: 0,
       }),
       row({
-        bucketDate: "2026-01-03",
+        bucketDate: "2026-01-12",
         netExternalCashflowPln: 0,
         netImplicitTransferPln: 0,
       }),
     ];
 
     const fullSeries = toInvestedCapitalSeries(rows, "PLN");
-    const rangeRows = getRangeRows(rows, "1D").rows;
+    const rangeRows = getRangeRows(rows, "7D").rows;
 
     expect(projectSeriesToRows(rangeRows, fullSeries)).toEqual([
-      { label: "2026-01-03", value: 1000 },
+      { label: "2026-01-12", value: 1000 },
     ]);
   });
 });

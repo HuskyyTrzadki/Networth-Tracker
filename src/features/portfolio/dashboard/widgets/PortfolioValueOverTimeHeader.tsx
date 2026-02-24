@@ -174,7 +174,7 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        {mode === "PERFORMANCE" && range !== "1D" && comparisonOptions.length > 0 ? (
+        {mode === "PERFORMANCE" && comparisonOptions.length > 0 ? (
           <div className="space-y-1.5">
             <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
               Porównania

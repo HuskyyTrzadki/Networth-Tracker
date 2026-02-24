@@ -166,27 +166,6 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     (entry) => entry.value !== null && entry.isPartial
   );
 
-  const valuedRowsForSummary = rangeMeta.rowsForReturns.filter(
-    (row) => getTotalValue(row, currency) !== null
-  );
-  const latestValue = valuedRowsForSummary.length
-    ? getTotalValue(valuedRowsForSummary[valuedRowsForSummary.length - 1], currency)
-    : null;
-  const previousValue = valuedRowsForSummary.length > 1
-    ? getTotalValue(valuedRowsForSummary[valuedRowsForSummary.length - 2], currency)
-    : null;
-
-  const dailyDelta =
-    latestValue !== null && previousValue !== null
-      ? latestValue - previousValue
-      : null;
-  const dailyDeltaPercent =
-    dailyDelta !== null && previousValue && previousValue !== 0
-      ? dailyDelta / previousValue
-      : null;
-
-  const dailyReturn = dailyReturns[dailyReturns.length - 1] ?? null;
-  const dailyReturnValue = dailyReturn?.value ?? null;
   const latestPerformanceValue =
     [...performanceRows].reverse().find((row) => row.totalValue !== null)?.totalValue ??
     null;
@@ -225,8 +204,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
 
     const optionRangeMeta = getRangeRows(rowsWithLiveAnchor, option);
     if (mode === "VALUE") {
-      const valueRows = option === "1D" ? optionRangeMeta.rowsForReturns : optionRangeMeta.rows;
-      const count = valueRows.filter(
+      const count = optionRangeMeta.rows.filter(
         (row) => getTotalValue(row, currency) !== null
       ).length;
       const minRequired = option === "ALL" ? 1 : 2;
@@ -268,11 +246,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     hasPerformanceData,
     hasValuePoints,
     performancePartial,
-    latestValue,
-    dailyDelta,
-    dailyDeltaPercent,
     nominalPeriodReturn,
-    dailyReturnValue,
     selectedPeriodAbsoluteChange,
     selectedPeriodPerformanceAbsoluteChange,
     selectedPeriodChangePercent,

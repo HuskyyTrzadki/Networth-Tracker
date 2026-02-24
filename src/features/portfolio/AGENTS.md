@@ -21,8 +21,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeChart.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeHeader.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.tsx`
-- `src/features/portfolio/dashboard/widgets/PortfolioValueDailySummaryCard.tsx`
-- `src/features/portfolio/dashboard/widgets/PortfolioPerformanceDailySummaryCard.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/CurrencyExposureWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/currency-exposure-view-model.ts`
@@ -95,8 +93,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Snapshoty dzienne (PLN/USD/EUR) są liczone backendowo i używane do wykresu wartości, zainwestowanego kapitału i performance (TWR).
 - Snapshoty zawierają przepływy: external cashflow (DEPOSIT/WITHDRAWAL) + implicit transfer (asset bez cash legs).
 - TWR liczy zwrot dzienny: (V_D - CF_D - V_{D-1}) / V_{D-1}, z restartem serii przy brakach.
-- W trybie wartości dla zakresów >1D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
-- Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >1D.
+- W trybie wartości dla zakresów >=7D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
+- Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >=7D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
@@ -107,12 +105,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `Alokacja i pozycje` in `Mapa` mode exposes `Powiększ mapę` action (Lucide maximize icon) that opens a large dialog with treemap rendered on expanded height for detailed inspection.
 - W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje osobny donut z kategoriami.
 - Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
-- W trybie performance dla zakresów >1D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
+- W trybie performance dla zakresów >=7D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.
 - Paleta linii porównań jest rozdzielona tak, aby nie mylić bazowej linii zwrotu z inflacją (większy kontrast kolorów między seriami).
 - Benchmarki są przygotowywane po stronie serwera i przeliczane do waluty aktywnej zakładki (PLN/USD/EUR) z użyciem dziennych kursów FX (as-of, cache-first).
 - Benchmark overlay jest ładowany leniwie po zaznaczeniu checkboxa i tylko dla wybranego benchmarku + aktywnego zakresu dat (API `/api/benchmarks/series`), aby nie spowalniać bazowego renderu dashboardu.
-- Zakres 1D pokazuje widgety (zmiana dzienna / zwrot dzienny) zamiast pełnych wykresów.
+- Najkrótszy zakres historii to `7D`; 1D nie jest pokazywane, bo nie mamy intraday danych do sensownego wykresu.
 - Zakres `ALL` czyta pełną historię snapshotów (bez limitu 730 dni).
 - Zainwestowany kapitał liczymy jako kumulację: `net_external_cashflow + net_implicit_transfer`.
 - Gdy flow snapshot ma luki (`null`), linia zainwestowanego kapitału przerywa się i nie domyślamy brakujących wartości.
@@ -134,7 +132,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Legacy `/portfolio?portfolio=<id>` links are backward-compatible and redirected to canonical `/portfolio/<id>`.
 - Nagłówek wykresu ma kompaktowy przełącznik waluty (PLN/USD/EUR) w jednym rzędzie z trybem i zakresem.
 - Tryb performance eksponuje główną metrykę jako duży zwrot procentowy + mniejszą kwotę bezwzględną liczoną jako `wartość końcowa zakresu * zwrot %` (cashflow-adjusted), a nie prostą różnicę `koniec - start`.
-- Tryb wartości dla zakresów >1D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
+- Tryb wartości dla zakresów >=7D eksponuje główną metrykę `Zmiana za okres` (kwota + procent) nad wykresem wartości/zainwestowanego kapitału.
 - Dla historii z jednym punktem domyślny zakres wykresu to `ALL` (zamiast disabled `YTD`), a `Zmiana za okres` pozostaje pusta (`—`) do czasu pojawienia się co najmniej 2 punktów.
 - Nagłówek wykresu pokazuje też komunikat o skróconej historii, gdy dane są chwilowo obcięte i pełny zakres `ALL` nie jest jeszcze dociągnięty.
 - Tabela `Pozycje` używa nagłówków kolumn z walutą bazową i pokazuje liczby bez powtarzania symbolu waluty w każdym wierszu.
@@ -144,6 +142,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard renders `Ostatnie transakcje` below `Alokacja i pozycje`, reusing the transactions table view and fetching newest rows (`date_desc`) with portfolio scope.
 - Portfolio page header adds small context eyebrow (`Dashboard`) and uses centered max-width layout for cleaner visual rhythm on large screens.
 - Dashboard content starts with a dedicated net-value hero (`Portfel: ...` + `Wartość netto`) rendered from `summary.totalValueBase` in the selected portfolio base currency.
+- Hero stays live (cached quotes/FX) while the value/performance chart remains snapshot-based history.
 - Net-value hero shows dzienna zmiana wartości (suma `todayChangeBase` z wyceny) obok kwoty głównej, z zielonym/czerwonym kolorem dla dodatnich/ujemnych zmian.
 - Dashboard shows a dedicated partial-valuation warning banner when quotes/FX are missing, with explicit counts (`missingQuotes`, `missingFx`).
 - Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.

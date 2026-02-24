@@ -9,7 +9,6 @@ import { splitCurrencyLabel } from "@/lib/format-currency";
 import type { ChartRange } from "../lib/chart-helpers";
 import { formatPercent } from "../lib/chart-helpers";
 import { PortfolioSnapshotRebuildChartLoader } from "./PortfolioSnapshotRebuildChartLoader";
-import { PortfolioPerformanceDailySummaryCard } from "./PortfolioPerformanceDailySummaryCard";
 import {
   getPortfolioChartEmptyStateClassName,
   SHARED_PORTFOLIO_CHART_HEIGHT,
@@ -55,7 +54,6 @@ type Props = Readonly<{
   range: ChartRange;
   selectedPeriodReturn: number | null;
   selectedPeriodPerformanceAbsoluteChange: number | null;
-  dailyReturnValue: number | null;
   cumulativeChartData: readonly Point[];
   comparisonLines: readonly ComparisonLine[];
   formatCurrencyValue: (value: number) => string;
@@ -94,7 +92,6 @@ export function PortfolioPerformanceModeContent({
   range,
   selectedPeriodReturn,
   selectedPeriodPerformanceAbsoluteChange,
-  dailyReturnValue,
   cumulativeChartData,
   comparisonLines,
   formatCurrencyValue,
@@ -151,16 +148,6 @@ export function PortfolioPerformanceModeContent({
           </div>
         ) : null}
       </div>
-    );
-  }
-
-  if (range === "1D") {
-    return (
-      <PortfolioPerformanceDailySummaryCard
-        absoluteChange={selectedPeriodPerformanceAbsoluteChange}
-        dailyReturnValue={dailyReturnValue}
-        formatCurrencyValue={formatCurrencyValue}
-      />
     );
   }
 

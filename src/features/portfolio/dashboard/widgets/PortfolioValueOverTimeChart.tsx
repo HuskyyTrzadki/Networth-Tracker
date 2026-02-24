@@ -177,12 +177,7 @@ function PortfolioValueOverTimeChartContent({
   formatCurrencyValue: (value: number) => string;
 }>) {
   return (
-    <div
-      className={cn(
-        "space-y-4",
-        range === "1D" ? "" : SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS
-      )}
-    >
+    <div className={cn("space-y-4", SHARED_PORTFOLIO_WIDGET_MIN_HEIGHT_CLASS)}>
       <PortfolioValueOverTimeHeader
         mode={mode}
         onModeChange={onModeChange}
@@ -215,10 +210,6 @@ function PortfolioValueOverTimeChartContent({
           shouldBootstrap={shouldBootstrap}
           hasValuePoints={viewModel.hasValuePoints}
           range={range}
-          currency={currency}
-          latestValue={viewModel.latestValue}
-          dailyDelta={viewModel.dailyDelta}
-          dailyDeltaPercent={viewModel.dailyDeltaPercent}
           selectedPeriodAbsoluteChange={viewModel.selectedPeriodAbsoluteChange}
           selectedPeriodChangePercent={viewModel.selectedPeriodChangePercent}
           comparisonChartData={viewModel.comparisonChartData}
@@ -244,7 +235,6 @@ function PortfolioValueOverTimeChartContent({
           selectedPeriodPerformanceAbsoluteChange={
             viewModel.selectedPeriodPerformanceAbsoluteChange
           }
-          dailyReturnValue={viewModel.dailyReturnValue}
           cumulativeChartData={viewModel.cumulativeChartData}
           comparisonLines={viewModel.activeComparisonLines}
           formatCurrencyValue={formatCurrencyValue}

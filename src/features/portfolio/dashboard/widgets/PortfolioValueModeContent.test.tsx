@@ -8,7 +8,7 @@ vi.mock("@/features/design-system/components/PortfolioComparisonChart", () => ({
 }));
 
 describe("PortfolioValueModeContent", () => {
-  it("shows period summary for non-1D range", async () => {
+  it("shows period summary for historical range", async () => {
     render(
       <PortfolioValueModeContent
         rebuildStatus="idle"
@@ -19,10 +19,6 @@ describe("PortfolioValueModeContent", () => {
         shouldBootstrap={false}
         hasValuePoints
         range="YTD"
-        currency="PLN"
-        latestValue={1200}
-        dailyDelta={50}
-        dailyDeltaPercent={0.04}
         selectedPeriodAbsoluteChange={200}
         selectedPeriodChangePercent={0.2}
         comparisonChartData={[]}

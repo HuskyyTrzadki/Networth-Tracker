@@ -6,12 +6,10 @@ import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
 import { splitCurrencyLabel } from "@/lib/format-currency";
 
-import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { ComparisonChartPoint, NullableSeriesPoint } from "../lib/chart-helpers";
 import type { ChartRange } from "../lib/chart-helpers";
 import { formatPercent } from "../lib/chart-helpers";
 import { PortfolioSnapshotRebuildChartLoader } from "./PortfolioSnapshotRebuildChartLoader";
-import { PortfolioValueDailySummaryCard } from "./PortfolioValueDailySummaryCard";
 import {
   getPortfolioChartEmptyStateClassName,
   SHARED_PORTFOLIO_CHART_HEIGHT,
@@ -42,10 +40,6 @@ type Props = Readonly<{
   shouldBootstrap: boolean;
   hasValuePoints: boolean;
   range: ChartRange;
-  currency: SnapshotCurrency;
-  latestValue: number | null;
-  dailyDelta: number | null;
-  dailyDeltaPercent: number | null;
   selectedPeriodAbsoluteChange: number | null;
   selectedPeriodChangePercent: number | null;
   comparisonChartData: readonly ComparisonChartPoint[];
@@ -85,10 +79,6 @@ export function PortfolioValueModeContent({
   shouldBootstrap,
   hasValuePoints,
   range,
-  currency,
-  latestValue,
-  dailyDelta,
-  dailyDeltaPercent,
   selectedPeriodAbsoluteChange,
   selectedPeriodChangePercent,
   comparisonChartData,
@@ -146,17 +136,6 @@ export function PortfolioValueModeContent({
           </div>
         ) : null}
       </div>
-    );
-  }
-
-  if (range === "1D") {
-    return (
-      <PortfolioValueDailySummaryCard
-        currency={currency}
-        latestValue={latestValue}
-        dailyDelta={dailyDelta}
-        dailyDeltaPercent={dailyDeltaPercent}
-      />
     );
   }
 
