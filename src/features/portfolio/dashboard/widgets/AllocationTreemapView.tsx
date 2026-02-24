@@ -28,13 +28,17 @@ type TreemapNode = Readonly<{
   valueLabel: string;
   dayChangePercent: number | null;
   dayChangeLabel: string;
-  labelMode: "NONE" | "NAME" | "NAME_SHARE" | "FULL";
+  labelMode: "NONE" | "NAME_CHANGE";
   labelScale: "XS" | "SM" | "MD" | "LG";
   leafTone: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
   showIcon: boolean;
   iconRichKey?: string;
   iconImageUrl?: string;
   isLeaf: boolean;
+  silent?: boolean;
+  tooltip?: Readonly<{
+    show?: boolean;
+  }>;
   itemStyle?: Readonly<{
     color: string;
     borderColor?: string;
@@ -59,29 +63,28 @@ const toNumberValue = (value: string) => {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 };
 
-const formatSignedPercent = (value: number | null) => {
-  if (value === null || Math.abs(value) < 0.0001) {
-    return "0,00%";
-  }
-
+const formatSignedPercent = (value: number | null, digits = 2) => {
   const absolute = new Intl.NumberFormat("pl-PL", {
     style: "percent",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(value));
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(Math.abs(value ?? 0));
+
+  if (value === null || Math.abs(value) < 0.0001) {
+    return absolute;
+  }
+
   return value > 0 ? `+${absolute}` : `-${absolute}`;
 };
 
-const formatDirectionalChange = (value: number | null) => {
+const formatDirectionalChange = (value: number | null, digits = 2) => {
   const arrow =
     value === null || Math.abs(value) < 0.0001 ? "→" : value > 0 ? "↑" : "↓";
-  return `${arrow} ${formatSignedPercent(value)}`;
+  return `${arrow} ${formatSignedPercent(value, digits)}`;
 };
 
 const resolveLabelMode = (share: number): TreemapNode["labelMode"] => {
-  if (share >= 0.03) return "FULL";
-  if (share >= 0.015) return "NAME_SHARE";
-  if (share >= 0.005) return "NAME";
+  if (share >= 0.004) return "NAME_CHANGE";
   return "NONE";
 };
 
@@ -96,15 +99,10 @@ const formatLeafLabel = (data: TreemapNode) => {
         : "Neutral";
   const iconToken = data.showIcon && data.iconRichKey ? `{${data.iconRichKey}|}` : "";
   const tickerToken = `{ticker${scale}${toneSuffix}|${data.name.toUpperCase()}}`;
-  const shareToken = `{share${scale}${toneSuffix}|${data.shareLabel}}`;
   const changeToken = `{change${scale}${toneSuffix}|${data.dayChangeLabel}}`;
   const iconLinePrefix = iconToken.length > 0 ? `${iconToken} ` : "";
 
-  if (data.labelMode === "NAME") return `${iconLinePrefix}${tickerToken}`;
-  if (data.labelMode === "NAME_SHARE") {
-    return `${iconLinePrefix}${tickerToken}\n${shareToken}`;
-  }
-  return `${iconLinePrefix}${tickerToken}\n${shareToken}\n${changeToken}`;
+  return `${iconLinePrefix}${tickerToken}\n${changeToken}`;
 };
 
 const pageBackgroundBeige = "var(--muted)";
@@ -112,13 +110,10 @@ const categoryHeaderTint = "var(--muted)";
 
 const positiveLeafFill = "color-mix(in srgb, var(--profit) 22%, var(--card) 78%)";
 const positiveLeafInk = "var(--foreground)";
-const positiveLeafInkMuted = "var(--muted-foreground)";
 const negativeLeafFill = "color-mix(in srgb, var(--loss) 22%, var(--card) 78%)";
 const negativeLeafInk = "var(--foreground)";
-const negativeLeafInkMuted = "var(--muted-foreground)";
 const neutralLeafFill = "var(--card)";
 const neutralLeafInk = "var(--foreground)";
-const neutralLeafInkMuted = "var(--muted-foreground)";
 const treemapBorderColor = "var(--background)";
 const treemapGap = 2;
 const treemapBorderWidth = 2;
@@ -145,9 +140,9 @@ const resolveLeafTone = (
 };
 
 const resolveLabelScale = (share: number): TreemapNode["labelScale"] => {
-  if (share >= 0.12) return "LG";
-  if (share >= 0.04) return "MD";
-  if (share >= 0.015) return "SM";
+  if (share >= 0.2) return "LG";
+  if (share >= 0.08) return "MD";
+  if (share >= 0.03) return "SM";
   return "XS";
 };
 
@@ -210,7 +205,7 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
       if (data.isLeaf === true) {
         const dayChangeLabel =
           typeof data.dayChangeLabel === "string" ? data.dayChangeLabel : "0,00%";
-        return `${data.name}<br/>${shareLabel} • ${valueLabel}<br/>Dzisiaj: ${dayChangeLabel}`;
+        return `${data.name}<br/>${valueLabel}<br/>Udział w portfelu: ${shareLabel}<br/>Dzisiaj: ${dayChangeLabel}`;
       }
 
       return `${data.name}<br/>${shareLabel} • ${valueLabel}`;
@@ -221,6 +216,15 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
       type: "treemap",
       roam: false,
       nodeClick: false,
+      emphasis: {
+        disabled: true,
+      },
+      blur: {
+        disabled: true,
+      },
+      select: {
+        disabled: true,
+      },
       breadcrumb: { show: false },
       visibleMin: 1,
       leafDepth: 2,
@@ -238,7 +242,7 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
         position: "insideTopLeft",
         align: "left",
         verticalAlign: "top",
-        padding: [12, 12, 12, 12],
+        padding: [10, 10, 10, 10],
         fontFamily: "'IBM Plex Mono', monospace",
         fontSize: 18,
         overflow: "truncate",
@@ -266,37 +270,9 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           },
           tickerXSPos: {
             color: positiveLeafInk,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareLGPos: {
-            color: positiveLeafInkMuted,
-            fontSize: 16,
-            fontWeight: 400,
-            lineHeight: 20,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareMDPos: {
-            color: positiveLeafInkMuted,
-            fontSize: 14,
-            fontWeight: 400,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareSMPos: {
-            color: positiveLeafInkMuted,
-            fontSize: 12,
-            fontWeight: 400,
-            lineHeight: 16,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareXSPos: {
-            color: positiveLeafInkMuted,
-            fontSize: 10,
-            fontWeight: 400,
-            lineHeight: 13,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           changeLGPos: {
@@ -315,16 +291,16 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           },
           changeSMPos: {
             color: positiveLeafInk,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 500,
             lineHeight: 16,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           changeXSPos: {
             color: positiveLeafInk,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 500,
-            lineHeight: 13,
+            lineHeight: 14,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerLGNeg: {
@@ -350,37 +326,9 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           },
           tickerXSNeg: {
             color: negativeLeafInk,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareLGNeg: {
-            color: negativeLeafInkMuted,
-            fontSize: 16,
-            fontWeight: 400,
-            lineHeight: 20,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareMDNeg: {
-            color: negativeLeafInkMuted,
-            fontSize: 14,
-            fontWeight: 400,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareSMNeg: {
-            color: negativeLeafInkMuted,
-            fontSize: 12,
-            fontWeight: 400,
-            lineHeight: 16,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareXSNeg: {
-            color: negativeLeafInkMuted,
-            fontSize: 10,
-            fontWeight: 400,
-            lineHeight: 13,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           changeLGNeg: {
@@ -399,16 +347,16 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           },
           changeSMNeg: {
             color: negativeLeafInk,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 500,
             lineHeight: 16,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           changeXSNeg: {
             color: negativeLeafInk,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 500,
-            lineHeight: 13,
+            lineHeight: 14,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           tickerLGNeutral: {
@@ -434,37 +382,9 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           },
           tickerXSNeutral: {
             color: neutralLeafInk,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareLGNeutral: {
-            color: neutralLeafInkMuted,
-            fontSize: 16,
-            fontWeight: 400,
-            lineHeight: 20,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareMDNeutral: {
-            color: neutralLeafInkMuted,
-            fontSize: 14,
-            fontWeight: 400,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareSMNeutral: {
-            color: neutralLeafInkMuted,
-            fontSize: 12,
-            fontWeight: 400,
-            lineHeight: 16,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          shareXSNeutral: {
-            color: neutralLeafInkMuted,
-            fontSize: 10,
-            fontWeight: 400,
-            lineHeight: 13,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           changeLGNeutral: {
@@ -483,16 +403,16 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
           },
           changeSMNeutral: {
             color: neutralLeafInk,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 500,
             lineHeight: 16,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           changeXSNeutral: {
             color: neutralLeafInk,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 500,
-            lineHeight: 13,
+            lineHeight: 14,
             fontFamily: "'IBM Plex Mono', monospace",
           },
           ...buildIconRichStyles(nodes),
@@ -538,7 +458,7 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
             position: "insideTopLeft",
             align: "left",
             verticalAlign: "top",
-            padding: [12, 12, 12, 12],
+            padding: [10, 10, 10, 10],
           },
         },
       ],
@@ -582,12 +502,17 @@ export function AllocationTreemapView({
       borderColor: treemapBorderColor,
       borderWidth: treemapBorderWidth,
     },
+    silent: true,
+    tooltip: {
+      show: false,
+    },
     children: category.assets.map((asset) => {
       const leafTone = resolveLeafTone(asset.todayChangePercent);
       const iconRichKey = asset.isCurrencyCash ? cashIconRichKey : undefined;
       const labelMode = resolveLabelMode(asset.share);
       const labelScale = resolveLabelScale(asset.share);
-      const showIcon = labelMode === "FULL";
+      const changeDigits = labelScale === "XS" ? 1 : 2;
+      const showIcon = labelMode === "NAME_CHANGE";
 
       return {
         id: asset.id,
@@ -601,7 +526,7 @@ export function AllocationTreemapView({
               `${asset.valueBase} ${baseCurrency}`
             : `${asset.valueBase} ${baseCurrency}`,
         dayChangePercent: asset.todayChangePercent,
-        dayChangeLabel: formatDirectionalChange(asset.todayChangePercent),
+        dayChangeLabel: formatDirectionalChange(asset.todayChangePercent, changeDigits),
         labelMode,
         labelScale,
         leafTone,
