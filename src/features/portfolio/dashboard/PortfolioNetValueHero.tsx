@@ -77,9 +77,9 @@ export function PortfolioNetValueHero({
       : dailyChangeLabel;
   const dailyChangeTone =
     dailyChangeDecimal && dailyChangeDecimal.gt(0)
-      ? "text-emerald-700"
-      : dailyChangeDecimal
-        ? "text-rose-600"
+      ? "text-[color:var(--profit)]"
+    : dailyChangeDecimal
+        ? "text-[color:var(--loss)]"
         : "text-muted-foreground";
 
   useEffect(() => {
@@ -140,7 +140,7 @@ export function PortfolioNetValueHero({
     splitCurrencyLabel(animatedTotalLabel);
 
   return (
-    <section className="rounded-lg border border-border/85 bg-card px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
+    <section className="rounded-lg border border-border/72 bg-card px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
       <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
         {portfolioLabel}
       </div>

@@ -48,7 +48,7 @@ const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
 const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
 const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
 const LEDGER_TOGGLE_GROUP_CLASS =
-  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/70 bg-muted/35 p-1";
+  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/60 bg-muted/28 p-1";
 const LEDGER_TOGGLE_ITEM_CLASS = "h-8 px-3 font-sans text-xs";
 
 export function PortfolioValueOverTimeHeader({
@@ -148,7 +148,7 @@ export function PortfolioValueOverTimeHeader({
                 onCurrencyChange(value);
               }
             }}
-            className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-muted/35 p-1"
+            className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/28 p-1"
           >
             <ToggleGroupItem
               className="h-8 px-2.5 text-xs"
@@ -201,7 +201,7 @@ export function PortfolioValueOverTimeHeader({
                       <label
                         key={option.id}
                         className={cn(
-                          "flex cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/50",
+                          "flex cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/35",
                           checked ? "text-foreground" : ""
                         )}
                       >

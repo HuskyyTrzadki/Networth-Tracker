@@ -108,9 +108,9 @@ const formatLeafLabel = (data: TreemapNode) => {
 const pageBackgroundBeige = "var(--muted)";
 const categoryHeaderTint = "var(--muted)";
 
-const positiveLeafFill = "color-mix(in srgb, var(--profit) 22%, var(--card) 78%)";
+const positiveLeafFill = "color-mix(in srgb, var(--profit) 16%, var(--card) 84%)";
 const positiveLeafInk = "var(--foreground)";
-const negativeLeafFill = "color-mix(in srgb, var(--loss) 22%, var(--card) 78%)";
+const negativeLeafFill = "color-mix(in srgb, var(--loss) 16%, var(--card) 84%)";
 const negativeLeafInk = "var(--foreground)";
 const neutralLeafFill = "var(--card)";
 const neutralLeafInk = "var(--foreground)";

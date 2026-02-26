@@ -23,7 +23,7 @@ export function ChartCard({
       className={cn(
         cardVariants({ surface: surface === "default" ? "default" : "subtle" }),
         "transition-colors duration-150",
-        "hover:border-border",
+        "hover:border-border/80",
         className
       )}
     >

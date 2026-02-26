@@ -3,9 +3,9 @@ import type { Transition, Variants } from "framer-motion";
 export const MOTION_EASE: [number, number, number, number] = [0.25, 1, 0.5, 1];
 
 export const MOTION_DURATION = {
-  micro: 0.15,
-  enter: 0.2,
-  panel: 0.22,
+  micro: 0.13,
+  enter: 0.18,
+  panel: 0.2,
 } as const;
 
 export const MOTION_TRANSITION: Transition = {
@@ -21,7 +21,7 @@ export const fadeIn: Variants = {
   },
 };
 
-export const createFadeInUp = (y = 10): Variants => ({
+export const createFadeInUp = (y = 8): Variants => ({
   hidden: { opacity: 0, y },
   visible: {
     opacity: 1,
@@ -34,8 +34,8 @@ export const staggerContainer: Variants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.02,
+      staggerChildren: 0.04,
+      delayChildren: 0.015,
     },
   },
 };
