@@ -37,7 +37,7 @@ export function HistoricalPriceAssistHint({
   return (
     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
       {hint.warning ? (
-        <p className={cn(isFilled && "text-amber-600")}>{hint.warning}</p>
+        <p className={cn(isFilled && "text-[color:var(--chart-3)]")}>{hint.warning}</p>
       ) : null}
     </div>
   );

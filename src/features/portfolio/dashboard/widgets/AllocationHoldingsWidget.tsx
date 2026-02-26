@@ -76,7 +76,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
     : concentrationWarning?.severity === "HARD"
         ? "border-l-[color:var(--loss)] bg-destructive/12 text-[color:var(--loss)]"
         : concentrationWarning
-          ? "border-l-amber-700 bg-amber-100/65 text-amber-800 dark:border-l-amber-400 dark:bg-amber-500/10 dark:text-amber-200"
+          ? "border-l-[color:var(--chart-3)] bg-muted/24 text-[color:var(--chart-3)]"
           : "";
 
   const totalLabel =

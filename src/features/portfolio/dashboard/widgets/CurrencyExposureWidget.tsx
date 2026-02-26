@@ -35,7 +35,7 @@ const BAR_COLORS = [
   "bg-[var(--chart-3)]",
   "bg-[var(--chart-4)]",
   "bg-[var(--chart-5)]",
-  "bg-amber-500",
+  "bg-[var(--chart-3)]",
   "bg-muted-foreground",
 ] as const;
 
@@ -241,7 +241,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span>Ekspozycja walutowa</span>
           <ToggleGroup
-            className="rounded-md border border-border/70 bg-muted/35 p-1"
+            className="rounded-md border border-border/60 bg-muted/28 p-1"
             type="single"
             value={mode}
             onValueChange={(value) => {
