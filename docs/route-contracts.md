@@ -50,6 +50,8 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/api/transactions/cash-balance-on-date` | `private-no-store-api` | User cash balance lookup. |
 | `/api/instruments/search` | `private-no-store-api` | App-auth scoped instrument search flow. |
 | `/api/instruments/price-on-date` | `private-no-store-api` | Authenticated historical price helper. |
+| `/api/onboarding/screenshot/parse` | `private-no-store-api` | Authenticated screenshot OCR parsing. |
+| `/api/onboarding/screenshot/commit` | `private-no-store-api` | Authenticated screenshot import commit (portfolio + transactions). |
 | `/api/dividends/inbox` | `private-no-store-api` | Authenticated dividend inbox (past + upcoming signals, scoped by portfolio/all). |
 | `/api/dividends/book` | `private-no-store-api` | Authenticated dividend booking write (single-portfolio, idempotent by event key). |
 | `/api/portfolio/currency-exposure/economic` | `private-no-store-api` | Authenticated economic FX analyzer; deterministic per-asset splits with user-scoped cache. |

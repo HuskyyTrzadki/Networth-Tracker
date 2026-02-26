@@ -55,6 +55,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server query: `src/features/transactions/server/list-transactions.ts`
 - Server filters: `src/features/transactions/server/filters.ts`
 - Server helper: `src/features/transactions/server/resolve-portfolio-selection.ts`
+- Cache invalidation helper: `src/features/transactions/server/revalidate-transaction-views.ts`
 - API schema: `src/features/transactions/server/schema.ts`
 - FX preview API: `src/app/api/transactions/fx-preview/route.ts`
 - Cash balance as-of API: `src/app/api/transactions/cash-balance-on-date/route.ts`
@@ -111,6 +112,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `InstrumentCombobox` supports reusable presentation overrides (`emptyLabel`, `queryPlaceholder`, `triggerClassName`) so other features can reuse search behavior without duplicating async logic.
 - Yahoo search debug logs are disabled by default and can be enabled with `DEBUG_YAHOO_SEARCH=1` (non-production only).
 - Add-transaction modal shows "Dostępne do sprzedaży (na teraz)" hints for selected sell instrument per portfolio.
+- Add-transaction modal shows screenshot-import CTA below portfolio selection with a short explanation; CTA is disabled until a portfolio is selected.
+- Portfolio selector includes a `+ Stwórz nowy portfel` option that opens the create-portfolio dialog inline.
+- Screenshot import inside add-transaction writes holdings into the selected portfolio via `POST /api/transactions/screenshot/commit` (no new portfolio creation).
+- Screenshot review preview fetches USD totals via `POST /api/transactions/screenshot/preview` using cached Yahoo quotes + FX.
 - After successful save in the intercepted portfolio modal route, dialog closes immediately; empty-dashboard refresh/loader is handled by portfolio-side rebuild status UI.
 - Non-portfolio routes still rely on rebuild kickoff + client event flow and do not force a generic full-page refresh.
 - After successful save, modal also triggers rebuild run kickoff (`/api/portfolio-snapshots/rebuild`) + dispatches `portfolio:snapshot-rebuild-triggered` client events for `PORTFOLIO` and `ALL`, so rebuild status/loader starts immediately without manual refresh.

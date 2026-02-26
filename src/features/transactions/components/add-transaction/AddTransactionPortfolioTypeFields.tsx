@@ -1,18 +1,25 @@
 "use client";
 
+import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
+import { Button } from "@/features/design-system/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/features/design-system/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/features/design-system/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
+import { CreatePortfolioDialog } from "@/features/portfolio";
+import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
 
 import type { FormValues } from "../AddTransactionDialogContent";
+
+const CREATE_PORTFOLIO_VALUE = "__create_portfolio__";
 
 export function AddTransactionPortfolioTypeFields({
   form,
@@ -23,6 +30,8 @@ export function AddTransactionPortfolioTypeFields({
   isCustomTab,
   onPortfolioChange,
   onTypeChange,
+  onOpenScreenshot,
+  createPortfolioFn,
 }: Readonly<{
   form: UseFormReturn<FormValues>;
   forcedPortfolioId: string | null;
@@ -32,9 +41,14 @@ export function AddTransactionPortfolioTypeFields({
   isCustomTab: boolean;
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
+  onOpenScreenshot: () => void;
+  createPortfolioFn: (input: CreatePortfolioInput) => Promise<{ id: string }>;
 }>) {
   const fieldLabelClass =
     "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+  const createDialogControls = useRef<{ open: () => void; disabled: boolean } | null>(
+    null
+  );
 
   return (
     <>
@@ -47,6 +61,13 @@ export function AddTransactionPortfolioTypeFields({
             <Select
               disabled={Boolean(forcedPortfolioId) || isEditMode}
               onValueChange={(next) => {
+                if (next === CREATE_PORTFOLIO_VALUE) {
+                  const controls = createDialogControls.current;
+                  if (controls && !controls.disabled) {
+                    controls.open();
+                  }
+                  return;
+                }
                 field.onChange(next);
                 onPortfolioChange(next);
               }}
@@ -63,9 +84,38 @@ export function AddTransactionPortfolioTypeFields({
                     {portfolio.name}
                   </SelectItem>
                 ))}
+                <SelectSeparator />
+                <SelectItem
+                  value={CREATE_PORTFOLIO_VALUE}
+                  className="font-semibold text-primary focus:text-primary"
+                >
+                  + Stwórz nowy portfel
+                </SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
+            {!isEditMode ? (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-muted/20 px-3 py-2.5">
+                <div className="min-w-0 space-y-1">
+                  <p className="text-xs font-medium text-foreground">
+                    Wgraj zrzut ekranu
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Jeśli nie chcesz uzupełniać manualnie, możesz wgrać zrzut ekranu z brokera.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-3"
+                  disabled={Boolean(!forcedPortfolioId && !field.value)}
+                  onClick={onOpenScreenshot}
+                >
+                  Wgraj zrzut ekranu
+                </Button>
+              </div>
+            ) : null}
           </FormItem>
         )}
       />
@@ -114,6 +164,15 @@ export function AddTransactionPortfolioTypeFields({
             <FormMessage />
           </FormItem>
         )}
+      />
+
+      <CreatePortfolioDialog
+        createPortfolioFn={createPortfolioFn}
+        onCreated={() => undefined}
+        trigger={({ open, disabled }) => {
+          createDialogControls.current = { open, disabled };
+          return null;
+        }}
       />
     </>
   );

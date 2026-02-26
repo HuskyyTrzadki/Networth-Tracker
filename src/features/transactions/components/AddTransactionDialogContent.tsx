@@ -1,18 +1,15 @@
 "use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { LoaderCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-
 import { Button } from "@/features/design-system/components/ui/button";
 import { AnimatedReveal } from "@/features/design-system";
 import { DialogClose, DialogDescription, DialogTitle } from "@/features/design-system/components/ui/dialog";
 import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/snapshot-rebuild-events";
 import { Form } from "@/features/design-system/components/ui/form";
 import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
-
 import { createAddTransactionFormSchema, type AssetMode, type TransactionType } from "../lib/add-transaction-form-schema";
 import { DEFAULT_CUSTOM_ASSET_TYPE, type CustomAssetType } from "../lib/custom-asset-types";
 import type { CashflowTypeUi } from "../lib/cashflow-types";
@@ -25,7 +22,6 @@ import type { InstrumentSearchClient } from "../client/search-instruments";
 import { buildSubmitPayloadFields, triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
 import { resolveInitialTab, type AssetTab } from "./add-transaction/constants";
 import { AddTransactionDialogFields } from "./add-transaction/AddTransactionDialogFields";
-
 export type FormValues = Readonly<{
   assetMode: AssetMode;
   type: TransactionType;
@@ -46,7 +42,6 @@ export type FormValues = Readonly<{
   customCurrency?: string;
   customAnnualRatePct?: string;
 }>;
-
 export function AddTransactionDialogContent({
   mode = "create",
   editTransactionId,
@@ -81,6 +76,7 @@ export function AddTransactionDialogContent({
   const schema = createAddTransactionFormSchema();
   const isEditMode = mode === "edit";
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isScreenshotMode, setIsScreenshotMode] = useState(false);
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentSearchResult | null>(initialInstrument ?? null);
   const [activeTab, setActiveTab] = useState<AssetTab>(() =>
@@ -249,7 +245,6 @@ export function AddTransactionDialogContent({
         setIsSubmitting(false);
         return;
       }
-
       triggerRebuildSignals(resolvedPortfolioId);
       dispatchAppToast({
         title: "Transakcja zapisana.",
@@ -282,21 +277,16 @@ export function AddTransactionDialogContent({
         },
       });
     }
-
     onSubmitSuccess?.();
-
     // Close dialog after submit side effects are scheduled.
     onClose({ force: true });
     setIsSubmitting(false);
   });
-
   const rootError = form.formState.errors.root?.message;
   const isDirty = form.formState.isDirty;
-
   useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
-
   useEffect(() => {
     onSubmittingChange?.(isSubmitting);
   }, [isSubmitting, onSubmittingChange]);
@@ -306,7 +296,13 @@ export function AddTransactionDialogContent({
       <AnimatedReveal y={8}>
         <form
           className="flex max-h-[92dvh] flex-col"
-          onSubmit={submitTransaction}
+          onSubmit={(event) => {
+            if (isScreenshotMode) {
+              event.preventDefault();
+              return;
+            }
+            void submitTransaction(event);
+          }}
         >
           <header className="flex items-start justify-between gap-3 border-b border-border/70 bg-background px-5 py-3.5 md:px-6 md:py-4">
             <div className="min-w-0">
@@ -345,40 +341,44 @@ export function AddTransactionDialogContent({
             selectedInstrument={selectedInstrument}
             setActiveTab={setActiveTab}
             setSelectedInstrument={setSelectedInstrument}
+            onScreenshotModeChange={setIsScreenshotMode}
+            onRequestCloseDialog={() => onClose({ force: true })}
           />
 
-          <footer className="sticky bottom-0 z-10 border-t border-border bg-muted/35 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-h-5 text-sm text-destructive">
-                {rootError ?? ""}
+          {!isScreenshotMode ? (
+            <footer className="sticky bottom-0 z-10 border-t border-border bg-muted/35 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-h-5 text-sm text-destructive">
+                  {rootError ?? ""}
+                </div>
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    onClick={() => onClose()}
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                    className="h-10 px-6"
+                  >
+                    Anuluj
+                  </Button>
+                  <Button
+                    disabled={!isSubmittable || isSubmitting}
+                    type="submit"
+                    className="h-10 min-w-32 px-6"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <LoaderCircle className="size-4 animate-spin" aria-hidden />
+                        Zapisywanie...
+                      </>
+                    ) : (
+                      isEditMode ? "Zapisz zmiany" : "Zapisz"
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <Button
-                  onClick={() => onClose()}
-                  type="button"
-                  variant="outline"
-                  disabled={isSubmitting}
-                  className="h-10 px-6"
-                >
-                  Anuluj
-                </Button>
-                <Button
-                  disabled={!isSubmittable || isSubmitting}
-                  type="submit"
-                  className="h-10 min-w-32 px-6"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <LoaderCircle className="size-4 animate-spin" aria-hidden />
-                      Zapisywanie...
-                    </>
-                  ) : (
-                    isEditMode ? "Zapisz zmiany" : "Zapisz"
-                  )}
-                </Button>
-              </div>
-            </div>
-          </footer>
+            </footer>
+          ) : null}
         </form>
       </AnimatedReveal>
     </Form>

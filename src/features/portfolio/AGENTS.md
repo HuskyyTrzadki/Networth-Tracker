@@ -120,7 +120,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio`) and hidden in single-portfolio view (`/portfolio/<id>`).
 - Single-portfolio view (`/portfolio/<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
 - Aggregate and single-portfolio routes share one loading skeleton (`src/app/(app)/portfolio/PortfolioRouteLoading.tsx`) so switching portfolios displays immediate pending feedback.
-- Onboarding route (`/onboarding`) reuses `CreatePortfolioDialog` through `CreateFirstPortfolioAction` to create the first portfolio and navigate to canonical `/portfolio/<id>`.
+- Onboarding route (`/onboarding`) now offers a screenshot import path that creates a new portfolio via a dedicated wizard and bootstraps transactions dated today, then navigates to canonical `/portfolio/<id>`.
 - Portfolio create flows (`sidebar`, `mobile header`, `onboarding`) navigate with `router.push` and immediately call `router.refresh()` so the persistent app-shell sidebar picks up newly created portfolios without stale router cache.
 - Portfolio create/edit model includes tax profile flag `is_tax_advantaged` (UI label: `Konto emerytalne (IKE/IKZE)`), used by dividend smart-default hints.
 - Portfolio delete flow (desktop sidebar 3-dot menu) uses `DELETE /api/portfolios/<id>` and removes the portfolio plus its transactions, then revalidates portfolio/transaction tags and paths.

@@ -50,7 +50,7 @@ export function AddTransactionSidebarSummary({
     : selectedInstrument?.name || "Pozycja rynkowa";
 
   return (
-    <aside className="space-y-3 lg:sticky lg:top-3 lg:self-start">
+    <aside className="space-y-3 lg:sticky lg:top-0 lg:self-start">
       <section className="rounded-lg border border-border/70 bg-background/95 p-3.5 shadow-[var(--shadow-soft)]">
         <div className="mb-3 space-y-2 border-b border-border/70 pb-2.5">
           <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">

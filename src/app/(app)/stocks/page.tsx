@@ -67,15 +67,20 @@ export default async function StocksPage() {
           <p className="text-sm text-muted-foreground">
             Twoje akcje z wszystkich portfeli w jednym miejscu.
           </p>
-          <div className="max-w-xl">
-            <StockSearchBar />
-          </div>
         </header>
       </AnimatedReveal>
       <AnimatedReveal className="mt-6" delay={0.05}>
         <Suspense fallback={<ScreenerFallback />}>
           <StocksScreenerSection />
         </Suspense>
+      </AnimatedReveal>
+      <AnimatedReveal className="mt-8" delay={0.1}>
+        <div className="max-w-xl space-y-2">
+          <p className="text-sm font-medium text-muted-foreground">
+            Szukasz czegoś innego?
+          </p>
+          <StockSearchBar />
+        </div>
       </AnimatedReveal>
     </main>
   );

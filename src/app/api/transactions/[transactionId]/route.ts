@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTransactionViews } from "@/features/transactions/server/revalidate-transaction-views";
 
 import { deleteTransactionGroupByTransactionId } from "@/features/transactions/server/delete-transaction-group";
 import { updateTransactionById } from "@/features/transactions/server/update-transaction";
@@ -16,17 +16,6 @@ type Props = Readonly<{
     transactionId: string;
   }>;
 }>;
-
-const revalidateTransactionViews = (portfolioId: string) => {
-  revalidatePath("/portfolio");
-  revalidatePath(`/portfolio/${portfolioId}`);
-  revalidatePath("/transactions");
-  revalidatePath("/stocks");
-  revalidateTag("portfolio:all", "max");
-  revalidateTag(`portfolio:${portfolioId}`, "max");
-  revalidateTag("transactions:all", "max");
-  revalidateTag(`transactions:portfolio:${portfolioId}`, "max");
-};
 
 const resolveTransactionId = async (params: Props["params"]) => {
   const { transactionId } = await params;
@@ -57,7 +46,7 @@ export async function DELETE(_request: Request, { params }: Props) {
       normalizedId
     );
 
-    revalidateTransactionViews(result.portfolioId);
+    revalidateTransactionViews(result.portfolioId, { includeStocks: true });
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
@@ -101,7 +90,7 @@ export async function PUT(request: Request, { params }: Props) {
       parsed.data
     );
 
-    revalidateTransactionViews(result.portfolioId);
+    revalidateTransactionViews(result.portfolioId, { includeStocks: true });
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     const message = toErrorMessage(error);

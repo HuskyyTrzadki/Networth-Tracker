@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { AuthSettingsSection } from "@/features/auth";
 
 type Props = Readonly<{
-  searchParams: Promise<{
+  searchParams: {
     auth?: string | string[];
-  }>;
+  };
 }>;
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SettingsPage({ searchParams }: Props) {
-  const { auth } = await searchParams;
+  const { auth } = searchParams;
 
   const authValue = Array.isArray(auth) ? auth[0] : auth;
   const showAuthError = authValue === "error";

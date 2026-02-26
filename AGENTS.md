@@ -161,6 +161,7 @@ Keep these files aligned when touching a feature:
 - `src/features/design-system/AGENTS.md`
 - `src/features/home/AGENTS.md`
 - `src/features/market-data/AGENTS.md`
+- `src/features/onboarding/AGENTS.md`
 - `src/features/portfolio/AGENTS.md`
 - `src/features/stocks/AGENTS.md`
 - `src/features/transactions/AGENTS.md`

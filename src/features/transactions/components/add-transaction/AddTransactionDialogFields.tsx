@@ -1,8 +1,11 @@
 "use client";
 
 import { parseISO } from "date-fns";
+import { useState } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 
+import { FormControl, FormField, FormItem, FormLabel } from "@/features/design-system/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/features/design-system/components/ui/select";
 import { useHistoricalPriceAssist } from "./useHistoricalPriceAssist";
 import { useCashImpactPreview } from "./use-cash-impact-preview";
 import { useCashBalanceOnDate } from "./use-cash-balance-on-date";
@@ -24,6 +27,25 @@ import { getTradeDateLowerBound } from "../../lib/trade-date";
 import { buildEmptyBalances, type AssetTab } from "./constants";
 import { applyCashCurrencyChange, applyCashTabState, applyCustomTabState, applyMarketTabState } from "./tab-state";
 import type { FormValues } from "../AddTransactionDialogContent";
+import { createPortfolio } from "@/features/portfolio/client/create-portfolio";
+import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
+import { ScreenshotImportWizard } from "@/features/onboarding/components/ScreenshotImportWizard";
+
+type PortfolioOption = Readonly<{ id: string; name: string; baseCurrency: string }>;
+
+const mergePortfolios = (
+  portfolios: readonly PortfolioOption[],
+  localPortfolios: readonly PortfolioOption[]
+): readonly PortfolioOption[] => {
+  if (localPortfolios.length === 0) {
+    return portfolios;
+  }
+
+  const merged = new Map<string, PortfolioOption>();
+  portfolios.forEach((portfolio) => merged.set(portfolio.id, portfolio));
+  localPortfolios.forEach((portfolio) => merged.set(portfolio.id, portfolio));
+  return Array.from(merged.values());
+};
 
 export function AddTransactionDialogFields({
   form,
@@ -38,6 +60,8 @@ export function AddTransactionDialogFields({
   forcedPortfolioId,
   initialCashCurrency,
   isEditMode = false,
+  onScreenshotModeChange,
+  onRequestCloseDialog,
 }: Readonly<{
   form: UseFormReturn<FormValues>;
   selectedInstrument: InstrumentSearchResult | null;
@@ -45,12 +69,14 @@ export function AddTransactionDialogFields({
   activeTab: AssetTab;
   setActiveTab: (next: AssetTab) => void;
   searchClient?: InstrumentSearchClient;
-  portfolios: readonly { id: string; name: string; baseCurrency: string }[];
+  portfolios: readonly PortfolioOption[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   forcedPortfolioId: string | null;
   initialCashCurrency: CashCurrency;
   isEditMode?: boolean;
+  onScreenshotModeChange?: (next: boolean) => void;
+  onRequestCloseDialog?: () => void;
 }>) {
   const minTradeDate = parseISO(getTradeDateLowerBound());
   const maxTradeDate = new Date();
@@ -66,9 +92,16 @@ export function AddTransactionDialogFields({
   const date = useWatch({ control: form.control, name: "date" });
   const customCurrency = useWatch({ control: form.control, name: "customCurrency" });
 
+  const [localPortfolios, setLocalPortfolios] = useState<PortfolioOption[]>([]);
+  const [isScreenshotOpen, setIsScreenshotOpen] = useState(false);
   const isCashTab = activeTab === "CASH";
   const isCustomTab = activeTab === "CUSTOM";
   const resolvedPortfolioId = forcedPortfolioId ?? portfolioId;
+  const mergedPortfolios = mergePortfolios(portfolios, localPortfolios);
+  const screenshotPortfolio =
+    mergedPortfolios.find((portfolio) => portfolio.id === resolvedPortfolioId) ??
+    null;
+
   const resolvedCashCurrency = deriveResolvedCashCurrency(
     cashCurrency,
     initialCashCurrency
@@ -149,10 +182,13 @@ export function AddTransactionDialogFields({
     applyCashCurrencyChange(form, setSelectedInstrument, nextCurrency, isCashTab);
   };
 
-  const handlePortfolioChange = (nextPortfolioId: string) => {
-    const nextPortfolio = portfolios.find(
-      (portfolio) => portfolio.id === nextPortfolioId
-    );
+  const handlePortfolioChange = (
+    nextPortfolioId: string,
+    nextPortfolioOverride?: Pick<PortfolioOption, "id" | "baseCurrency">
+  ) => {
+    const nextPortfolio =
+      nextPortfolioOverride ??
+      mergedPortfolios.find((portfolio) => portfolio.id === nextPortfolioId);
     if (!nextPortfolio || !isSupportedCashCurrency(nextPortfolio.baseCurrency)) {
       return;
     }
@@ -175,85 +211,156 @@ export function AddTransactionDialogFields({
     });
   };
 
+  const handleCreatePortfolio = async (input: CreatePortfolioInput) => {
+    const created = await createPortfolio(input);
+    setLocalPortfolios((current) => {
+      if (current.some((portfolio) => portfolio.id === created.id)) {
+        return current;
+      }
+      return [...current, created];
+    });
+    form.setValue("portfolioId", created.id, { shouldValidate: true });
+    handlePortfolioChange(created.id, created);
+    return { id: created.id };
+  };
+
+  const openScreenshotImport = () => {
+    setIsScreenshotOpen(true);
+    onScreenshotModeChange?.(true);
+  };
+
+  const closeScreenshotImport = () => {
+    setIsScreenshotOpen(false);
+    onScreenshotModeChange?.(false);
+  };
+
   return (
     <div className="flex-1 overflow-y-auto bg-muted/12 px-3 py-3 sm:px-5 sm:py-4">
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_292px]">
-        <section className="space-y-5 rounded-lg border border-border/75 bg-background p-4">
-          <AddTransactionInstrumentSection
-            form={form}
-            forcedPortfolioId={forcedPortfolioId}
-            portfolios={portfolios}
-            isCashTab={isCashTab}
-            isCustomTab={isCustomTab}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            onPortfolioChange={handlePortfolioChange}
-            onTypeChange={handleTypeChange}
-            resolvedCashCurrency={resolvedCashCurrency}
-            onCashCurrencyChange={handleCashCurrencyChange}
-            selectedInstrument={selectedInstrument}
-            setSelectedInstrument={setSelectedInstrument}
+      {isScreenshotOpen ? (
+        <section className="rounded-lg border border-border/75 bg-background p-4 sm:p-5">
+          <div className="mb-4 rounded-md border border-border/70 bg-muted/20 p-3.5">
+            <FormField
+              control={form.control}
+              name="portfolioId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Portfel
+                  </FormLabel>
+                  <Select
+                    disabled={Boolean(forcedPortfolioId)}
+                    onValueChange={(next) => {
+                      field.onChange(next);
+                      handlePortfolioChange(next);
+                    }}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Wybierz portfel" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {mergedPortfolios.map((portfolio) => (
+                        <SelectItem key={portfolio.id} value={portfolio.id}>
+                          {portfolio.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+          </div>
+          <ScreenshotImportWizard
+            variant="dialog"
+            onClose={closeScreenshotImport}
+            onCompleted={onRequestCloseDialog}
             searchClient={searchClient}
-            initialCashCurrency={initialCashCurrency}
-            availableCashNow={availableCashNow}
-            availableAssetQuantity={availableAssetQuantity}
-            isEditMode={isEditMode}
-          />
-
-          {isCustomTab ? (
-            <AddTransactionCustomTradeFields
-              form={form}
-              minTradeDate={minTradeDate}
-              maxTradeDate={maxTradeDate}
-              displayCurrency={customCurrency?.trim().toUpperCase() ?? ""}
-              cashImpactPreview={cashImpactPreview}
-              cashBalanceOnDate={cashBalanceOnDate}
-              availableCashNow={availableCashNow}
-              availableCashOnTradeDate={availableCashOnTradeDate}
-              tradeDate={date}
-              cashCurrency={cashCurrency}
-              consumeCash={consumeCash}
-              resolvedCashCurrency={resolvedCashCurrency}
-              onCashCurrencyChange={handleCashCurrencyChange}
-            />
-          ) : (
-            <AddTransactionTradeFields
-              form={form}
-              minTradeDate={minTradeDate}
-              maxTradeDate={maxTradeDate}
-              isCashTab={isCashTab}
-              transactionType={type}
-              displayCurrency={displayCurrency}
-              historicalPriceAssist={historicalPriceAssist}
-              cashImpactPreview={cashImpactPreview}
-              cashBalanceOnDate={cashBalanceOnDate}
-              availableCashNow={availableCashNow}
-              availableCashOnTradeDate={availableCashOnTradeDate}
-              tradeDate={date}
-              cashCurrency={cashCurrency}
-              consumeCash={consumeCash}
-              resolvedCashCurrency={resolvedCashCurrency}
-              onCashCurrencyChange={handleCashCurrencyChange}
-            />
-          )}
-
-          <AddTransactionNotesField
-            form={form}
-            variant={isCustomTab ? "custom" : "default"}
+            portfolio={screenshotPortfolio ?? undefined}
           />
         </section>
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_292px]">
+          <section className="space-y-5 rounded-lg border border-border/75 bg-background p-4">
+            <AddTransactionInstrumentSection
+              form={form}
+              forcedPortfolioId={forcedPortfolioId}
+              portfolios={mergedPortfolios}
+              isCashTab={isCashTab}
+              isCustomTab={isCustomTab}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              onPortfolioChange={handlePortfolioChange}
+              onTypeChange={handleTypeChange}
+              resolvedCashCurrency={resolvedCashCurrency}
+              onCashCurrencyChange={handleCashCurrencyChange}
+              selectedInstrument={selectedInstrument}
+              setSelectedInstrument={setSelectedInstrument}
+              searchClient={searchClient}
+              initialCashCurrency={initialCashCurrency}
+              availableCashNow={availableCashNow}
+              availableAssetQuantity={availableAssetQuantity}
+              isEditMode={isEditMode}
+              onOpenScreenshot={openScreenshotImport}
+              createPortfolioFn={handleCreatePortfolio}
+            />
 
-        <AddTransactionSidebarSummary
-          form={form}
-          displayCurrency={displayCurrency}
-          fee={fee}
-          price={price}
-          quantity={quantity}
-          type={type}
-          isCustomTab={isCustomTab}
-          selectedInstrument={selectedInstrument}
-        />
-      </div>
+            {isCustomTab ? (
+              <AddTransactionCustomTradeFields
+                form={form}
+                minTradeDate={minTradeDate}
+                maxTradeDate={maxTradeDate}
+                displayCurrency={customCurrency?.trim().toUpperCase() ?? ""}
+                cashImpactPreview={cashImpactPreview}
+                cashBalanceOnDate={cashBalanceOnDate}
+                availableCashNow={availableCashNow}
+                availableCashOnTradeDate={availableCashOnTradeDate}
+                tradeDate={date}
+                cashCurrency={cashCurrency}
+                consumeCash={consumeCash}
+                resolvedCashCurrency={resolvedCashCurrency}
+                onCashCurrencyChange={handleCashCurrencyChange}
+              />
+            ) : (
+              <AddTransactionTradeFields
+                form={form}
+                minTradeDate={minTradeDate}
+                maxTradeDate={maxTradeDate}
+                isCashTab={isCashTab}
+                transactionType={type}
+                displayCurrency={displayCurrency}
+                historicalPriceAssist={historicalPriceAssist}
+                cashImpactPreview={cashImpactPreview}
+                cashBalanceOnDate={cashBalanceOnDate}
+                availableCashNow={availableCashNow}
+                availableCashOnTradeDate={availableCashOnTradeDate}
+                tradeDate={date}
+                cashCurrency={cashCurrency}
+                consumeCash={consumeCash}
+                resolvedCashCurrency={resolvedCashCurrency}
+                onCashCurrencyChange={handleCashCurrencyChange}
+              />
+            )}
+
+            <AddTransactionNotesField
+              form={form}
+              variant={isCustomTab ? "custom" : "default"}
+            />
+          </section>
+
+          <AddTransactionSidebarSummary
+            form={form}
+            displayCurrency={displayCurrency}
+            fee={fee}
+            price={price}
+            quantity={quantity}
+            type={type}
+            isCustomTab={isCustomTab}
+            selectedInstrument={selectedInstrument}
+          />
+        </div>
+      )}
     </div>
   );
 }

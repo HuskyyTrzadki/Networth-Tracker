@@ -1,7 +1,7 @@
-import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { deletePortfolioById } from "@/features/portfolio/server/delete-portfolio";
+import { revalidateTransactionViews } from "@/features/transactions/server/revalidate-transaction-views";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getAuthenticatedSupabase,
@@ -35,13 +35,7 @@ export async function DELETE(_request: Request, { params }: Props) {
       normalizedPortfolioId
     );
 
-    revalidatePath("/portfolio");
-    revalidatePath(`/portfolio/${result.portfolioId}`);
-    revalidatePath("/transactions");
-    revalidateTag("portfolio:all", "max");
-    revalidateTag(`portfolio:${result.portfolioId}`, "max");
-    revalidateTag("transactions:all", "max");
-    revalidateTag(`transactions:portfolio:${result.portfolioId}`, "max");
+    revalidateTransactionViews(result.portfolioId);
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

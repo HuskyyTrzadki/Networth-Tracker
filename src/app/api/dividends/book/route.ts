@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import {
@@ -12,6 +11,7 @@ import {
   toErrorMessage,
 } from "@/lib/http/route-handler";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { revalidateTransactionViews } from "@/features/transactions/server/revalidate-transaction-views";
 
 const bookDividendSchema = z.object({
   portfolioId: z.string().uuid(),
@@ -56,13 +56,7 @@ export async function POST(request: Request) {
       dividendEventKey: parsed.data.dividendEventKey,
     });
 
-    revalidatePath("/portfolio");
-    revalidatePath(`/portfolio/${parsed.data.portfolioId}`);
-    revalidatePath("/transactions");
-    revalidateTag("portfolio:all", "max");
-    revalidateTag(`portfolio:${parsed.data.portfolioId}`, "max");
-    revalidateTag("transactions:all", "max");
-    revalidateTag(`transactions:portfolio:${parsed.data.portfolioId}`, "max");
+    revalidateTransactionViews(parsed.data.portfolioId);
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
@@ -72,4 +66,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: toErrorMessage(error) }, { status: 400 });
   }
 }
-

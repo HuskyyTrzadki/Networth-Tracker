@@ -46,6 +46,7 @@ import {
 import type { FormValues } from "../AddTransactionDialogContent";
 import { ASSET_TABS, type AssetTab, formatMoney } from "./constants";
 import { AddTransactionPortfolioTypeFields } from "./AddTransactionPortfolioTypeFields";
+import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
 
 type Props = Readonly<{
   form: UseFormReturn<FormValues>;
@@ -66,6 +67,8 @@ type Props = Readonly<{
   availableCashNow: string;
   availableAssetQuantity: string | null;
   isEditMode?: boolean;
+  onOpenScreenshot: () => void;
+  createPortfolioFn: (input: CreatePortfolioInput) => Promise<{ id: string }>;
 }>;
 
 export function AddTransactionInstrumentSection({
@@ -87,6 +90,8 @@ export function AddTransactionInstrumentSection({
   availableCashNow,
   availableAssetQuantity,
   isEditMode = false,
+  onOpenScreenshot,
+  createPortfolioFn,
 }: Props) {
   const fieldLabelClass =
     "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
@@ -116,6 +121,8 @@ export function AddTransactionInstrumentSection({
         isCustomTab={isCustomTab}
         onPortfolioChange={onPortfolioChange}
         onTypeChange={onTypeChange}
+        onOpenScreenshot={onOpenScreenshot}
+        createPortfolioFn={createPortfolioFn}
       />
 
       <div>
