@@ -45,7 +45,7 @@ Out of scope:
 - Validate external provider interfaces against official docs before changing integrations.
 
 ## Supabase usage
-- Env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
+- Env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`, optional `LOGO_DEV_PUBLISHABLE_KEY` (recommended, server-held `pk_` token for `/api/public/image?ticker=...` fallback), legacy `LOGO_DEV_SECRET_KEY` still read for backward compatibility
 - Browser client: `src/lib/supabase/client.ts`
 - Server/route handlers: `src/lib/supabase/server.ts` with `cookies()`
 - Middleware client: `src/lib/supabase/middleware.ts` + `auth.getSession()`
@@ -129,6 +129,7 @@ When shipping feature/architecture changes:
 - Private dashboard/shell reads use tagged private cache (`portfolio:all`, `portfolio:<id>`, `transactions:*`).
 - Write APIs invalidate with `revalidateTag`/`revalidatePath`.
 - Public stock chart API (`/api/public/stocks/[providerKey]/chart`) uses edge cache headers (`s-maxage`, `stale-while-revalidate`).
+- Public image proxy (`/api/public/image`) caches logo assets with long-lived edge headers (7d fresh + 30d stale) and ticker fallback support for `img.logo.dev`.
 - Stock details support ranges + overlays (PE / EPS TTM / Revenue TTM) with Trend(100) and Raw modes, plus authenticated BUY/SELL markers from user transactions.
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.

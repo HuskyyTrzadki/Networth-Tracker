@@ -155,10 +155,10 @@ export function PortfolioValueModeContent({
             className={cn(
               "text-4xl font-semibold",
               selectedPeriodAbsoluteChange !== null && selectedPeriodAbsoluteChange > 0
-                ? "text-emerald-700"
+                ? "text-[color:var(--profit)]"
                 : selectedPeriodAbsoluteChange !== null &&
                     selectedPeriodAbsoluteChange < 0
-                  ? "text-rose-600"
+                  ? "text-[color:var(--loss)]"
                   : "text-foreground"
             )}
           >
@@ -176,9 +176,9 @@ export function PortfolioValueModeContent({
             className={cn(
               "font-mono text-sm tabular-nums",
               selectedPeriodChangePercent !== null && selectedPeriodChangePercent > 0
-                ? "text-emerald-700"
+                ? "text-[color:var(--profit)]"
                 : selectedPeriodChangePercent !== null && selectedPeriodChangePercent < 0
-                  ? "text-rose-600"
+                  ? "text-[color:var(--loss)]"
                   : "text-muted-foreground"
             )}
           >

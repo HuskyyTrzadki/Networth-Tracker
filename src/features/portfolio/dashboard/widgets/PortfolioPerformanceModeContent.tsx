@@ -160,9 +160,9 @@ export function PortfolioPerformanceModeContent({
             className={cn(
               "text-4xl font-semibold",
               selectedPeriodReturn !== null && selectedPeriodReturn > 0
-                ? "text-emerald-700"
+                ? "text-[color:var(--profit)]"
                 : selectedPeriodReturn !== null && selectedPeriodReturn < 0
-                  ? "text-rose-600"
+                  ? "text-[color:var(--loss)]"
                   : "text-foreground"
             )}
           >
@@ -175,10 +175,10 @@ export function PortfolioPerformanceModeContent({
               "font-mono text-sm tabular-nums",
               selectedPeriodPerformanceAbsoluteChange !== null &&
                   selectedPeriodPerformanceAbsoluteChange > 0
-                ? "text-emerald-700"
+                ? "text-[color:var(--profit)]"
                 : selectedPeriodPerformanceAbsoluteChange !== null &&
                     selectedPeriodPerformanceAbsoluteChange < 0
-                  ? "text-rose-600"
+                  ? "text-[color:var(--loss)]"
                   : "text-muted-foreground"
             )}
           >

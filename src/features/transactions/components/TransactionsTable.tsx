@@ -39,7 +39,7 @@ const getTypeLabel = (item: TransactionListItem) => {
 const getTypeBadgeClassName = (side: TransactionListItem["side"]) =>
   side === "BUY"
     ? "border-primary/25 bg-primary/10 text-primary"
-    : "border-rose-200 bg-rose-50/80 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300";
+    : "border-border/70 bg-background/92 text-[color:var(--loss)]";
 
 const getRowBadgeClassName = (item: TransactionListItem) => {
   if (item.legRole !== "CASH") {

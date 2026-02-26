@@ -55,7 +55,7 @@ const Section = ({
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 {item.isBooked ? (
-                  <Badge className="border-emerald-500/25 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200">
+                  <Badge className="border-border/70 bg-background/92 text-[color:var(--profit)]">
                     ✅ Zaksięgowane
                   </Badge>
                 ) : null}

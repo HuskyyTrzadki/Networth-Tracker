@@ -73,8 +73,8 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   const concentrationTone =
     concentrationWarning?.severity === "CRITICAL"
       ? "border-l-loss bg-loss/16 text-loss"
-      : concentrationWarning?.severity === "HARD"
-        ? "border-l-rose-700 bg-rose-100/70 text-rose-800 dark:border-l-rose-400 dark:bg-rose-500/14 dark:text-rose-200"
+    : concentrationWarning?.severity === "HARD"
+        ? "border-l-[color:var(--loss)] bg-destructive/12 text-[color:var(--loss)]"
         : concentrationWarning
           ? "border-l-amber-700 bg-amber-100/65 text-amber-800 dark:border-l-amber-400 dark:bg-amber-500/10 dark:text-amber-200"
           : "";

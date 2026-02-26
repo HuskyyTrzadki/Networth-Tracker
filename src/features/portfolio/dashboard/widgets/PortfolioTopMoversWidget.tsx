@@ -70,12 +70,12 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
             const percentLabel = formatPercent(mover.todayChangePercent);
             const trendTone =
               mover.trend === "UP"
-                ? "text-emerald-700 dark:text-emerald-300"
-                : "text-rose-700 dark:text-rose-300";
+                ? "text-[color:var(--profit)]"
+                : "text-[color:var(--loss)]";
             const badgeTone =
               mover.trend === "UP"
-                ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
-                : "border-rose-500/25 bg-rose-500/10 text-rose-800 dark:text-rose-200";
+                ? "border-border/70 bg-background/92 text-[color:var(--profit)]"
+                : "border-border/70 bg-background/92 text-[color:var(--loss)]";
 
             return (
               <li

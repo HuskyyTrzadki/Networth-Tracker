@@ -169,10 +169,10 @@ export function DividendBookingDialog({
               exit={{ opacity: 0, scale: 0.96 }}
               className={cn(
                 "pointer-events-none absolute inset-0 grid place-items-center rounded-lg",
-                "bg-emerald-500/8 backdrop-blur-[1px]"
+                "bg-muted/38 backdrop-blur-[1px]"
               )}
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-white/90 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border/75 bg-background/92 px-4 py-2 text-sm font-medium text-[color:var(--profit)] shadow-sm">
                 <Sparkles className="size-4" aria-hidden />
                 Zaksięgowano
               </div>

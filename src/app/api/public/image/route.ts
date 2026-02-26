@@ -2,8 +2,11 @@ import { isIP } from "node:net";
 
 import { NextResponse } from "next/server";
 
+import { buildLogoDevTickerRemoteUrls } from "@/features/common/lib/logo-dev";
+
 const ONE_DAY_SECONDS = 60 * 60 * 24;
-const ONE_WEEK_SECONDS = ONE_DAY_SECONDS * 7;
+const LOGO_CACHE_FRESH_SECONDS = ONE_DAY_SECONDS * 7;
+const LOGO_CACHE_STALE_SECONDS = ONE_DAY_SECONDS * 30;
 
 const isBlockedHostname = (hostname: string) => {
   const normalized = hostname.trim().toLowerCase();
@@ -46,39 +49,54 @@ const parseRemoteImageUrl = (value: string | null) => {
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
-  const remoteUrl = parseRemoteImageUrl(requestUrl.searchParams.get("url"));
-  if (!remoteUrl) {
+  const explicitRemoteUrl = parseRemoteImageUrl(requestUrl.searchParams.get("url"));
+  const logoDevToken =
+    process.env.LOGO_DEV_PUBLISHABLE_KEY?.trim() ??
+    process.env.LOGO_DEV_SECRET_KEY?.trim();
+  const logoDevTickerUrls = buildLogoDevTickerRemoteUrls(
+    requestUrl.searchParams.get("ticker"),
+    logoDevToken
+  )
+    .map((url) => parseRemoteImageUrl(url))
+    .filter((url): url is URL => Boolean(url));
+
+  const remoteUrls = explicitRemoteUrl ? [explicitRemoteUrl] : logoDevTickerUrls;
+  if (remoteUrls.length === 0) {
     return NextResponse.json({ message: "Invalid image URL." }, { status: 400 });
   }
 
-  let upstreamResponse: Response;
-  try {
-    upstreamResponse = await fetch(remoteUrl.toString(), {
+  for (const remoteUrl of remoteUrls) {
+    let upstreamResponse: Response;
+    try {
+      upstreamResponse = await fetch(remoteUrl.toString(), {
+        headers: {
+          Accept: "image/*",
+        },
+        next: {
+          revalidate: LOGO_CACHE_FRESH_SECONDS,
+        },
+      });
+    } catch {
+      continue;
+    }
+
+    if (!upstreamResponse.ok || !upstreamResponse.body) {
+      continue;
+    }
+
+    const contentType = upstreamResponse.headers.get("content-type")?.toLowerCase() ?? "";
+    if (!contentType.startsWith("image/") || contentType.includes("svg")) {
+      continue;
+    }
+
+    return new Response(upstreamResponse.body, {
+      status: 200,
       headers: {
-        Accept: "image/*",
-      },
-      next: {
-        revalidate: ONE_DAY_SECONDS,
+        "Content-Type": contentType,
+        "Cache-Control": `public, max-age=0, s-maxage=${LOGO_CACHE_FRESH_SECONDS}, stale-while-revalidate=${LOGO_CACHE_STALE_SECONDS}`,
       },
     });
-  } catch {
-    return NextResponse.json({ message: "Failed to fetch image." }, { status: 502 });
   }
 
-  if (!upstreamResponse.ok || !upstreamResponse.body) {
-    return NextResponse.json({ message: "Image not found." }, { status: 404 });
-  }
-
-  const contentType = upstreamResponse.headers.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.startsWith("image/") || contentType.includes("svg")) {
-    return NextResponse.json({ message: "Unsupported image type." }, { status: 415 });
-  }
-
-  return new Response(upstreamResponse.body, {
-    status: 200,
-    headers: {
-      "Content-Type": contentType,
-      "Cache-Control": `public, max-age=0, s-maxage=${ONE_DAY_SECONDS}, stale-while-revalidate=${ONE_WEEK_SECONDS}`,
-    },
-  });
+  return NextResponse.json({ message: "Image not found." }, { status: 404 });
 }

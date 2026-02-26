@@ -148,6 +148,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.
 - Search surfaces that use `InstrumentCombobox` can opt into global `/` focus shortcut via `listenForFocusShortcut`.
 - `InstrumentLogoImage` routes remote logo URLs through shared app proxy (`/api/public/image`) to keep `next/image` optimization enabled without custom passthrough loaders.
+- `InstrumentLogoImage` tries source logo first, then ticker-based `img.logo.dev` fallback (via `/api/public/image?ticker=...`) before showing initials avatar; token is injected server-side via `LOGO_DEV_PUBLISHABLE_KEY` (legacy `LOGO_DEV_SECRET_KEY` fallback still supported).
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.
