@@ -138,10 +138,10 @@ function TransactionsSearchToolbarInner({
           />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-md border border-input bg-muted/50 p-1">
+          <div className="h-10 rounded-md border border-input bg-muted/50 p-0.5">
             <ToggleGroup
               aria-label="Typ transakcji"
-              className="grid grid-cols-3 gap-1"
+              className="grid h-full grid-cols-3 gap-0.5"
               onValueChange={(value) =>
                 pushWithUpdates({ type: value === "all" ? null : value })
               }
@@ -149,21 +149,21 @@ function TransactionsSearchToolbarInner({
               value={type ?? "all"}
             >
               <ToggleGroupItem
-                className="h-9 w-full rounded-md px-2 text-sm"
+                className="h-full w-full rounded-[6px] px-2 text-sm"
                 disabled={isPending}
                 value="all"
               >
                 Wszystkie
               </ToggleGroupItem>
               <ToggleGroupItem
-                className="h-9 w-full rounded-md px-2 text-sm"
+                className="h-full w-full rounded-[6px] px-2 text-sm"
                 disabled={isPending}
                 value="BUY"
               >
                 Kupno
               </ToggleGroupItem>
               <ToggleGroupItem
-                className="h-9 w-full rounded-md px-2 text-sm"
+                className="h-full w-full rounded-[6px] px-2 text-sm"
                 disabled={isPending}
                 value="SELL"
               >

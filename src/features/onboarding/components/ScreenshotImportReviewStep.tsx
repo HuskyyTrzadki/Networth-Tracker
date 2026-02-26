@@ -73,11 +73,7 @@ export function ScreenshotImportReviewStep({
                 "Brak wyceny"
               )}
             </div>
-            {previewState.asOf ? (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Kursy na: {previewState.asOf}
-              </p>
-            ) : null}
+
           </div>
           {previewState.missingQuotes > 0 ||
           previewState.missingFx > 0 ||
