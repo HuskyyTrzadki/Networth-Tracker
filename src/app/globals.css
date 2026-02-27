@@ -47,8 +47,8 @@
   --chart-4: #4f7661;
   --chart-5: #9f4b40;
 
-  --profit: #2f7d31;
-  --loss: #c6392c;
+  --profit: #4f7658;
+  --loss: #955148;
 
   --sidebar: #fcf7eb;
   --sidebar-foreground: #3a3835;
@@ -127,8 +127,8 @@
   --chart-4: #7da08c;
   --chart-5: #d08a7f;
 
-  --profit: #67b36a;
-  --loss: #e07b72;
+  --profit: #80b38b;
+  --loss: #d39a91;
 
   --sidebar: #201d1a;
   --sidebar-foreground: #e4dbcc;
@@ -196,8 +196,8 @@
     --chart-4: #7da08c;
     --chart-5: #d08a7f;
 
-    --profit: #67b36a;
-    --loss: #e07b72;
+    --profit: #80b38b;
+    --loss: #d39a91;
 
     --sidebar: #201d1a;
     --sidebar-foreground: #e4dbcc;

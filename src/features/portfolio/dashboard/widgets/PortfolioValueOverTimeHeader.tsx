@@ -2,6 +2,7 @@
 
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 
+import { StatusStrip } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   ToggleGroup,
@@ -47,9 +48,14 @@ type Props = Readonly<{
 const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
 const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
 const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
+const CONTROL_BOARD_CLASS =
+  "flex flex-wrap items-end gap-2 rounded-md border border-dashed border-border/65 bg-background/68 p-2 xl:flex-nowrap";
+const CONTROL_PANEL_CLASS = "space-y-1 rounded-md border border-border/60 bg-background/76 p-1.5";
+const CONTROL_LABEL_CLASS =
+  "px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85";
 const LEDGER_TOGGLE_GROUP_CLASS =
-  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/65 bg-background/72 p-1";
-const LEDGER_TOGGLE_ITEM_CLASS = "h-8 px-3 font-sans text-xs";
+  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/65 bg-background/72 p-0.5";
+const LEDGER_TOGGLE_ITEM_CLASS = "h-7 px-2.5 font-sans text-[11px]";
 
 export function PortfolioValueOverTimeHeader({
   mode,
@@ -76,11 +82,9 @@ export function PortfolioValueOverTimeHeader({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-end gap-2.5 rounded-md border border-dashed border-border/65 bg-background/68 p-2.5 xl:flex-nowrap">
-        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
-          <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-            Tryb
-          </div>
+      <div className={CONTROL_BOARD_CLASS}>
+        <div className={CONTROL_PANEL_CLASS}>
+          <div className={CONTROL_LABEL_CLASS}>Tryb</div>
           <ToggleGroup
             type="single"
             value={mode}
@@ -108,10 +112,8 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
-          <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-            Zakres
-          </div>
+        <div className={CONTROL_PANEL_CLASS}>
+          <div className={CONTROL_LABEL_CLASS}>Zakres</div>
           <ToggleGroup
             type="single"
             value={range}
@@ -136,10 +138,8 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
-          <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-            Waluta
-          </div>
+        <div className={CONTROL_PANEL_CLASS}>
+          <div className={CONTROL_LABEL_CLASS}>Waluta</div>
           <ToggleGroup
             type="single"
             value={currency}
@@ -148,24 +148,24 @@ export function PortfolioValueOverTimeHeader({
                 onCurrencyChange(value);
               }
             }}
-            className="inline-flex items-center gap-1 rounded-md border border-border/65 bg-background/72 p-1"
+            className={LEDGER_TOGGLE_GROUP_CLASS}
           >
             <ToggleGroupItem
-              className="h-8 px-2.5 text-xs"
+              className={LEDGER_TOGGLE_ITEM_CLASS}
               value="PLN"
               variant="ledger"
             >
               PLN
             </ToggleGroupItem>
             <ToggleGroupItem
-              className="h-8 px-2.5 text-xs"
+              className={LEDGER_TOGGLE_ITEM_CLASS}
               value="USD"
               variant="ledger"
             >
               USD
             </ToggleGroupItem>
             <ToggleGroupItem
-              className="h-8 px-2.5 text-xs"
+              className={LEDGER_TOGGLE_ITEM_CLASS}
               value="EUR"
               variant="ledger"
             >
@@ -175,14 +175,12 @@ export function PortfolioValueOverTimeHeader({
         </div>
 
         {mode === "PERFORMANCE" && comparisonOptions.length > 0 ? (
-          <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
-            <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-              Porównania
-            </div>
+          <div className={CONTROL_PANEL_CLASS}>
+            <div className={CONTROL_LABEL_CLASS}>Porównania</div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  className="h-8 gap-1.5 rounded-full px-2.5 text-xs"
+                  className="h-7 gap-1.5 rounded-full px-2.5 text-[11px]"
                   type="button"
                   variant="outline"
                 >
@@ -233,15 +231,19 @@ export function PortfolioValueOverTimeHeader({
       </div>
 
       {mode === "PERFORMANCE" && performancePartial ? (
-        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Częściowe dane: wynik przybliżony.
-        </div>
+        <StatusStrip
+          hint="Wynik został policzony na niepełnym zestawie notowań."
+          label="Status: wynik przybliżony"
+          tone="warning"
+        />
       ) : null}
 
       {mode === "VALUE" && valueIsPartial ? (
-        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Częściowe dane: ceny {missingQuotes}, FX {missingFx}.
-        </div>
+        <StatusStrip
+          hint={`Braki danych: ceny ${missingQuotes}, FX ${missingFx}.`}
+          label="Status: częściowe dane"
+          tone="warning"
+        />
       ) : null}
 
       {rebuildStatus === "failed" && rebuildMessage ? (
@@ -251,14 +253,10 @@ export function PortfolioValueOverTimeHeader({
       ) : null}
 
       {isAllHistoryLoading ? (
-        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Wczytywanie pełnej historii (ALL)...
-        </div>
+        <StatusStrip label="Status: wczytywanie ALL" />
       ) : null}
       {isAllHistoryTruncated && !isAllHistoryLoading ? (
-        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Skrócona historia. Przełącz na ALL.
-        </div>
+        <StatusStrip hint="Przełącz zakres na ALL, aby pobrać pełną historię." label="Status: skrócona historia" />
       ) : null}
 
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
-import { AllocationDonutChart, ChartCard } from "@/features/design-system";
-import type { DonutSlice } from "@/features/design-system/components/AllocationDonutChart";
+import { ChartCard, StatusStrip } from "@/features/design-system";
 
 import type { PortfolioAllocationDonutCard } from "../../server/get-portfolio-allocation-donut-cards";
 
@@ -37,14 +36,8 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
     >
       <div className="grid gap-4 xl:grid-cols-2">
         {items.map((item) => {
-          const chartData: DonutSlice[] = item.slices.map((slice) => ({
-            id: slice.id,
-            label: slice.label,
-            value: slice.share,
-            color: slice.color,
-            tooltipLabel: slice.label,
-            tooltipValue: slice.tooltipValue,
-          }));
+          const sortedSlices = [...item.slices].sort((a, b) => b.share - a.share);
+          const hasVisibleShare = sortedSlices.some((slice) => slice.share > 0);
 
           return (
             <article
@@ -56,25 +49,39 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
                   <h3 className="truncate text-sm font-semibold">{item.portfolioName}</h3>
                   <p className="font-mono text-sm tabular-nums">{item.totalValueLabel}</p>
                 </div>
-                <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                  Stan: {formatAsOf(item.asOf)}
-                </p>
+                <StatusStrip
+                  className="mt-1"
+                  hint="Stan wyceny z ostatniego odświeżenia notowań."
+                  label={`Stan: ${formatAsOf(item.asOf)}`}
+                />
               </header>
 
-              {chartData.length > 0 ? (
+              {sortedSlices.length > 0 && hasVisibleShare ? (
                 <>
-                  <AllocationDonutChart
-                    data={chartData}
-                    height={180}
-                    innerRadius="60%"
-                    outerRadius="86%"
-                    showSliceLabels={false}
-                  />
-                  <ul className="mt-2 space-y-1.5">
-                    {item.slices.slice(0, 3).map((slice) => (
+                  <div
+                    aria-label={`Skumulowana alokacja: ${item.portfolioName}`}
+                    className="overflow-hidden rounded-sm border border-border/70 bg-background/78"
+                    role="img"
+                  >
+                    <div className="flex h-7 w-full">
+                      {sortedSlices.map((slice) => (
+                        <div
+                          key={`${item.portfolioId}:bar:${slice.id}`}
+                          className="h-full border-r border-card/85 last:border-r-0"
+                          style={{
+                            width: `${slice.share * 100}%`,
+                            backgroundColor: slice.color,
+                          }}
+                          title={`${slice.label}: ${formatPercent(slice.share)}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <ul className="mt-3 space-y-1.5">
+                    {sortedSlices.map((slice) => (
                       <li
                         key={`${item.portfolioId}:${slice.id}`}
-                        className="flex items-center justify-between text-[12px]"
+                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-[12px]"
                       >
                         <span className="inline-flex items-center gap-2 text-muted-foreground">
                           <span
@@ -91,15 +98,18 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
                   </ul>
                 </>
               ) : (
-                <div className="grid h-[220px] place-items-center rounded-md border border-dashed border-border/70 text-sm text-muted-foreground">
+                <div className="grid h-[120px] place-items-center rounded-md border border-dashed border-border/70 text-sm text-muted-foreground">
                   Brak pozycji do wyświetlenia.
                 </div>
               )}
 
               {item.isPartial ? (
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  Częściowe dane: ceny {item.missingQuotes}, FX {item.missingFx}.
-                </p>
+                <StatusStrip
+                  className="mt-3"
+                  hint={`Braki danych: ceny ${item.missingQuotes}, FX ${item.missingFx}.`}
+                  label="Status: częściowe"
+                  tone="warning"
+                />
               ) : null}
             </article>
           );

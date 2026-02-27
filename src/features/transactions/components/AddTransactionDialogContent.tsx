@@ -5,7 +5,7 @@ import { LoaderCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/features/design-system/components/ui/button";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal, StatusStrip } from "@/features/design-system";
 import { DialogClose, DialogDescription, DialogTitle } from "@/features/design-system/components/ui/dialog";
 import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/snapshot-rebuild-events";
 import { Form } from "@/features/design-system/components/ui/form";
@@ -351,8 +351,19 @@ export function AddTransactionDialogContent({
           {!isScreenshotMode ? (
             <footer className="sticky bottom-0 z-10 border-t border-dashed border-border/65 bg-card/92 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-h-5 text-sm text-[color:var(--loss)]">
-                  {rootError ?? ""}
+                <div className="min-h-5 space-y-1">
+                  {isSubmitting ? (
+                    <StatusStrip label="Status: zapisywanie" />
+                  ) : rootError ? (
+                    <StatusStrip label="Status: błąd zapisu" tone="negative" />
+                  ) : isDirty ? (
+                    <StatusStrip label="Status: w edycji" />
+                  ) : (
+                    <StatusStrip label="Status: gotowe" />
+                  )}
+                  {rootError ? (
+                    <p className="text-[12px] text-[color:var(--loss)]">{rootError}</p>
+                  ) : null}
                 </div>
                 <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                   <Button

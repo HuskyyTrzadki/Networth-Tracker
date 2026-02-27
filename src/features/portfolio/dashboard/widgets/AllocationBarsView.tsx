@@ -4,6 +4,7 @@ import {
   formatCurrencyString,
   getCurrencyFormatter,
 } from "@/lib/format-currency";
+import { cn } from "@/lib/cn";
 
 import type { CurrencyCode } from "@/features/market-data";
 
@@ -22,6 +23,7 @@ type BarRow = Readonly<{
   valueLabel: string;
   shareLabel: string;
   tooltipLabel: string;
+  todayChangePercent: number | null;
 }>;
 
 const MAX_LABEL_LENGTH = 22;
@@ -65,6 +67,7 @@ export function AllocationBarsView({ assets, baseCurrency }: Props) {
           `${asset.valueBase} ${baseCurrency}`
         : `${asset.valueBase} ${baseCurrency}`,
     tooltipLabel: `${asset.categoryLabel} • ${asset.label}`,
+    todayChangePercent: asset.todayChangePercent,
   }));
 
   return (
@@ -92,7 +95,16 @@ export function AllocationBarsView({ assets, baseCurrency }: Props) {
                   }}
                 />
               </div>
-              <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+              <span
+                className={cn(
+                  "text-right font-mono text-[11px] tabular-nums",
+                  row.todayChangePercent === null
+                    ? "text-muted-foreground"
+                    : row.todayChangePercent >= 0
+                      ? "text-[color:var(--profit)]"
+                      : "text-[color:var(--loss)]"
+                )}
+              >
                 {row.shareLabel} • {row.valueLabel}
               </span>
             </div>

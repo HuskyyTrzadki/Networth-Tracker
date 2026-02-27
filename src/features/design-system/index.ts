@@ -12,4 +12,5 @@ export { PnlBarChart } from "./components/PnlBarChart";
 export { PortfolioAreaChart } from "./components/PortfolioAreaChart";
 export { PortfolioComparisonChart } from "./components/PortfolioComparisonChart";
 export { Sparkline } from "./components/Sparkline";
+export { StatusStrip } from "./components/StatusStrip";
 export { Checkbox } from "./components/ui/checkbox";

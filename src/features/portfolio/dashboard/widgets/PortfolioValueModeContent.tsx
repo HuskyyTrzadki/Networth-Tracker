@@ -150,6 +150,14 @@ export function PortfolioValueModeContent({
   const hasInvestedCapitalGaps =
     hasInvestedCapitalData &&
     investedCapitalSeries.some((entry) => entry.value === null);
+  const periodTrendLabel =
+    selectedPeriodAbsoluteChange === null
+      ? "Brak danych"
+      : selectedPeriodAbsoluteChange > 0
+        ? "Trend: wzrost"
+        : selectedPeriodAbsoluteChange < 0
+          ? "Trend: spadek"
+          : "Trend: bez zmian";
 
   return (
     <div className="space-y-4">
@@ -192,6 +200,9 @@ export function PortfolioValueModeContent({
             {selectedPeriodChangePercent !== null
               ? formatPercent(selectedPeriodChangePercent)
               : "—"}
+          </div>
+          <div className="rounded-sm border border-border/65 bg-background/74 px-2 py-1 text-[11px] text-muted-foreground">
+            {periodTrendLabel}
           </div>
         </div>
       </div>

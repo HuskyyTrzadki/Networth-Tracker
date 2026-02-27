@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChartCard } from "@/features/design-system";
+import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Dialog,
@@ -72,7 +72,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   const concentrationWarning = getConcentrationWarning(summary);
   const concentrationTone =
     concentrationWarning?.severity === "CRITICAL"
-      ? "border-l-loss bg-loss/16 text-loss"
+      ? "border-l-[color:var(--loss)] bg-[color:var(--loss)]/16 text-[color:var(--loss)]"
     : concentrationWarning?.severity === "HARD"
         ? "border-l-[color:var(--loss)] bg-destructive/12 text-[color:var(--loss)]"
         : concentrationWarning
@@ -122,9 +122,18 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
       <ChartCard
         className="border-border/75 bg-card/94"
         surface="subtle"
-        title={
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <span>Alokacja i pozycje</span>
+        title="Alokacja i pozycje"
+        subtitle={
+          shouldForceTable
+            ? "Skład portfela"
+            : effectiveMode === "TREEMAP"
+            ? "Mapa udziałów"
+            : effectiveMode === "BARS"
+              ? "Ranking udziałów"
+              : "Skład portfela"
+        }
+        right={
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <ToggleGroup
               className="rounded-md border border-border/65 bg-background/70 p-1"
               onValueChange={(value) => {
@@ -138,36 +147,25 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               value={effectiveMode}
             >
               {!shouldForceTable && isTreemapEligible ? (
-                <ToggleGroupItem className="h-8 px-3 text-sm" value="TREEMAP" variant="ledger">
+                <ToggleGroupItem className="h-8 px-3 text-[12px]" value="TREEMAP" variant="ledger">
                   Mapa
                 </ToggleGroupItem>
               ) : null}
               {!shouldForceTable ? (
-                <ToggleGroupItem className="h-8 px-3 text-sm" value="BARS" variant="ledger">
+                <ToggleGroupItem className="h-8 px-3 text-[12px]" value="BARS" variant="ledger">
                   Słupki
                 </ToggleGroupItem>
               ) : null}
-              <ToggleGroupItem className="h-8 px-3 text-sm" value="HOLDINGS" variant="ledger">
+              <ToggleGroupItem className="h-8 px-3 text-[12px]" value="HOLDINGS" variant="ledger">
                 Tabela
               </ToggleGroupItem>
             </ToggleGroup>
-          </div>
-        }
-        subtitle={
-          shouldForceTable
-            ? "Skład portfela"
-            : effectiveMode === "TREEMAP"
-            ? "Mapa udziałów"
-            : effectiveMode === "BARS"
-              ? "Ranking udziałów"
-              : "Skład portfela"
-        }
-        right={
-          <div className="flex items-center gap-2">
             {summary.asOf ? (
-              <div className="hidden text-right text-[12px] text-muted-foreground md:block">
-                Stan: {formatAsOf(summary.asOf)}
-              </div>
+              <StatusStrip
+                className="hidden md:inline-flex"
+                hint="Stan wyceny z ostatniego odświeżenia notowań."
+                label={`Stan: ${formatAsOf(summary.asOf)}`}
+              />
             ) : null}
             {canExpandView ? (
               <DialogTrigger asChild>
@@ -222,7 +220,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         !isConcentrationWarningDismissed ? (
           <div
             className={cn(
-              "mt-3 flex items-start justify-between gap-3 rounded-sm border border-dashed border-border/70 border-l-[3px] px-3 py-2 text-[13px] leading-5",
+              "mt-3 flex items-start justify-between gap-3 rounded-sm border border-dashed border-border/70 border-l-[3px] px-3 py-2 text-[12px] leading-5",
               concentrationTone
             )}
           >
@@ -244,9 +242,12 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
           </div>
         ) : null}
         {summary.isPartial ? (
-          <div className="mt-3 text-[12px] text-muted-foreground">
-            Częściowe dane: ceny {summary.missingQuotes}, FX {summary.missingFx}.
-          </div>
+          <StatusStrip
+            className="mt-3"
+            hint={`Braki danych: ceny ${summary.missingQuotes}, FX ${summary.missingFx}.`}
+            label="Status: częściowe"
+            tone="warning"
+          />
         ) : null}
       </ChartCard>
       <DialogContent className="h-[92vh] w-[96vw] max-w-[1800px] gap-0 overflow-hidden border border-border/70 bg-card/96 p-0">

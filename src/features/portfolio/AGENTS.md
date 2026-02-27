@@ -103,9 +103,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Economic currency exposure flow now emits structured trace logs on each request (`[currency-exposure][economic]`) and returns `X-Currency-Exposure-Trace-Id` header; set `CURRENCY_EXPOSURE_VERBOSE_LOGS=1` to include full prompt/response payloads in server logs. Client-side response logs are enabled outside production, or in production when `NEXT_PUBLIC_CURRENCY_EXPOSURE_CLIENT_LOGS=1`.
 - Dashboard content is constrained to `max-w-7xl` and follows newspaper rhythm: full-width hero + main chart, then `xl:grid-cols-2` row (`Alokacja i pozycje` vs `Ekspozycja walutowa`), with `Ostatnie transakcje` as the next full-width row.
 - `Alokacja i pozycje` in `Mapa` mode exposes `Powiększ mapę` action (Lucide maximize icon) that opens a large dialog with treemap rendered on expanded height for detailed inspection.
-- W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje osobny donut z kategoriami.
-- Widget `Alokacja per portfel` uses external legend rows under each donut; on-chart slice callouts are disabled to prevent clipping in compact card height.
-- `Alokacja per portfel` cards use compact ledger headers (`Nazwa + wartość` plus short `Stan: ...` row) and concise partial-data note (`Częściowe dane: ceny X, FX Y`) to reduce text noise.
+- W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje poziomy pasek skumulowany 100% (segmenty kategorii) zamiast donutów.
+- `Alokacja per portfel` pokazuje pod paskiem pełną listę kategorii z udziałami, a segmenty używają natywnych hintów (`title`) dla szybkiego odczytu bez ryzyka obcinania etykiet.
+- `Alokacja per portfel` cards keep compact ledger headers (`Nazwa + wartość` + `Stan: ...`) and short partial-data status strips (`Status: częściowe` z hintem o brakujących cenach/FX).
 - Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
 - W trybie performance dla zakresów >=7D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.
@@ -205,9 +205,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `/portfolio` route shell and unauth fallback now follow the same ledger card language as transactions (framed hero strip, compact metadata chips, dashed separators, rounded action controls).
 - Dashboard widget pass aligned chrome across value/allocation/currency/top-movers/recent/dividends cards: `border-border/75` framed papers, dashed empty states, and rounded-full utility actions for consistent desktop scanning rhythm.
 - Value/performance header controls were upgraded to a compact “control board” layout (`Tryb/Zakres/Waluta/Porównania` in framed mini-panels) with supportive status rows in dashed micro-cards.
+- Value/performance control board was densified to one height rhythm (`h-7` controls, compact panel paddings) so `Tryb/Zakres/Waluta/Porównania` align visually on desktop.
 - Portfolio loading + empty states now use ledger-first shells (`PortfolioRouteLoading`, `PortfolioDashboardSkeleton`, `DashboardEmptyState`) with status strips, dashed separators, and action-guidance copy so pending/empty views match the final dashboard tone.
 - Portfolio dashboard microcopy was intentionally shortened across widgets (value/performance header notices, allocation/currency/dividend/top-movers states) to reduce cognitive load; prefer short status labels over explanatory paragraphs.
 - Widget micro-pattern now favors short mono status strips (`Status: ...` / `Stan: ...`) in key cards (`Ostatnie transakcje`, `Największe ruchy`, `Skrzynka dywidend`, `Alokacja per portfel`) to keep header hierarchy consistent.
+- `/portfolio` page header now uses concise scope strip (`Portfel: ...` / `Widok: wszystkie`) with hint text instead of long descriptive subtitle copy.
+- Non-color financial cues were reinforced: top-movers badges include explicit trend tokens (`Wzr.`/`Spad.`), and value/performance period summaries show textual trend state (`Trend: wzrost/spadek/bez zmian`) alongside colored numbers.
+- Dividend booking flow now exposes explicit inline submit states near the action (`księgowanie` / `zaksięgowano` / `błąd`) in addition to dialog/toast feedback.
+- Typography cleanup removed outlier micro sizes in dashboard control/warning surfaces (no `9px/13px` in key value/allocation headers; compact scale stays on 10/11/12/14/16).
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`

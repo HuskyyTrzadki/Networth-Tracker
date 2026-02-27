@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import {
@@ -27,6 +27,7 @@ type Props = Readonly<{
   open: boolean;
   onOpenChange: (next: boolean) => void;
   onBooked: () => void;
+  onSubmitStateChange?: (state: "loading" | "success" | "error") => void;
 }>;
 
 const formatMoney = (value: string | null, currency: string) => {
@@ -44,6 +45,7 @@ export function DividendBookingDialog({
   open,
   onOpenChange,
   onBooked,
+  onSubmitStateChange,
 }: Props) {
   const [netAmount, setNetAmount] = useState(item.netSuggested ?? item.estimatedGross ?? "");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -54,11 +56,13 @@ export function DividendBookingDialog({
     const parsed = parseDecimalInput(netAmount);
     if (parsed === null || parsed <= 0) {
       setErrorMessage("Wpisz wartość netto większą od 0.");
+      onSubmitStateChange?.("error");
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage(null);
+    onSubmitStateChange?.("loading");
 
     try {
       await bookDividend({
@@ -78,6 +82,7 @@ export function DividendBookingDialog({
       });
 
       setIsCelebrating(true);
+      onSubmitStateChange?.("success");
       setTimeout(() => {
         onOpenChange(false);
         onBooked();
@@ -85,6 +90,7 @@ export function DividendBookingDialog({
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Nie udało się zaksięgować dywidendy.");
       setIsSubmitting(false);
+      onSubmitStateChange?.("error");
     }
   };
 
@@ -157,7 +163,14 @@ export function DividendBookingDialog({
             Anuluj
           </Button>
           <Button disabled={isSubmitting} onClick={submit} type="button">
-            Zaksięguj
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+                Księgowanie...
+              </>
+            ) : (
+              "Zaksięguj"
+            )}
           </Button>
         </DialogFooter>
 

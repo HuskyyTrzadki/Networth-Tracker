@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartCard } from "@/features/design-system";
+import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { cn } from "@/lib/cn";
@@ -60,9 +60,11 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
       title="Największe ruchy"
       subtitle="Dziś"
     >
-      <div className="mb-3 inline-flex rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-        Status: opóźnione
-      </div>
+      <StatusStrip
+        className="mb-3"
+        hint="Zmiany dzienne bazują na notowaniach opóźnionych."
+        label="Status: opóźnione"
+      />
       {movers.length > 0 ? (
         <ul className="grid gap-2 sm:grid-cols-2">
           {movers.map((mover) => {
@@ -72,14 +74,15 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
               formatter
             );
             const percentLabel = formatPercent(mover.todayChangePercent);
+            const trendLabel = mover.trend === "UP" ? "Wzr." : "Spad.";
             const trendTone =
               mover.trend === "UP"
                 ? "text-[color:var(--profit)]"
                 : "text-[color:var(--loss)]";
             const badgeTone =
               mover.trend === "UP"
-                ? "border-border/70 bg-background/92 text-[color:var(--profit)]"
-                : "border-border/70 bg-background/92 text-[color:var(--loss)]";
+                ? "border-[color:var(--profit)]/35 bg-[color:var(--profit)]/10 text-[color:var(--profit)]"
+                : "border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 text-[color:var(--loss)]";
 
             return (
               <li
@@ -111,7 +114,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Badge className={cn("rounded-md border px-2 py-0.5", badgeTone)}>
-                      {percentLabel}
+                      {trendLabel} {percentLabel}
                     </Badge>
                     <span
                       className={cn(
@@ -133,9 +136,12 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
         </div>
       )}
       {summary.isPartial ? (
-        <div className="mt-3 text-[12px] text-muted-foreground">
-          Część pozycji bez danych.
-        </div>
+        <StatusStrip
+          className="mt-3"
+          hint={`Braki danych: ceny ${summary.missingQuotes}, FX ${summary.missingFx}.`}
+          label="Status: częściowe"
+          tone="warning"
+        />
       ) : null}
     </ChartCard>
   );

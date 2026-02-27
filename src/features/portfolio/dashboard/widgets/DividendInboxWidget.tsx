@@ -1,4 +1,4 @@
-import { ChartCard } from "@/features/design-system";
+import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import type { DividendInboxItem, DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
 import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
@@ -92,16 +92,19 @@ export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
     <ChartCard
       className="border-border/75 bg-card/94"
       title="Skrzynka dywidend"
-      subtitle={
-        isReadOnly
-          ? "Widok globalny: tylko podgląd."
-          : ""
+      subtitle={isReadOnly ? "Widok globalny" : undefined}
+      right={
+        <StatusStrip
+          hint={
+            isReadOnly
+              ? "W widoku zbiorczym nie można księgować zdarzeń."
+              : "W tym widoku możesz księgować dywidendy dla wybranego portfela."
+          }
+          label={statusLabel}
+        />
       }
     >
       <div className="space-y-4">
-        <div className="inline-flex rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-          {statusLabel}
-        </div>
         {!isReadOnly ? (
           <Section
             title="60 dni wstecz"

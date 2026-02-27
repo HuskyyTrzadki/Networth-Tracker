@@ -100,7 +100,11 @@ export function AddTransactionDialog({
           requestClose();
         }}
       >
-        <DialogContent className="max-h-[92dvh] overflow-hidden rounded-lg border border-border/70 bg-card/96 p-0 shadow-[var(--surface-shadow)] sm:max-w-[1080px]">
+        <DialogContent
+          aria-busy={isSubmitting}
+          className="max-h-[92dvh] overflow-hidden rounded-lg border border-border/70 bg-card/96 p-0 shadow-[var(--surface-shadow)] sm:max-w-[1080px]"
+          data-submitting={isSubmitting ? "true" : "false"}
+        >
           <AddTransactionDialogContent
             assetBalancesByPortfolio={assetBalancesByPortfolio}
             cashBalancesByPortfolio={cashBalancesByPortfolio}

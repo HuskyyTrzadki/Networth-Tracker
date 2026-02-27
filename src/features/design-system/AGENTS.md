@@ -47,6 +47,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Base sidebar primitive internals are split by responsibility (`src/components/ui/sidebar-context.tsx`, `src/components/ui/sidebar-core.tsx`, `src/components/ui/sidebar-menu.tsx`) and re-exported through `src/components/ui/sidebar.tsx` to keep each file below repo size limits.
 - `ChartCard` uses symmetrical `p-4` spacing and a single internal rhythm (`header` + `content`) so widget chrome remains consistent across portfolio sections.
 - `ChartCard` now supports `surface` variants (`default`/`subtle`) for consistent visual hierarchy between primary and secondary dashboard cards.
+- `ChartCard` now exposes region semantics by default (`role="region"` + `aria-labelledby`) and promotes string titles to `h2` for cleaner heading navigation in screen readers.
 - Dashboard charts share axis typography/margins/line widths from `components/chart-styles.ts`; benchmark palette is intentionally separated from base return line for better contrast.
 - `AllocationDonutChart` supports responsive radius values (`innerRadius`/`outerRadius` as percent) so feature widgets can use full-width chart areas without hardcoded pixel donuts.
 - `AllocationDonutChart` now supports optional per-slice SVG patterns (`hatch`, `dots`, `cross`, `grid`) in addition to color fills, enabling print-like category distinction in allocation charts.
@@ -55,7 +56,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Chart stories live in `stories/Charts.stories.tsx`.
 - Typography split is explicit: UI/editorial copy uses Geist Sans (`--font-sans`), data/tickers/numerics use IBM Plex Mono (`--font-mono` + `tabular-nums`), and classes are applied directly in components (no global alias utilities).
 - `Badge` primitive includes a `stamp` variant (CVA-driven) for subdued metadata chips like valuation freshness labels.
+- Shared `StatusStrip` primitive (`components/StatusStrip.tsx`) centralizes mono dashed status labels with optional native tooltip hint (`title`) and semantic tones (`neutral/warning/positive/negative`).
 - Light-theme surface depth uses layered tokens (`--surface-base`, `--surface-card`, `--surface-interactive`) plus shared `--surface-shadow` (soft drop shadow + top inset highlight) reused by dashboard card surfaces.
+- Semantic gain/loss tokens (`--profit`, `--loss`) were softened to a more institutional tone and should be reused for all financial deltas/badges instead of per-widget ad-hoc colors.
 - `PortfolioComparisonChart` now uses `AreaChart` for portfolio value (stroke width `3` + subtle gradient fill) while invested-capital overlay remains a step line for clear comparison semantics.
 - `DailyReturnsLineChart` keeps its API but now renders the primary cumulative-return series as an area (stroke width `3` + subtle gradient fill), with benchmark overlays still rendered as line series.
 - Value and performance charts now share one rendering primitive (`UnifiedPortfolioTrendChart`), so axis/grid/tooltip/area-depth behavior stays consistent across both modes.

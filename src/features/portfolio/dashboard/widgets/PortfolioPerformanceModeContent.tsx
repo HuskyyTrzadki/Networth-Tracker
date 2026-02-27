@@ -101,6 +101,14 @@ export function PortfolioPerformanceModeContent({
   onBootstrapRequest,
 }: Props) {
   const isRebuildBusy = rebuildStatus === "queued" || rebuildStatus === "running";
+  const periodTrendLabel =
+    selectedPeriodReturn === null
+      ? "Brak danych"
+      : selectedPeriodReturn > 0
+        ? "Trend: wzrost"
+        : selectedPeriodReturn < 0
+          ? "Trend: spadek"
+          : "Trend: bez zmian";
 
   if (isRebuildBusy) {
     return (
@@ -198,6 +206,9 @@ export function PortfolioPerformanceModeContent({
                   />
                 )
               : "—"}
+          </div>
+          <div className="rounded-sm border border-border/65 bg-background/74 px-2 py-1 text-[11px] text-muted-foreground">
+            {periodTrendLabel}
           </div>
         </div>
       </div>

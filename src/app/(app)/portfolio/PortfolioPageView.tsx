@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal, StatusStrip } from "@/features/design-system";
 import {
   PortfolioDashboardSkeleton,
   PortfolioMobileHeaderActions,
@@ -27,7 +27,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">Portfele</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Zaloguj się, aby zobaczyć wycenę i historię portfela.
+            Zaloguj się, aby otworzyć dashboard portfela.
           </p>
           <Button asChild className="mt-5 h-11">
             <Link
@@ -54,9 +54,12 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   }
 
   const baseCurrency = selectedPortfolio?.baseCurrency ?? "PLN";
-  const subtitle = selectedPortfolio
+  const scopeLabel = selectedPortfolio
     ? `Portfel: ${selectedPortfolio.name}`
-    : "Wszystkie portfele";
+    : "Widok: wszystkie";
+  const scopeHint = selectedPortfolio
+    ? "Dashboard pokazuje dane dla wybranego portfela."
+    : "Widok zbiorczy sumuje wszystkie portfele.";
 
   return (
     <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-7xl flex-col px-5 py-5 sm:px-6 sm:py-7">
@@ -77,7 +80,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
                 Dashboard
               </p>
               <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
+              <StatusStrip className="w-fit" hint={scopeHint} label={scopeLabel} />
             </div>
             <Button asChild size="lg" className="h-11 w-full lg:w-auto">
               <Link

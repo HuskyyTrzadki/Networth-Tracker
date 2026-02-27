@@ -44,13 +44,6 @@ export function DashboardEmptyState({
           </div>
         </div>
 
-        <div className="mt-5 rounded-md border border-dashed border-border/70 bg-background/70 px-4 py-3">
-          <p className="font-mono text-xs text-muted-foreground">
-            Zacznij od pierwszej transakcji, aby uruchomić wykres wartości, alokację i
-            podsumowanie wyników.
-          </p>
-        </div>
-
         <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-start">
           <Link
             className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
