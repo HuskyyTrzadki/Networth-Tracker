@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
@@ -39,6 +39,7 @@ type Props = Readonly<{
 
 type Mode = "TREEMAP" | "BARS" | "HOLDINGS";
 const CONCENTRATION_WARNING_DISMISSED_KEY = "portfolio:concentration-warning:dismissed:v1";
+const subscribeNoop = () => () => {};
 
 const formatPercent = (value: number, maxFractionDigits = 1) =>
   new Intl.NumberFormat("pl-PL", {
@@ -60,11 +61,15 @@ const clampProgress = (value: number | null) => {
 export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   const [mode, setMode] = useState<Mode>("TREEMAP");
   const [isExpandedOpen, setIsExpandedOpen] = useState(false);
-  const [isConcentrationWarningDismissed, setIsConcentrationWarningDismissed] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.localStorage.getItem(CONCENTRATION_WARNING_DISMISSED_KEY) === "1"
+  const [isConcentrationWarningDismissedByUser, setIsConcentrationWarningDismissedByUser] =
+    useState(false);
+  const isConcentrationWarningDismissedPersisted = useSyncExternalStore(
+    subscribeNoop,
+    () => window.localStorage.getItem(CONCENTRATION_WARNING_DISMISSED_KEY) === "1",
+    () => false
   );
+  const isConcentrationWarningDismissed =
+    isConcentrationWarningDismissedByUser || isConcentrationWarningDismissedPersisted;
   const formatter = getCurrencyFormatter(summary.baseCurrency);
   const isRebuildBusy = rebuild.status === "queued" || rebuild.status === "running";
   const rebuildProgress = clampProgress(rebuild.progressPercent);
@@ -232,7 +237,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               aria-label="Zamknij ostrzeżenie o koncentracji"
               className="shrink-0 rounded-sm p-1 transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/35"
               onClick={() => {
-                setIsConcentrationWarningDismissed(true);
+                setIsConcentrationWarningDismissedByUser(true);
                 window.localStorage.setItem(CONCENTRATION_WARNING_DISMISSED_KEY, "1");
               }}
               type="button"

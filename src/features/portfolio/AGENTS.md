@@ -182,6 +182,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Daily cache preload validates range coverage quality (start/end + max internal gap), so sparse cache fragments trigger provider refetch instead of creating long flat carry-forward segments.
 - Portfolio value/performance chart compute is split into a dedicated view-model builder (`dashboard/lib/portfolio-value-over-time-view-model.ts`) so the widget component stays focused on orchestration and rendering.
 - Portfolio chart remembers selected range in localStorage per scope (`ALL` vs `PORTFOLIO:<id>`) so users keep their preferred timeframe between visits.
+- Portfolio chart hydrates persisted `range` from localStorage in `useEffect` (not during render) to keep SSR/client first paint consistent and avoid hydration mismatch (`YTD` vs stored `7D`).
+- Allocation concentration-warning dismissal reads localStorage via hydration-safe subscription (no render-time `window` branching), preventing SSR/client markup drift in `AllocationHoldingsWidget`.
+- Allocation holdings table uses deterministic iconography for custom assets: logo cell renders the selected `customAssetType` icon (`Typ aktywa`) instead of fetching custom photos.
+- Allocation holdings table renders cash rows with `Wallet` icon (shared `isCashInstrumentLike` rule), so currency holdings are visually consistent with transactions.
 - Dashboard visual surfaces (hero, switcher shell, allocation/rebuild cards, and skeletons) were normalized to the same rounded/border rhythm as shared primitives, with decorative shadows/gradients reduced for consistency.
 - Desktop polish follow-up tightened dashboard control density (`PortfolioValueOverTimeHeader`) and route-loading shell width alignment (`max-w-[1560px]`) for more consistent large-screen rhythm.
 - Allocation `Mapa` now uses a light "tinted paper" palette (pastel green/rose/white by `todayChangePercent`, size = portfolio weight) with centered mono labels and beige background gaps so it integrates with the editorial light shell.

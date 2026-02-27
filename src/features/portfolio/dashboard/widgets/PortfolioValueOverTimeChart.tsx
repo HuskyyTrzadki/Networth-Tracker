@@ -70,6 +70,7 @@ type ChartState = Readonly<{
   benchmarkSeriesOverrides: Partial<DashboardBenchmarkSeries>;
   loadedBenchmarkDatesById: Record<BenchmarkId, readonly string[]>;
   loadingBenchmarkIds: readonly BenchmarkId[];
+  rangeStorageHydrated: boolean;
   bootstrapped: boolean;
   bootstrapPending: boolean;
 }>;
@@ -87,6 +88,7 @@ type ChartAction =
       payload: Record<BenchmarkId, readonly string[]>;
     }
   | { type: "set_loading_benchmark_ids"; payload: readonly BenchmarkId[] }
+  | { type: "set_range_storage_hydrated"; payload: boolean }
   | { type: "set_bootstrapped"; payload: boolean }
   | { type: "set_bootstrap_pending"; payload: boolean };
 
@@ -110,6 +112,8 @@ const chartReducer = (state: ChartState, action: ChartAction): ChartState => {
       return { ...state, loadedBenchmarkDatesById: action.payload };
     case "set_loading_benchmark_ids":
       return { ...state, loadingBenchmarkIds: action.payload };
+    case "set_range_storage_hydrated":
+      return { ...state, rangeStorageHydrated: action.payload };
     case "set_bootstrapped":
       return { ...state, bootstrapped: action.payload };
     case "set_bootstrap_pending":
@@ -262,16 +266,7 @@ export function PortfolioValueOverTimeChart({
   rebuild,
 }: Props) {
   const rangeStorageKey = `portfolio:chart-range:${scope}:${portfolioId ?? "all"}`;
-  const initialResolvedRange = resolveInitialChartRange(rows);
-  const initialSavedRange =
-    typeof window === "undefined"
-      ? null
-      : (window.localStorage.getItem(rangeStorageKey) as ChartRange | null);
-  const initialRange =
-    initialSavedRange &&
-    rangeOptions.some((option) => option.value === initialSavedRange)
-      ? initialSavedRange
-      : initialResolvedRange;
+  const initialRange = resolveInitialChartRange(rows);
   const [state, dispatch] = useReducer(chartReducer, {
     currency: "PLN",
     mode: resolveInitialChartMode(rows),
@@ -282,6 +277,7 @@ export function PortfolioValueOverTimeChart({
     benchmarkSeriesOverrides: {},
     loadedBenchmarkDatesById: EMPTY_BENCHMARK_DATES,
     loadingBenchmarkIds: [],
+    rangeStorageHydrated: false,
     bootstrapped: false,
     bootstrapPending: false,
   });
@@ -295,6 +291,7 @@ export function PortfolioValueOverTimeChart({
     benchmarkSeriesOverrides,
     loadedBenchmarkDatesById,
     loadingBenchmarkIds,
+    rangeStorageHydrated,
     bootstrapped,
     bootstrapPending,
   } = state;
@@ -371,8 +368,20 @@ export function PortfolioValueOverTimeChart({
   });
 
   useEffect(() => {
+    const savedRange = window.localStorage.getItem(rangeStorageKey) as ChartRange | null;
+    if (savedRange && rangeOptions.some((option) => option.value === savedRange)) {
+      dispatch({ type: "set_range", payload: savedRange });
+    }
+    dispatch({ type: "set_range_storage_hydrated", payload: true });
+  }, [rangeStorageKey]);
+
+  useEffect(() => {
+    if (!rangeStorageHydrated) {
+      return;
+    }
+
     window.localStorage.setItem(rangeStorageKey, range);
-  }, [range, rangeStorageKey]);
+  }, [range, rangeStorageHydrated, rangeStorageKey]);
 
   const currencyFormatter = getCurrencyFormatter(currency);
   const formatCurrencyValue = (value: number) =>

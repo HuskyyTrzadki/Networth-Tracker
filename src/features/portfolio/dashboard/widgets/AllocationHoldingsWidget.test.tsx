@@ -136,7 +136,8 @@ describe("AllocationHoldingsWidget", () => {
 
     fireEvent.click(expandButton);
 
-    expect(screen.getByText("Mapa alokacji - widok powiększony")).toBeInTheDocument();
+    expect(screen.getByText("Mapa alokacji")).toBeInTheDocument();
+    expect(screen.getByText("Widok pełnoekranowy.")).toBeInTheDocument();
     expect(screen.getAllByTestId("allocation-treemap")).toHaveLength(2);
   });
 
@@ -146,7 +147,8 @@ describe("AllocationHoldingsWidget", () => {
     fireEvent.click(screen.getByRole("button", { name: "Słupki" }));
     fireEvent.click(screen.getByRole("button", { name: "Powiększ słupki alokacji" }));
 
-    expect(screen.getByText("Słupki alokacji - widok powiększony")).toBeInTheDocument();
+    expect(screen.getByText("Słupki alokacji")).toBeInTheDocument();
+    expect(screen.getByText("Widok pełnoekranowy.")).toBeInTheDocument();
     expect(screen.getAllByTestId("allocation-bars")).toHaveLength(2);
   });
 
@@ -156,7 +158,8 @@ describe("AllocationHoldingsWidget", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tabela" }));
     fireEvent.click(screen.getByRole("button", { name: "Powiększ tabelę pozycji" }));
 
-    expect(screen.getByText("Tabela pozycji - widok powiększony")).toBeInTheDocument();
+    expect(screen.getByText("Tabela pozycji")).toBeInTheDocument();
+    expect(screen.getByText("Widok pełnoekranowy.")).toBeInTheDocument();
     expect(screen.getAllByTestId("allocation-holdings-table")).toHaveLength(2);
   });
 });

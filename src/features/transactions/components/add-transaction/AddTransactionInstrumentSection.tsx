@@ -2,17 +2,9 @@
 
 import { format } from "date-fns";
 import {
-  Building2,
-  Car,
-  CircleHelp,
-  HandCoins,
   House,
-  Landmark,
-  Laptop,
   LineChart,
-  PiggyBank,
   Wallet,
-  type LucideIcon,
 } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 
@@ -36,7 +28,6 @@ import {
   customAssetTypes,
   customAssetTypeLabels,
   isCustomAssetType,
-  type CustomAssetType,
 } from "../../lib/custom-asset-types";
 import {
   SUPPORTED_CASH_CURRENCIES,
@@ -47,6 +38,7 @@ import type { FormValues } from "../AddTransactionDialogContent";
 import { ASSET_TABS, type AssetTab, formatMoney } from "./constants";
 import { AddTransactionPortfolioTypeFields } from "./AddTransactionPortfolioTypeFields";
 import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
+import { customAssetTypeIcons } from "../custom-asset-icons";
 
 type Props = Readonly<{
   form: UseFormReturn<FormValues>;
@@ -100,16 +92,6 @@ export function AddTransactionInstrumentSection({
     CASH: Wallet,
     CUSTOM: House,
   } as const;
-  const customAssetTypeIcons: Readonly<Record<CustomAssetType, LucideIcon>> = {
-    REAL_ESTATE: Building2,
-    CAR: Car,
-    COMPUTER: Laptop,
-    TREASURY_BONDS: Landmark,
-    TERM_DEPOSIT: PiggyBank,
-    PRIVATE_LOAN: HandCoins,
-    OTHER: CircleHelp,
-  };
-
   return (
     <>
       <AddTransactionPortfolioTypeFields

@@ -208,9 +208,9 @@ export function InstrumentCombobox({
                     <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
                       <div className="flex items-center gap-2">
                         <InstrumentLogoImage
-                          className="size-4"
+                          className="size-[18px]"
                           fallbackText={option.ticker}
-                          size={16}
+                          size={18}
                           src={option.logoUrl}
                         />
                         <span className="font-mono text-sm font-semibold tabular-nums">

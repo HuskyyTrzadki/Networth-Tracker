@@ -135,7 +135,7 @@ export function StockScreenerGrid({
                   <div className="mb-4 flex min-w-0 items-start gap-2.5">
                     <InstrumentLogoImage
                       src={card.logoUrl}
-                      size={32}
+                      size={36}
                       fallbackText={card.symbol}
                       alt={card.name}
                     />

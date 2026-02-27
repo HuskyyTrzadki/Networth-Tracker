@@ -130,7 +130,7 @@ export default function StockReportSidebar({
             <ReportShellMenuTrigger className="px-2" />
 
             <div className="flex min-w-0 items-center gap-3">
-              <InstrumentLogoImage src={logoUrl} size={46} fallbackText={symbol} alt={name} />
+              <InstrumentLogoImage src={logoUrl} size={52} fallbackText={symbol} alt={name} />
               <div className="min-w-0">
                 <h1 className="truncate text-2xl font-semibold tracking-tight">{symbol}</h1>
                 <p className="truncate text-sm text-muted-foreground">{name}</p>

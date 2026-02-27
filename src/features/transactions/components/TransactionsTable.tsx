@@ -22,6 +22,7 @@ import { multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 import { formatGroupedNumber } from "@/lib/format-number";
 import type { TransactionListItem } from "../server/list-transactions";
 import { cashflowTypeLabels, type CashflowType } from "../lib/cashflow-types";
+import { isCashInstrumentLike } from "../lib/system-currencies";
 import { InstrumentLogoImage } from "./InstrumentLogoImage";
 import { TransactionsRowActions } from "./TransactionsRowActions";
 
@@ -230,9 +231,15 @@ function TransactionsLedgerRow({
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid size-8 place-items-center text-sm leading-none">
             <InstrumentLogoImage
-              className="size-6"
+              className="size-7"
               fallbackText={item.instrument.symbol}
-              size={24}
+              customAssetType={
+                item.instrument.symbol === "CUSTOM"
+                  ? (item.instrument.customAssetType ?? "OTHER")
+                  : null
+              }
+              isCash={isCashInstrumentLike(item.instrument)}
+              size={28}
               src={item.instrument.logoUrl}
             />
           </div>

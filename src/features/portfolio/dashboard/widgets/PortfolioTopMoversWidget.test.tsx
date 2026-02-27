@@ -70,16 +70,14 @@ describe("PortfolioTopMoversWidget", () => {
     expect(screen.getByText("AAPL")).toBeInTheDocument();
     expect(screen.getByText("MSFT")).toBeInTheDocument();
     expect(screen.getAllByText(/100,00\s*USD/)).toHaveLength(2);
-    expect(screen.getByText("+2,00%")).toBeInTheDocument();
-    expect(screen.getByText("-1,00%")).toBeInTheDocument();
+    expect(screen.getByText("Wzr. +2,00%")).toBeInTheDocument();
+    expect(screen.getByText("Spad. -1,00%")).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("renders empty state when no movers data is available", () => {
     render(<PortfolioTopMoversWidget summary={baseSummary} />);
 
-    expect(
-      screen.getByText("Brak danych o dziennych zmianach dla pozycji.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Brak zmian dziennych.")).toBeInTheDocument();
   });
 });

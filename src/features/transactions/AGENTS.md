@@ -154,7 +154,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.
 - Search surfaces that use `InstrumentCombobox` can opt into global `/` focus shortcut via `listenForFocusShortcut`.
 - `InstrumentLogoImage` routes remote logo URLs through shared app proxy (`/api/public/image`) to keep `next/image` optimization enabled without custom passthrough loaders.
-- `InstrumentLogoImage` tries source logo first, then ticker-based `img.logo.dev` fallback (via `/api/public/image?ticker=...`) before showing initials avatar; token is injected server-side via `LOGO_DEV_PUBLISHABLE_KEY` (legacy `LOGO_DEV_SECRET_KEY` fallback still supported).
+- Custom assets no longer fetch external images; `InstrumentLogoImage` renders deterministic icon mapped from `customAssetType` (`Typ aktywa`), and for market assets it falls back to ticker-based `img.logo.dev` proxy (`/api/public/image?ticker=...`) before initials avatar.
+- Cash instruments (`instrumentType = CURRENCY`, `provider = system`, or supported cash currency code) render `Wallet` icon in `InstrumentLogoImage` instead of remote logos.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

@@ -93,9 +93,9 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                   <div className="flex min-w-0 items-center gap-2">
                     <InstrumentLogoImage
                       alt=""
-                      className="size-6 shrink-0"
+                      className="size-7 shrink-0"
                       fallbackText={mover.symbol}
-                      size={24}
+                      size={28}
                       src={mover.logoUrl}
                     />
                     <div className="min-w-0">

@@ -8,6 +8,12 @@ const ONE_DAY_SECONDS = 60 * 60 * 24;
 const LOGO_CACHE_FRESH_SECONDS = ONE_DAY_SECONDS * 7;
 const LOGO_CACHE_STALE_SECONDS = ONE_DAY_SECONDS * 30;
 
+type CandidateImageUrl = Readonly<{
+  url: URL;
+  freshSeconds: number;
+  staleSeconds: number;
+}>;
+
 const isBlockedHostname = (hostname: string) => {
   const normalized = hostname.trim().toLowerCase();
 
@@ -60,20 +66,36 @@ export async function GET(request: Request) {
     .map((url) => parseRemoteImageUrl(url))
     .filter((url): url is URL => Boolean(url));
 
-  const remoteUrls = explicitRemoteUrl ? [explicitRemoteUrl] : logoDevTickerUrls;
-  if (remoteUrls.length === 0) {
+  const candidates: CandidateImageUrl[] = [];
+  if (explicitRemoteUrl) {
+    candidates.push({
+      url: explicitRemoteUrl,
+      freshSeconds: LOGO_CACHE_FRESH_SECONDS,
+      staleSeconds: LOGO_CACHE_STALE_SECONDS,
+    });
+  } else if (logoDevTickerUrls.length > 0) {
+    candidates.push(
+      ...logoDevTickerUrls.map((url) => ({
+        url,
+        freshSeconds: LOGO_CACHE_FRESH_SECONDS,
+        staleSeconds: LOGO_CACHE_STALE_SECONDS,
+      }))
+    );
+  }
+
+  if (candidates.length === 0) {
     return NextResponse.json({ message: "Invalid image URL." }, { status: 400 });
   }
 
-  for (const remoteUrl of remoteUrls) {
+  for (const candidate of candidates) {
     let upstreamResponse: Response;
     try {
-      upstreamResponse = await fetch(remoteUrl.toString(), {
+      upstreamResponse = await fetch(candidate.url.toString(), {
         headers: {
           Accept: "image/*",
         },
         next: {
-          revalidate: LOGO_CACHE_FRESH_SECONDS,
+          revalidate: candidate.freshSeconds,
         },
       });
     } catch {
@@ -93,7 +115,7 @@ export async function GET(request: Request) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": `public, max-age=0, s-maxage=${LOGO_CACHE_FRESH_SECONDS}, stale-while-revalidate=${LOGO_CACHE_STALE_SECONDS}`,
+        "Cache-Control": `public, max-age=0, s-maxage=${candidate.freshSeconds}, stale-while-revalidate=${candidate.staleSeconds}`,
       },
     });
   }

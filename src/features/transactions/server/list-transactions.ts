@@ -1,4 +1,8 @@
 import type { createClient } from "@/lib/supabase/server";
+import {
+  isCustomAssetType,
+  type CustomAssetType,
+} from "../lib/custom-asset-types";
 
 import type { TransactionsFilters, TransactionSide } from "./filters";
 
@@ -37,10 +41,12 @@ type TransactionRow = Readonly<{
     | Readonly<{
         name: string;
         currency: string;
+        kind: string | null;
       }>
     | Readonly<{
         name: string;
         currency: string;
+        kind: string | null;
       }>[]
     | null;
 }>;
@@ -63,6 +69,7 @@ export type TransactionListItem = Readonly<{
     region?: string;
     logoUrl?: string | null;
     instrumentType?: string | null;
+    customAssetType?: CustomAssetType | null;
   }>;
 }>;
 
@@ -92,7 +99,7 @@ export async function listTransactions(
   let query = supabase
     .from("transactions")
     .select(
-      "id, trade_date, side, quantity, price, fee, group_id, leg_role, leg_key, cashflow_type, instrument:instruments(symbol, name, currency, region, logo_url, instrument_type), custom_instrument:custom_instruments(name, currency)"
+      "id, trade_date, side, quantity, price, fee, group_id, leg_role, leg_key, cashflow_type, instrument:instruments(symbol, name, currency, region, logo_url, instrument_type), custom_instrument:custom_instruments(name, currency, kind)"
     )
     .order("trade_date", { ascending })
     .order("created_at", { ascending })
@@ -137,6 +144,12 @@ export async function listTransactions(
       const customInstrument = Array.isArray(row.custom_instrument)
         ? row.custom_instrument[0] ?? null
         : row.custom_instrument;
+      const customAssetType =
+        customInstrument?.kind && isCustomAssetType(customInstrument.kind)
+          ? customInstrument.kind
+          : customInstrument
+            ? "OTHER"
+            : null;
 
       if (!instrument && !customInstrument) {
         throw new Error("Missing instrument data for transaction row.");
@@ -169,6 +182,7 @@ export async function listTransactions(
           region: resolved.region ?? undefined,
           logoUrl: resolved.logo_url ?? null,
           instrumentType: resolved.instrument_type ?? null,
+          customAssetType,
         },
       };
     }),

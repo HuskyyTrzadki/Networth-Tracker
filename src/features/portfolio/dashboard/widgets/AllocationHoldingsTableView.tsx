@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/features/design-system/components/ui/table";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
+import { isCashInstrumentLike } from "@/features/transactions/lib/system-currencies";
 import { cn } from "@/lib/cn";
 import { formatGroupedNumber } from "@/lib/format-number";
 
@@ -109,9 +110,15 @@ export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
                     <div className="grid size-8 place-items-center text-sm leading-none">
                       <InstrumentLogoImage
                         alt=""
-                        className="size-6"
+                        className="size-7"
+                        customAssetType={
+                          row.provider === "custom" || row.symbol === "CUSTOM"
+                            ? (row.customAssetType ?? "OTHER")
+                            : null
+                        }
                         fallbackText={symbolLabel}
-                        size={24}
+                        isCash={isCashInstrumentLike(row)}
+                        size={28}
                         src={row.logoUrl}
                       />
                     </div>
