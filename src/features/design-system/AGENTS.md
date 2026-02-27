@@ -13,6 +13,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI primitive `Card` lives in `src/components/ui/card.tsx` and is re-exported via `src/features/design-system/components/ui/card.tsx`; default surface now carries the shared tactile paper depth (`--surface-shadow`) by default.
 - UI primitives (sidebar, collapsible) re-exported via `src/features/design-system/components/ui/sidebar.tsx` and `src/features/design-system/components/ui/collapsible.tsx`
 - UI primitives (alert, avatar) re-exported via `src/features/design-system/components/ui/alert.tsx` and `src/features/design-system/components/ui/avatar.tsx`
+- UI primitive `AlertDialog` is provided via local dialog-based shim (`src/components/ui/alert-dialog.tsx`) and re-exported through `src/features/design-system/components/ui/alert-dialog.tsx` for destructive confirmations without extra package dependency.
 - UI primitive `ToggleGroup` re-exported via `src/features/design-system/components/ui/toggle-group.tsx`
 - UI primitive `Checkbox` re-exported via `src/features/design-system/components/ui/checkbox.tsx`
 - UI primitive `Calendar` re-exported via `src/features/design-system/components/ui/calendar.tsx`
@@ -38,6 +39,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Global tokens were tuned toward a cooler finance palette (blue/slate) with stronger dark-mode legibility and clearer semantic contrast for primary/action states.
 - Global tokens and controls were refreshed to a warmer neutral palette with muted teal accent, border-led depth, and consistent rounded-`lg` control chrome.
 - Global tokens now follow an editorial paper/ink system (warm paper background, ink-first typography, dashed-border module grammar) in both light and dark (`night paper`) themes.
+- Global muted text contrast was tightened (`--muted-foreground` light/dark) to improve metadata readability on paper surfaces without changing core palette direction.
 - Shared primitives (`button`, `input`, `table`, `badge`, `card`, `sheet`) were flattened to border-led chrome with minimal radius and no decorative shadows.
 - Shared `ToggleGroup` supports a `ledger` item variant (dark active block + calmer inactive states) for dense financial control bars without per-screen styling hacks.
 - Shared form primitives (`Input`, `Textarea`, `SelectTrigger`) support `aria-invalid` visual states (`border-destructive` + subtle destructive tint) so RHF/Zod errors are explicit without per-form overrides.

@@ -25,16 +25,21 @@ export function PortfolioRecentTransactionsWidget({
     <ChartCard
       className="border-border/75 bg-card/94"
       title="Ostatnie transakcje"
-      subtitle="Najnowsze operacje, posortowane od najnowszych."
+      subtitle="Najnowsze operacje"
       right={
-        <Button
-          asChild
-          className="rounded-full border-dashed bg-background/70"
-          size="sm"
-          variant="outline"
-        >
-          <Link href={getTransactionsHref(selectedPortfolioId)}>Zobacz wszystkie</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            Status: ostatnie
+          </span>
+          <Button
+            asChild
+            className="rounded-full border-dashed bg-background/70"
+            size="sm"
+            variant="outline"
+          >
+            <Link href={getTransactionsHref(selectedPortfolioId)}>Zobacz</Link>
+          </Button>
+        </div>
       }
     >
       {items.length > 0 ? (

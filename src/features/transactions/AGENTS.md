@@ -131,15 +131,17 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions empty state is actionable: no-results state can clear the search filters, and default empty state provides direct CTA to open add-transaction flow.
 - Transactions toolbar exposes explicit pending feedback (`Aktualizowanie listy...`) while URL/filter transitions are in flight.
 - Transactions table enforces ledger typography split: ticker/date/quantity/price/value cells stay `font-mono tabular-nums`, while descriptive copy remains sans for readability.
+- Transactions table now uses semantic shadcn table primitives (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`) while preserving ledger hierarchy (cash-leg indentation, group dividers, numeric alignment).
 - Group row separators use subtle dashed dividers to reinforce the printed-ledger visual rhythm between asset/cash legs.
 - Financial columns (`Ilość`, `Cena`, `Wartość`) are strictly right-aligned to preserve decimal-column scanability with `tabular-nums`.
 - Cash settlement legs render as visual children of the primary asset row (left indentation + muted tone), improving grouped-transaction hierarchy.
 - Monetary cells split amount vs unit tokens so currency suffixes (e.g. `USD`, `zł`) are smaller/more muted than the numeric value.
 - Modal receipt summary (`TransactionLiveSummary`) also splits amount/unit tokens and keeps all monetary rows right-aligned with `font-mono tabular-nums`.
-- Transactions table rows use motion choreography: quick top-to-bottom stagger on mount, layout animation for insertion reflow, and a short “fresh stamp” highlight (`~0.5s`) on newly added rows.
+- Transactions table rows keep lightweight visual feedback via alternating striping + short “fresh stamp” highlight (`~0.5s`) on newly added rows; no heavy row-motion choreography.
 - Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.
 - Add-transaction route wrappers trigger `router.refresh()` on submit success before closing/navigation, so transactions list reflects newly saved rows immediately.
 - Add-transaction close guard uses an in-app confirmation dialog (`Odrzucić niezapisane zmiany?`) instead of `window.confirm`, so behavior stays consistent with design-system modals.
+- Add-transaction close guard now uses shared `AlertDialog` shim primitives (`AlertDialogAction`/`AlertDialogCancel`) for clearer destructive-confirm semantics while keeping current dependency set.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.

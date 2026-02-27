@@ -2,14 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { Button } from "@/features/design-system/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/features/design-system/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
 
 import type { InstrumentSearchResult } from "../lib/instrument-search";
@@ -115,34 +120,24 @@ export function AddTransactionDialog({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
-        <DialogContent className="border border-border/70 bg-card/96 sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Odrzucić niezapisane zmiany?</DialogTitle>
-            <DialogDescription>
+      <AlertDialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Odrzucić niezapisane zmiany?</AlertDialogTitle>
+            <AlertDialogDescription>
               Masz niezapisane zmiany.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-2">
-            <Button
-              className="rounded-full"
-              type="button"
-              variant="outline"
-              onClick={() => setConfirmDiscardOpen(false)}
-            >
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2">
+            <AlertDialogCancel onClick={() => setConfirmDiscardOpen(false)}>
               Wróć do edycji
-            </Button>
-            <Button
-              className="rounded-full"
-              type="button"
-              variant="destructive"
-              onClick={() => requestClose({ force: true })}
-            >
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => requestClose({ force: true })}>
               Odrzuć zmiany
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

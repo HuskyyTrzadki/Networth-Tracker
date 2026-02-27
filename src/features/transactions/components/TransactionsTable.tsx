@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LazyMotion, AnimatePresence, domAnimation, m, useReducedMotion } from "framer-motion";
 import { Badge } from "@/features/design-system/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/features/design-system/components/ui/table";
 import { cn } from "@/lib/cn";
 
 import {
@@ -22,10 +29,8 @@ type Props = Readonly<{
   items: readonly TransactionListItem[];
 }>;
 
-const GRID_TEMPLATE =
-  "minmax(112px,1fr) minmax(220px,2.6fr) minmax(118px,1.2fr) minmax(96px,0.9fr) minmax(132px,1.1fr) minmax(150px,1.2fr) minmax(84px,0.75fr)";
 const HEADER_CELL_CLASS =
-  "px-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/85";
+  "px-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/88";
 
 const getTypeLabel = (item: TransactionListItem) => {
   if (item.cashflowType) {
@@ -161,7 +166,6 @@ type TransactionsLedgerRowProps = Readonly<{
   row: LedgerRow;
   index: number;
   isNew: boolean;
-  prefersReducedMotion: boolean;
   onDeleted: (deletedGroupId: string) => void;
 }>;
 
@@ -192,7 +196,6 @@ function TransactionsLedgerRow({
   row,
   index,
   isNew,
-  prefersReducedMotion,
   onDeleted,
 }: TransactionsLedgerRowProps) {
   const { item, isCashLeg, hasGroupDivider } = row;
@@ -200,64 +203,55 @@ function TransactionsLedgerRow({
   const valueLabel = formatValueLabel(item.quantity, item.price, item.instrument.currency);
 
   return (
-    // Primary asset and its cash legs render as one continuous ledger.
-    <m.div
-      layout
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }}
-      transition={{
-        duration: prefersReducedMotion ? 0 : 0.16,
-        ease: [0.25, 1, 0.5, 1],
-        delay: prefersReducedMotion ? 0 : Math.min(index, 12) * 0.02,
-      }}
+    <TableRow
       className={cn(
-        "grid min-h-[46px] items-center px-2 py-2 sm:px-4",
+        "min-h-[46px]",
         index % 2 === 1 && "bg-muted/[0.06]",
         "transition-colors hover:bg-muted/16",
-        hasGroupDivider && "border-b border-dashed border-border/52",
+        hasGroupDivider ? "border-border/52" : "border-transparent",
         isCashLeg && "text-muted-foreground",
         isNew && "animate-ledger-stamp"
       )}
-      style={{ gridTemplateColumns: GRID_TEMPLATE }}
     >
-      <div
+      <TableCell
         className={cn(
-          "px-2 font-mono text-[12px] tabular-nums text-muted-foreground",
+          "px-2 py-2 font-mono text-[12px] tabular-nums text-muted-foreground",
           isCashLeg && "pl-8"
         )}
       >
         {item.tradeDate}
-      </div>
-      <div
+      </TableCell>
+      <TableCell
         className={cn(
-          "flex min-w-0 items-center gap-3 px-2",
+          "px-2 py-2",
           isCashLeg && "pl-8"
         )}
       >
-        <div className="grid size-8 place-items-center text-sm leading-none">
-          <InstrumentLogoImage
-            className="size-6"
-            fallbackText={item.instrument.symbol}
-            size={24}
-            src={item.instrument.logoUrl}
-          />
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid size-8 place-items-center text-sm leading-none">
+            <InstrumentLogoImage
+              className="size-6"
+              fallbackText={item.instrument.symbol}
+              size={24}
+              src={item.instrument.logoUrl}
+            />
+          </div>
+          <div className="flex min-w-0 flex-col">
+            <span
+              className={cn(
+                "font-sans text-[13px] font-semibold tracking-tight text-foreground",
+                isCashLeg && "text-muted-foreground"
+              )}
+            >
+              {item.instrument.symbol}
+            </span>
+            <span className="truncate font-sans text-xs text-muted-foreground">
+              {getInstrumentSubtitle(item)}
+            </span>
+          </div>
         </div>
-        <div className="flex min-w-0 flex-col">
-          <span
-            className={cn(
-              "font-sans text-[13px] font-semibold tracking-tight text-foreground",
-              isCashLeg && "text-muted-foreground"
-            )}
-          >
-            {item.instrument.symbol}
-          </span>
-          <span className="truncate font-sans text-xs text-muted-foreground">
-            {getInstrumentSubtitle(item)}
-          </span>
-        </div>
-      </div>
-      <div className="px-2">
+      </TableCell>
+      <TableCell className="px-2 py-2">
         <Badge
           className={cn(
             "rounded-md border px-2.5 py-0.5 font-sans text-[11px] font-medium",
@@ -267,31 +261,24 @@ function TransactionsLedgerRow({
         >
           {getTypeLabel(item)}
         </Badge>
-      </div>
-      <div className="px-2">
-        <div className="w-full text-right font-mono text-sm tabular-nums">
-          {formatQuantityLabel(item)}
-        </div>
-      </div>
-      <div className="px-2">
-        <div className="w-full text-right font-mono text-sm tabular-nums">
-          <LedgerMonetaryValue label={priceLabel} />
-        </div>
-      </div>
-      <div className="px-2">
-        <div className="w-full text-right font-mono text-sm font-semibold tabular-nums">
-          <LedgerMonetaryValue emphasized label={valueLabel} />
-        </div>
-      </div>
-      <div className="px-2">
+      </TableCell>
+      <TableCell className="px-2 py-2 text-right font-mono text-sm tabular-nums">
+        {formatQuantityLabel(item)}
+      </TableCell>
+      <TableCell className="px-2 py-2 text-right font-mono text-sm tabular-nums">
+        <LedgerMonetaryValue label={priceLabel} />
+      </TableCell>
+      <TableCell className="px-2 py-2 text-right font-mono text-sm font-semibold tabular-nums">
+        <LedgerMonetaryValue emphasized label={valueLabel} />
+      </TableCell>
+      <TableCell className="px-2 py-2">
         <TransactionsRowActions transaction={item} onDeleted={onDeleted} />
-      </div>
-    </m.div>
+      </TableCell>
+    </TableRow>
   );
 }
 
 export function TransactionsTable({ items }: Props) {
-  const prefersReducedMotion = useReducedMotion() ?? false;
   const [hiddenGroupIds, setHiddenGroupIds] = useState<ReadonlySet<string>>(
     new Set()
   );
@@ -340,49 +327,35 @@ export function TransactionsTable({ items }: Props) {
   }, [rows]);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border/65 bg-background/72">
-      <div className="overflow-x-auto">
-        <div className="min-w-[860px]">
-          <div
-            className="sticky top-0 z-10 grid items-center border-b border-dashed border-border/60 bg-muted/24 px-2 py-2.5 font-sans sm:px-4"
-            style={{ gridTemplateColumns: GRID_TEMPLATE }}
-          >
-            <div className={HEADER_CELL_CLASS}>Data</div>
-            <div className={HEADER_CELL_CLASS}>
-              Instrument
-            </div>
-            <div className={HEADER_CELL_CLASS}>Typ</div>
-            <div className={cn(HEADER_CELL_CLASS, "flex justify-end text-right")}>
-              Ilość
-            </div>
-            <div className={cn(HEADER_CELL_CLASS, "flex justify-end text-right")}>
-              Cena
-            </div>
-            <div className={cn(HEADER_CELL_CLASS, "flex justify-end text-right")}>
-              Wartość
-            </div>
-            <div className={HEADER_CELL_CLASS}>
-              Akcje
-            </div>
-          </div>
-          <LazyMotion features={domAnimation}>
-            <div>
-              <AnimatePresence initial={false}>
-                {rows.map((row, index) => (
-                  <TransactionsLedgerRow
-                    key={row.rowKey}
-                    row={row}
-                    index={index}
-                    isNew={newRowKeys.has(row.rowKey)}
-                    prefersReducedMotion={prefersReducedMotion}
-                    onDeleted={handleDeletedGroup}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          </LazyMotion>
-        </div>
-      </div>
-    </div>
+    <Table className="min-w-[860px] bg-background/72">
+      <TableHeader className="sticky top-0 z-10 bg-muted/24">
+        <TableRow className="hover:bg-transparent">
+          <TableHead className={HEADER_CELL_CLASS}>Data</TableHead>
+          <TableHead className={HEADER_CELL_CLASS}>Instrument</TableHead>
+          <TableHead className={HEADER_CELL_CLASS}>Typ</TableHead>
+          <TableHead className={cn(HEADER_CELL_CLASS, "text-right")} data-align="right">
+            Ilość
+          </TableHead>
+          <TableHead className={cn(HEADER_CELL_CLASS, "text-right")} data-align="right">
+            Cena
+          </TableHead>
+          <TableHead className={cn(HEADER_CELL_CLASS, "text-right")} data-align="right">
+            Wartość
+          </TableHead>
+          <TableHead className={HEADER_CELL_CLASS}>Akcje</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row, index) => (
+          <TransactionsLedgerRow
+            key={row.rowKey}
+            row={row}
+            index={index}
+            isNew={newRowKeys.has(row.rowKey)}
+            onDeleted={handleDeletedGroup}
+          />
+        ))}
+      </TableBody>
+    </Table>
   );
 }

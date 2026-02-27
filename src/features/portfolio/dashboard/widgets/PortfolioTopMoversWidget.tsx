@@ -60,6 +60,9 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
       title="Największe ruchy"
       subtitle="Dziś"
     >
+      <div className="mb-3 inline-flex rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        Status: opóźnione
+      </div>
       {movers.length > 0 ? (
         <ul className="grid gap-2 sm:grid-cols-2">
           {movers.map((mover) => {

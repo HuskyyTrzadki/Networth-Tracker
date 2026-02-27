@@ -86,6 +86,7 @@ const Section = ({
 
 export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
   const isReadOnly = data.isReadOnly;
+  const statusLabel = isReadOnly ? "Status: podgląd" : "Status: księgowanie";
 
   return (
     <ChartCard
@@ -98,6 +99,9 @@ export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
       }
     >
       <div className="space-y-4">
+        <div className="inline-flex rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          {statusLabel}
+        </div>
         {!isReadOnly ? (
           <Section
             title="60 dni wstecz"

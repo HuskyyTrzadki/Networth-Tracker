@@ -207,6 +207,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Value/performance header controls were upgraded to a compact “control board” layout (`Tryb/Zakres/Waluta/Porównania` in framed mini-panels) with supportive status rows in dashed micro-cards.
 - Portfolio loading + empty states now use ledger-first shells (`PortfolioRouteLoading`, `PortfolioDashboardSkeleton`, `DashboardEmptyState`) with status strips, dashed separators, and action-guidance copy so pending/empty views match the final dashboard tone.
 - Portfolio dashboard microcopy was intentionally shortened across widgets (value/performance header notices, allocation/currency/dividend/top-movers states) to reduce cognitive load; prefer short status labels over explanatory paragraphs.
+- Widget micro-pattern now favors short mono status strips (`Status: ...` / `Stan: ...`) in key cards (`Ostatnie transakcje`, `Największe ruchy`, `Skrzynka dywidend`, `Alokacja per portfel`) to keep header hierarchy consistent.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`
