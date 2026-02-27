@@ -2,15 +2,16 @@
 
 export const SHARED_CHART_GRID_PROPS = {
   stroke: "var(--border)",
-  strokeOpacity: 0.15,
-  strokeDasharray: "3 3",
+  strokeOpacity: 0.2,
+  strokeDasharray: "4 4",
   vertical: false,
 } as const;
 
 export const SHARED_CHART_AXIS_TICK = {
   fill: "var(--muted-foreground)",
-  fillOpacity: 0.92,
-  fontSize: 12,
+  fillOpacity: 0.94,
+  fontSize: 11,
+  fontFamily: "var(--font-mono)",
 } as const;
 
 export const SHARED_CHART_AXIS_LINE = { stroke: "var(--border)" } as const;

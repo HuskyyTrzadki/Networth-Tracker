@@ -90,8 +90,10 @@ type TrendTooltipShellProps = Readonly<{
 
 export function TrendTooltipShell({ label, children }: TrendTooltipShellProps) {
   return (
-    <div className="space-y-2 rounded-md border border-border/80 bg-popover p-3 text-[12px] text-popover-foreground shadow-[var(--shadow)]">
-      <div className="text-muted-foreground/90">{label ?? "—"}</div>
+    <div className="space-y-2 rounded-md border border-dashed border-border/75 bg-popover/98 p-3 text-[12px] text-popover-foreground shadow-[var(--surface-shadow)]">
+      <div className="border-b border-dashed border-border/65 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/90">
+        {label ?? "—"}
+      </div>
       <div className="space-y-1">{children}</div>
     </div>
   );
@@ -114,7 +116,7 @@ export function TrendTooltipRow({
     <div
       className={
         bordered
-          ? "flex items-center justify-between gap-4 border-t border-border pt-1"
+          ? "flex items-center justify-between gap-4 border-t border-dashed border-border/70 pt-1.5"
           : "flex items-center justify-between gap-4"
       }
     >
@@ -128,7 +130,7 @@ export function TrendTooltipRow({
         ) : null}
         <span>{label}</span>
       </div>
-      <span className="font-mono tabular-nums">{value}</span>
+      <span className="font-mono font-medium tabular-nums">{value}</span>
     </div>
   );
 }
@@ -197,12 +199,12 @@ export function UnifiedPortfolioTrendChart({
   return (
     <div className="min-w-0 w-full h-full min-h-0">
       <div className="flex h-full min-h-0 flex-col gap-3">
-        {showLegend && activeLines.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+        {showLegend && legendItems.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-dashed border-border/65 bg-background/66 px-2.5 py-2 text-[12px] text-muted-foreground">
             {legendItems.map((item) => (
               <div
                 key={item.id}
-                className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-background px-2.5 py-1"
+                className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/82 px-2.5 py-1"
               >
                 <span
                   className="h-2.5 w-2.5 rounded-full ring-1 ring-background"
@@ -216,114 +218,120 @@ export function UnifiedPortfolioTrendChart({
         ) : null}
 
         <div className="min-h-0 flex-1">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <AreaChart data={chartData} margin={SHARED_CHART_MARGIN}>
-              <defs>
-                <linearGradient id={`trend-fill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={resolvedPrimaryColor} stopOpacity={0.24} />
-                  <stop offset="72%" stopColor={resolvedPrimaryColor} stopOpacity={0.07} />
-                  <stop offset="100%" stopColor={resolvedPrimaryColor} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid {...SHARED_CHART_GRID_PROPS} />
-              <XAxis
-                dataKey="label"
-                tickFormatter={(value: string | number) =>
-                  timeAxisConfig.tickFormatter(String(value))
-                }
-                ticks={xTicks}
-                tick={SHARED_CHART_AXIS_TICK}
-                interval={timeAxisConfig.interval}
-                minTickGap={timeAxisConfig.minTickGap}
-                axisLine={SHARED_CHART_AXIS_LINE}
-                tickLine={SHARED_CHART_TICK_LINE}
-              />
-              <YAxis
-                domain={yAxisDomain}
-                ticks={resolvedYTicks}
-                tickFormatter={yAxisFormatter}
-                tick={SHARED_CHART_AXIS_TICK}
-                axisLine={SHARED_CHART_AXIS_LINE}
-                tickLine={SHARED_CHART_TICK_LINE}
-                width={SHARED_CHART_AXIS_WIDTH}
-              />
-              <ReferenceLine
-                y={0}
-                stroke="var(--foreground)"
-                strokeOpacity={config.referenceLineOpacity}
-                strokeWidth={config.referenceLineWidth}
-                strokeDasharray="4 3"
-              />
-              <Tooltip
-                cursor={{ stroke: "var(--ring)" }}
-                content={({ active, payload, label }) => {
-                  if (!active || !payload || payload.length === 0) return null;
-
-                  const point = payload[0]?.payload as UnifiedTrendPoint | undefined;
-                  if (!point) return null;
-                  const formattedLabel = label
-                    ? tooltipLabelFormatter(String(label))
-                    : null;
-
-                  if (renderTooltip) {
-                    return renderTooltip({
-                      point,
-                      label: formattedLabel,
-                      primaryColor: resolvedPrimaryColor,
-                    });
+          <div className="h-full rounded-md border border-dashed border-border/65 bg-background/68 p-2">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <AreaChart data={chartData} margin={SHARED_CHART_MARGIN}>
+                <defs>
+                  <linearGradient id={`trend-fill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={resolvedPrimaryColor} stopOpacity={0.24} />
+                    <stop offset="72%" stopColor={resolvedPrimaryColor} stopOpacity={0.07} />
+                    <stop offset="100%" stopColor={resolvedPrimaryColor} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid {...SHARED_CHART_GRID_PROPS} />
+                <XAxis
+                  dataKey="label"
+                  tickFormatter={(value: string | number) =>
+                    timeAxisConfig.tickFormatter(String(value))
                   }
+                  ticks={xTicks}
+                  tick={SHARED_CHART_AXIS_TICK}
+                  interval={timeAxisConfig.interval}
+                  minTickGap={timeAxisConfig.minTickGap}
+                  axisLine={SHARED_CHART_AXIS_LINE}
+                  tickLine={SHARED_CHART_TICK_LINE}
+                />
+                <YAxis
+                  domain={yAxisDomain}
+                  ticks={resolvedYTicks}
+                  tickFormatter={yAxisFormatter}
+                  tick={SHARED_CHART_AXIS_TICK}
+                  axisLine={SHARED_CHART_AXIS_LINE}
+                  tickLine={SHARED_CHART_TICK_LINE}
+                  width={SHARED_CHART_AXIS_WIDTH}
+                />
+                <ReferenceLine
+                  y={0}
+                  stroke="var(--foreground)"
+                  strokeOpacity={config.referenceLineOpacity}
+                  strokeWidth={config.referenceLineWidth}
+                  strokeDasharray="4 3"
+                />
+                <Tooltip
+                  cursor={{
+                    stroke: "var(--ring)",
+                    strokeDasharray: "4 3",
+                    strokeOpacity: 0.8,
+                  }}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload || payload.length === 0) return null;
 
-                  return (
-                    <TrendTooltipShell label={formattedLabel}>
-                      <TrendTooltipRow
-                        label={config.primaryLabel}
-                        value={
-                          point.primary !== null ? primaryFormatter(point.primary) : "—"
-                        }
-                        color={resolvedPrimaryColor}
-                      />
-                      {activeLines.map((line) => (
+                    const point = payload[0]?.payload as UnifiedTrendPoint | undefined;
+                    if (!point) return null;
+                    const formattedLabel = label
+                      ? tooltipLabelFormatter(String(label))
+                      : null;
+
+                    if (renderTooltip) {
+                      return renderTooltip({
+                        point,
+                        label: formattedLabel,
+                        primaryColor: resolvedPrimaryColor,
+                      });
+                    }
+
+                    return (
+                      <TrendTooltipShell label={formattedLabel}>
                         <TrendTooltipRow
-                          key={line.id}
-                          label={line.label}
+                          label={config.primaryLabel}
                           value={
-                            typeof point.lines?.[line.id] === "number"
-                              ? primaryFormatter(point.lines[line.id] as number)
-                              : "—"
+                            point.primary !== null ? primaryFormatter(point.primary) : "—"
                           }
-                          color={line.color}
+                          color={resolvedPrimaryColor}
                         />
-                      ))}
-                    </TrendTooltipShell>
-                  );
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="primary"
-                stroke={resolvedPrimaryColor}
-                strokeWidth={PRIMARY_STROKE_WIDTH}
-                fill={`url(#trend-fill-${gradientId})`}
-                fillOpacity={1}
-                dot={false}
-                activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: resolvedPrimaryColor }}
-                connectNulls={false}
-              />
-              {activeLines.map((line) => (
-                <Line
-                  key={line.id}
-                  type={line.strokeStyle ?? "monotone"}
-                  dataKey={(entry: UnifiedTrendPoint) => entry.lines?.[line.id] ?? null}
-                  name={line.id}
-                  stroke={line.color}
-                  strokeWidth={SHARED_CHART_SECONDARY_LINE_WIDTH}
+                        {activeLines.map((line) => (
+                          <TrendTooltipRow
+                            key={line.id}
+                            label={line.label}
+                            value={
+                              typeof point.lines?.[line.id] === "number"
+                                ? primaryFormatter(point.lines[line.id] as number)
+                                : "—"
+                            }
+                            color={line.color}
+                          />
+                        ))}
+                      </TrendTooltipShell>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="primary"
+                  stroke={resolvedPrimaryColor}
+                  strokeWidth={PRIMARY_STROKE_WIDTH}
+                  fill={`url(#trend-fill-${gradientId})`}
+                  fillOpacity={1}
                   dot={false}
-                  activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: line.color }}
+                  activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: resolvedPrimaryColor }}
                   connectNulls={false}
                 />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
+                {activeLines.map((line) => (
+                  <Line
+                    key={line.id}
+                    type={line.strokeStyle ?? "monotone"}
+                    dataKey={(entry: UnifiedTrendPoint) => entry.lines?.[line.id] ?? null}
+                    name={line.id}
+                    stroke={line.color}
+                    strokeWidth={SHARED_CHART_SECONDARY_LINE_WIDTH}
+                    dot={false}
+                    activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: line.color }}
+                    connectNulls={false}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

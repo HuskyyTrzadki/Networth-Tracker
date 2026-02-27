@@ -61,8 +61,17 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-7xl flex-col px-5 py-5 sm:px-6 sm:py-7">
       <AnimatedReveal>
-        <header className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <header className="rounded-lg border border-border/80 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/70 pb-3">
+            <p className="inline-flex items-center rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-muted-foreground">
+              Panel inwestora
+            </p>
+            <p className="font-mono text-[11px] tabular-nums uppercase tracking-[0.12em] text-muted-foreground">
+              Waluta bazowa: {baseCurrency}
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
               <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
                 Dashboard

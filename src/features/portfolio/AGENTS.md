@@ -200,6 +200,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Net-value hero value now animates with a rapid count-up (`0 -> target`, ~0.6s) plus subtle fade-in-up (`10px`) on mount, with reduced-motion fallback.
 - Value and performance chart surfaces now run through a shared chart engine (`UnifiedPortfolioTrendChart`) to keep line weight, gradients, tooltip chrome, and axis behavior aligned between modes; performance primary area flips to loss tone when latest cumulative return is negative.
 - Portfolio widget chart height is parent-driven (`SHARED_PORTFOLIO_CHART_HEIGHT` wrappers in mode content), while chart primitives render at `h-full` for consistent sizing behavior across modes.
+- `/portfolio` route shell and unauth fallback now follow the same ledger card language as transactions (framed hero strip, compact metadata chips, dashed separators, rounded action controls).
+- Dashboard widget pass aligned chrome across value/allocation/currency/top-movers/recent/dividends cards: `border-border/75` framed papers, dashed empty states, and rounded-full utility actions for consistent desktop scanning rhythm.
+- Value/performance header controls were upgraded to a compact “control board” layout (`Tryb/Zakres/Waluta/Porównania` in framed mini-panels) with supportive status rows in dashed micro-cards.
+- Portfolio loading + empty states now use ledger-first shells (`PortfolioRouteLoading`, `PortfolioDashboardSkeleton`, `DashboardEmptyState`) with status strips, dashed separators, and action-guidance copy so pending/empty views match the final dashboard tone.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`

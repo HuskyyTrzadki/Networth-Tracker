@@ -27,7 +27,12 @@ export function PortfolioRecentTransactionsWidget({
       title="Ostatnie transakcje"
       subtitle="Najnowsze operacje, posortowane od najnowszych."
       right={
-        <Button asChild className="rounded-full" size="sm" variant="outline">
+        <Button
+          asChild
+          className="rounded-full border-dashed bg-background/70"
+          size="sm"
+          variant="outline"
+        >
           <Link href={getTransactionsHref(selectedPortfolioId)}>Zobacz wszystkie</Link>
         </Button>
       }
@@ -35,8 +40,13 @@ export function PortfolioRecentTransactionsWidget({
       {items.length > 0 ? (
         <TransactionsTable items={items} />
       ) : (
-        <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-4 py-6 text-sm text-muted-foreground">
-          Brak transakcji dla wybranego portfela.
+        <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-4 py-6">
+          <p className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+            Brak wpisów
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Brak transakcji dla wybranego portfela.
+          </p>
         </div>
       )}
     </ChartCard>

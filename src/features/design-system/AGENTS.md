@@ -57,5 +57,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `DailyReturnsLineChart` keeps its API but now renders the primary cumulative-return series as an area (stroke width `3` + subtle gradient fill), with benchmark overlays still rendered as line series.
 - Value and performance charts now share one rendering primitive (`UnifiedPortfolioTrendChart`), so axis/grid/tooltip/area-depth behavior stays consistent across both modes.
 - Shared trend engine uses one primary color policy (`var(--chart-1)` with automatic `var(--loss)` fallback when the latest primary value is negative) so value/performance visuals stay consistent.
+- Shared trend chart chrome now follows ledger framing: dashed chart-canvas shell, dashed tooltip separators, rounded-full legend pills, and dashed hover cursor for easier scan lines on dense financial charts.
+- Shared chart typography now favors mono readability for axis ticks (`chart-styles.ts`: smaller IBM Plex Mono tick labels + slightly stronger dashed grid contrast).
+- `ChartCard` chrome now uses a subtle top highlight and dashed header divider (`title/subtitle` separated from content with consistent `pt-4` body spacing) so portfolio widgets keep one editorial rhythm.
 - Unified portfolio trend chart now choreographs dashboard motion: primary line draw (`~0.9s`) followed by delayed area-fill fade (`~0.3s`) using Recharts animation timing, with reduced-motion fallback.
 - `AllocationDonutChart` uses radial reveal timing (`~0.6s`, `ease-out`) for allocation-slice entrance.
