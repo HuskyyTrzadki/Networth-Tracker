@@ -125,6 +125,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Grouping avoids accent borders/boxes; hierarchy is communicated via child-row indentation + muted text on cash legs, with dashed separators only at group boundaries.
 - Transactions page sections now use subtle reveal animations (`AnimatedReveal`) for smoother perceived navigation/loading.
 - Transactions toolbar, table chrome, and add-transaction dialog were visually refreshed (warmer surfaces, clearer micro-typography, calmer badges, consistent button/control sizing) without changing transaction behavior.
+- Transactions microcopy was tightened across page header, filter toolbar, empty states, and add/edit modal descriptions; keep labels/status messages short and action-first.
 - Refresh pass tightened consistency further: unified rounded container scale (`rounded-lg`/`rounded-md`), removed excess visual depth from modal/table surfaces, and aligned segmented/toggle controls with shared primitive states.
 - Desktop-only follow-up refined route-shell alignment (`max-w-[1560px]`), header hierarchy on `/transactions`, and dense form/table typography in add-transaction combobox + live summary for better scanability on large screens.
 - Transactions empty state is actionable: no-results state can clear the search filters, and default empty state provides direct CTA to open add-transaction flow.

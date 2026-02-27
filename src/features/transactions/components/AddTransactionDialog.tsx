@@ -120,7 +120,7 @@ export function AddTransactionDialog({
           <DialogHeader>
             <DialogTitle>Odrzucić niezapisane zmiany?</DialogTitle>
             <DialogDescription>
-              Formularz zawiera niezapisane dane. Czy na pewno chcesz zamknąć okno?
+              Masz niezapisane zmiany.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">

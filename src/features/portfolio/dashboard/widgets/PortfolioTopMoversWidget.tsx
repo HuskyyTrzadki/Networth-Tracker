@@ -58,7 +58,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
     <ChartCard
       className="border-border/75 bg-card/94"
       title="Największe ruchy"
-      subtitle="Dziś (opóźnione notowania)."
+      subtitle="Dziś"
     >
       {movers.length > 0 ? (
         <ul className="grid gap-2 sm:grid-cols-2">
@@ -126,12 +126,12 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
         </ul>
       ) : (
         <div className="rounded-lg border border-dashed border-border/70 bg-background/68 px-4 py-6 text-sm text-muted-foreground">
-          Brak danych o dziennych zmianach dla pozycji.
+          Brak zmian dziennych.
         </div>
       )}
       {summary.isPartial ? (
         <div className="mt-3 text-[12px] text-muted-foreground">
-          Część pozycji bez danych dziennych.
+          Część pozycji bez danych.
         </div>
       ) : null}
     </ChartCard>

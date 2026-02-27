@@ -161,7 +161,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Rebuild polling/backoff decisions are isolated in `dashboard/hooks/snapshot-rebuild-polling.ts` so hook side effects stay easier to read.
 - Empty holdings state uses the same dashboard widgets as non-empty portfolios; rebuild loaders are rendered inside widgets based on snapshot rebuild status.
 - Empty chart states include actionable CTAs for both flows:
-  - `Dodaj pierwsze kupno` (`/transactions/new` scoped by portfolio),
+  - `Dodaj transakcję` (`/transactions/new` scoped by portfolio),
   - `Dodaj depozyt gotówki` (`preset=cash-deposit`).
 - While rebuild is busy (`queued/running`), value chart disables live endpoint override and stays snapshot-based so `Wartość` and `Zainwestowany kapitał` move in one pipeline.
 - Rebuild loading state is rendered directly in chart area via `PortfolioSnapshotRebuildChartLoader` (cool-tone, chart-shaped skeleton), replacing the old top progress bar.
@@ -204,6 +204,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard widget pass aligned chrome across value/allocation/currency/top-movers/recent/dividends cards: `border-border/75` framed papers, dashed empty states, and rounded-full utility actions for consistent desktop scanning rhythm.
 - Value/performance header controls were upgraded to a compact “control board” layout (`Tryb/Zakres/Waluta/Porównania` in framed mini-panels) with supportive status rows in dashed micro-cards.
 - Portfolio loading + empty states now use ledger-first shells (`PortfolioRouteLoading`, `PortfolioDashboardSkeleton`, `DashboardEmptyState`) with status strips, dashed separators, and action-guidance copy so pending/empty views match the final dashboard tone.
+- Portfolio dashboard microcopy was intentionally shortened across widgets (value/performance header notices, allocation/currency/dividend/top-movers states) to reduce cognitive load; prefer short status labels over explanatory paragraphs.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`

@@ -118,15 +118,15 @@ export function PortfolioPerformanceModeContent({
         <p>
           {hasHoldings
             ? shouldBootstrap
-              ? "Tworzymy pierwszy punkt wartości portfela."
-              : "Performance będzie dostępny po co najmniej 2 dniach danych."
-            : "Dodaj transakcje, aby zobaczyć performance."}
+              ? "Tworzymy pierwszy punkt."
+              : "Za mało danych (min. 2 dni)."
+            : "Dodaj transakcję, aby zobaczyć performance."}
         </p>
         {!hasHoldings ? (
           <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
             <Button asChild className="h-9 rounded-full px-3 text-xs" size="sm">
               <Link href={transactionCreateHref} scroll={false}>
-                Dodaj pierwsze kupno
+                Dodaj transakcję
               </Link>
             </Button>
             <Button
@@ -148,7 +148,7 @@ export function PortfolioPerformanceModeContent({
               onClick={onBootstrapRequest}
               disabled={bootstrapPending}
             >
-              {bootstrapPending ? "Tworzenie punktu..." : "Utwórz pierwszy punkt"}
+              {bootstrapPending ? "Tworzenie..." : "Utwórz punkt"}
             </Button>
           </div>
         ) : null}

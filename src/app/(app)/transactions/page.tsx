@@ -152,7 +152,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
     pageData.transactionsPage.items.length
   );
   const sortSummary =
-    filters.sort === "date_desc" ? "Najnowsze na górze" : "Najstarsze na górze";
+    filters.sort === "date_desc" ? "Najnowsze" : "Najstarsze";
 
   return (
     <main className="mx-auto w-full max-w-[1560px] px-5 py-5 sm:px-6 sm:py-7">
@@ -167,7 +167,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
                 Historia transakcji
               </h1>
               <p className="text-sm text-muted-foreground">
-                Przeglądaj operacje aktywów i gotówki w układzie księgowym.
+                Operacje aktywów i gotówki.
               </p>
             </div>
 
@@ -221,7 +221,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
         <AnimatedReveal className="mt-3" delay={0.06}>
           <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border/70 bg-card/90 px-3 py-2.5">
             <span className="pr-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
-              Aktywne filtry
+              Filtry
             </span>
             {activeFilterChips.map((chip) => (
               <Button
@@ -243,7 +243,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
               variant="ghost"
             >
               <Link href="/transactions" scroll={false}>
-                Wyczyść wszystko
+                Wyczyść
               </Link>
             </Button>
           </div>
@@ -258,7 +258,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
                 Księga operacji
               </p>
               <p className="text-sm text-muted-foreground">
-                Każda transakcja pokazuje nogę aktywa i odpowiadające rozliczenie.
+                Aktywo i powiązane rozliczenie.
               </p>
             </div>
             <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>

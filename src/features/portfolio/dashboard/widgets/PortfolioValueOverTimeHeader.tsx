@@ -186,7 +186,7 @@ export function PortfolioValueOverTimeHeader({
                   type="button"
                   variant="outline"
                 >
-                  Porównaj z...
+                  Porównaj
                   {selectedComparisonsCount > 0 ? ` (${selectedComparisonsCount})` : ""}
                   <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
@@ -234,31 +234,30 @@ export function PortfolioValueOverTimeHeader({
 
       {mode === "PERFORMANCE" && performancePartial ? (
         <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Częściowe dane: performance może być przybliżone.
+          Częściowe dane: wynik przybliżony.
         </div>
       ) : null}
 
       {mode === "VALUE" && valueIsPartial ? (
         <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Częściowa wycena: brak cen dla {missingQuotes} pozycji, brak FX dla{" "}
-          {missingFx} pozycji.
+          Częściowe dane: ceny {missingQuotes}, FX {missingFx}.
         </div>
       ) : null}
 
       {rebuildStatus === "failed" && rebuildMessage ? (
         <div className="rounded-sm border border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 px-2.5 py-1.5 text-xs text-destructive">
-          Nie udało się przebudować historii: {rebuildMessage}
+          Błąd przebudowy: {rebuildMessage}
         </div>
       ) : null}
 
       {isAllHistoryLoading ? (
         <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Wczytywanie pełnej historii dla zakresu ALL...
+          Wczytywanie pełnej historii (ALL)...
         </div>
       ) : null}
       {isAllHistoryTruncated && !isAllHistoryLoading ? (
         <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Pokazano skróconą historię. Przełącz na zakres ALL, aby dociągnąć pełne dane.
+          Skrócona historia. Przełącz na ALL.
         </div>
       ) : null}
 

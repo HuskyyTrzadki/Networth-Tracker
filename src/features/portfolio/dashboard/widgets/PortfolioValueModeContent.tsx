@@ -107,14 +107,14 @@ export function PortfolioValueModeContent({
       <div className={cn(getPortfolioChartEmptyStateClassName(shouldBootstrap), "space-y-3")}>
         <p>
           {hasHoldings
-            ? "Tworzymy pierwszy punkt wartości portfela."
-            : "Dodaj transakcje, aby zobaczyć wykres."}
+            ? "Tworzymy pierwszy punkt."
+            : "Dodaj transakcję, aby zobaczyć wykres."}
         </p>
         {!hasHoldings ? (
           <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
             <Button asChild className="h-9 rounded-full px-3 text-xs" size="sm">
               <Link href={transactionCreateHref} scroll={false}>
-                Dodaj pierwsze kupno
+                Dodaj transakcję
               </Link>
             </Button>
             <Button
@@ -136,7 +136,7 @@ export function PortfolioValueModeContent({
               onClick={onBootstrapRequest}
               disabled={bootstrapPending}
             >
-              {bootstrapPending ? "Tworzenie punktu..." : "Utwórz pierwszy punkt"}
+              {bootstrapPending ? "Tworzenie..." : "Utwórz punkt"}
             </Button>
           </div>
         ) : null}
@@ -207,8 +207,7 @@ export function PortfolioValueModeContent({
       </div>
       {hasInvestedCapitalGaps ? (
         <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
-          Zainwestowany kapitał ma luki historyczne, bo część dni nie ma danych
-          przepływów lub transferów.
+          Luki w kapitale zainwestowanym (brak części przepływów/transferów).
         </div>
       ) : null}
     </div>

@@ -113,12 +113,12 @@ function TransactionsSearchToolbarInner({
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/60 pb-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
-          Filtry i wyszukiwanie
+          Filtry
         </p>
         {isPending ? (
           <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="size-3 animate-spin" aria-hidden />
-            Aktualizowanie listy...
+            Aktualizuję...
           </div>
         ) : null}
       </div>
@@ -141,7 +141,7 @@ function TransactionsSearchToolbarInner({
             className="h-10 border-input/85 bg-background/92 text-sm"
             ref={searchInputRef}
             onChange={handleSearchChange}
-            placeholder="Ticker lub nazwa (np. AAPL, ETF, obligacje)"
+            placeholder="Ticker lub nazwa (np. AAPL)"
             value={searchValue}
           />
         </div>

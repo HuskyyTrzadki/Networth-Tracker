@@ -49,7 +49,7 @@ const Section = ({
                   Brutto: {formatMoney(item.estimatedGross, item.payoutCurrency)}
                 </p>
                 <p className="font-mono tabular-nums">
-                  Netto (suger.): {formatMoney(item.netSuggested, item.payoutCurrency)}
+                  Netto: {formatMoney(item.netSuggested, item.payoutCurrency)}
                 </p>
               </div>
             </div>
@@ -78,7 +78,7 @@ const Section = ({
       </ul>
     ) : (
       <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-4 text-sm text-muted-foreground">
-        Brak zdarzeń w tym zakresie.
+        Brak zdarzeń.
       </div>
     )}
   </section>
@@ -93,21 +93,21 @@ export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
       title="Skrzynka dywidend"
       subtitle={
         isReadOnly
-          ? "Widok globalny jest tylko informacyjny. Zaksięguj w widoku konkretnego portfela."
+          ? "Widok globalny: tylko podgląd."
           : ""
       }
     >
       <div className="space-y-4">
         {!isReadOnly ? (
           <Section
-            title="Ostatnie 60 dni"
+            title="60 dni wstecz"
             items={data.pastItems}
             isReadOnly={isReadOnly}
             portfolioId={selectedPortfolioId}
           />
         ) : null}
         <Section
-          title="Nadchodzące 60 dni"
+          title="60 dni naprzód"
           items={data.upcomingItems}
           isReadOnly={true}
           portfolioId={selectedPortfolioId}

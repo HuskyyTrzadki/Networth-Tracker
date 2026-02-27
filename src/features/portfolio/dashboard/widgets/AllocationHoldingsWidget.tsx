@@ -97,12 +97,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
       ? "BARS"
       : mode;
   const canExpandView = !isRebuildBusy;
-  const expandButtonLabel =
-    effectiveMode === "TREEMAP"
-      ? "Powiększ mapę"
-      : effectiveMode === "BARS"
-        ? "Powiększ słupki"
-        : "Powiększ tabelę";
+  const expandButtonLabel = "Powiększ";
   const expandButtonAriaLabel =
     effectiveMode === "TREEMAP"
       ? "Powiększ mapę alokacji"
@@ -111,16 +106,16 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         : "Powiększ tabelę pozycji";
   const expandDialogTitle =
     effectiveMode === "TREEMAP"
-      ? "Mapa alokacji - widok powiększony"
+      ? "Mapa alokacji"
       : effectiveMode === "BARS"
-        ? "Słupki alokacji - widok powiększony"
-        : "Tabela pozycji - widok powiększony";
+        ? "Słupki alokacji"
+        : "Tabela pozycji";
   const expandDialogDescription =
     effectiveMode === "TREEMAP"
-      ? "Pełny widok mapy bez ograniczeń wysokości widgetu."
+      ? "Widok pełnoekranowy."
       : effectiveMode === "BARS"
-        ? "Pełny widok słupków bez ograniczeń wysokości widgetu."
-        : "Pełny widok tabeli bez ograniczeń wysokości widgetu.";
+        ? "Widok pełnoekranowy."
+        : "Widok pełnoekranowy.";
 
   return (
     <Dialog onOpenChange={setIsExpandedOpen} open={isExpandedOpen}>
@@ -160,18 +155,18 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         }
         subtitle={
           shouldForceTable
-            ? "Aktualny skład portfela"
+            ? "Skład portfela"
             : effectiveMode === "TREEMAP"
-            ? "Mapa udziału wartości portfela"
+            ? "Mapa udziałów"
             : effectiveMode === "BARS"
-              ? "Ranking udziałów pozycji"
-              : "Aktualny skład portfela"
+              ? "Ranking udziałów"
+              : "Skład portfela"
         }
         right={
           <div className="flex items-center gap-2">
             {summary.asOf ? (
               <div className="hidden text-right text-[12px] text-muted-foreground md:block">
-                Opóźniony stan na: {formatAsOf(summary.asOf)}
+                Stan: {formatAsOf(summary.asOf)}
               </div>
             ) : null}
             {canExpandView ? (
@@ -197,13 +192,13 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[12px] font-medium text-primary">
                   <Loader2 className="size-4 animate-spin" aria-hidden />
-                  Przebudowa historii snapshotów
+                  Przebudowa historii
                 </div>
                 <div className="font-mono text-sm tabular-nums text-foreground">
                   {rebuildProgress !== null ? `${rebuildProgress}%` : "..."}
                 </div>
                 <p className="text-[12px] text-muted-foreground">
-                  Zakres: {rebuildFromDate ?? "dziś"} - {rebuild.toDate ?? "dziś"}
+                  {rebuildFromDate ?? "dziś"} - {rebuild.toDate ?? "dziś"}
                 </p>
               </div>
             </div>
@@ -232,9 +227,8 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
             )}
           >
             <p className="min-w-0">
-              <span className="font-semibold">Uwaga dot. koncentracji:</span>{" "}
-              {concentrationWarning.symbol} stanowi {formatPercent(concentrationWarning.weight, 0)}
-              {" "}Twojego portfela.
+              <span className="font-semibold">Koncentracja:</span> {concentrationWarning.symbol}{" "}
+              to {formatPercent(concentrationWarning.weight, 0)} portfela.
             </p>
             <button
               aria-label="Zamknij ostrzeżenie o koncentracji"
@@ -251,8 +245,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         ) : null}
         {summary.isPartial ? (
           <div className="mt-3 text-[12px] text-muted-foreground">
-            Częściowa wycena: brak cen dla {summary.missingQuotes} pozycji, brak FX dla{" "}
-            {summary.missingFx} pozycji.
+            Częściowe dane: ceny {summary.missingQuotes}, FX {summary.missingFx}.
           </div>
         ) : null}
       </ChartCard>

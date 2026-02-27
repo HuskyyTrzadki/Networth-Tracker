@@ -87,7 +87,7 @@ function ExposureBars({
   if (rows.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border/70 bg-background/68 px-4 py-6 text-sm text-muted-foreground">
-        Brak danych do obliczenia ekspozycji walutowej.
+        Brak danych.
       </div>
     );
   }
@@ -124,7 +124,7 @@ function ExposureBars({
 
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-          Największy wpływ
+          Wpływ
         </p>
         <div className="space-y-2">
           {rows.map((row) => {
@@ -156,17 +156,17 @@ function ExposureBars({
                           </div>
                           <div className="text-right font-mono tabular-nums">
                             <div className="text-[11px] text-muted-foreground">
-                              {formatPercent(driver.contributionWithinCurrencyPct)} waluty
+                              {formatPercent(driver.contributionWithinCurrencyPct)} w walucie
                             </div>
                             <div className="text-[11px] text-foreground">
-                              {formatPercent(driver.contributionPct)} portfela
+                              {formatPercent(driver.contributionPct)} w portfelu
                             </div>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-xs text-muted-foreground">Brak szczegółów dla tej waluty.</p>
+                    <p className="text-xs text-muted-foreground">Brak szczegółów.</p>
                   )}
                 </div>
               </details>
@@ -205,7 +205,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Nie udało się obliczyć ekspozycji gospodarczej."
+          : "Nie udało się policzyć ekspozycji."
       );
     } finally {
       setIsLoading(false);
@@ -227,7 +227,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Nie udało się obliczyć ekspozycji gospodarczej."
+          : "Nie udało się policzyć ekspozycji."
       );
     } finally {
       setIsLoading(false);
@@ -267,25 +267,15 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
           </ToggleGroup>
         </div>
       }
-      subtitle="Notowania: waluta instrumentu. Gospodarcza: ekspozycja przychodowa i geograficzna."
+      subtitle="Notowania vs gospodarcza"
     >
       <div className="space-y-4">
-        <div className="rounded-md border border-dashed border-border/70 bg-background/72 px-3 py-2.5">
-          <p className="text-xs text-muted-foreground">
-            Gospodarcza: po przełączeniu analizator łączy waluty instrumentów, geograficzną
-            strukturę przychodów i przybliżenia dla ETF-ów, aby pokazać realną ekspozycję portfela.
-          </p>
-        </div>
-
         {mode === "GOSPODARCZA" && isLoading ? (
           <div className="rounded-md border border-dashed border-border/70 bg-background/72 p-3">
             <div className="flex items-center gap-2 text-sm text-foreground">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              Obliczam ekspozycję gospodarczą...
+              Liczę ekspozycję gospodarczą...
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Analizator sprawdza ekspozycję geograficzną i walutową portfela.
-            </p>
           </div>
         ) : null}
 

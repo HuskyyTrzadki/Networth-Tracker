@@ -28,9 +28,6 @@ export function TransactionsEmptyState({
         Brak wpisów
       </p>
       <p className="mt-2 text-sm text-muted-foreground">{message}</p>
-      <p className="mt-1 text-xs text-muted-foreground/80">
-        Dodaj pierwszą operację lub zmień filtry, aby zobaczyć dane.
-      </p>
       <div className="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">
         {query ? (
           <Link
@@ -40,7 +37,7 @@ export function TransactionsEmptyState({
             })}
             href={clearSearchHref}
           >
-            Wyczyść wyszukiwanie
+            Wyczyść
           </Link>
         ) : null}
         <Link
