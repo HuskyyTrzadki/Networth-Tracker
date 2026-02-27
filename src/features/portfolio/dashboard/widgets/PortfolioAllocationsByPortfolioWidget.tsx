@@ -31,7 +31,7 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
 
   return (
     <ChartCard
-      subtitle="Każdy wykres pokazuje strukturę jednego portfela."
+      subtitle="Struktura portfeli"
       surface="subtle"
       title="Alokacja per portfel"
     >
@@ -51,14 +51,14 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
               key={item.portfolioId}
               className="rounded-md border border-border/70 bg-background/65 p-3"
             >
-              <header className="mb-3 flex items-start justify-between gap-3">
-                <div className="min-w-0">
+              <header className="mb-3 border-b border-dashed border-border/65 pb-2">
+                <div className="flex items-start justify-between gap-3">
                   <h3 className="truncate text-sm font-semibold">{item.portfolioName}</h3>
-                  <p className="text-[12px] text-muted-foreground">
-                    Opóźniony stan na: {formatAsOf(item.asOf)}
-                  </p>
+                  <p className="font-mono text-sm tabular-nums">{item.totalValueLabel}</p>
                 </div>
-                <p className="font-mono text-sm tabular-nums">{item.totalValueLabel}</p>
+                <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+                  Stan: {formatAsOf(item.asOf)}
+                </p>
               </header>
 
               {chartData.length > 0 ? (
@@ -68,6 +68,7 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
                     height={180}
                     innerRadius="60%"
                     outerRadius="86%"
+                    showSliceLabels={false}
                   />
                   <ul className="mt-2 space-y-1.5">
                     {item.slices.slice(0, 3).map((slice) => (
@@ -97,8 +98,7 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
 
               {item.isPartial ? (
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  Częściowa wycena: brak cen dla {item.missingQuotes}, brak FX dla{" "}
-                  {item.missingFx}.
+                  Częściowe dane: ceny {item.missingQuotes}, FX {item.missingFx}.
                 </p>
               ) : null}
             </article>

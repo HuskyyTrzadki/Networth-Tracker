@@ -20,6 +20,7 @@ type Props = Readonly<{
   height?: number;
   innerRadius?: number | string;
   outerRadius?: number | string;
+  showSliceLabels?: boolean;
 }>;
 
 const sanitizeSvgIdToken = (value: string) =>
@@ -53,6 +54,7 @@ export function AllocationDonutChart({
   height = 240,
   innerRadius = "62%",
   outerRadius = "88%",
+  showSliceLabels = true,
 }: Props) {
   const chartId = useId().replace(/:/g, "");
   const chartData = data.map((slice) => ({
@@ -115,8 +117,12 @@ export function AllocationDonutChart({
             innerRadius={innerRadius}
             outerRadius={outerRadius}
             paddingAngle={2}
-            labelLine
-            label={({ name, percent }) => buildDonutLabel(name, percent)}
+            labelLine={showSliceLabels}
+            label={
+              showSliceLabels
+                ? ({ name, percent }) => buildDonutLabel(name, percent)
+                : false
+            }
             isAnimationActive
             animationDuration={600}
             animationEasing="ease-out"

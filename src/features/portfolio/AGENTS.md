@@ -104,6 +104,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard content is constrained to `max-w-7xl` and follows newspaper rhythm: full-width hero + main chart, then `xl:grid-cols-2` row (`Alokacja i pozycje` vs `Ekspozycja walutowa`), with `Ostatnie transakcje` as the next full-width row.
 - `Alokacja i pozycje` in `Mapa` mode exposes `Powiększ mapę` action (Lucide maximize icon) that opens a large dialog with treemap rendered on expanded height for detailed inspection.
 - W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje osobny donut z kategoriami.
+- Widget `Alokacja per portfel` uses external legend rows under each donut; on-chart slice callouts are disabled to prevent clipping in compact card height.
+- `Alokacja per portfel` cards use compact ledger headers (`Nazwa + wartość` plus short `Stan: ...` row) and concise partial-data note (`Częściowe dane: ceny X, FX Y`) to reduce text noise.
 - Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
 - W trybie performance dla zakresów >=7D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.
