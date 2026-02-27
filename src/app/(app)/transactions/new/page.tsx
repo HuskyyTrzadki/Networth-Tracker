@@ -60,20 +60,27 @@ export default async function TransactionNewPage({ searchParams }: Props) {
   if (!data.user) {
     return (
       <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
-        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
-          Zaloguj się, aby dodać transakcję.
-        </div>
-        <Button asChild className="mt-4 h-11">
-          <Link
-            href={{
-              pathname: "/login",
-              query: { next: "/transactions/new" },
-            }}
-          >
-            Zaloguj się
-          </Link>
-        </Button>
+        <section className="max-w-[720px] rounded-xl border border-border/75 bg-card/94 p-6 shadow-[var(--surface-shadow)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Dostęp wymagany
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+            Dodaj transakcję
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Zaloguj się, aby dodać nową operację do wybranego portfela.
+          </p>
+          <Button asChild className="mt-5 h-11">
+            <Link
+              href={{
+                pathname: "/login",
+                query: { next: "/transactions/new" },
+              }}
+            >
+              Zaloguj się
+            </Link>
+          </Button>
+        </section>
       </main>
     );
   }

@@ -125,12 +125,13 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   return (
     <Dialog onOpenChange={setIsExpandedOpen} open={isExpandedOpen}>
       <ChartCard
+        className="border-border/75 bg-card/94"
         surface="subtle"
         title={
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span>Alokacja i pozycje</span>
             <ToggleGroup
-              className="rounded-md border border-border/70 bg-muted/35 p-1"
+              className="rounded-md border border-border/65 bg-background/70 p-1"
               onValueChange={(value) => {
                 if (shouldForceTable) return;
                 if (!isTreemapEligible && value === "TREEMAP") return;
@@ -177,7 +178,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               <DialogTrigger asChild>
                 <Button
                   aria-label={expandButtonAriaLabel}
-                  className="h-8 gap-1.5 px-2.5"
+                  className="h-8 gap-1.5 rounded-full px-2.5"
                   size="sm"
                   type="button"
                   variant="outline"
@@ -192,7 +193,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
       >
         <div className="h-[500px] lg:h-[650px]">
           {isRebuildBusy ? (
-            <div className="grid h-full place-items-center rounded-lg border border-border/70 bg-muted/10 p-6 text-center">
+            <div className="grid h-full place-items-center rounded-lg border border-dashed border-border/70 bg-background/72 p-6 text-center">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[12px] font-medium text-primary">
                   <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -226,7 +227,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         !isConcentrationWarningDismissed ? (
           <div
             className={cn(
-              "mt-3 flex items-start justify-between gap-3 rounded-sm border-l-[3px] px-3 py-2 text-[13px] leading-5",
+              "mt-3 flex items-start justify-between gap-3 rounded-sm border border-dashed border-border/70 border-l-[3px] px-3 py-2 text-[13px] leading-5",
               concentrationTone
             )}
           >
@@ -255,8 +256,8 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
           </div>
         ) : null}
       </ChartCard>
-      <DialogContent className="h-[92vh] w-[96vw] max-w-[1800px] gap-0 overflow-hidden p-0">
-        <DialogHeader className="border-b border-border/70 px-5 py-3">
+      <DialogContent className="h-[92vh] w-[96vw] max-w-[1800px] gap-0 overflow-hidden border border-border/70 bg-card/96 p-0">
+        <DialogHeader className="border-b border-dashed border-border/70 px-5 py-3">
           <DialogTitle>{expandDialogTitle}</DialogTitle>
           <DialogDescription>{expandDialogDescription}</DialogDescription>
         </DialogHeader>

@@ -108,10 +108,21 @@ function TransactionsSearchToolbarInner({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-lg border border-border/85 bg-card px-4 py-3"
+        "flex flex-col gap-3.5 rounded-lg border border-border/75 bg-card/94 px-4 py-3.5 shadow-[var(--surface-shadow)]"
       )}
     >
-      <div className="w-full">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/60 pb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
+          Filtry i wyszukiwanie
+        </p>
+        {isPending ? (
+          <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="size-3 animate-spin" aria-hidden />
+            Aktualizowanie listy...
+          </div>
+        ) : null}
+      </div>
+      <div className="rounded-md border border-border/65 bg-background/70 p-2.5">
         <PortfolioSwitcher
           disabled={isPending}
           portfolios={portfolios}
@@ -119,74 +130,82 @@ function TransactionsSearchToolbarInner({
           selectedId={selectedPortfolioId}
         />
       </div>
-      {isPending ? (
-        <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="size-3 animate-spin" aria-hidden />
-          Aktualizowanie listy...
-        </div>
-      ) : null}
 
-      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex-1">
+      <div className="grid w-full gap-3.5 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:items-end">
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+            Szukaj instrumentu
+          </p>
           <Input
             aria-label="Szukaj instrumentu"
-            className="h-10"
+            className="h-10 border-input/85 bg-background/92 text-sm"
             ref={searchInputRef}
             onChange={handleSearchChange}
-            placeholder="Szukaj instrumentu..."
+            placeholder="Ticker lub nazwa (np. AAPL, ETF, obligacje)"
             value={searchValue}
           />
         </div>
+
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="h-10 rounded-md border border-input bg-muted/50 p-0.5">
-            <ToggleGroup
-              aria-label="Typ transakcji"
-              className="grid h-full grid-cols-3 gap-0.5"
-              onValueChange={(value) =>
-                pushWithUpdates({ type: value === "all" ? null : value })
-              }
-              type="single"
-              value={type ?? "all"}
-            >
-              <ToggleGroupItem
-                className="h-full w-full rounded-[6px] px-2 text-sm"
-                disabled={isPending}
-                value="all"
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+              Typ operacji
+            </p>
+            <div className="h-10 rounded-md border border-input/85 bg-background/84 p-0.5">
+              <ToggleGroup
+                aria-label="Typ transakcji"
+                className="grid h-full grid-cols-3 gap-0.5"
+                onValueChange={(value) =>
+                  pushWithUpdates({ type: value === "all" ? null : value })
+                }
+                type="single"
+                value={type ?? "all"}
               >
-                Wszystkie
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                className="h-full w-full rounded-[6px] px-2 text-sm"
-                disabled={isPending}
-                value="BUY"
-              >
-                Kupno
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                className="h-full w-full rounded-[6px] px-2 text-sm"
-                disabled={isPending}
-                value="SELL"
-              >
-                Sprzedaż
-              </ToggleGroupItem>
-            </ToggleGroup>
+                <ToggleGroupItem
+                  className="h-full w-full rounded-[6px] px-2 text-sm"
+                  disabled={isPending}
+                  value="all"
+                >
+                  Wszystkie
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  className="h-full w-full rounded-[6px] px-2 text-sm"
+                  disabled={isPending}
+                  value="BUY"
+                >
+                  Kupno
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  className="h-full w-full rounded-[6px] px-2 text-sm"
+                  disabled={isPending}
+                  value="SELL"
+                >
+                  Sprzedaż
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
 
-          <Select
-            disabled={isPending}
-            onValueChange={(value) =>
-              pushWithUpdates({ sort: value === "date_desc" ? null : value })
-            }
-            value={sort}
-          >
-            <SelectTrigger className="h-10 min-w-[180px]">
-              <SelectValue placeholder="Sortuj" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date_desc">Data: Najnowsze</SelectItem>
-              <SelectItem value="date_asc">Data: Najstarsze</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+              Sortowanie
+            </p>
+            <Select
+              disabled={isPending}
+              onValueChange={(value) =>
+                pushWithUpdates({ sort: value === "date_desc" ? null : value })
+              }
+              value={sort}
+            >
+              <SelectTrigger className="h-10 min-w-[180px] border-input/85 bg-background/92">
+                <SelectValue placeholder="Sortuj" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date_desc">Data: Najnowsze</SelectItem>
+                <SelectItem value="date_asc">Data: Najstarsze</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     </div>

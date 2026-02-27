@@ -20,18 +20,34 @@ export function TransactionsEmptyState({
   return (
     <div
       className={cn(
-        "rounded-lg border border-dashed border-border bg-card",
-        "px-6 py-10 text-center text-sm text-muted-foreground"
+        "rounded-lg border border-dashed border-border/70 bg-background/68",
+        "px-6 py-12 text-center"
       )}
     >
-      <p>{message}</p>
-      <div className="mt-4 flex flex-col items-center justify-center gap-2 sm:flex-row">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
+        Brak wpisów
+      </p>
+      <p className="mt-2 text-sm text-muted-foreground">{message}</p>
+      <p className="mt-1 text-xs text-muted-foreground/80">
+        Dodaj pierwszą operację lub zmień filtry, aby zobaczyć dane.
+      </p>
+      <div className="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">
         {query ? (
-          <Link className={buttonVariants({ variant: "outline" })} href={clearSearchHref}>
+          <Link
+            className={buttonVariants({
+              variant: "outline",
+              className: "h-9 rounded-full px-4 text-xs",
+            })}
+            href={clearSearchHref}
+          >
             Wyczyść wyszukiwanie
           </Link>
         ) : null}
-        <Link className={buttonVariants()} href={addTransactionHref} scroll={false}>
+        <Link
+          className={buttonVariants({ className: "h-9 rounded-full px-4 text-xs" })}
+          href={addTransactionHref}
+          scroll={false}
+        >
           Dodaj transakcję
         </Link>
       </div>

@@ -79,7 +79,7 @@ export function PortfolioDashboard({
   const dailyChangeBase = resolveDailyChangeBase(summary.holdings);
 
   return (
-    <div className={cn("mx-auto w-full max-w-7xl space-y-6", className)}>
+    <div className={cn("mx-auto w-full max-w-7xl space-y-5", className)}>
       <AnimatedReveal>
         <PortfolioNetValueHero
           portfolioLabel={portfolioLabel}
@@ -91,7 +91,7 @@ export function PortfolioDashboard({
       </AnimatedReveal>
       {summary.isPartial ? (
         <AnimatedReveal delay={0.03}>
-          <Alert className="flex items-start gap-2 rounded-sm border border-border/70 border-l-[3px] border-l-[color:var(--chart-3)] bg-muted/18 px-3 py-2 text-foreground shadow-sm">
+          <Alert className="flex items-start gap-2 rounded-md border border-dashed border-border/70 border-l-[3px] border-l-[color:var(--chart-3)] bg-background/72 px-3 py-2.5 text-foreground shadow-[var(--surface-shadow)]">
             <AlertTriangle
               className="mt-0.5 size-4 shrink-0 text-[color:var(--chart-3)]"
               aria-hidden
@@ -105,7 +105,7 @@ export function PortfolioDashboard({
       ) : null}
       {selectedPortfolioId === null ? (
         <AnimatedReveal className="hidden md:block" delay={0.04}>
-          <div className="inline-flex rounded-lg border border-border/85 bg-card px-2.5 py-3">
+          <div className="inline-flex rounded-lg border border-dashed border-border/75 bg-card/92 px-2.5 py-3 shadow-[var(--surface-shadow)]">
             <PortfolioSwitcher
               className="sm:gap-2.5"
               portfolios={portfolios}

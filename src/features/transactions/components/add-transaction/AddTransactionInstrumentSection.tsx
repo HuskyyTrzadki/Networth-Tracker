@@ -125,10 +125,10 @@ export function AddTransactionInstrumentSection({
         createPortfolioFn={createPortfolioFn}
       />
 
-      <div>
+      <div className="rounded-md border border-dashed border-border/60 bg-background/60 p-3">
         <Label className={fieldLabelClass}>Rodzaj pozycji</Label>
         <Tabs onValueChange={(next) => onTabChange(next as AssetTab)} value={activeTab}>
-          <TabsList className="mt-2 grid h-10 w-full grid-cols-3 gap-1 rounded-md border border-border/70 bg-muted/45 p-1">
+          <TabsList className="mt-2 grid h-10 w-full grid-cols-3 gap-1 rounded-md border border-border/65 bg-background/72 p-1">
             {ASSET_TABS.map((tab) => {
               const Icon = tabIcons[tab.value];
               return (
@@ -150,7 +150,7 @@ export function AddTransactionInstrumentSection({
       </div>
 
       {isCustomTab ? (
-        <div className="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3.5">
+        <div className="space-y-3 rounded-md border border-dashed border-border/65 bg-background/68 p-3.5">
           <FormField
             control={form.control}
             name="customAssetType"
@@ -176,7 +176,7 @@ export function AddTransactionInstrumentSection({
                       }}
                       value={field.value ?? ""}
                     >
-                      <SelectTrigger className="h-11">
+                      <SelectTrigger className="h-11 border-input/85 bg-background/92">
                         {selectedAssetType && SelectedAssetIcon ? (
                           <span className="inline-flex items-center gap-2">
                             <SelectedAssetIcon
@@ -220,7 +220,7 @@ export function AddTransactionInstrumentSection({
                   <FormControl>
                     <Input
                       {...field}
-                      className="h-11"
+                      className="h-11 border-input/85 bg-background/92"
                       disabled={isEditMode}
                       placeholder="np. Mieszkanie, auto, lokata"
                       type="text"
@@ -247,7 +247,7 @@ export function AddTransactionInstrumentSection({
                     value={field.value ?? ""}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-11">
+                      <SelectTrigger className="h-11 border-input/85 bg-background/92">
                         <SelectValue placeholder="Wybierz walutę" />
                       </SelectTrigger>
                     </FormControl>
@@ -270,7 +270,7 @@ export function AddTransactionInstrumentSection({
           control={form.control}
           name="assetId"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="rounded-md border border-dashed border-border/60 bg-background/68 p-3">
               <FormLabel className={fieldLabelClass}>
                 {isCashTab ? "Waluta" : "Instrument"}
               </FormLabel>
@@ -281,7 +281,7 @@ export function AddTransactionInstrumentSection({
                     onValueChange={onCashCurrencyChange}
                     value={resolvedCashCurrency}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-11 border-input/85 bg-background/92">
                       <SelectValue placeholder="Wybierz walutę" />
                     </SelectTrigger>
                     <SelectContent>
@@ -293,7 +293,7 @@ export function AddTransactionInstrumentSection({
                     </SelectContent>
                   </Select>
                 ) : isEditMode ? (
-                  <div className="flex h-11 items-center justify-between rounded-md border border-input bg-muted/35 px-3 text-sm">
+                  <div className="flex h-11 items-center justify-between rounded-md border border-input/85 bg-background/76 px-3 text-sm">
                     <span className="font-mono tabular-nums">
                       {selectedInstrument?.ticker ?? selectedInstrument?.symbol ?? "—"}
                     </span>
@@ -336,11 +336,11 @@ export function AddTransactionInstrumentSection({
                 )}
               </FormControl>
               {isCashTab ? (
-                <p className="mt-2 text-[11px] text-muted-foreground">
+                <p className="mt-2 border-t border-dashed border-border/55 pt-2 text-[11px] text-muted-foreground">
                   Dostępne (na dziś): {formatMoney(availableCashNow, resolvedCashCurrency)}
                 </p>
               ) : availableAssetQuantity !== null ? (
-                <p className="mt-2 text-[11px] text-muted-foreground">
+                <p className="mt-2 border-t border-dashed border-border/55 pt-2 text-[11px] text-muted-foreground">
                   Dostępne do sprzedaży (na teraz): {availableAssetQuantity}
                 </p>
               ) : null}

@@ -1,70 +1,111 @@
-# Portfolio Tracker - Visual System (Continuity Refresh v1)
+# Design System Master File
 
-Project style direction for a premium-but-friendly Polish portfolio app.
+> **Logic:** For a page override, read `design-system/portfolio-tracker/pages/[page].md` first.
+> If override exists, it wins. Otherwise follow this file.
 
-## Intent
-- Keep current editorial, beginner-friendly feel.
-- Increase polish and trust with subtle token-level refinements.
-- Avoid dramatic visual shifts that increase cognitive load.
+---
 
-## North Star
-- Pattern: `Financial Ledger / Sunday Dossier`
-- Style: `Editorial Grid + Tactile Swiss Modernism`
-- UX tone: calm, authoritative, readable, not flashy
+**Project:** Portfolio Tracker  
+**Updated:** 2026-02-26  
+**Category:** Fintech Dashboard (Desktop-first)
 
-## Keep (Continuity Rules)
-- Preserve information architecture and widget order on `/portfolio`.
-- Keep typography roles:
-  - UI copy/labels: `Geist Sans` (fallback Inter)
-  - Editorial emphasis/headlines: `Newsreader`
-  - Numbers/money/percentages: `IBM Plex Mono` with `tabular-nums`
-- Keep dashed ledger separators and compact data density.
-- Keep semantic profit/loss colors, but only where meaning is critical.
+---
 
-## Refresh (What We Improve)
-- Softer paper-like surfaces and calmer shadow contrast.
-- Slightly quieter borders and table separators.
-- Less aggressive badge styling by default (stamp-like neutral labels).
-- Slightly reduced motion intensity/duration.
+## Global Direction
 
-## Color Direction
-- Background layer: warm off-white / paper tone.
-- Card layer: crisp light surface, subtle lift.
-- Primary text: deep charcoal (not pure black).
-- Semantic accents:
-  - Profit: muted institutional green
-  - Loss: muted institutional red
-- Avoid high-saturation/neon accents.
+### Pattern
+- **Name:** Financial Ledger / Sunday Dossier
+- **Vibe:** high-end Swiss bank statement, Financial Times, printed ledger
+- **Principles:** strict alignment, high data density, calm authority, low visual noise
 
-## Component Rules
-- Cards:
-  - Soft drop shadow + restrained contrast.
-  - Small radius (`~6px`) for editorial precision.
-- Badges:
-  - Default badge should be neutral and subdued.
-  - Strong semantic colors only for status that matters (gain/loss, warnings).
-- Tables:
-  - Keep semantic table structure.
-  - Dashed separators remain, but with lower opacity.
-- Charts:
-  - For part-to-whole with many categories, prefer horizontal stacked bars or treemap over tiny-slice donuts.
-  - Maintain readable labels, subdued grid lines, and consistent number formatting.
+### Style
+- **Name:** Editorial Grid + Tactile Swiss Modernism
+- **Primary feeling:** beginner-friendly but professional and premium
+- **Rhythm:** compact sections, clear separators, predictable hierarchy
+
+---
+
+## Core Tokens
+
+### Color System (OKLCH Layering Intent)
+
+| Role | Intent | Current Token |
+|------|--------|---------------|
+| Layer 1 (Background) | Warm off-white paper | `--background` |
+| Layer 2 (Card) | Crisp white paper sheet | `--card` |
+| Primary Text | Deep charcoal, not pure black | `--foreground` |
+| Supporting Text | Softer neutral gray | `--muted-foreground` |
+| Profit | Muted institutional green | `--profit` |
+| Loss | Muted institutional red | `--loss` |
+| Rules/Dividers | Editorial linework | `--border`, `--report-rule` |
+
+### Typography
+- **UI / Headers / Copy:** Geist Sans (`--font-sans`)
+- **Data / Numbers:** IBM Plex Mono (`--font-mono`)
+- **Rule:** numeric outputs and totals use `tabular-nums`
+
+### Depth and Surface
+- Use soft tactile shadows (`--surface-shadow`) with restrained contrast.
+- Card tops should read as paper layers (subtle highlight / inner top border feel).
+- Prefer dashed/dotted separators over thick solid borders.
+
+---
+
+## Global Component Rules
+
+### Cards
+- Rounded but restrained (`rounded-lg` to `rounded-xl` max)
+- Border: subtle (`border-border/65` to `border-border/80`)
+- Background: paper-like (`bg-card`, `bg-background` tints)
+- Shadow: use existing surface shadow variables, avoid heavy blur stacks
+
+### Buttons
+- Primary action can be solid, but avoid loud saturation
+- Utility/filter controls should favor outline/ghost and compact sizing
+- For chip-like controls prefer rounded-full with low-contrast borders
+
+### Tables / Ledger Views
+- Header row should be clearly separated and sticky when useful
+- Group boundaries should use dashed rules
+- Alternating row rhythm should be subtle, never zebra-heavy
+- Hover states should be calm, not high-contrast flashes
+
+### Badges
+- Use stamp-like subdued badges
+- Avoid semantic red/green on neutral action labels (e.g. BUY/SELL labels)
+- Reserve profit/loss color for actual performance or P/L context
+
+---
 
 ## Motion
-- Prefer short, calm transitions (`~130-200ms` primitives).
-- Use motion to clarify state change, not for decoration.
-- Respect `prefers-reduced-motion`.
+- Micro-interactions only where they reinforce hierarchy
+- Standard transitions: 150-250ms
+- Respect `prefers-reduced-motion`
+
+---
+
+## Accessibility + Readability
+- Text contrast should stay AA in light mode
+- Keep heading hierarchy sequential
+- Keep dense screens scannable with consistent size scale
+- Numeric readability first: spacing, grouping, mono alignment
+
+---
 
 ## Strict Anti-Patterns
-- No glassmorphism or heavy blur UI.
-- No neon crypto-like green/red.
-- No heavy gradients as primary style language.
-- No oversized decorative animations.
-- No chart choices that hurt readability (for example tiny-slice donuts).
 
-## Practical Review Checklist
-- Is this visually consistent with current app shell and portfolio widgets?
-- Is the new style calmer and clearer for beginner investors?
-- Does every number-heavy area keep mono + tabular alignment?
-- Are badges/separators informative without visual noise?
-- Can a user scan the dashboard in under 10 seconds?
+- ❌ Glassmorphism or neumorphism
+- ❌ Neon crypto-style greens/reds
+- ❌ Thick box borders around every item
+- ❌ Donut charts with many tiny slices for allocation
+- ❌ Decorative gradients as primary style language
+
+---
+
+## Delivery Checklist
+
+- [ ] Uses two-font hierarchy correctly (sans + mono)
+- [ ] Tables use semantic structure and readable rhythm
+- [ ] Profit/loss colors only in correct semantic contexts
+- [ ] Surfaces read as layered paper, not generic SaaS cards
+- [ ] Beginner-friendly clarity preserved (no visual overload)

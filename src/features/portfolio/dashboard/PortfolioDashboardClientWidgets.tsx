@@ -40,7 +40,7 @@ export function PortfolioDashboardClientWidgets({
   const rebuild = useSnapshotRebuild(scope, selectedPortfolioId, true);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PortfolioValueOverTimeWidget
         key={`${scope}:${selectedPortfolioId ?? "all"}`}
         scope={scope}
@@ -54,7 +54,7 @@ export function PortfolioDashboardClientWidgets({
         benchmarkSeries={benchmarkSeries}
         rebuild={rebuild}
       />
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <AllocationHoldingsWidget summary={summary} rebuild={rebuild} />
         <CurrencyExposureWidget
           selectedPortfolioId={selectedPortfolioId}

@@ -81,7 +81,7 @@ export function InstrumentCombobox({
         ? "Szukam instrumentów…"
         : error
           ? "Nie udało się pobrać wyników."
-          : "Brak wyników.";
+          : `Brak wyników dla "${trimmedQuery}". Spróbuj nazwy lub tickera.`;
 
   const showMoreAction =
     !showAll &&
@@ -124,7 +124,7 @@ export function InstrumentCombobox({
           aria-expanded={open}
           aria-haspopup="listbox"
           className={cn(
-            "h-12 w-full justify-between gap-3 px-4 md:h-11",
+            "h-12 w-full justify-between gap-3 border-input/90 bg-background/92 px-4 md:h-11",
             !value && "text-muted-foreground",
             triggerClassName
           )}
@@ -159,11 +159,11 @@ export function InstrumentCombobox({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="min-w-[var(--radix-popover-trigger-width)] w-[var(--radix-popover-trigger-width)] p-0"
+        className="min-w-[var(--radix-popover-trigger-width)] w-[var(--radix-popover-trigger-width)] border-border/70 bg-background/96 p-0 shadow-[var(--surface-shadow)]"
       >
-        <Command shouldFilter={false}>
+        <Command className="bg-background/96" shouldFilter={false}>
           <CommandInput
-            className="h-10 text-sm"
+            className="h-11 text-[13px]"
             placeholder={queryPlaceholder}
             ref={commandInputRef}
             value={query}
@@ -178,14 +178,18 @@ export function InstrumentCombobox({
               debouncedCommit(nextValue);
             }}
           />
-          <CommandList className="max-h-[360px]" id={commandListId}>
-            {!isLoading ? <CommandEmpty>{emptyMessage}</CommandEmpty> : null}
-            <CommandGroup>
+          <CommandList className="max-h-[400px]" id={commandListId}>
+            {!isLoading ? (
+              <CommandEmpty className="px-4 py-6 text-left text-sm leading-relaxed text-muted-foreground">
+                {emptyMessage}
+              </CommandEmpty>
+            ) : null}
+            <CommandGroup heading={showAll ? "Wyniki globalne" : "Najtrafniejsze"}>
               {results.map((option) => {
                 return (
                   <CommandItem
                     key={option.id}
-                    className="min-h-11 w-full py-2"
+                    className="min-h-12 w-full py-2.5"
                     onSelect={() => {
                       onChange(option);
                       setQuery("");
@@ -213,12 +217,12 @@ export function InstrumentCombobox({
                           {option.ticker}
                         </span>
                       </div>
-                      <span className="truncate text-sm text-muted-foreground">
+                      <span className="truncate text-sm text-foreground/85">
                         {option.name}
                       </span>
                       {option.exchange ? (
                         <Badge
-                          className="max-w-[140px] truncate bg-muted text-[10px] text-muted-foreground"
+                          className="max-w-[140px] truncate border-border/70 bg-muted/24 text-[10px] text-muted-foreground/90"
                           title={option.exchange}
                         >
                           {option.exchange}
@@ -234,21 +238,22 @@ export function InstrumentCombobox({
                       className="flex min-h-11 items-center gap-3 px-3 py-2"
                       key={`loading-${index}`}
                     >
-                      <div className="size-6 animate-pulse rounded-full bg-muted" />
+                      <div className="size-6 animate-pulse rounded-full bg-muted/70" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-3 w-24 animate-pulse rounded-full bg-muted" />
-                        <div className="h-2 w-36 animate-pulse rounded-full bg-muted" />
+                        <div className="h-3 w-24 animate-pulse rounded-full bg-muted/70" />
+                        <div className="h-2 w-36 animate-pulse rounded-full bg-muted/70" />
                       </div>
-                      <div className="h-3 w-10 animate-pulse rounded-full bg-muted" />
+                      <div className="h-3 w-10 animate-pulse rounded-full bg-muted/70" />
                     </div>
                   ))
                 : null}
               {showMoreAction ? (
                 <CommandItem
+                  className="min-h-11 justify-center border-t border-dashed border-border/60"
                   onSelect={() => setShowAll(true)}
                   value="Pokaż więcej"
                 >
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm font-medium text-foreground/80">
                     Pokaż więcej wyników
                   </span>
                 </CommandItem>

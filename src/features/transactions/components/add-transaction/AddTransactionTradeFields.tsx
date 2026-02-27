@@ -83,7 +83,7 @@ export function AddTransactionTradeFields({
   onCashCurrencyChange,
 }: Props) {
   const fieldLabelClass =
-    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground/95";
 
   return (
     <>
@@ -118,7 +118,7 @@ export function AddTransactionTradeFields({
               <FormControl>
                 <Input
                   {...field}
-                  className="h-11 font-mono tabular-nums text-right"
+                  className="h-11 border-input/85 bg-background/92 font-mono tabular-nums text-right"
                   inputMode="decimal"
                   onChange={(event) => {
                     const next = formatNumericInputWithCursor(
@@ -151,7 +151,7 @@ export function AddTransactionTradeFields({
                 <FormControl>
                   <MoneyInput
                     {...field}
-                    className="h-11"
+                    className="h-11 border-input/85 bg-background/92"
                     currency={displayCurrency}
                     placeholder="np. 100,00"
                   />
@@ -179,7 +179,7 @@ export function AddTransactionTradeFields({
                 <FormControl>
                   <MoneyInput
                     {...field}
-                    className="h-11"
+                    className="h-11 border-input/85 bg-background/92"
                     currency={displayCurrency}
                     placeholder="np. 0,00"
                   />

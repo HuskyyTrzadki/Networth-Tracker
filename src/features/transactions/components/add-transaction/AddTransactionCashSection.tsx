@@ -68,7 +68,7 @@ export function AddTransactionCashSection({
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3 rounded-md border border-dashed border-border/65 bg-background/66 p-3">
       <FormField
         control={form.control}
         name="consumeCash"
@@ -76,7 +76,7 @@ export function AddTransactionCashSection({
           <FormItem>
             <FormLabel className={fieldLabelClass}>Rozliczenie gotówką</FormLabel>
             <FormControl>
-              <div className="flex h-11 items-center gap-3">
+              <div className="flex h-11 items-center gap-3 rounded-md border border-border/65 bg-background/72 px-3">
                 <Checkbox
                   checked={field.value}
                   className="h-5 w-5"
@@ -101,7 +101,7 @@ export function AddTransactionCashSection({
       />
 
       {consumeCash ? (
-        <div className="space-y-2.5 rounded-md border border-border/70 bg-muted/20 p-3">
+        <div className="space-y-3 rounded-md border border-dashed border-border/65 bg-background/72 p-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -156,26 +156,29 @@ export function AddTransactionCashSection({
             ) : null}
           </div>
 
-          <div className="space-y-1.5 text-[11px] text-muted-foreground">
-            <div className="flex items-center justify-between gap-3">
+          <div className="space-y-1.5 border-t border-dashed border-border/65 pt-2 text-[11px] text-muted-foreground/95">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/80">
+              Podgląd gotówki
+            </p>
+            <div className="flex items-center justify-between gap-3 rounded-sm px-1">
               <span>Dostępna gotówka (na dziś)</span>
               <span className="font-mono text-[12px] font-medium tabular-nums">
                 {formatMoney(availableCashNow, resolvedCashCurrency)}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3 rounded-sm border-t border-dashed border-border/55 px-1 pt-1.5">
               <span>Dostępna gotówka (na dzień transakcji)</span>
               <span className="font-mono text-[12px] font-medium tabular-nums">
                 {formatMoney(availableCashOnTradeDate, resolvedCashCurrency)}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3 rounded-sm border-t border-dashed border-border/55 px-1 pt-1.5">
               <span>Zmiana gotówki</span>
               <span className="font-mono text-[12px] font-medium tabular-nums">
                 {projectedCashDeltaLabel ?? "—"}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-2">
+            <div className="flex items-center justify-between gap-3 rounded-sm border-t border-dashed border-border/55 px-1 pt-1.5">
               <span>Po transakcji</span>
               <span className="font-mono text-[12px] font-semibold tabular-nums">
                 {projectedCashAfterLabel ?? "—"}
@@ -187,7 +190,9 @@ export function AddTransactionCashSection({
             ) : null}
 
             {cashBalanceOnDateErrorMessage ? (
-              <p className="text-destructive">{cashBalanceOnDateErrorMessage}</p>
+              <p className="rounded-sm border border-[color:var(--loss)]/30 bg-[color:var(--loss)]/8 px-2 py-1 text-[color:var(--loss)]">
+                {cashBalanceOnDateErrorMessage}
+              </p>
             ) : null}
 
             <p>
@@ -204,11 +209,13 @@ export function AddTransactionCashSection({
             ) : null}
 
             {fxPreviewErrorMessage ? (
-              <p className="text-destructive">{fxPreviewErrorMessage}</p>
+              <p className="rounded-sm border border-[color:var(--loss)]/30 bg-[color:var(--loss)]/8 px-2 py-1 text-[color:var(--loss)]">
+                {fxPreviewErrorMessage}
+              </p>
             ) : null}
 
             {hasInsufficientCash ? (
-              <p className="text-destructive">
+              <p className="rounded-sm border border-[color:var(--loss)]/30 bg-[color:var(--loss)]/8 px-2 py-1 text-[color:var(--loss)]">
                 Po tej transakcji gotówka byłaby ujemna na dzień {tradeDate}.
               </p>
             ) : null}

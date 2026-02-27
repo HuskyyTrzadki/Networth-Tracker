@@ -95,7 +95,7 @@ export function AddTransactionDialog({
           requestClose();
         }}
       >
-        <DialogContent className="max-h-[92dvh] overflow-hidden rounded-lg border-border/80 bg-card p-0 sm:max-w-[1080px]">
+        <DialogContent className="max-h-[92dvh] overflow-hidden rounded-lg border border-border/70 bg-card/96 p-0 shadow-[var(--surface-shadow)] sm:max-w-[1080px]">
           <AddTransactionDialogContent
             assetBalancesByPortfolio={assetBalancesByPortfolio}
             cashBalancesByPortfolio={cashBalancesByPortfolio}
@@ -116,7 +116,7 @@ export function AddTransactionDialog({
       </Dialog>
 
       <Dialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent className="border border-border/70 bg-card/96 sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>Odrzucić niezapisane zmiany?</DialogTitle>
             <DialogDescription>
@@ -125,13 +125,19 @@ export function AddTransactionDialog({
           </DialogHeader>
           <DialogFooter className="mt-2">
             <Button
+              className="rounded-full"
               type="button"
               variant="outline"
               onClick={() => setConfirmDiscardOpen(false)}
             >
               Wróć do edycji
             </Button>
-            <Button type="button" variant="destructive" onClick={() => requestClose({ force: true })}>
+            <Button
+              className="rounded-full"
+              type="button"
+              variant="destructive"
+              onClick={() => requestClose({ force: true })}
+            >
               Odrzuć zmiany
             </Button>
           </DialogFooter>

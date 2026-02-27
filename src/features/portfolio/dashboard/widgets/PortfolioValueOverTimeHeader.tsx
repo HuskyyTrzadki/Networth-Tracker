@@ -48,7 +48,7 @@ const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
 const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
 const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
 const LEDGER_TOGGLE_GROUP_CLASS =
-  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/60 bg-muted/28 p-1";
+  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/65 bg-background/72 p-1";
 const LEDGER_TOGGLE_ITEM_CLASS = "h-8 px-3 font-sans text-xs";
 
 export function PortfolioValueOverTimeHeader({
@@ -76,9 +76,9 @@ export function PortfolioValueOverTimeHeader({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-end gap-2.5 xl:flex-nowrap">
-        <div className="space-y-1.5">
-          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+      <div className="flex flex-wrap items-end gap-2.5 rounded-md border border-dashed border-border/65 bg-background/68 p-2.5 xl:flex-nowrap">
+        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
+          <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
             Tryb
           </div>
           <ToggleGroup
@@ -108,8 +108,8 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className="space-y-1.5">
-          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
+          <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
             Zakres
           </div>
           <ToggleGroup
@@ -136,8 +136,8 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className="space-y-1.5">
-          <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
+          <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
             Waluta
           </div>
           <ToggleGroup
@@ -148,7 +148,7 @@ export function PortfolioValueOverTimeHeader({
                 onCurrencyChange(value);
               }
             }}
-            className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/28 p-1"
+            className="inline-flex items-center gap-1 rounded-md border border-border/65 bg-background/72 p-1"
           >
             <ToggleGroupItem
               className="h-8 px-2.5 text-xs"
@@ -175,14 +175,14 @@ export function PortfolioValueOverTimeHeader({
         </div>
 
         {mode === "PERFORMANCE" && comparisonOptions.length > 0 ? (
-          <div className="space-y-1.5">
-            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
+          <div className="space-y-1.5 rounded-md border border-border/60 bg-background/76 p-2">
+            <div className="mb-0.5 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
               Porównania
             </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  className="h-8 gap-1.5 px-2.5 text-xs"
+                  className="h-8 gap-1.5 rounded-full px-2.5 text-xs"
                   type="button"
                   variant="outline"
                 >
@@ -191,7 +191,10 @@ export function PortfolioValueOverTimeHeader({
                   <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-56 p-2">
+              <PopoverContent
+                align="end"
+                className="w-56 border border-border/70 bg-card/96 p-2 shadow-[var(--surface-shadow)]"
+              >
                 <div className="space-y-1">
                   {comparisonOptions.map((option) => {
                     const checked = selectedComparisons.includes(option.id);
@@ -201,7 +204,7 @@ export function PortfolioValueOverTimeHeader({
                       <label
                         key={option.id}
                         className={cn(
-                          "flex cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/35",
+                          "flex cursor-pointer items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-xs text-muted-foreground hover:border-border/55 hover:bg-background/72",
                           checked ? "text-foreground" : ""
                         )}
                       >
@@ -230,31 +233,31 @@ export function PortfolioValueOverTimeHeader({
       </div>
 
       {mode === "PERFORMANCE" && performancePartial ? (
-        <div className="text-xs text-muted-foreground">
+        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
           Częściowe dane: performance może być przybliżone.
         </div>
       ) : null}
 
       {mode === "VALUE" && valueIsPartial ? (
-        <div className="text-xs text-muted-foreground">
+        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
           Częściowa wycena: brak cen dla {missingQuotes} pozycji, brak FX dla{" "}
           {missingFx} pozycji.
         </div>
       ) : null}
 
       {rebuildStatus === "failed" && rebuildMessage ? (
-        <div className="text-xs text-destructive">
+        <div className="rounded-sm border border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 px-2.5 py-1.5 text-xs text-destructive">
           Nie udało się przebudować historii: {rebuildMessage}
         </div>
       ) : null}
 
       {isAllHistoryLoading ? (
-        <div className="text-xs text-muted-foreground">
+        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
           Wczytywanie pełnej historii dla zakresu ALL...
         </div>
       ) : null}
       {isAllHistoryTruncated && !isAllHistoryLoading ? (
-        <div className="text-xs text-muted-foreground">
+        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
           Pokazano skróconą historię. Przełącz na zakres ALL, aby dociągnąć pełne dane.
         </div>
       ) : null}

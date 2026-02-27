@@ -21,20 +21,25 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   if (!pageData.isAuthenticated) {
     return (
       <main className="mx-auto w-full max-w-7xl px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
-        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
-          Zaloguj się, aby zobaczyć portfel.
-        </div>
-        <Button asChild className="mt-4 h-11">
-          <Link
-            href={{
-              pathname: "/login",
-              query: { next: "/portfolio" },
-            }}
-          >
-            Zaloguj się
-          </Link>
-        </Button>
+        <section className="max-w-[720px] rounded-xl border border-border/75 bg-card/94 p-6 shadow-[var(--surface-shadow)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Dostęp wymagany
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Portfele</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Zaloguj się, aby zobaczyć wycenę i historię portfela.
+          </p>
+          <Button asChild className="mt-5 h-11">
+            <Link
+              href={{
+                pathname: "/login",
+                query: { next: "/portfolio" },
+              }}
+            >
+              Zaloguj się
+            </Link>
+          </Button>
+        </section>
       </main>
     );
   }
@@ -54,30 +59,33 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
     : "Wszystkie portfele";
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-7xl flex-col px-5 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-7xl flex-col px-5 py-5 sm:px-6 sm:py-7">
       <AnimatedReveal>
-        <header className="flex flex-col gap-3">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
-              Dashboard
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+        <header className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-2">
+              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+                Dashboard
+              </p>
+              <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
+            </div>
+            <Button asChild size="lg" className="h-11 w-full lg:w-auto">
+              <Link
+                href={
+                  selectedPortfolioId
+                    ? `/transactions/new?portfolio=${selectedPortfolioId}`
+                    : "/transactions/new"
+                }
+                scroll={false}
+              >
+                Dodaj transakcję
+              </Link>
+            </Button>
           </div>
-          <Button asChild size="lg" className="w-full md:w-auto md:self-start">
-            <Link
-              href={
-                selectedPortfolioId
-                  ? `/transactions/new?portfolio=${selectedPortfolioId}`
-                  : "/transactions/new"
-              }
-              scroll={false}
-            >
-              Dodaj transakcję
-            </Link>
-          </Button>
+
           {selectedPortfolioId === null ? (
-            <div className="md:hidden">
+            <div className="mt-3 rounded-md border border-dashed border-border/65 bg-background/70 p-2 md:hidden">
               <PortfolioMobileHeaderActions
                 portfolios={portfolios}
                 selectedId={selectedPortfolioId}
@@ -86,7 +94,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
           ) : null}
         </header>
       </AnimatedReveal>
-      <AnimatedReveal className="mt-6" delay={0.05}>
+      <AnimatedReveal className="mt-5" delay={0.05}>
         <Suspense fallback={<PortfolioDashboardSkeleton />}>
           <PortfolioDashboardSection
             baseCurrency={baseCurrency}

@@ -28,13 +28,15 @@ const Section = ({
   portfolioId: string | null;
 }>) => (
   <section className="space-y-2">
-    <h4 className="text-sm font-semibold">{title}</h4>
+    <h4 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+      {title}
+    </h4>
     {items.length > 0 ? (
       <ul className="space-y-2">
         {items.map((item) => (
           <li
             key={item.dividendEventKey}
-            className="rounded-md border border-border/75 bg-muted/10 px-3 py-2.5"
+            className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2.5"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
@@ -56,7 +58,7 @@ const Section = ({
               <div className="flex flex-wrap items-center gap-2">
                 {item.isBooked ? (
                   <Badge className="border-border/70 bg-background/92 text-[color:var(--profit)]">
-                    ✅ Zaksięgowane
+                    Zaksięgowane
                   </Badge>
                 ) : null}
                 {item.disabledReason ? (
@@ -75,7 +77,7 @@ const Section = ({
         ))}
       </ul>
     ) : (
-      <div className="rounded-md border border-dashed border-border bg-muted/20 px-3 py-4 text-sm text-muted-foreground">
+      <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-4 text-sm text-muted-foreground">
         Brak zdarzeń w tym zakresie.
       </div>
     )}
@@ -87,6 +89,7 @@ export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
 
   return (
     <ChartCard
+      className="border-border/75 bg-card/94"
       title="Skrzynka dywidend"
       subtitle={
         isReadOnly

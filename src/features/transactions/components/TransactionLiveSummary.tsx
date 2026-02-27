@@ -54,7 +54,7 @@ export function TransactionLiveSummary({
 
   if (value === null || total === null || !formatter || signedFee === null) {
     return (
-      <div className="rounded-md border border-border/70 bg-muted/15 p-3.5">
+      <div className="rounded-md border border-border/65 bg-muted/14 p-3.5">
         <div className="grid grid-cols-[1fr_auto] items-center gap-4">
           <span className="text-sm text-muted-foreground">
             {type === "BUY" ? "Łącznie (koszt)" : "Łącznie (przychód netto)"}
@@ -72,7 +72,7 @@ export function TransactionLiveSummary({
   const totalLabel = formatCurrencyValue(total, formatter);
 
   return (
-    <div className="rounded-md border border-border/70 bg-muted/15 p-3.5">
+    <div className="rounded-md border border-border/65 bg-muted/14 p-3.5">
       <div className="grid gap-2.5">
         <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-sm">
           <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">

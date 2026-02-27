@@ -14,7 +14,7 @@ export function AddTransactionNotesField({
   variant?: "default" | "custom";
 }>) {
   const fieldLabelClass =
-    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground";
+    "text-[11px] uppercase tracking-[0.14em] text-muted-foreground/95";
   const label = variant === "custom" ? "Opis" : "Notatka";
   const placeholder =
     variant === "custom"
@@ -31,7 +31,7 @@ export function AddTransactionNotesField({
           <FormControl>
             <Textarea
               {...field}
-              className="min-h-20 resize-none"
+              className="min-h-24 resize-none border-border/65 bg-background/92 leading-relaxed"
               placeholder={placeholder}
             />
           </FormControl>

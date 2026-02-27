@@ -95,12 +95,12 @@ export function AddTransactionPortfolioTypeFields({
             </Select>
             <FormMessage />
             {!isEditMode ? (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-muted/20 px-3 py-2.5">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-border/65 bg-background/72 px-3 py-2.5">
                 <div className="min-w-0 space-y-1">
-                  <p className="text-xs font-medium text-foreground">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
                     Wgraj zrzut ekranu
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
                     Jeśli nie chcesz uzupełniać manualnie, możesz wgrać zrzut ekranu z brokera.
                   </p>
                 </div>
@@ -108,7 +108,7 @@ export function AddTransactionPortfolioTypeFields({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3"
+                  className="h-9 rounded-full px-3"
                   disabled={Boolean(!forcedPortfolioId && !field.value)}
                   onClick={onOpenScreenshot}
                 >
@@ -131,7 +131,7 @@ export function AddTransactionPortfolioTypeFields({
             <FormControl>
               {isCustomTab ? (
                 <div className="flex h-10 items-center">
-                  <span className="rounded-sm border border-current/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <span className="rounded-sm border border-border/65 bg-background/90 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/85">
                     Dodanie
                   </span>
                 </div>
@@ -144,7 +144,7 @@ export function AddTransactionPortfolioTypeFields({
                   }}
                   value={field.value}
                 >
-                  <TabsList className="grid h-10 w-full grid-cols-2 rounded-md border border-border/70 bg-muted/45 p-1">
+                  <TabsList className="grid h-10 w-full grid-cols-2 rounded-md border border-border/65 bg-background/70 p-1">
                     <TabsTrigger
                       className="h-8 w-full rounded-sm text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                       value="BUY"

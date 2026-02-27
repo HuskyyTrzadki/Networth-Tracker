@@ -117,20 +117,25 @@ export default async function TransactionsPage({ searchParams }: Props) {
   if (!pageData.isAuthenticated) {
     return (
       <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
-        <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
-          Zaloguj się, aby zobaczyć historię transakcji.
-        </div>
-        <Button asChild className="mt-4 h-11">
-          <Link
-            href={{
-              pathname: "/login",
-              query: { next: "/transactions" },
-            }}
-          >
-            Zaloguj się
-          </Link>
-        </Button>
+        <section className="max-w-[720px] rounded-xl border border-border/75 bg-card/94 p-6 shadow-[var(--surface-shadow)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Dostęp wymagany
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Transakcje</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Zaloguj się, aby zobaczyć historię transakcji i operacji gotówkowych.
+          </p>
+          <Button asChild className="mt-5 h-11">
+            <Link
+              href={{
+                pathname: "/login",
+                query: { next: "/transactions" },
+              }}
+            >
+              Zaloguj się
+            </Link>
+          </Button>
+        </section>
       </main>
     );
   }
@@ -140,29 +145,67 @@ export default async function TransactionsPage({ searchParams }: Props) {
     : "/transactions/new";
   const clearSearchHref = buildClearSearchHref(filters);
   const activeFilterChips = buildActiveFilterChips(filters, pageData.portfolios);
+  const selectedPortfolio =
+    pageData.portfolios.find((portfolio) => portfolio.id === filters.portfolioId) ??
+    null;
+  const rowsOnCurrentPage = new Intl.NumberFormat("pl-PL").format(
+    pageData.transactionsPage.items.length
+  );
+  const sortSummary =
+    filters.sort === "date_desc" ? "Najnowsze na górze" : "Najstarsze na górze";
 
   return (
-    <main className="mx-auto w-full max-w-[1560px] px-5 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-[1560px] px-5 py-5 sm:px-6 sm:py-7">
       <AnimatedReveal>
-        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
-              Rejestr
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Historia transakcji
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Przeglądaj i filtruj swoje operacje w portfelu.
-            </p>
-          </div>
-          <Button asChild size="lg" className="md:min-w-44">
-            <Link href={transactionCreateHref}>Dodaj transakcję</Link>
-          </Button>
-        </header>
+        <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+          <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-2">
+              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+                Dziennik portfela
+              </p>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Historia transakcji
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Przeglądaj operacje aktywów i gotówki w układzie księgowym.
+              </p>
+            </div>
+
+            <div className="grid flex-1 gap-2.5 sm:grid-cols-3 lg:max-w-[560px]">
+              <div className="rounded-md border border-border/65 bg-background/72 px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  Wiersze
+                </p>
+                <p className="mt-1 font-mono text-base font-semibold tabular-nums text-foreground">
+                  {rowsOnCurrentPage}
+                </p>
+              </div>
+              <div className="rounded-md border border-border/65 bg-background/72 px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  Filtry
+                </p>
+                <p className="mt-1 font-mono text-base font-semibold tabular-nums text-foreground">
+                  {activeFilterChips.length}
+                </p>
+              </div>
+              <div className="rounded-md border border-border/65 bg-background/72 px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  Zakres
+                </p>
+                <p className="mt-1 truncate text-sm font-medium text-foreground">
+                  {selectedPortfolio?.name ?? "Wszystkie portfele"}
+                </p>
+              </div>
+            </div>
+
+            <Button asChild size="lg" className="h-11 md:min-w-44">
+              <Link href={transactionCreateHref}>Dodaj transakcję</Link>
+            </Button>
+          </header>
+        </section>
       </AnimatedReveal>
 
-      <AnimatedReveal className="mt-6" delay={0.05}>
+      <AnimatedReveal className="mt-5" delay={0.05}>
         <TransactionsSearchToolbar
           key={`${filters.query ?? ""}:${filters.type ?? "all"}:${
             filters.sort
@@ -176,11 +219,14 @@ export default async function TransactionsPage({ searchParams }: Props) {
       </AnimatedReveal>
       {activeFilterChips.length > 0 ? (
         <AnimatedReveal className="mt-3" delay={0.06}>
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/80 bg-card px-3 py-2">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border/70 bg-card/90 px-3 py-2.5">
+            <span className="pr-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
+              Aktywne filtry
+            </span>
             {activeFilterChips.map((chip) => (
               <Button
                 asChild
-                className="h-8 rounded-md px-2.5 text-xs"
+                className="h-7 rounded-full border-border/75 bg-background/72 px-3 text-[11px] font-medium"
                 key={chip.key}
                 size="sm"
                 variant="outline"
@@ -190,7 +236,12 @@ export default async function TransactionsPage({ searchParams }: Props) {
                 </Link>
               </Button>
             ))}
-            <Button asChild className="h-8 px-2.5 text-xs" size="sm" variant="ghost">
+            <Button
+              asChild
+              className="h-7 rounded-full px-3 text-[11px]"
+              size="sm"
+              variant="ghost"
+            >
               <Link href="/transactions" scroll={false}>
                 Wyczyść wszystko
               </Link>
@@ -200,22 +251,36 @@ export default async function TransactionsPage({ searchParams }: Props) {
       ) : null}
 
       <AnimatedReveal className="mt-4" delay={0.08}>
-        {pageData.transactionsPage.items.length > 0 ? (
-          <TransactionsTable items={pageData.transactionsPage.items} />
-        ) : (
-          <TransactionsEmptyState
-            addTransactionHref={transactionCreateHref}
-            clearSearchHref={clearSearchHref}
-            query={filters.query}
-          />
-        )}
-      </AnimatedReveal>
+        <section className="rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
+          <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
+                Księga operacji
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Każda transakcja pokazuje nogę aktywa i odpowiadające rozliczenie.
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
+          </div>
 
-      <AnimatedReveal delay={0.1}>
-        <TransactionsPagination
-          filters={filters}
-          hasNextPage={pageData.transactionsPage.hasNextPage}
-        />
+          <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
+            {pageData.transactionsPage.items.length > 0 ? (
+              <TransactionsTable items={pageData.transactionsPage.items} />
+            ) : (
+              <TransactionsEmptyState
+                addTransactionHref={transactionCreateHref}
+                clearSearchHref={clearSearchHref}
+                query={filters.query}
+              />
+            )}
+
+            <TransactionsPagination
+              filters={filters}
+              hasNextPage={pageData.transactionsPage.hasNextPage}
+            />
+          </div>
+        </section>
       </AnimatedReveal>
     </main>
   );

@@ -48,12 +48,13 @@ export function AddTransactionSidebarSummary({
   const subheadline = isCustomTab
     ? "Aktywo nierynkowe"
     : selectedInstrument?.name || "Pozycja rynkowa";
+  const modeLabel = isCustomTab ? "Nieregularna wycena" : "Wycena rynkowa";
 
   return (
     <aside className="space-y-3 lg:sticky lg:top-0 lg:self-start">
-      <section className="rounded-lg border border-border/70 bg-background/95 p-3.5 shadow-[var(--shadow-soft)]">
-        <div className="mb-3 space-y-2 border-b border-border/70 pb-2.5">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="rounded-lg border border-border/65 bg-card/94 p-3.5 shadow-[var(--surface-shadow)]">
+        <div className="mb-3 space-y-2 border-b border-dashed border-border/65 pb-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
             Skutek finansowy
           </p>
           <div className="space-y-1">
@@ -66,9 +67,23 @@ export function AddTransactionSidebarSummary({
             </p>
             <p className="truncate text-xs text-muted-foreground">{subheadline}</p>
           </div>
-          <Badge className="w-fit rounded-sm border border-current/55 bg-transparent text-[10px] uppercase tracking-[0.16em] text-foreground/70">
-            {type === "BUY" ? "Kupno" : "Sprzedaż"}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge className="w-fit rounded-sm border border-border/70 bg-muted/16 text-[10px] uppercase tracking-[0.16em] text-foreground/70">
+              {type === "BUY" ? "Kupno" : "Sprzedaż"}
+            </Badge>
+            <Badge className="w-fit rounded-sm border border-border/65 bg-background/70 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              {modeLabel}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="mb-3 rounded-md border border-dashed border-border/60 bg-background/68 px-2.5 py-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+            Waluta
+          </p>
+          <p className="mt-1 font-mono text-sm font-medium tabular-nums text-foreground">
+            {displayCurrency || "—"}
+          </p>
         </div>
 
         <TransactionLiveSummary

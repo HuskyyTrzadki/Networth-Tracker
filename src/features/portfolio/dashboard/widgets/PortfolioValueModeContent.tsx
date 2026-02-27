@@ -112,12 +112,17 @@ export function PortfolioValueModeContent({
         </p>
         {!hasHoldings ? (
           <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
-            <Button asChild className="h-9 px-3 text-xs" size="sm">
+            <Button asChild className="h-9 rounded-full px-3 text-xs" size="sm">
               <Link href={transactionCreateHref} scroll={false}>
                 Dodaj pierwsze kupno
               </Link>
             </Button>
-            <Button asChild className="h-9 px-3 text-xs" size="sm" variant="outline">
+            <Button
+              asChild
+              className="h-9 rounded-full px-3 text-xs"
+              size="sm"
+              variant="outline"
+            >
               <Link href={cashDepositHref} scroll={false}>
                 Dodaj depozyt gotówki
               </Link>
@@ -126,7 +131,7 @@ export function PortfolioValueModeContent({
         ) : shouldBootstrap ? (
           <div className="flex justify-center">
             <Button
-              className="h-9 px-3 text-xs"
+              className="h-9 rounded-full px-3 text-xs"
               size="sm"
               onClick={onBootstrapRequest}
               disabled={bootstrapPending}
@@ -148,8 +153,10 @@ export function PortfolioValueModeContent({
 
   return (
     <div className="space-y-4">
-      <div>
-        <div className="text-xs text-muted-foreground">{`Zmiana za okres (${range})`}</div>
+      <div className="rounded-md border border-dashed border-border/65 bg-background/68 px-3 py-2.5">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+          {`Zmiana za okres (${range})`}
+        </div>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <div
             className={cn(
@@ -188,7 +195,10 @@ export function PortfolioValueModeContent({
           </div>
         </div>
       </div>
-      <div style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}>
+      <div
+        className="rounded-md border border-dashed border-border/65 bg-background/68 p-2"
+        style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}
+      >
         <PortfolioComparisonChart
           data={comparisonChartData}
           valueFormatter={formatCurrencyValue}
@@ -196,7 +206,7 @@ export function PortfolioValueModeContent({
         />
       </div>
       {hasInvestedCapitalGaps ? (
-        <div className="text-xs text-muted-foreground">
+        <div className="rounded-sm border border-dashed border-border/65 bg-background/68 px-2.5 py-1.5 text-xs text-muted-foreground">
           Zainwestowany kapitał ma luki historyczne, bo część dni nie ma danych
           przepływów lub transferów.
         </div>

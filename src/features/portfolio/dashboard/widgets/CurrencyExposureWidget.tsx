@@ -86,7 +86,7 @@ function ExposureBars({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-muted/10 px-4 py-6 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-dashed border-border/70 bg-background/68 px-4 py-6 text-sm text-muted-foreground">
         Brak danych do obliczenia ekspozycji walutowej.
       </div>
     );
@@ -133,7 +133,7 @@ function ExposureBars({
             return (
               <details
                 key={`details-${row.currencyCode}`}
-                className="group rounded-md border border-border/70 bg-muted/10"
+                className="group rounded-md border border-dashed border-border/70 bg-background/68"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-sm text-foreground marker:content-none">
                   <span className="font-mono font-semibold">{getCurrencyLabel(row.currencyCode)}</span>
@@ -142,7 +142,7 @@ function ExposureBars({
                     <ChevronDown className="size-4 transition-transform duration-200 group-open:rotate-180" />
                   </span>
                 </summary>
-                <div className="border-t border-border/70 px-3 py-2">
+                <div className="border-t border-dashed border-border/70 px-3 py-2">
                   {drivers.length > 0 ? (
                     <ul className="space-y-1.5">
                       {drivers.map((driver) => (
@@ -236,12 +236,13 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
 
   return (
     <ChartCard
+      className="border-border/75 bg-card/94"
       surface="subtle"
       title={
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span>Ekspozycja walutowa</span>
           <ToggleGroup
-            className="rounded-md border border-border/60 bg-muted/28 p-1"
+            className="rounded-md border border-border/65 bg-background/70 p-1"
             type="single"
             value={mode}
             onValueChange={(value) => {
@@ -269,7 +270,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
       subtitle="Notowania: waluta instrumentu. Gospodarcza: ekspozycja przychodowa i geograficzna."
     >
       <div className="space-y-4">
-        <div className="rounded-md border border-border/70 bg-muted/15 px-3 py-2.5">
+        <div className="rounded-md border border-dashed border-border/70 bg-background/72 px-3 py-2.5">
           <p className="text-xs text-muted-foreground">
             Gospodarcza: po przełączeniu analizator łączy waluty instrumentów, geograficzną
             strukturę przychodów i przybliżenia dla ETF-ów, aby pokazać realną ekspozycję portfela.
@@ -277,7 +278,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
         </div>
 
         {mode === "GOSPODARCZA" && isLoading ? (
-          <div className="rounded-md border border-border/70 bg-muted/15 p-3">
+          <div className="rounded-md border border-dashed border-border/70 bg-background/72 p-3">
             <div className="flex items-center gap-2 text-sm text-foreground">
               <Loader2 className="size-4 animate-spin" aria-hidden />
               Obliczam ekspozycję gospodarczą...
@@ -293,7 +294,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
             <p>{errorMessage}</p>
             {mode === "GOSPODARCZA" ? (
               <Button
-                className="mt-2 h-8"
+                className="mt-2 h-8 rounded-full"
                 onClick={() => {
                   void retryEconomicExposure();
                 }}

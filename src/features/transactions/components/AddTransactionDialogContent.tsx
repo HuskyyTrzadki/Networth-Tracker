@@ -304,8 +304,11 @@ export function AddTransactionDialogContent({
             void submitTransaction(event);
           }}
         >
-          <header className="flex items-start justify-between gap-3 border-b border-border/70 bg-background px-5 py-3.5 md:px-6 md:py-4">
+          <header className="flex items-start justify-between gap-3 border-b border-dashed border-border/65 bg-card/94 px-5 py-3.5 md:px-6 md:py-4">
             <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
+                Formularz księgowania
+              </p>
               <DialogTitle className="truncate text-base font-semibold tracking-tight">
                 {isEditMode ? "Edytuj transakcję" : "Dodaj transakcję"}
               </DialogTitle>
@@ -318,7 +321,7 @@ export function AddTransactionDialogContent({
             <DialogClose asChild>
               <Button
                 aria-label="Zamknij"
-                className="h-9 w-9 p-0"
+                className="h-9 w-9 rounded-full border border-border/55 p-0"
                 type="button"
                 variant="ghost"
                 disabled={isSubmitting}
@@ -346,9 +349,9 @@ export function AddTransactionDialogContent({
           />
 
           {!isScreenshotMode ? (
-            <footer className="sticky bottom-0 z-10 border-t border-border bg-muted/35 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
+            <footer className="sticky bottom-0 z-10 border-t border-dashed border-border/65 bg-card/92 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-h-5 text-sm text-destructive">
+                <div className="min-h-5 text-sm text-[color:var(--loss)]">
                   {rootError ?? ""}
                 </div>
                 <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -357,14 +360,14 @@ export function AddTransactionDialogContent({
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
-                    className="h-10 px-6"
+                    className="h-10 rounded-full px-6"
                   >
                     Anuluj
                   </Button>
                   <Button
                     disabled={!isSubmittable || isSubmitting}
                     type="submit"
-                    className="h-10 min-w-32 px-6"
+                    className="h-10 min-w-32 rounded-full px-6"
                   >
                     {isSubmitting ? (
                       <>

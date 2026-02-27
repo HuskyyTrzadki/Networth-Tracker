@@ -19,7 +19,7 @@ import type { TransactionListItem } from "../server/list-transactions";
 import { triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
 
 const menuItemClasses =
-  "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-muted/60";
+  "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-muted/38";
 
 export const canEditTransactionRow = (transaction: TransactionListItem) =>
   transaction.legRole === "ASSET";
@@ -109,7 +109,7 @@ export function TransactionsRowActions({
         </Link>
       ) : null}
         <button
-          className={cn(menuItemClasses, "text-destructive")}
+          className={cn(menuItemClasses, "text-[color:var(--loss)]")}
           disabled={isDeleting}
           onClick={() => {
             void handleDelete();

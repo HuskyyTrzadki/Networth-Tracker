@@ -49,25 +49,41 @@ export function TransactionsPagination({ filters, hasNextPage }: Props) {
   const nextDisabled = !hasNextPage;
 
   return (
-    <div className="mt-4 flex items-center justify-between">
+    <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-border/70 bg-background/62 px-3 py-2.5">
       {prevDisabled ? (
-        <Button disabled size="sm" type="button" variant="outline">
+        <Button
+          className="h-8 rounded-full px-3 text-xs"
+          disabled
+          size="sm"
+          type="button"
+          variant="outline"
+        >
           Poprzednia
         </Button>
       ) : (
-        <Button asChild size="sm" variant="outline">
+        <Button asChild className="h-8 rounded-full px-3 text-xs" size="sm" variant="outline">
           <Link href={buildTransactionsUrl(filters, previousPage)}>
             Poprzednia
           </Link>
         </Button>
       )}
 
+      <span className="font-mono text-xs font-medium text-muted-foreground tabular-nums">
+        Strona {filters.page}
+      </span>
+
       {nextDisabled ? (
-        <Button disabled size="sm" type="button" variant="outline">
+        <Button
+          className="h-8 rounded-full px-3 text-xs"
+          disabled
+          size="sm"
+          type="button"
+          variant="outline"
+        >
           Następna
         </Button>
       ) : (
-        <Button asChild size="sm" variant="outline">
+        <Button asChild className="h-8 rounded-full px-3 text-xs" size="sm" variant="outline">
           <Link href={buildTransactionsUrl(filters, nextPage)}>
             Następna
           </Link>

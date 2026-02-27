@@ -23,10 +23,11 @@ export function PortfolioRecentTransactionsWidget({
 }: Props) {
   return (
     <ChartCard
+      className="border-border/75 bg-card/94"
       title="Ostatnie transakcje"
       subtitle="Najnowsze operacje, posortowane od najnowszych."
       right={
-        <Button asChild size="sm" variant="outline">
+        <Button asChild className="rounded-full" size="sm" variant="outline">
           <Link href={getTransactionsHref(selectedPortfolioId)}>Zobacz wszystkie</Link>
         </Button>
       }
@@ -34,7 +35,7 @@ export function PortfolioRecentTransactionsWidget({
       {items.length > 0 ? (
         <TransactionsTable items={items} />
       ) : (
-        <div className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-4 py-6 text-sm text-muted-foreground">
           Brak transakcji dla wybranego portfela.
         </div>
       )}

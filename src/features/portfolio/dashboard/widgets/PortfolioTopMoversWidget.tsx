@@ -56,6 +56,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
 
   return (
     <ChartCard
+      className="border-border/75 bg-card/94"
       title="Największe ruchy"
       subtitle="Dziś (opóźnione notowania)."
     >
@@ -80,7 +81,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
             return (
               <li
                 key={mover.instrumentId}
-                className="rounded-md border border-border/70 bg-muted/10 px-3 py-2"
+                className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
@@ -124,7 +125,7 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
           })}
         </ul>
       ) : (
-        <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border/70 bg-background/68 px-4 py-6 text-sm text-muted-foreground">
           Brak danych o dziennych zmianach dla pozycji.
         </div>
       )}

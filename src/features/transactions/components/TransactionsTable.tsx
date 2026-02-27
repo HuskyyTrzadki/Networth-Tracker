@@ -36,17 +36,15 @@ const getTypeLabel = (item: TransactionListItem) => {
   return item.side === "BUY" ? "Kupno" : "Sprzedaż";
 };
 
-const getTypeBadgeClassName = (side: TransactionListItem["side"]) =>
-  side === "BUY"
-    ? "border-primary/25 bg-primary/10 text-primary"
-    : "border-border/70 bg-background/92 text-[color:var(--loss)]";
+const getTypeBadgeClassName = () =>
+  "border-border/70 bg-background/92 text-foreground/88";
 
 const getRowBadgeClassName = (item: TransactionListItem) => {
   if (item.legRole !== "CASH") {
-    return getTypeBadgeClassName(item.side);
+    return getTypeBadgeClassName();
   }
 
-  return "border-border/90 bg-muted/45 text-muted-foreground";
+  return "border-border/75 bg-muted/28 text-muted-foreground";
 };
 
 const getInstrumentSubtitle = (item: TransactionListItem) => {
@@ -215,7 +213,9 @@ function TransactionsLedgerRow({
       }}
       className={cn(
         "grid min-h-[46px] items-center px-2 py-2 sm:px-4",
-        hasGroupDivider && "border-b border-dashed border-border/70",
+        index % 2 === 1 && "bg-muted/[0.06]",
+        "transition-colors hover:bg-muted/16",
+        hasGroupDivider && "border-b border-dashed border-border/52",
         isCashLeg && "text-muted-foreground",
         isNew && "animate-ledger-stamp"
       )}
@@ -340,11 +340,11 @@ export function TransactionsTable({ items }: Props) {
   }, [rows]);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border/85 bg-card shadow-[var(--surface-shadow)]">
+    <div className="overflow-hidden rounded-lg border border-border/65 bg-background/72">
       <div className="overflow-x-auto">
         <div className="min-w-[860px]">
           <div
-            className="grid items-center bg-muted/35 px-2 py-3 font-sans sm:px-4"
+            className="sticky top-0 z-10 grid items-center border-b border-dashed border-border/60 bg-muted/24 px-2 py-2.5 font-sans sm:px-4"
             style={{ gridTemplateColumns: GRID_TEMPLATE }}
           >
             <div className={HEADER_CELL_CLASS}>Data</div>

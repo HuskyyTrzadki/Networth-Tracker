@@ -140,15 +140,20 @@ export function PortfolioNetValueHero({
     splitCurrencyLabel(animatedTotalLabel);
 
   return (
-    <section className="rounded-lg border border-border/72 bg-card px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
-      <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
-        {portfolioLabel}
+    <section className="rounded-lg border border-border/72 bg-card/94 px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="inline-flex rounded-sm border border-border/65 bg-background/72 px-2 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-[0.11em] text-muted-foreground/80">
+          {portfolioLabel}
+        </div>
+        <div className="inline-flex rounded-sm border border-border/60 bg-background/72 px-2 py-0.5 font-mono text-[11px] font-medium tabular-nums text-muted-foreground/90">
+          Bazowa: {baseCurrency}
+        </div>
       </div>
-      <div className="mt-3 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
+      <div className="mt-3 border-t border-dashed border-border/60 pt-2 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
         Wartość netto
       </div>
       <LazyMotion features={domAnimation}>
-        <div className="mb-5 mt-1 flex flex-wrap items-end gap-3">
+        <div className="mb-4 mt-1 flex flex-wrap items-end gap-3">
           <m.div
             className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
@@ -162,15 +167,26 @@ export function PortfolioNetValueHero({
               </span>
             ) : null}
           </m.div>
-          {dailyChangeCombined ? (
-            <div
-              className={cn("pb-0.5 font-mono text-sm tabular-nums", dailyChangeTone)}
-            >
-              {dailyChangeCombined}
-            </div>
-          ) : null}
         </div>
       </LazyMotion>
+      <div className="grid gap-2 border-t border-dashed border-border/60 pt-2 sm:grid-cols-2">
+        <div className="rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Status danych
+          </p>
+          <p className="mt-0.5 text-xs text-foreground/90">
+            {isPartial ? "Częściowe notowania" : "Kompletne notowania"}
+          </p>
+        </div>
+        <div className="rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Zmiana dzienna
+          </p>
+          <p className={cn("mt-0.5 font-mono text-xs tabular-nums", dailyChangeTone)}>
+            {dailyChangeCombined ?? "—"}
+          </p>
+        </div>
+      </div>
       {isPartial ? (
         <p className="mt-2 font-sans text-[13px] text-muted-foreground">
           Częściowa wycena: część instrumentów nie ma aktualnych notowań lub FX.
