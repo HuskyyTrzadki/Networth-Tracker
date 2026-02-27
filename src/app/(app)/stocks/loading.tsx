@@ -1,6 +1,10 @@
+import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
+
 export default function StocksLoading() {
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] flex-col px-5 py-6 sm:px-6 sm:py-8">
+    <main
+      className={`mx-auto flex min-h-[calc(100vh-120px)] w-full flex-col px-5 py-6 sm:px-6 sm:py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}
+    >
       <header className="space-y-3">
         <div className="h-3 w-24 animate-pulse rounded bg-muted/50" />
         <div className="h-8 w-40 animate-pulse rounded bg-muted/45" />

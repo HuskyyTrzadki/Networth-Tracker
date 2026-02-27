@@ -19,7 +19,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI primitive `Calendar` re-exported via `src/features/design-system/components/ui/calendar.tsx`
 - Shared `DatePicker` lives in `src/features/design-system/components/DatePicker.tsx` with stories in `src/features/design-system/stories/DatePicker.stories.tsx`
 - Shared portfolio trend chart engine lives in `src/features/design-system/components/UnifiedPortfolioTrendChart.tsx` and is reused by both `PortfolioComparisonChart` (value mode) and `DailyReturnsLineChart` (performance mode).
-- Shared trend tooltip primitives (`TrendTooltipShell`, `TrendTooltipRow`) live in `UnifiedPortfolioTrendChart.tsx` and are reused by custom value-mode tooltip rendering to avoid duplicated markup.
+- Shared trend tooltip primitives (`TrendTooltipShell`, `TrendTooltipRow`) live in `components/chart-tooltip.tsx`; `UnifiedPortfolioTrendChart` re-exports them for backward compatibility.
 
 ## Boundaries
 - UI only, no business logic.

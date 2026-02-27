@@ -1,4 +1,5 @@
 import { PortfolioDashboardSkeleton } from "@/features/portfolio";
+import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { cn } from "@/lib/cn";
 
 type SkeletonLineProps = Readonly<{
@@ -11,7 +12,9 @@ function SkeletonLine({ className }: SkeletonLineProps) {
 
 export function PortfolioRouteLoading() {
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] flex-col px-6 py-8">
+    <main
+      className={`mx-auto flex min-h-[calc(100vh-120px)] w-full flex-col px-6 py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}
+    >
       <header className="rounded-lg border border-dashed border-border/70 bg-card/92 px-4 py-3 shadow-[var(--surface-shadow)] sm:px-5">
         <div className="space-y-2">
           <SkeletonLine className="h-2.5 w-16" />

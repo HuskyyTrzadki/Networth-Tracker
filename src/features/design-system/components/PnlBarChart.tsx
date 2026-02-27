@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
+import { TrendTooltipRow, TrendTooltipShell } from "./chart-tooltip";
 
 type Point = Readonly<{
   label: string;
@@ -23,6 +24,8 @@ type Props = Readonly<{
 
 export function PnlBarChart({ data, height = 240 }: Props) {
   const chartData = [...data];
+  const formatNumber = (value: number) =>
+    new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 }).format(value);
 
   return (
     <div className="w-full" style={{ height }}>
@@ -46,15 +49,22 @@ export function PnlBarChart({ data, height = 240 }: Props) {
           />
           <Tooltip
             cursor={{ fill: "var(--muted)" }}
-            contentStyle={{
-              background: "var(--popover)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              boxShadow: "var(--shadow)",
-              color: "var(--popover-foreground)",
+            content={({ active, label, payload }) => {
+              if (!active || !payload || payload.length === 0) {
+                return null;
+              }
+
+              const value = payload[0]?.value;
+              if (typeof value !== "number") {
+                return null;
+              }
+
+              return (
+                <TrendTooltipShell label={String(label ?? "—")}>
+                  <TrendTooltipRow label="P&L" value={formatNumber(value)} />
+                </TrendTooltipShell>
+              );
             }}
-            labelStyle={{ color: "var(--muted-foreground)" }}
-            itemStyle={{ color: "var(--popover-foreground)" }}
           />
           <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
             {chartData.map((entry) => (

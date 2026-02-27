@@ -67,7 +67,7 @@ export function AppSidebar({ className, portfolios }: Props) {
 
       <SidebarContent className="px-3 pb-3">
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/55">
+          <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/60">
             Nawigacja
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -106,7 +106,7 @@ export function AppSidebar({ className, portfolios }: Props) {
         </SidebarGroup>
 
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50">
+          <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/60">
             Twoje portfele
           </SidebarGroupLabel>
           <SidebarGroupContent>

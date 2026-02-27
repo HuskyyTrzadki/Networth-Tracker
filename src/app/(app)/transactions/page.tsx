@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
 
+import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { Button } from "@/features/design-system/components/ui/button";
 import { AnimatedReveal } from "@/features/design-system";
 import { createClient } from "@/lib/supabase/server";
@@ -116,9 +117,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
 
   if (!pageData.isAuthenticated) {
     return (
-      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
+      <main className={`mx-auto w-full px-6 py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
         <section className="max-w-[720px] rounded-xl border border-border/75 bg-card/94 p-6 shadow-[var(--surface-shadow)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
             Dostęp wymagany
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">Transakcje</h1>
@@ -155,12 +156,12 @@ export default async function TransactionsPage({ searchParams }: Props) {
     filters.sort === "date_desc" ? "Najnowsze" : "Najstarsze";
 
   return (
-    <main className="mx-auto w-full max-w-[1560px] px-5 py-5 sm:px-6 sm:py-7">
+    <main className={`mx-auto w-full px-5 py-5 sm:px-6 sm:py-7 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
       <AnimatedReveal>
         <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
           <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
                 Dziennik portfela
               </p>
               <h1 className="text-2xl font-semibold tracking-tight">
@@ -173,7 +174,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
 
             <div className="grid flex-1 gap-2.5 sm:grid-cols-3 lg:max-w-[560px]">
               <div className="rounded-md border border-border/65 bg-background/72 px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Wiersze
                 </p>
                 <p className="mt-1 font-mono text-base font-semibold tabular-nums text-foreground">
@@ -181,7 +182,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
                 </p>
               </div>
               <div className="rounded-md border border-border/65 bg-background/72 px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Filtry
                 </p>
                 <p className="mt-1 font-mono text-base font-semibold tabular-nums text-foreground">
@@ -189,7 +190,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
                 </p>
               </div>
               <div className="rounded-md border border-border/65 bg-background/72 px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Zakres
                 </p>
                 <p className="mt-1 truncate text-sm font-medium text-foreground">
@@ -220,7 +221,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
       {activeFilterChips.length > 0 ? (
         <AnimatedReveal className="mt-3" delay={0.06}>
           <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border/70 bg-card/90 px-3 py-2.5">
-            <span className="pr-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
+            <span className="pr-1 text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
               Filtry
             </span>
             {activeFilterChips.map((chip) => (
@@ -254,7 +255,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
         <section className="rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
           <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
+              <p className="text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
                 Księga operacji
               </p>
               <p className="text-sm text-muted-foreground">

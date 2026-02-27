@@ -68,11 +68,17 @@ export function AppShell({ children, portfolios, className }: Props) {
   return (
     <SidebarProvider style={sidebarStyle}>
       <AppSidebar portfolios={portfolios} />
+      <a
+        href="#main-content"
+        className="sr-only z-50 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-[var(--surface-shadow)] focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
+      >
+        Przejdz do tresci
+      </a>
       <SidebarInset
         className={cn("min-h-dvh pb-24 md:pb-0", className)}
         onKeyDownCapture={onKeyDownCapture}
       >
-        {children}
+        <div id="main-content">{children}</div>
         <MobileBottomNav />
         <AppToastHost />
       </SidebarInset>

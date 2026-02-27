@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { AnimatedReveal, StatusStrip } from "@/features/design-system";
+import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import {
   PortfolioDashboardSkeleton,
   PortfolioMobileHeaderActions,
@@ -20,9 +21,9 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   const pageData = await getUserPortfoliosPrivateCached();
   if (!pageData.isAuthenticated) {
     return (
-      <main className="mx-auto w-full max-w-7xl px-6 py-8">
+      <main className={`mx-auto w-full px-6 py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
         <section className="max-w-[720px] rounded-xl border border-border/75 bg-card/94 p-6 shadow-[var(--surface-shadow)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
             Dostęp wymagany
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">Portfele</h1>
@@ -62,21 +63,23 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
     : "Widok zbiorczy sumuje wszystkie portfele.";
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-7xl flex-col px-5 py-5 sm:px-6 sm:py-7">
+    <main
+      className={`mx-auto flex min-h-[calc(100vh-120px)] w-full flex-col px-5 py-5 sm:px-6 sm:py-7 ${APP_CONTENT_MAX_WIDTH_CLASS}`}
+    >
       <AnimatedReveal>
         <header className="rounded-lg border border-border/80 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/70 pb-3">
-            <p className="inline-flex items-center rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-muted-foreground">
+            <p className="inline-flex items-center rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-xs font-medium uppercase tracking-[0.13em] text-muted-foreground">
               Panel inwestora
             </p>
-            <p className="font-mono text-[11px] tabular-nums uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="font-mono text-xs tabular-nums uppercase tracking-[0.12em] text-muted-foreground">
               Waluta bazowa: {baseCurrency}
             </p>
           </div>
 
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
                 Dashboard
               </p>
               <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>

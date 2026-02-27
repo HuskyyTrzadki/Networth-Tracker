@@ -1,5 +1,7 @@
 "use client";
 
+import { TrendTooltipRow, TrendTooltipShell } from "@/features/design-system/components/chart-tooltip";
+
 import type { StockChartEventMarker } from "./stock-chart-event-markers";
 import {
   formatEps,
@@ -246,19 +248,13 @@ export function StockChartTooltipPanel({
   }
 
   return (
-    <div className="min-w-[170px] rounded-md border border-border/80 bg-popover px-3 py-2 text-popover-foreground shadow-[var(--shadow)]">
-      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-        {formatLabelDate(String(label ?? ""))}
-      </p>
-      <div className="mt-1.5 space-y-1.5">
+    <TrendTooltipShell label={formatLabelDate(String(label ?? ""))}>
+      <div className="space-y-1.5">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between gap-4">
-            <span className="text-xs text-muted-foreground">{row.label}</span>
-            <span className="font-mono text-xs tabular-nums">{row.value}</span>
-          </div>
+          <TrendTooltipRow key={row.label} label={row.label} value={row.value} />
         ))}
       </div>
-    </div>
+    </TrendTooltipShell>
   );
 }
 

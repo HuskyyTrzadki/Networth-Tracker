@@ -15,6 +15,7 @@ import {
 } from "@/lib/recharts-dynamic";
 
 import { buildPaddedDomain } from "../lib/chart-domain";
+import { TrendTooltipRow, TrendTooltipShell } from "./chart-tooltip";
 import {
   SHARED_CHART_ACTIVE_DOT_RADIUS,
   createSharedTimeAxisConfig,
@@ -26,6 +27,8 @@ import {
   SHARED_CHART_SECONDARY_LINE_WIDTH,
   SHARED_CHART_TICK_LINE,
 } from "./chart-styles";
+
+export { TrendTooltipRow, TrendTooltipShell } from "./chart-tooltip";
 
 export type UnifiedTrendLine = Readonly<{
   id: string;
@@ -82,58 +85,6 @@ const VARIANT_CONFIG = {
 const PRIMARY_COLOR = "var(--chart-1)";
 const NEGATIVE_PRIMARY_COLOR = "var(--loss)";
 const PRIMARY_STROKE_WIDTH = 3;
-
-type TrendTooltipShellProps = Readonly<{
-  label: string | null;
-  children: ReactNode;
-}>;
-
-export function TrendTooltipShell({ label, children }: TrendTooltipShellProps) {
-  return (
-    <div className="space-y-2 rounded-md border border-dashed border-border/75 bg-popover/98 p-3 text-[12px] text-popover-foreground shadow-[var(--surface-shadow)]">
-      <div className="border-b border-dashed border-border/65 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/90">
-        {label ?? "—"}
-      </div>
-      <div className="space-y-1">{children}</div>
-    </div>
-  );
-}
-
-type TrendTooltipRowProps = Readonly<{
-  label: string;
-  value: string;
-  color?: string;
-  bordered?: boolean;
-}>;
-
-export function TrendTooltipRow({
-  label,
-  value,
-  color,
-  bordered = false,
-}: TrendTooltipRowProps) {
-  return (
-    <div
-      className={
-        bordered
-          ? "flex items-center justify-between gap-4 border-t border-dashed border-border/70 pt-1.5"
-          : "flex items-center justify-between gap-4"
-      }
-    >
-      <div className="flex items-center gap-2">
-        {color ? (
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ background: color }}
-            aria-hidden="true"
-          />
-        ) : null}
-        <span>{label}</span>
-      </div>
-      <span className="font-mono font-medium tabular-nums">{value}</span>
-    </div>
-  );
-}
 
 export function UnifiedPortfolioTrendChart({
   data,

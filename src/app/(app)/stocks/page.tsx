@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 
+import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { AnimatedReveal } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cardVariants } from "@/features/design-system/components/ui/card";
@@ -35,7 +36,7 @@ export default async function StocksPage() {
 
   if (!data.user) {
     return (
-      <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
+      <main className={`mx-auto w-full px-6 py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
         <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>
         <div
           className={`mt-6 px-6 py-6 text-sm text-muted-foreground ${cardVariants()}`}
@@ -57,10 +58,12 @@ export default async function StocksPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] flex-col px-5 py-6 sm:px-6 sm:py-8">
+    <main
+      className={`mx-auto flex min-h-[calc(100vh-120px)] w-full flex-col px-5 py-6 sm:px-6 sm:py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}
+    >
       <AnimatedReveal>
         <header className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/75">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/85">
             Screener
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>

@@ -129,7 +129,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Refresh pass tightened consistency further: unified rounded container scale (`rounded-lg`/`rounded-md`), removed excess visual depth from modal/table surfaces, and aligned segmented/toggle controls with shared primitive states.
 - Desktop-only follow-up refined route-shell alignment (`max-w-[1560px]`), header hierarchy on `/transactions`, and dense form/table typography in add-transaction combobox + live summary for better scanability on large screens.
 - Transactions empty state is actionable: no-results state can clear the search filters, and default empty state provides direct CTA to open add-transaction flow.
-- Transactions toolbar exposes explicit pending feedback (`Aktualizowanie listy...`) while URL/filter transitions are in flight.
+- Transactions toolbar exposes explicit pending feedback (`Aktualizuję...`) via `role="status"` + `aria-live="polite"` during URL/filter transitions.
+- Transactions toolbar uses semantic form labeling (`Label` + `htmlFor`, `fieldset` + `legend`) instead of visual-only microcopy labels.
 - Transactions table enforces ledger typography split: ticker/date/quantity/price/value cells stay `font-mono tabular-nums`, while descriptive copy remains sans for readability.
 - Transactions table now uses semantic shadcn table primitives (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`) while preserving ledger hierarchy (cash-leg indentation, group dividers, numeric alignment).
 - Group row separators use subtle dashed dividers to reinforce the printed-ledger visual rhythm between asset/cash legs.

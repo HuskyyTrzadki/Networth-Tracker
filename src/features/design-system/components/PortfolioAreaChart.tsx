@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
+import { TrendTooltipRow, TrendTooltipShell } from "./chart-tooltip";
 
 type Point = Readonly<{
   label: string;
@@ -63,20 +64,22 @@ export function PortfolioAreaChart({
           />
           <Tooltip
             cursor={{ stroke: "var(--ring)" }}
-            contentStyle={{
-              background: "var(--popover)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              boxShadow: "var(--shadow)",
-              color: "var(--popover-foreground)",
+            content={({ active, label, payload }) => {
+              if (!active || !payload || payload.length === 0) {
+                return null;
+              }
+
+              const rawValue = payload[0]?.value;
+              if (typeof rawValue !== "number") {
+                return null;
+              }
+
+              return (
+                <TrendTooltipShell label={labelFormatter(String(label ?? "—"))}>
+                  <TrendTooltipRow label="Wartość" value={valueFormatter(rawValue)} />
+                </TrendTooltipShell>
+              );
             }}
-            labelStyle={{ color: "var(--muted-foreground)" }}
-            itemStyle={{ color: "var(--popover-foreground)" }}
-            labelFormatter={(value: string | number) => labelFormatter(String(value))}
-            formatter={(value: string | number) => [
-              valueFormatter(Number(value)),
-              "Wartość",
-            ]}
           />
           <Area
             type="monotone"

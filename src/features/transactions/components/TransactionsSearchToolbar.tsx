@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Input } from "@/features/design-system/components/ui/input";
+import { Label } from "@/features/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,8 @@ type Props = Readonly<{
 }>;
 
 const searchDebounceMs = 300;
+const searchInputId = "transactions-search-input";
+const sortSelectId = "transactions-sort-select";
 
 const buildTransactionsUrl = (params: URLSearchParams) => {
   const queryString = params.toString();
@@ -107,38 +110,57 @@ function TransactionsSearchToolbarInner({
 
   return (
     <div
+      aria-busy={isPending}
       className={cn(
         "flex flex-col gap-3.5 rounded-lg border border-border/75 bg-card/94 px-4 py-3.5 shadow-[var(--surface-shadow)]"
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/60 pb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
+        <p className="text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
           Filtry
         </p>
-        {isPending ? (
-          <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="size-3 animate-spin" aria-hidden />
-            Aktualizuję...
-          </div>
-        ) : null}
+        <div
+          aria-atomic
+          aria-live="polite"
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+          role="status"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="size-3 animate-spin" aria-hidden />
+              Aktualizuję...
+            </>
+          ) : (
+            <span className="sr-only">Filtry zaktualizowane</span>
+          )}
+        </div>
       </div>
+
       <div className="rounded-md border border-border/65 bg-background/70 p-2.5">
-        <PortfolioSwitcher
-          disabled={isPending}
-          portfolios={portfolios}
-          resetPageParam
-          selectedId={selectedPortfolioId}
-        />
+        <Label className="sr-only" htmlFor="transactions-portfolio-switcher">
+          Zakres portfela
+        </Label>
+        <div id="transactions-portfolio-switcher">
+          <PortfolioSwitcher
+            disabled={isPending}
+            portfolios={portfolios}
+            resetPageParam
+            selectedId={selectedPortfolioId}
+          />
+        </div>
       </div>
 
       <div className="grid w-full gap-3.5 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:items-end">
         <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+          <Label
+            className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85"
+            htmlFor={searchInputId}
+          >
             Szukaj instrumentu
-          </p>
+          </Label>
           <Input
-            aria-label="Szukaj instrumentu"
             className="h-10 border-input/85 bg-background/92 text-sm"
+            id={searchInputId}
             ref={searchInputRef}
             onChange={handleSearchChange}
             placeholder="Ticker lub nazwa (np. AAPL)"
@@ -147,10 +169,10 @@ function TransactionsSearchToolbarInner({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+          <fieldset className="space-y-1.5">
+            <legend className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
               Typ operacji
-            </p>
+            </legend>
             <div className="h-10 rounded-md border border-input/85 bg-background/84 p-0.5">
               <ToggleGroup
                 aria-label="Typ transakcji"
@@ -184,12 +206,15 @@ function TransactionsSearchToolbarInner({
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
-          </div>
+          </fieldset>
 
           <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+            <Label
+              className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85"
+              htmlFor={sortSelectId}
+            >
               Sortowanie
-            </p>
+            </Label>
             <Select
               disabled={isPending}
               onValueChange={(value) =>
@@ -197,7 +222,10 @@ function TransactionsSearchToolbarInner({
               }
               value={sort}
             >
-              <SelectTrigger className="h-10 min-w-[180px] border-input/85 bg-background/92">
+              <SelectTrigger
+                className="h-10 min-w-[180px] border-input/85 bg-background/92"
+                id={sortSelectId}
+              >
                 <SelectValue placeholder="Sortuj" />
               </SelectTrigger>
               <SelectContent>
