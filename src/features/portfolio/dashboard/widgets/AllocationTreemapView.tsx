@@ -1,17 +1,15 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
-import type { EChartsOption } from "echarts";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { hierarchy, treemap, treemapBinary } from "d3-hierarchy";
+import { WalletMinimal } from "lucide-react";
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildLogoDevTickerProxyUrl } from "@/features/common/lib/logo-dev";
-
-import {
-  formatCurrencyString,
-  getCurrencyFormatter,
-} from "@/lib/format-currency";
-
 import type { CurrencyCode } from "@/features/market-data";
+import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
 
-import type { AllocationCategoryRow } from "./allocation-view-model";
+import type { AllocationAssetRow, AllocationCategoryRow } from "./allocation-view-model";
 
 type Props = Readonly<{
   categories: readonly AllocationCategoryRow[];
@@ -20,34 +18,40 @@ type Props = Readonly<{
   totalCurrencyLabel: string | null;
 }>;
 
-type TreemapNode = Readonly<{
-  id: string;
-  name: string;
-  value?: number;
-  share: number;
+type LayoutRect = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  data: AssetLayoutData;
+}>;
+
+type AssetLayoutData = Readonly<{
+  asset: AllocationAssetRow;
   shareLabel: string;
   valueLabel: string;
-  dayChangePercent: number | null;
   dayChangeLabel: string;
-  labelMode: "NONE" | "NAME_CHANGE";
-  labelScale: "XS" | "SM" | "MD" | "LG";
-  leafTone: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
-  showIcon: boolean;
-  iconRichKey?: string;
-  iconImageUrl?: string;
-  iconGlyph?: string;
-  isLeaf: boolean;
-  silent?: boolean;
-  tooltip?: Readonly<{
-    show?: boolean;
-  }>;
-  itemStyle?: Readonly<{
-    color: string;
-    borderColor?: string;
-    borderWidth?: number;
-  }>;
-  children?: readonly TreemapNode[];
+  tone: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
 }>;
+
+type TreemapDatum = Readonly<{
+  id: string;
+  value?: number;
+  assetData?: AssetLayoutData;
+  children?: readonly TreemapDatum[];
+}>;
+
+const pageBackground = "#e7e3dd";
+const tileBorderColor = "#d2cbbe";
+const positiveTile = "#dcefe3";
+const negativeTile = "#f2e2e1";
+const neutralTile = "#f4f2ee";
+const positiveInk = "#28382d";
+const negativeInk = "#433131";
+const neutralInk = "#343230";
+
+const categoryGap = 3;
+const leafGap = 2;
 
 const formatPercent = (value: number) =>
   new Intl.NumberFormat("pl-PL", {
@@ -55,7 +59,23 @@ const formatPercent = (value: number) =>
     maximumFractionDigits: 1,
   }).format(value);
 
-const toNumberValue = (value: string) => {
+const formatSignedPercent = (value: number | null, digits = 2) => {
+  const absolute = new Intl.NumberFormat("pl-PL", {
+    style: "percent",
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(Math.abs(value ?? 0));
+
+  if (value === null || Math.abs(value) < 0.0001) return absolute;
+  return value > 0 ? `+${absolute}` : `-${absolute}`;
+};
+
+const formatDirectionalChange = (value: number | null, digits = 2) => {
+  const arrow = value === null || Math.abs(value) < 0.0001 ? "→" : value > 0 ? "↑" : "↓";
+  return `${arrow} ${formatSignedPercent(value, digits)}`;
+};
+
+const parseValue = (value: string) => {
   const compact = value.replace(/\s+/g, "").trim();
   const normalized =
     compact.includes(",") && !compact.includes(".")
@@ -65,426 +85,51 @@ const toNumberValue = (value: string) => {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 };
 
-const formatSignedPercent = (value: number | null, digits = 2) => {
-  const absolute = new Intl.NumberFormat("pl-PL", {
-    style: "percent",
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(Math.abs(value ?? 0));
-
-  if (value === null || Math.abs(value) < 0.0001) {
-    return absolute;
-  }
-
-  return value > 0 ? `+${absolute}` : `-${absolute}`;
-};
-
-const formatDirectionalChange = (value: number | null, digits = 2) => {
-  const arrow =
-    value === null || Math.abs(value) < 0.0001 ? "→" : value > 0 ? "↑" : "↓";
-  return `${arrow} ${formatSignedPercent(value, digits)}`;
-};
-
-const resolveLabelMode = (share: number): TreemapNode["labelMode"] => {
-  if (share >= 0.004) return "NAME_CHANGE";
-  return "NONE";
-};
-
-const formatLeafLabel = (data: TreemapNode) => {
-  if (data.labelMode === "NONE") return "";
-  const scale = data.labelScale;
-  const toneSuffix =
-    data.leafTone === "POSITIVE"
-      ? "Pos"
-      : data.leafTone === "NEGATIVE"
-        ? "Neg"
-        : "Neutral";
-  const iconToken =
-    data.showIcon && data.iconRichKey
-      ? `{${data.iconRichKey}|}`
-      : data.showIcon && data.iconGlyph
-        ? `{iconGlyph|${data.iconGlyph}}`
-        : "";
-  const tickerToken = `{ticker${scale}${toneSuffix}|${data.name.toUpperCase()}}`;
-  const changeToken = `{change${scale}${toneSuffix}|${data.dayChangeLabel}}`;
-  const iconLinePrefix = iconToken.length > 0 ? `${iconToken} ` : "";
-
-  return `${iconLinePrefix}${tickerToken}\n${changeToken}`;
-};
-
-const pageBackgroundBeige = "var(--muted)";
-const categoryHeaderTint = "var(--muted)";
-
-const positiveLeafFill = "color-mix(in srgb, var(--profit) 16%, var(--card) 84%)";
-const positiveLeafInk = "var(--foreground)";
-const negativeLeafFill = "color-mix(in srgb, var(--loss) 16%, var(--card) 84%)";
-const negativeLeafInk = "var(--foreground)";
-const neutralLeafFill = "var(--card)";
-const neutralLeafInk = "var(--foreground)";
-const treemapBorderColor = "var(--background)";
-const treemapGap = 2;
-const treemapBorderWidth = 2;
-const cashIconRichKey = "iconCash";
-const cashIconSvg =
-  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2f2b27" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></svg>';
-const cashIconDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(cashIconSvg)}`;
-
-const toNodeValue = (valueBase: string, share: number) => {
-  const parsed = toNumberValue(valueBase);
+const toNodeValue = (asset: AllocationAssetRow) => {
+  const parsed = parseValue(asset.valueBase);
   if (parsed > 0) return parsed;
-  if (share > 0) return share * 1_000_000;
+  if (asset.share > 0) return asset.share * 1_000_000;
   return 0;
 };
 
-const resolveLeafTone = (
-  dayChangePercent: number | null
-): TreemapNode["leafTone"] => {
-  if (dayChangePercent === null || Math.abs(dayChangePercent) < 0.0001) {
-    return "NEUTRAL";
-  }
-
-  return dayChangePercent > 0 ? "POSITIVE" : "NEGATIVE";
+const resolveTone = (value: number | null): AssetLayoutData["tone"] => {
+  if (value === null || Math.abs(value) < 0.0001) return "NEUTRAL";
+  return value > 0 ? "POSITIVE" : "NEGATIVE";
 };
 
-const resolveLabelScale = (share: number): TreemapNode["labelScale"] => {
-  if (share >= 0.2) return "LG";
-  if (share >= 0.08) return "MD";
-  if (share >= 0.03) return "SM";
-  return "XS";
+const resolveTileColors = (tone: AssetLayoutData["tone"]) => {
+  if (tone === "POSITIVE") return { bg: positiveTile, text: positiveInk };
+  if (tone === "NEGATIVE") return { bg: negativeTile, text: negativeInk };
+  return { bg: neutralTile, text: neutralInk };
 };
 
-const resolveLeafFill = (tone: TreemapNode["leafTone"]) => {
-  if (tone === "POSITIVE") return positiveLeafFill;
-  if (tone === "NEGATIVE") return negativeLeafFill;
-  return neutralLeafFill;
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
+const getTileTypography = (width: number, height: number) => {
+  const ticker = clamp(Math.min(width / 5, height / 2.2), 11, 48);
+  const change = clamp(ticker * 0.56, 10, 26);
+  const icon = clamp(ticker * 0.64, 18, 32);
+  return { ticker, change, icon };
 };
 
-const toIconRichKey = (value: string) =>
-  `icon_${value.replace(/[^a-zA-Z0-9_]/g, "_")}`;
-
-const collectLeafNodes = (nodes: readonly TreemapNode[]): TreemapNode[] =>
-  nodes.flatMap((node) => {
-    if (node.isLeaf) return [node];
-    return node.children ? collectLeafNodes(node.children) : [];
-  });
-
-const buildIconRichStyles = (nodes: readonly TreemapNode[]) => {
-  const iconStyles: Record<string, unknown> = {
-    [cashIconRichKey]: {
-      width: 14,
-      height: 14,
-      backgroundColor: { image: cashIconDataUrl },
-    },
-  };
-  for (const leaf of collectLeafNodes(nodes)) {
-    if (!leaf.showIcon || !leaf.iconRichKey || !leaf.iconImageUrl) continue;
-    iconStyles[leaf.iconRichKey] = {
-      width: 14,
-      height: 14,
-      backgroundColor: { image: leaf.iconImageUrl },
-    };
-  }
-  return iconStyles;
+const truncateLabel = (value: string, width: number) => {
+  const maxChars = Math.max(3, Math.floor(width / 14));
+  if (value.length <= maxChars) return value;
+  return `${value.slice(0, Math.max(2, maxChars - 1))}…`;
 };
 
-const buildOption = (nodes: readonly TreemapNode[]) => ({
-  animationDuration: 260,
-  animationDurationUpdate: 220,
-  tooltip: {
-    trigger: "item",
-    backgroundColor: "var(--popover)",
-    borderColor: "var(--border)",
-    borderWidth: 1,
-    textStyle: {
-      color: "var(--popover-foreground)",
-      fontSize: 11,
-      fontFamily: "'IBM Plex Mono', monospace",
-    },
-    formatter: (params: unknown) => {
-      const data = (params as { data?: Partial<TreemapNode> | null }).data;
-      if (!data || typeof data.name !== "string") return "";
+const resolveLogoUrl = (asset: AllocationAssetRow) => {
+  if (asset.logoUrl) return asset.logoUrl;
+  if (asset.isCurrencyCash || asset.symbol === "CUSTOM") return null;
+  return buildLogoDevTickerProxyUrl(asset.symbol);
+};
 
-      const shareLabel =
-        typeof data.shareLabel === "string"
-          ? data.shareLabel
-          : typeof data.share === "number"
-            ? formatPercent(data.share)
-            : "—";
-      const valueLabel = typeof data.valueLabel === "string" ? data.valueLabel : "—";
-
-      if (data.isLeaf === true) {
-        const dayChangeLabel =
-          typeof data.dayChangeLabel === "string" ? data.dayChangeLabel : "0,00%";
-        return `${data.name}<br/>${valueLabel}<br/>Udział w portfelu: ${shareLabel}<br/>Dzisiaj: ${dayChangeLabel}`;
-      }
-
-      return `${data.name}<br/>${shareLabel} • ${valueLabel}`;
-    },
-  },
-  series: [
-    {
-      type: "treemap",
-      roam: false,
-      nodeClick: false,
-      emphasis: {
-        disabled: true,
-      },
-      blur: {
-        disabled: true,
-      },
-      select: {
-        disabled: true,
-      },
-      breadcrumb: { show: false },
-      visibleMin: 1,
-      leafDepth: 2,
-      upperLabel: {
-        show: false,
-        height: 0,
-      },
-      label: {
-        show: true,
-        formatter: (params: unknown) => {
-          const data = (params as { data?: TreemapNode | null }).data;
-          if (!data || !data.isLeaf) return "";
-          return formatLeafLabel(data);
-        },
-        position: "insideTopLeft",
-        align: "left",
-        verticalAlign: "top",
-        padding: [10, 10, 10, 10],
-        fontFamily: "'IBM Plex Mono', monospace",
-        fontSize: 18,
-        overflow: "truncate",
-        rich: {
-          tickerLGPos: {
-            color: positiveLeafInk,
-            fontSize: 28,
-            fontWeight: 700,
-            lineHeight: 32,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerMDPos: {
-            color: positiveLeafInk,
-            fontSize: 20,
-            fontWeight: 700,
-            lineHeight: 24,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerSMPos: {
-            color: positiveLeafInk,
-            fontSize: 14,
-            fontWeight: 700,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerXSPos: {
-            color: positiveLeafInk,
-            fontSize: 12,
-            fontWeight: 700,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeLGPos: {
-            color: positiveLeafInk,
-            fontSize: 16,
-            fontWeight: 500,
-            lineHeight: 20,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeMDPos: {
-            color: positiveLeafInk,
-            fontSize: 14,
-            fontWeight: 500,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeSMPos: {
-            color: positiveLeafInk,
-            fontSize: 13,
-            fontWeight: 500,
-            lineHeight: 16,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeXSPos: {
-            color: positiveLeafInk,
-            fontSize: 11,
-            fontWeight: 500,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerLGNeg: {
-            color: negativeLeafInk,
-            fontSize: 28,
-            fontWeight: 700,
-            lineHeight: 32,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerMDNeg: {
-            color: negativeLeafInk,
-            fontSize: 20,
-            fontWeight: 700,
-            lineHeight: 24,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerSMNeg: {
-            color: negativeLeafInk,
-            fontSize: 14,
-            fontWeight: 700,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerXSNeg: {
-            color: negativeLeafInk,
-            fontSize: 12,
-            fontWeight: 700,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeLGNeg: {
-            color: negativeLeafInk,
-            fontSize: 16,
-            fontWeight: 500,
-            lineHeight: 20,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeMDNeg: {
-            color: negativeLeafInk,
-            fontSize: 14,
-            fontWeight: 500,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeSMNeg: {
-            color: negativeLeafInk,
-            fontSize: 13,
-            fontWeight: 500,
-            lineHeight: 16,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeXSNeg: {
-            color: negativeLeafInk,
-            fontSize: 11,
-            fontWeight: 500,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerLGNeutral: {
-            color: neutralLeafInk,
-            fontSize: 28,
-            fontWeight: 700,
-            lineHeight: 32,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerMDNeutral: {
-            color: neutralLeafInk,
-            fontSize: 20,
-            fontWeight: 700,
-            lineHeight: 24,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerSMNeutral: {
-            color: neutralLeafInk,
-            fontSize: 14,
-            fontWeight: 700,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          tickerXSNeutral: {
-            color: neutralLeafInk,
-            fontSize: 12,
-            fontWeight: 700,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeLGNeutral: {
-            color: neutralLeafInk,
-            fontSize: 16,
-            fontWeight: 500,
-            lineHeight: 20,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeMDNeutral: {
-            color: neutralLeafInk,
-            fontSize: 14,
-            fontWeight: 500,
-            lineHeight: 18,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeSMNeutral: {
-            color: neutralLeafInk,
-            fontSize: 13,
-            fontWeight: 500,
-            lineHeight: 16,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          changeXSNeutral: {
-            color: neutralLeafInk,
-            fontSize: 11,
-            fontWeight: 500,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          iconGlyph: {
-            color: "var(--foreground)",
-            fontSize: 13,
-            lineHeight: 14,
-            fontFamily: "'IBM Plex Mono', monospace",
-          },
-          ...buildIconRichStyles(nodes),
-        },
-      },
-      itemStyle: {
-        borderColor: treemapBorderColor,
-        borderWidth: treemapBorderWidth,
-        gapWidth: treemapGap,
-      },
-      levels: [
-        {
-          itemStyle: {
-            borderColor: treemapBorderColor,
-            borderWidth: treemapBorderWidth,
-            gapWidth: treemapGap,
-            color: categoryHeaderTint,
-          },
-          upperLabel: {
-            show: false,
-            height: 0,
-          },
-        },
-        {
-          upperLabel: {
-            show: false,
-            height: 0,
-          },
-          itemStyle: {
-            borderColor: treemapBorderColor,
-            gapWidth: treemapGap,
-            borderWidth: treemapBorderWidth,
-          },
-        },
-        {
-          itemStyle: {
-            borderColor: treemapBorderColor,
-            gapWidth: treemapGap,
-            borderWidth: treemapBorderWidth,
-          },
-          label: {
-            show: true,
-            position: "insideTopLeft",
-            align: "left",
-            verticalAlign: "top",
-            padding: [10, 10, 10, 10],
-          },
-        },
-      ],
-      data: nodes.map((node) => ({
-        ...node,
-        children: node.children ? [...node.children] : undefined,
-      })),
-    },
-  ],
-});
+const resolveFallbackGlyph = (asset: AllocationAssetRow) => {
+  if (asset.isCurrencyCash) return "cash";
+  if (asset.symbol === "CUSTOM") return asset.customGlyph ?? "◼";
+  return null;
+};
 
 export function AllocationTreemapView({
   categories,
@@ -492,100 +137,107 @@ export function AllocationTreemapView({
   totalAmountLabel,
   totalCurrencyLabel,
 }: Props) {
-  const formatter = getCurrencyFormatter(baseCurrency);
-  const nodes: TreemapNode[] = categories.map((category) => ({
-    id: category.id,
-    name: category.label,
-    value: undefined,
-    share: category.share,
-    shareLabel: formatPercent(category.share),
-    valueLabel:
-      formatter && category.valueBase
-        ? formatCurrencyString(category.valueBase, formatter) ??
-          `${category.valueBase} ${baseCurrency}`
-        : `${category.valueBase} ${baseCurrency}`,
-    dayChangePercent: null,
-    dayChangeLabel: "→ 0,00%",
-    labelMode: "NONE",
-    labelScale: "SM",
-    leafTone: "NEUTRAL",
-    showIcon: false,
-    iconRichKey: undefined,
-    iconImageUrl: undefined,
-    iconGlyph: undefined,
-    isLeaf: false,
-    itemStyle: {
-      color: categoryHeaderTint,
-      borderColor: treemapBorderColor,
-      borderWidth: treemapBorderWidth,
-    },
-    silent: true,
-    tooltip: {
-      show: false,
-    },
-    children: category.assets.map((asset) => {
-      const leafTone = resolveLeafTone(asset.todayChangePercent);
-      const labelMode = resolveLabelMode(asset.share);
-      const labelScale = resolveLabelScale(asset.share);
-      const changeDigits = labelScale === "XS" ? 1 : 2;
-      const showIcon = labelMode === "NAME_CHANGE";
-      const stockIconUrl =
-        !asset.isCurrencyCash && asset.symbol !== "CUSTOM"
-          ? (buildLogoDevTickerProxyUrl(asset.symbol) ?? undefined)
-          : undefined;
-      const customGlyph = asset.customAssetType ? asset.customGlyph : null;
-      const iconRichKey = asset.isCurrencyCash
-        ? cashIconRichKey
-        : stockIconUrl
-          ? toIconRichKey(asset.id)
-          : undefined;
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
-      return {
-        id: asset.id,
-        name: asset.label,
-        value: toNodeValue(asset.valueBase, asset.share),
-        share: asset.share,
-        shareLabel: formatPercent(asset.share),
-        valueLabel:
-          formatter && asset.valueBase
-            ? formatCurrencyString(asset.valueBase, formatter) ??
-              `${asset.valueBase} ${baseCurrency}`
-            : `${asset.valueBase} ${baseCurrency}`,
-        dayChangePercent: asset.todayChangePercent,
-        dayChangeLabel: formatDirectionalChange(asset.todayChangePercent, changeDigits),
-        labelMode,
-        labelScale,
-        leafTone,
-        showIcon,
-        iconRichKey,
-        iconImageUrl: stockIconUrl,
-        iconGlyph: customGlyph ?? undefined,
-        isLeaf: true,
-        itemStyle: {
-          color: resolveLeafFill(leafTone),
-          borderColor: treemapBorderColor,
-          borderWidth: treemapBorderWidth,
-        },
-      };
-    }),
-  }));
-  const chartNodes =
-    nodes.length === 1 && (nodes[0]?.children?.length ?? 0) > 0
-      ? [...(nodes[0]?.children ?? [])]
-      : nodes;
-  const option = buildOption(chartNodes);
-  const chartEvents = {
-    finished: () => {
-      if (process.env.NODE_ENV !== "production") {
-        console.info("[AllocationTreemapView] finished", {
-          categories: chartNodes.filter((node) => !node.isLeaf).length,
-          leaves: chartNodes.filter((node) => node.isLeaf).length,
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setSize({ width: Math.max(0, rect.width), height: Math.max(0, rect.height) });
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      setSize({ width: Math.max(0, entry.contentRect.width), height: Math.max(0, entry.contentRect.height) });
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const formatter = getCurrencyFormatter(baseCurrency);
+
+  const leaves = useMemo(() => {
+    const width = size.width;
+    const height = size.height;
+    if (width <= 0 || height <= 0) return [] as LayoutRect[];
+
+    const categoryNodes: TreemapDatum[] = [];
+
+    for (const category of categories) {
+      const assetNodes: TreemapDatum[] = [];
+
+      for (const asset of category.assets) {
+        const value = toNodeValue(asset);
+        if (value <= 0) continue;
+
+        assetNodes.push({
+          id: asset.id,
+          value,
+          assetData: {
+            asset,
+            shareLabel: formatPercent(asset.share),
+            valueLabel:
+              formatter && asset.valueBase
+                ? formatCurrencyString(asset.valueBase, formatter) ??
+                  `${asset.valueBase} ${baseCurrency}`
+                : `${asset.valueBase} ${baseCurrency}`,
+            dayChangeLabel: formatDirectionalChange(
+              asset.todayChangePercent,
+              asset.share >= 0.03 ? 2 : 1
+            ),
+            tone: resolveTone(asset.todayChangePercent),
+          },
         });
       }
-    },
-  };
 
-  if (nodes.length === 0) {
+      if (assetNodes.length > 0) {
+        categoryNodes.push({
+          id: category.id,
+          children: assetNodes,
+        });
+      }
+    }
+
+    const rootData: TreemapDatum = {
+      id: "portfolio",
+      children: categoryNodes,
+    };
+
+    const root = hierarchy(rootData)
+      .sum((node) => node.value ?? 0)
+      .sort((left, right) => (right.value ?? 0) - (left.value ?? 0));
+
+    const layout = treemap<TreemapDatum>()
+      .tile(treemapBinary)
+      .size([width, height])
+      .round(true)
+      .paddingInner((node) => (node.depth === 1 ? categoryGap : leafGap));
+
+    const output = layout(root);
+    return output
+      .leaves()
+      .map((leaf) => {
+        const assetData = leaf.data.assetData;
+        if (!assetData) return null;
+        return {
+          x: leaf.x0,
+          y: leaf.y0,
+          width: Math.max(0, leaf.x1 - leaf.x0),
+          height: Math.max(0, leaf.y1 - leaf.y0),
+          data: assetData,
+        } satisfies LayoutRect;
+      })
+      .filter((value): value is LayoutRect => value !== null);
+  }, [baseCurrency, categories, formatter, size.height, size.width]);
+
+  if (categories.length === 0) {
     return (
       <div className="grid h-full place-items-center rounded-lg border border-dashed border-border text-[12px] text-muted-foreground">
         Brak danych do alokacji
@@ -595,29 +247,135 @@ export function AllocationTreemapView({
 
   return (
     <div className="flex h-full flex-col gap-3">
-      <div
-        className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border/60 p-1"
-        style={{ backgroundColor: pageBackgroundBeige }}
-      >
-        <ReactECharts
-          option={option as EChartsOption}
-          notMerge
-          lazyUpdate
-          onEvents={chartEvents}
-          style={{ height: "100%", width: "100%" }}
-          opts={{ renderer: "svg" }}
-        />
-      </div>
-      <div className="text-center">
-        <div className="text-[12px] font-medium text-muted-foreground">
-          Wartość portfela
+      <TooltipProvider delayDuration={120}>
+        <div
+          className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-border/60 p-1"
+          style={{ backgroundColor: pageBackground }}
+        >
+          <div className="relative h-full w-full" ref={containerRef}>
+            {leaves.map((leaf) => {
+              const assetData = leaf.data;
+              const colors = resolveTileColors(assetData.tone);
+              const { ticker, change, icon } = getTileTypography(leaf.width, leaf.height);
+              const isTierTiny = leaf.width < 30 || leaf.height < 20;
+              const isTierLarge = !isTierTiny && leaf.width > 60 && leaf.height > 60;
+              const isTierMedium = !isTierTiny && !isTierLarge && leaf.height > 40;
+              const isTierSmall = !isTierTiny && !isTierLarge && !isTierMedium && leaf.height > 20;
+              const showTicker = isTierLarge || isTierMedium || isTierSmall;
+              const showChange = isTierLarge || isTierMedium;
+              const showIcon = isTierLarge;
+              const logoUrl = resolveLogoUrl(assetData.asset);
+              const fallbackGlyph = resolveFallbackGlyph(assetData.asset);
+
+              return (
+                <Tooltip key={assetData.asset.id}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="absolute"
+                      style={{
+                        left: leaf.x,
+                        top: leaf.y,
+                        width: leaf.width,
+                        height: leaf.height,
+                      }}
+                    >
+                      <div
+                        className="flex h-full w-full flex-col items-center justify-center text-center"
+                        style={{
+                          backgroundColor: colors.bg,
+                          color: colors.text,
+                          border: `1px solid ${tileBorderColor}`,
+                          borderRadius: 4,
+                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
+                          padding: 6,
+                        }}
+                      >
+                        {showTicker ? (
+                          <>
+                            {showIcon ? (
+                              logoUrl ? (
+                                <div
+                                  aria-label={assetData.asset.symbol}
+                                  className="mb-1 block rounded-full border bg-white bg-center bg-no-repeat bg-contain"
+                                  role="img"
+                                  style={{
+                                    width: icon,
+                                    height: icon,
+                                    borderColor: "rgba(56, 52, 47, 0.18)",
+                                    backgroundImage: `url(${logoUrl})`,
+                                  }}
+                                />
+                              ) : fallbackGlyph ? (
+                                <span
+                                  className="mb-1 inline-flex items-center justify-center rounded-full border"
+                                  style={{
+                                    width: icon,
+                                    height: icon,
+                                    borderColor: "rgba(56, 52, 47, 0.18)",
+                                    backgroundColor: "#ffffff",
+                                    fontSize: Math.max(12, icon * 0.58),
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  {fallbackGlyph === "cash" ? (
+                                    <WalletMinimal
+                                      className="size-[70%] text-foreground/80"
+                                      aria-hidden
+                                    />
+                                  ) : (
+                                    fallbackGlyph
+                                  )}
+                                </span>
+                              ) : null
+                            ) : null}
+                            <div
+                              className="font-semibold leading-none tracking-tight"
+                              style={{
+                                fontSize: ticker,
+                                lineHeight: 1.03,
+                                maxWidth: "100%",
+                              }}
+                            >
+                              {truncateLabel(assetData.asset.label.toUpperCase(), leaf.width)}
+                            </div>
+                            {showChange ? (
+                              <div
+                                className="font-medium leading-none"
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: change,
+                                  lineHeight: 1.06,
+                                }}
+                              >
+                                {assetData.dayChangeLabel}
+                              </div>
+                            ) : null}
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="center" className="max-w-[260px]">
+                    <div className="space-y-1 text-xs">
+                      <div className="font-semibold">{assetData.asset.label}</div>
+                      <div>Ticker: {assetData.asset.symbol}</div>
+                      <div>Udział: {assetData.shareLabel}</div>
+                      <div>Wartość: {assetData.valueLabel}</div>
+                      <div>Zmiana 1D: {assetData.dayChangeLabel}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
         </div>
+      </TooltipProvider>
+      <div className="text-center">
+        <div className="text-[12px] font-medium text-muted-foreground">Wartość portfela</div>
         <div className="mt-1 inline-flex items-baseline gap-1 font-mono text-lg font-semibold tabular-nums text-foreground">
           <span>{totalAmountLabel}</span>
           {totalCurrencyLabel ? (
-            <span className="text-[11px] font-medium text-muted-foreground/75">
-              {totalCurrencyLabel}
-            </span>
+            <span className="text-[11px] font-medium text-muted-foreground/75">{totalCurrencyLabel}</span>
           ) : null}
         </div>
       </div>
