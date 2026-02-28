@@ -6,6 +6,7 @@ import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { ChangePill } from "@/features/design-system";
 import { cardVariants } from "@/features/design-system/components/ui/card";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
+import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import type { StockScreenerCard } from "@/features/stocks";
 import { cn } from "@/lib/cn";
 import { splitCurrencyLabel } from "@/lib/format-currency";
@@ -94,6 +95,10 @@ export function StockScreenerGrid({
         }
       >
         {cards.map((card) => {
+          const visual = resolveInstrumentVisual({
+            symbol: card.symbol,
+            name: card.name,
+          });
           const move = toTrend(card.monthChangePercent);
           const moveValue = move.text === "-" ? "-" : `1M ${move.text}`;
           return (
@@ -136,7 +141,8 @@ export function StockScreenerGrid({
                     <InstrumentLogoImage
                       src={card.logoUrl}
                       size={36}
-                      fallbackText={card.symbol}
+                      fallbackText={visual.label}
+                      ticker={visual.logoTicker}
                       alt={card.name}
                     />
                     <div className="min-w-0 flex-1">

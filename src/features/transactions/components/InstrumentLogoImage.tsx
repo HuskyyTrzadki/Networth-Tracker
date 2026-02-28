@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Wallet } from "lucide-react";
 
 import { buildLogoDevTickerProxyUrl } from "@/features/common/lib/logo-dev";
-import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { Avatar, AvatarFallback } from "@/features/design-system/components/ui/avatar";
 import { cn } from "@/lib/cn";
 import type { CustomAssetType } from "../lib/custom-asset-types";
@@ -33,7 +32,7 @@ const getFallbackInitials = (value: string) =>
     .toUpperCase();
 
 export function InstrumentLogoImage({
-  src,
+  src: _src,
   ticker,
   customAssetType,
   isCash = false,
@@ -42,13 +41,11 @@ export function InstrumentLogoImage({
   alt = "",
   fallbackText,
 }: Props) {
-  const [failedSources, setFailedSources] = useState<Record<string, true>>({});
+  void _src;
+  const [didLogoDevFail, setDidLogoDevFail] = useState(false);
 
   const CustomAssetIcon = customAssetType ? customAssetTypeIcons[customAssetType] : null;
-  const primarySrc = buildRemoteImageProxyUrl(src);
-  const fallbackSrc = buildLogoDevTickerProxyUrl(ticker ?? fallbackText);
-  const didPrimaryFail = primarySrc ? Boolean(failedSources[primarySrc]) : false;
-  const didFallbackFail = fallbackSrc ? Boolean(failedSources[fallbackSrc]) : false;
+  const logoDevSrc = buildLogoDevTickerProxyUrl(ticker ?? fallbackText);
   const iconSize = Math.max(12, Math.round(size * 0.58));
 
   if (CustomAssetIcon) {
@@ -79,39 +76,16 @@ export function InstrumentLogoImage({
     );
   }
 
-  if (primarySrc && !didPrimaryFail) {
+  if (logoDevSrc && !didLogoDevFail) {
     return (
       <Image
         alt={alt}
         className={cn("block rounded-full object-contain object-center", className)}
         height={size}
         loading="lazy"
-        onError={() =>
-          setFailedSources((current) =>
-            current[primarySrc] ? current : { ...current, [primarySrc]: true }
-          )
-        }
+        onError={() => setDidLogoDevFail(true)}
         sizes={`${size}px`}
-        src={primarySrc}
-        width={size}
-      />
-    );
-  }
-
-  if (fallbackSrc && fallbackSrc !== primarySrc && !didFallbackFail) {
-    return (
-      <Image
-        alt={alt}
-        className={cn("block rounded-full object-contain object-center", className)}
-        height={size}
-        loading="lazy"
-        onError={() =>
-          setFailedSources((current) =>
-            current[fallbackSrc] ? current : { ...current, [fallbackSrc]: true }
-          )
-        }
-        sizes={`${size}px`}
-        src={fallbackSrc}
+        src={logoDevSrc}
         width={size}
       />
     );

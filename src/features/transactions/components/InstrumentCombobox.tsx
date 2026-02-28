@@ -23,6 +23,7 @@ import { cn } from "@/lib/cn";
 
 import type { InstrumentSearchClient } from "../client/search-instruments";
 import type { InstrumentSearchResult, InstrumentType } from "../lib/instrument-search";
+import { resolveInstrumentVisual } from "../lib/instrument-visual";
 import { useInstrumentSearch } from "../lib/use-instrument-search";
 import { InstrumentLogoImage } from "./InstrumentLogoImage";
 
@@ -186,6 +187,13 @@ export function InstrumentCombobox({
             ) : null}
             <CommandGroup heading={showAll ? "Wyniki globalne" : "Najtrafniejsze"}>
               {results.map((option) => {
+                const visual = resolveInstrumentVisual({
+                  symbol: option.symbol,
+                  ticker: option.ticker,
+                  name: option.name,
+                  provider: option.provider,
+                  instrumentType: option.instrumentType,
+                });
                 return (
                   <CommandItem
                     key={option.id}
@@ -209,8 +217,10 @@ export function InstrumentCombobox({
                       <div className="flex items-center gap-2">
                         <InstrumentLogoImage
                           className="size-[18px]"
-                          fallbackText={option.ticker}
+                          fallbackText={visual.label}
+                          isCash={visual.isCash}
                           size={18}
+                          ticker={visual.logoTicker}
                           src={option.logoUrl}
                         />
                         <span className="font-mono text-sm font-semibold tabular-nums">

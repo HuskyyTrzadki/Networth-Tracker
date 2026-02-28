@@ -3,6 +3,7 @@
 import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
+import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import { cn } from "@/lib/cn";
 import { parseDecimalString } from "@/lib/decimal";
 import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
@@ -68,6 +69,10 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
       {movers.length > 0 ? (
         <ul className="grid gap-2 sm:grid-cols-2">
           {movers.map((mover) => {
+            const visual = resolveInstrumentVisual({
+              symbol: mover.symbol,
+              name: mover.name,
+            });
             const changeLabel = formatSignedCurrency(
               mover.todayChangeBase,
               summary.baseCurrency,
@@ -94,8 +99,9 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                     <InstrumentLogoImage
                       alt=""
                       className="size-7 shrink-0"
-                      fallbackText={mover.symbol}
+                      fallbackText={visual.label}
                       size={28}
+                      ticker={visual.logoTicker}
                       src={mover.logoUrl}
                     />
                     <div className="min-w-0">

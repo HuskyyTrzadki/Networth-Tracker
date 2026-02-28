@@ -153,9 +153,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Row action `Edytuj` is shown only for `ASSET` legs and opens `/transactions/<transactionId>/edit` (standalone or intercepted modal).
 - Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.
 - Search surfaces that use `InstrumentCombobox` can opt into global `/` focus shortcut via `listenForFocusShortcut`.
-- `InstrumentLogoImage` routes remote logo URLs through shared app proxy (`/api/public/image`) to keep `next/image` optimization enabled without custom passthrough loaders.
-- Custom assets no longer fetch external images; `InstrumentLogoImage` renders deterministic icon mapped from `customAssetType` (`Typ aktywa`), and for market assets it falls back to ticker-based `img.logo.dev` proxy (`/api/public/image?ticker=...`) before initials avatar.
-- Cash instruments (`instrumentType = CURRENCY`, `provider = system`, or supported cash currency code) render `Wallet` icon in `InstrumentLogoImage` instead of remote logos.
+- `InstrumentLogoImage` is logo.dev-first for market instruments (via `/api/public/image?ticker=...`), so UI no longer depends on Yahoo logo URLs.
+- Custom assets no longer fetch external images; `InstrumentLogoImage` renders deterministic icon mapped from `customAssetType` (`Typ aktywa`) before initials avatar fallback.
+- Cash instruments (`instrumentType = CURRENCY` or `provider = system`) render `Wallet` icon in `InstrumentLogoImage` instead of remote logos.
+- Instrument label/icon source is centralized in `lib/instrument-visual.ts` (`resolveInstrumentVisual`) and reused across tables, comboboxes, portfolio widgets, and treemap icon fallbacks.
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.

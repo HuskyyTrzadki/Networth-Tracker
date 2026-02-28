@@ -4,20 +4,19 @@ import { isCashInstrumentLike } from "./system-currencies";
 
 describe("system-currencies", () => {
   it("recognizes cash instruments by type", () => {
-    expect(isCashInstrumentLike({ instrumentType: "CURRENCY", symbol: "AAPL" })).toBe(true);
+    expect(isCashInstrumentLike({ instrumentType: "CURRENCY" })).toBe(true);
   });
 
   it("recognizes system provider as cash", () => {
-    expect(isCashInstrumentLike({ provider: "system", symbol: "ANY" })).toBe(true);
+    expect(isCashInstrumentLike({ provider: "system" })).toBe(true);
   });
 
-  it("recognizes supported cash currency codes", () => {
-    expect(isCashInstrumentLike({ symbol: "pln" })).toBe(true);
-    expect(isCashInstrumentLike({ ticker: "USD" })).toBe(true);
-    expect(isCashInstrumentLike({ currency: "eur" })).toBe(true);
-  });
-
-  it("rejects non-cash instruments", () => {
-    expect(isCashInstrumentLike({ instrumentType: "EQUITY", symbol: "AAPL" })).toBe(false);
+  it("rejects non-cash instruments even when quoted in cash currencies", () => {
+    expect(
+      isCashInstrumentLike({
+        instrumentType: "EQUITY",
+        provider: "yahoo",
+      })
+    ).toBe(false);
   });
 });

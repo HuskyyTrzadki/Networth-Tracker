@@ -5,6 +5,7 @@ import {
   getCurrencyFormatter,
 } from "@/lib/format-currency";
 import { cn } from "@/lib/cn";
+import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 
 import type { CurrencyCode } from "@/features/market-data";
 
@@ -18,18 +19,21 @@ type Props = Readonly<{
 type BarRow = Readonly<{
   id: string;
   label: string;
+  symbol: string;
   share: number;
   color: string;
   valueLabel: string;
   shareLabel: string;
   tooltipLabel: string;
   todayChangePercent: number | null;
+  isCurrencyCash: boolean;
+  customAssetType: AllocationAssetRow["customAssetType"];
 }>;
 
 const MAX_LABEL_LENGTH = 22;
 const MIN_BAR_WIDTH_PCT = 2;
 const ROW_GRID_COLUMNS_CLASS =
-  "grid-cols-[minmax(5.5rem,7rem)_minmax(0,1fr)_minmax(11rem,14rem)]";
+  "grid-cols-[minmax(7.5rem,10rem)_minmax(0,1fr)_minmax(11rem,14rem)]";
 
 const formatPercent = (value: number) =>
   new Intl.NumberFormat("pl-PL", {
@@ -58,6 +62,7 @@ export function AllocationBarsView({ assets, baseCurrency }: Props) {
   const rows: BarRow[] = assets.map((asset) => ({
     id: asset.id,
     label: asset.label,
+    symbol: asset.symbol,
     share: asset.share,
     color: asset.color,
     shareLabel: formatPercent(asset.share),
@@ -68,6 +73,8 @@ export function AllocationBarsView({ assets, baseCurrency }: Props) {
         : `${asset.valueBase} ${baseCurrency}`,
     tooltipLabel: `${asset.categoryLabel} • ${asset.label}`,
     todayChangePercent: asset.todayChangePercent,
+    isCurrencyCash: asset.isCurrencyCash,
+    customAssetType: asset.customAssetType,
   }));
 
   return (
@@ -80,12 +87,23 @@ export function AllocationBarsView({ assets, baseCurrency }: Props) {
             title={row.tooltipLabel}
           >
             <div className={`grid ${ROW_GRID_COLUMNS_CLASS} items-center gap-3`}>
-              <span
-                className="truncate font-mono text-[12px] font-semibold uppercase tracking-wide text-foreground"
-                title={row.label}
-              >
-                {formatAxisLabel(row.label)}
-              </span>
+              <div className="flex items-center gap-2">
+                <InstrumentLogoImage
+                  alt=""
+                  className="size-5 shrink-0"
+                  customAssetType={row.customAssetType}
+                  fallbackText={row.symbol}
+                  isCash={row.isCurrencyCash}
+                  size={20}
+                  ticker={row.symbol}
+                />
+                <span
+                  className="truncate font-mono text-[12px] font-semibold uppercase tracking-wide text-foreground"
+                  title={row.label}
+                >
+                  {formatAxisLabel(row.label)}
+                </span>
+              </div>
               <div className="h-2 overflow-hidden rounded-full bg-muted/45">
                 <div
                   className="h-full rounded-full transition-[width] duration-500 ease-out"

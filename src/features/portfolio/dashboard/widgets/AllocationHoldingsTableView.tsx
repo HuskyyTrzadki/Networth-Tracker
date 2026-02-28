@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/features/design-system/components/ui/table";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
-import { isCashInstrumentLike } from "@/features/transactions/lib/system-currencies";
+import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import { cn } from "@/lib/cn";
 import { formatGroupedNumber } from "@/lib/format-number";
 
@@ -87,6 +87,13 @@ export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
         </TableHeader>
         <TableBody>
           {holdingsRows.map((row) => {
+            const visual = resolveInstrumentVisual({
+              symbol: row.symbol,
+              name: row.name,
+              provider: row.provider,
+              instrumentType: row.instrumentType,
+              customAssetType: row.customAssetType,
+            });
             const averageBuyPriceLabel = row.averageBuyPriceBase
               ? formatMoneyValue(row.averageBuyPriceBase)
               : "—";
@@ -98,10 +105,7 @@ export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
                   : "—";
             const weightLabel =
               typeof row.weight === "number" ? formatPercent(row.weight) : "—";
-            const symbolLabel =
-              row.symbol === "CUSTOM" && row.name.trim().length > 0
-                ? row.name
-                : row.symbol;
+            const symbolLabel = visual.label;
 
             return (
               <TableRow key={row.instrumentId} className="h-[68px]">
@@ -111,14 +115,11 @@ export function AllocationHoldingsTableView({ summary, holdingsRows }: Props) {
                       <InstrumentLogoImage
                         alt=""
                         className="size-7"
-                        customAssetType={
-                          row.provider === "custom" || row.symbol === "CUSTOM"
-                            ? (row.customAssetType ?? "OTHER")
-                            : null
-                        }
+                        customAssetType={visual.customAssetType}
                         fallbackText={symbolLabel}
-                        isCash={isCashInstrumentLike(row)}
+                        isCash={visual.isCash}
                         size={28}
+                        ticker={visual.logoTicker}
                         src={row.logoUrl}
                       />
                     </div>

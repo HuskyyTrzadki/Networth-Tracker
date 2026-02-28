@@ -1,6 +1,6 @@
 import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
 import type { CustomAssetType } from "@/features/transactions/lib/custom-asset-types";
-
+import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import type { PortfolioSummary, ValuedHolding } from "../../server/valuation";
 
 const categoryOrder = [
@@ -35,6 +35,8 @@ export type AllocationAssetRow = Readonly<{
   symbol: string;
   logoUrl: string | null;
   isCurrencyCash: boolean;
+  customAssetType: CustomAssetType | null;
+  customGlyph: string | null;
   share: number;
   valueBase: string;
   todayChangePercent: number | null;
@@ -67,7 +69,6 @@ type CategoryAccumulator = {
 };
 
 const toShare = (value: number | null) => Math.max(0, value ?? 0);
-const cashSymbols = new Set(["PLN", "USD", "EUR"]);
 
 const asDecimalOrNull = (value: string) => parseDecimalString(value);
 
@@ -77,19 +78,6 @@ const positiveHeatEnd = "#6ca88b";
 const negativeHeatStart = "#4a2f2c";
 const negativeHeatEnd = "#a3655d";
 const maxHeatMagnitude = 0.05;
-
-const resolveLabel = (holding: ValuedHolding) => {
-  if (holding.symbol === "CUSTOM" || holding.provider === "custom") {
-    const customName = holding.name.trim();
-    if (customName.length > 0) return customName;
-  }
-
-  const symbol = holding.symbol.trim();
-  if (symbol.length > 0) return symbol;
-
-  const fallbackName = holding.name.trim();
-  return fallbackName.length > 0 ? fallbackName : "—";
-};
 
 const resolveCategory = (holding: ValuedHolding): AllocationCategoryKey => {
   if (holding.provider === "custom" || holding.symbol === "CUSTOM") {
@@ -204,6 +192,13 @@ export function buildAllocationViewModel(summary: PortfolioSummary): AllocationV
   const assets = [...valuedHoldings]
     .sort((a, b) => toShare(b.weight) - toShare(a.weight))
     .map((holding) => {
+      const visual = resolveInstrumentVisual({
+        symbol: holding.symbol,
+        name: holding.name,
+        provider: holding.provider,
+        instrumentType: holding.instrumentType,
+        customAssetType: holding.customAssetType,
+      });
       const category = resolveCategory(holding);
       const color = getColor(category, categoryCounts[category]);
       const todayChangePercent = normalizeTodayChangePercent(holding.todayChangePercent);
@@ -211,12 +206,12 @@ export function buildAllocationViewModel(summary: PortfolioSummary): AllocationV
 
       return {
         id: holding.instrumentId,
-        label: resolveLabel(holding),
+        label: visual.label,
         symbol: holding.symbol,
         logoUrl: holding.logoUrl,
-        isCurrencyCash:
-          holding.instrumentType === "CURRENCY" &&
-          cashSymbols.has(holding.symbol.trim().toUpperCase()),
+        isCurrencyCash: visual.isCash,
+        customAssetType: visual.customAssetType,
+        customGlyph: visual.customGlyph,
         share: toShare(holding.weight),
         valueBase: holding.valueBase ?? "0",
         todayChangePercent,

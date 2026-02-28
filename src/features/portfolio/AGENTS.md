@@ -186,6 +186,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Allocation concentration-warning dismissal reads localStorage via hydration-safe subscription (no render-time `window` branching), preventing SSR/client markup drift in `AllocationHoldingsWidget`.
 - Allocation holdings table uses deterministic iconography for custom assets: logo cell renders the selected `customAssetType` icon (`Typ aktywa`) instead of fetching custom photos.
 - Allocation holdings table renders cash rows with `Wallet` icon (shared `isCashInstrumentLike` rule), so currency holdings are visually consistent with transactions.
+- Allocation `Słupki` view renders per-asset icons in the label column via shared `InstrumentLogoImage` (logo.dev ticker for market assets, typed icon for custom assets, wallet for cash).
+- Allocation `Mapa` view now renders stock icons from logo.dev inside leaf labels (cash keeps wallet icon, custom assets use glyph fallback by asset type).
+- Allocation instrument labels and icon strategy are normalized via shared `resolveInstrumentVisual` helper, so custom/cash/market rendering stays consistent across `Tabela`, `Słupki`, and `Mapa`.
 - Dashboard visual surfaces (hero, switcher shell, allocation/rebuild cards, and skeletons) were normalized to the same rounded/border rhythm as shared primitives, with decorative shadows/gradients reduced for consistency.
 - Desktop polish follow-up tightened dashboard control density (`PortfolioValueOverTimeHeader`) and route-loading shell width alignment (`max-w-[1560px]`) for more consistent large-screen rhythm.
 - Allocation `Mapa` now uses a light "tinted paper" palette (pastel green/rose/white by `todayChangePercent`, size = portfolio weight) with centered mono labels and beige background gaps so it integrates with the editorial light shell.

@@ -1,4 +1,5 @@
 import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
+import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 
 import type { PortfolioSummary, ValuedHolding } from "../../server/valuation";
 
@@ -33,18 +34,14 @@ const sumValues = (holdings: readonly ValuedHolding[]) =>
     return parsed ? addDecimals(sum, parsed) : sum;
   }, decimalZero());
 
-const getHoldingLabel = (holding: ValuedHolding) => {
-  if (holding.symbol === "CUSTOM" || holding.provider === "custom") {
-    const customName = holding.name.trim();
-    if (customName.length > 0) return customName;
-  }
-
-  const symbol = holding.symbol.trim();
-  if (symbol.length > 0) return symbol;
-
-  const fallbackName = holding.name.trim();
-  return fallbackName.length > 0 ? fallbackName : "—";
-};
+const getHoldingLabel = (holding: ValuedHolding) =>
+  resolveInstrumentVisual({
+    symbol: holding.symbol,
+    name: holding.name,
+    provider: holding.provider,
+    instrumentType: holding.instrumentType,
+    customAssetType: holding.customAssetType,
+  }).label;
 
 export function buildAllocationData(
   summary: PortfolioSummary

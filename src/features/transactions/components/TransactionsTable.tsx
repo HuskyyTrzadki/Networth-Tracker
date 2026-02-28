@@ -22,7 +22,7 @@ import { multiplyDecimals, parseDecimalString } from "@/lib/decimal";
 import { formatGroupedNumber } from "@/lib/format-number";
 import type { TransactionListItem } from "../server/list-transactions";
 import { cashflowTypeLabels, type CashflowType } from "../lib/cashflow-types";
-import { isCashInstrumentLike } from "../lib/system-currencies";
+import { resolveInstrumentVisual } from "../lib/instrument-visual";
 import { InstrumentLogoImage } from "./InstrumentLogoImage";
 import { TransactionsRowActions } from "./TransactionsRowActions";
 
@@ -200,6 +200,12 @@ function TransactionsLedgerRow({
   onDeleted,
 }: TransactionsLedgerRowProps) {
   const { item, isCashLeg, hasGroupDivider } = row;
+  const visual = resolveInstrumentVisual({
+    symbol: item.instrument.symbol,
+    name: item.instrument.name,
+    instrumentType: item.instrument.instrumentType,
+    customAssetType: item.instrument.customAssetType,
+  });
   const priceLabel = formatPriceLabel(item.price, item.instrument.currency);
   const valueLabel = formatValueLabel(item.quantity, item.price, item.instrument.currency);
 
@@ -232,14 +238,11 @@ function TransactionsLedgerRow({
           <div className="grid size-8 place-items-center text-sm leading-none">
             <InstrumentLogoImage
               className="size-7"
-              fallbackText={item.instrument.symbol}
-              customAssetType={
-                item.instrument.symbol === "CUSTOM"
-                  ? (item.instrument.customAssetType ?? "OTHER")
-                  : null
-              }
-              isCash={isCashInstrumentLike(item.instrument)}
+              fallbackText={visual.label}
+              customAssetType={visual.customAssetType}
+              isCash={visual.isCash}
               size={28}
+              ticker={visual.logoTicker}
               src={item.instrument.logoUrl}
             />
           </div>
@@ -250,7 +253,7 @@ function TransactionsLedgerRow({
                 isCashLeg && "text-muted-foreground"
               )}
             >
-              {item.instrument.symbol}
+              {visual.label}
             </span>
             <span className="truncate font-sans text-xs text-muted-foreground">
               {getInstrumentSubtitle(item)}

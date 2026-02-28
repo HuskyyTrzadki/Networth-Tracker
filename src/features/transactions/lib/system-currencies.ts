@@ -16,34 +16,14 @@ export const isSupportedCashCurrency = (value: string): value is CashCurrency =>
 type CashInstrumentLike = Readonly<{
   instrumentType?: string | null;
   provider?: string | null;
-  symbol?: string | null;
-  ticker?: string | null;
-  currency?: string | null;
 }>;
-
-const toCurrencyCode = (value: string | null | undefined) => {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = value.trim().toUpperCase();
-  return normalized.length > 0 ? normalized : null;
-};
 
 export const isCashInstrumentLike = (value: CashInstrumentLike | null | undefined) => {
   if (!value) {
     return false;
   }
 
-  if (value.instrumentType === "CURRENCY" || value.provider === "system") {
-    return true;
-  }
-
-  const candidates = [value.symbol, value.ticker, value.currency]
-    .map(toCurrencyCode)
-    .filter((candidate): candidate is string => candidate !== null);
-
-  return candidates.some((candidate) => isSupportedCashCurrency(candidate));
+  return value.instrumentType === "CURRENCY" || value.provider === "system";
 };
 
 export const buildCashInstrument = (currency: CashCurrency): InstrumentSearchResult => {

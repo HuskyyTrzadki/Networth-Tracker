@@ -2,6 +2,7 @@
 
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
+import { buildLogoDevTickerProxyUrl } from "@/features/common/lib/logo-dev";
 
 import {
   formatCurrencyString,
@@ -34,6 +35,7 @@ type TreemapNode = Readonly<{
   showIcon: boolean;
   iconRichKey?: string;
   iconImageUrl?: string;
+  iconGlyph?: string;
   isLeaf: boolean;
   silent?: boolean;
   tooltip?: Readonly<{
@@ -97,7 +99,12 @@ const formatLeafLabel = (data: TreemapNode) => {
       : data.leafTone === "NEGATIVE"
         ? "Neg"
         : "Neutral";
-  const iconToken = data.showIcon && data.iconRichKey ? `{${data.iconRichKey}|}` : "";
+  const iconToken =
+    data.showIcon && data.iconRichKey
+      ? `{${data.iconRichKey}|}`
+      : data.showIcon && data.iconGlyph
+        ? `{iconGlyph|${data.iconGlyph}}`
+        : "";
   const tickerToken = `{ticker${scale}${toneSuffix}|${data.name.toUpperCase()}}`;
   const changeToken = `{change${scale}${toneSuffix}|${data.dayChangeLabel}}`;
   const iconLinePrefix = iconToken.length > 0 ? `${iconToken} ` : "";
@@ -151,6 +158,9 @@ const resolveLeafFill = (tone: TreemapNode["leafTone"]) => {
   if (tone === "NEGATIVE") return negativeLeafFill;
   return neutralLeafFill;
 };
+
+const toIconRichKey = (value: string) =>
+  `icon_${value.replace(/[^a-zA-Z0-9_]/g, "_")}`;
 
 const collectLeafNodes = (nodes: readonly TreemapNode[]): TreemapNode[] =>
   nodes.flatMap((node) => {
@@ -415,6 +425,12 @@ const buildOption = (nodes: readonly TreemapNode[]) => ({
             lineHeight: 14,
             fontFamily: "'IBM Plex Mono', monospace",
           },
+          iconGlyph: {
+            color: "var(--foreground)",
+            fontSize: 13,
+            lineHeight: 14,
+            fontFamily: "'IBM Plex Mono', monospace",
+          },
           ...buildIconRichStyles(nodes),
         },
       },
@@ -496,6 +512,7 @@ export function AllocationTreemapView({
     showIcon: false,
     iconRichKey: undefined,
     iconImageUrl: undefined,
+    iconGlyph: undefined,
     isLeaf: false,
     itemStyle: {
       color: categoryHeaderTint,
@@ -508,11 +525,20 @@ export function AllocationTreemapView({
     },
     children: category.assets.map((asset) => {
       const leafTone = resolveLeafTone(asset.todayChangePercent);
-      const iconRichKey = asset.isCurrencyCash ? cashIconRichKey : undefined;
       const labelMode = resolveLabelMode(asset.share);
       const labelScale = resolveLabelScale(asset.share);
       const changeDigits = labelScale === "XS" ? 1 : 2;
       const showIcon = labelMode === "NAME_CHANGE";
+      const stockIconUrl =
+        !asset.isCurrencyCash && asset.symbol !== "CUSTOM"
+          ? (buildLogoDevTickerProxyUrl(asset.symbol) ?? undefined)
+          : undefined;
+      const customGlyph = asset.customAssetType ? asset.customGlyph : null;
+      const iconRichKey = asset.isCurrencyCash
+        ? cashIconRichKey
+        : stockIconUrl
+          ? toIconRichKey(asset.id)
+          : undefined;
 
       return {
         id: asset.id,
@@ -532,7 +558,8 @@ export function AllocationTreemapView({
         leafTone,
         showIcon,
         iconRichKey,
-        iconImageUrl: undefined,
+        iconImageUrl: stockIconUrl,
+        iconGlyph: customGlyph ?? undefined,
         isLeaf: true,
         itemStyle: {
           color: resolveLeafFill(leafTone),
