@@ -6,12 +6,14 @@ import { ChevronRight } from "lucide-react";
 
 import { ReportShellMenuTrigger } from "@/features/app-shell";
 import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
+import { StockFavoriteToggleButton } from "@/features/stocks/components/StockFavoriteToggleButton";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { cn } from "@/lib/cn";
 
 import { FactRow } from "./ReportRows";
 
 type SidebarProps = Readonly<{
+  providerKey: string;
   symbol: string;
   name: string;
   logoUrl: string | null;
@@ -36,6 +38,7 @@ const SECTION_LINKS = [
 ] as const;
 
 export default function StockReportSidebar({
+  providerKey,
   symbol,
   name,
   logoUrl,
@@ -126,7 +129,7 @@ export default function StockReportSidebar({
     <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-8 lg:self-start lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-black/15 lg:pr-4 lg:pt-4">
       <div className="space-y-4 bg-background">
         <section className="border-b border-dashed border-black/15 pb-4">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3">
             <ReportShellMenuTrigger className="px-2" />
 
             <div className="flex min-w-0 items-center gap-3">
@@ -147,6 +150,13 @@ export default function StockReportSidebar({
                 className="h-auto w-[44px] rounded-none border border-dashed border-black/15 object-cover"
               />
             ) : null}
+            <StockFavoriteToggleButton
+              providerKey={providerKey}
+              symbol={symbol}
+              name={name}
+              currency={metricCurrency}
+              logoUrl={logoUrl}
+            />
           </div>
 
           <div className="mt-4">

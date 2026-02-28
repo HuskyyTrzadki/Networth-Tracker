@@ -110,7 +110,8 @@ When shipping feature/architecture changes:
 - Stocks module:
   - screener,
   - details chart with ranges and overlays (PE / EPS TTM / Revenue TTM),
-  - Trend(100) and Raw modes.
+  - Trend(100) and Raw modes,
+  - user watchlist pins (search result star + report star toggle + screener star remove).
 - Public stock chart API with edge caching headers.
 - Private dashboard/shell reads cached via Cache Components tags and invalidated on writes.
 - Portfolio chart first render optimized with bounded payload + lazy full-history fetch for `ALL`.
@@ -131,6 +132,11 @@ When shipping feature/architecture changes:
 - Public stock chart API (`/api/public/stocks/[providerKey]/chart`) uses edge cache headers (`s-maxage`, `stale-while-revalidate`).
 - Public image proxy (`/api/public/image`) caches logo assets with long-lived edge headers (7d fresh + 30d stale) and supports ticker fallback for `img.logo.dev`.
 - Stock details support ranges + overlays (PE / EPS TTM / Revenue TTM) with Trend(100) and Raw modes, plus authenticated BUY/SELL markers from user transactions.
+- Stocks watchlist uses `stock_watchlist` (RLS per-user) and powers manual screener pins via:
+  - `POST /api/stocks/watchlist`,
+  - `DELETE /api/stocks/watchlist/[providerKey]`,
+  - status check `GET /api/stocks/watchlist?providerKey=...`.
+- Watchlist add is fail-safe: backend mutation layer (server action + shared service) does synchronous market-data warmup (`instruments` upsert + quote + daily cache fetch) and rolls back watchlist row on warmup failure, so `/stocks` avoids empty cards for user-pinned tickers.
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
 - Portfolio model includes `is_tax_advantaged` (IKE/IKZE) used by dividend smart-default hints.
@@ -150,6 +156,14 @@ When shipping feature/architecture changes:
 - Keep backend code commented enough for a frontend engineer to follow.
 - Explain technical decisions clearly in PR/hand-off notes.
 - Keep explanations practical and simple so non-experts can follow decisions.
+
+## Quick lesson: Optimistic UI in React 19 + App Router
+- Use `useOptimistic` for instant UI feedback in client components; do not mirror server props into local state via `useEffect`.
+- Keep mutations in Server Actions (`"use server"`), not ad-hoc client fetch flows.
+- In Server Actions: write data, run required backend warmup, then call `revalidatePath(...)`/`revalidateTag(...)`.
+- Treat server output as the single source of truth; optimistic state is temporary and should be replaced by revalidated server payload.
+- For optimistic placeholders, render explicit loading UI (`isHydrating` + skeleton/loader), not empty or fake-looking cards.
+- Avoid client-side event buses for cross-component data sync when App Router revalidation can provide canonical state.
 
 ## Copy
 - UI copy is Polish only (no i18n layer).

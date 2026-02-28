@@ -26,6 +26,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/app/api/public/stocks/[providerKey]/chart/route.ts`
   - `src/app/api/stocks/[providerKey]/chart/route.ts`
   - `src/app/api/stocks/[providerKey]/trade-markers/route.ts`
+  - `src/app/api/stocks/watchlist/route.ts`
+  - `src/app/api/stocks/watchlist/[providerKey]/route.ts`
 - Server services:
   - `src/features/stocks/server/create-public-stocks-supabase-client.ts`
   - `src/features/stocks/server/get-stock-chart-http-response.ts`
@@ -39,9 +41,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/features/stocks/server/fundamental-time-series.ts`
   - `src/features/stocks/server/parse-stock-chart-query.ts`
   - `src/features/stocks/server/list-stock-trade-markers.ts`
+  - `src/features/stocks/server/stock-watchlist.ts`
+  - `src/features/stocks/server/watchlist-actions.ts`
 - UI:
   - `src/features/stocks/components/StockSearchBar.tsx`
+  - `src/features/stocks/components/StockFavoriteToggleButton.tsx`
   - `src/features/stocks/components/StockScreenerGrid.tsx`
+  - `src/features/stocks/components/StocksScreenerInteractive.tsx`
   - `src/features/stocks/components/StockChartCard.tsx`
   - `src/features/stocks/components/stock-chart-card-view-model.ts`
   - `src/features/stocks/components/StockChartPlot.tsx`
@@ -57,6 +63,21 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - Route handlers stay thin and delegate to `src/features/stocks/server/*`.
+- `/stocks` screener cards now merge two sources:
+  - equities currently held in portfolios,
+  - user-pinned equities from `stock_watchlist` (RLS-owned).
+- User-pinned rows that are not currently held show a clickable star action in screener cards for quick removal.
+- `StockSearchBar` on `/stocks` supports dual actions in search results:
+  - click row -> navigate to `/stocks/[providerKey]`,
+  - click per-item star -> add ticker to `stock_watchlist` without navigation.
+- `/stocks` page server-renders initial watchlist provider keys into `StockSearchBar`, so favorite stars are correct on first paint without extra client fetch.
+- Optimistic watchlist UX follows React 19 + App Router standard:
+  - `StocksScreenerInteractive` owns `useOptimistic` (no local mirror state / no sync effect),
+  - `StockSearchBar` applies optimistic favorite toggle + optimistic card skeleton via callbacks,
+  - server actions (`watchlist-actions.ts`) are the mutation boundary and call `revalidatePath("/stocks")`.
+- Optimistic cards use `isHydrating=true` to render an inline skeleton until server-pushed revalidated payload replaces them.
+- Watchlist add flow is fail-safe: after `stock_watchlist` insert, backend immediately upserts global `instruments` row and warms quote + daily caches for that `providerKey`; if warmup fails, the watchlist insert is rolled back to avoid empty screener cards.
+- Stock report sidebar includes the same watchlist toggle (`Star`) so users can add/remove directly from `/stocks/[providerKey]`.
 - Valuation summary service is fail-soft: when Yahoo summary fetch fails and no DB cache row exists, it returns an empty normalized summary (null metrics) instead of throwing, to avoid crashing report prefetch/render.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
 - Private chart API (`/api/stocks/[providerKey]/chart`) and trade-markers API (`/api/stocks/[providerKey]/trade-markers`) use shared route auth helper (`src/lib/http/route-handler.ts`) and delegate to feature/server services.

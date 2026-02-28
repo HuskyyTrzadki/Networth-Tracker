@@ -740,6 +740,39 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_watchlist: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          logo_url: string | null
+          name: string
+          provider_key: string
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          provider_key: string
+          symbol: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          provider_key?: string
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           cashflow_type: Database["public"]["Enums"]["cashflow_type"] | null

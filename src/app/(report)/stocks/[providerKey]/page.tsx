@@ -176,6 +176,7 @@ export default async function StockDetailsPage({
       style={{ overflowAnchor: "none" }}
     >
       <StockReportSidebar
+        providerKey={providerKey}
         symbol={symbol}
         name={name}
         logoUrl={logoUrl}

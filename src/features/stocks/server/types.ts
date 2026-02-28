@@ -21,6 +21,9 @@ export type StockScreenerCard = Readonly<{
   symbol: string;
   name: string;
   logoUrl: string | null;
+  inPortfolio: boolean;
+  isFavorite: boolean;
+  isHydrating?: boolean;
   currency: string;
   price: string | null;
   monthChangePercent: number | null;

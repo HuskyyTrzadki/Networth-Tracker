@@ -7,7 +7,6 @@ import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { AnimatedReveal } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cardVariants } from "@/features/design-system/components/ui/card";
-import { StockSearchBar } from "@/features/stocks/components/StockSearchBar";
 import { createClient } from "@/lib/supabase/server";
 
 import StocksScreenerSection from "./StocksScreenerSection";
@@ -76,14 +75,6 @@ export default async function StocksPage() {
         <Suspense fallback={<ScreenerFallback />}>
           <StocksScreenerSection />
         </Suspense>
-      </AnimatedReveal>
-      <AnimatedReveal className="mt-8" delay={0.1}>
-        <div className="max-w-xl space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">
-            Szukasz czegoś innego?
-          </p>
-          <StockSearchBar />
-        </div>
       </AnimatedReveal>
     </main>
   );

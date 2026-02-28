@@ -2,6 +2,7 @@
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Badge } from "@/features/design-system/components/ui/badge";
@@ -36,6 +37,7 @@ type Props = Readonly<{
   queryPlaceholder?: string;
   triggerClassName?: string;
   listenForFocusShortcut?: boolean;
+  renderItemAction?: (option: InstrumentSearchResult) => ReactNode;
 }>;
 
 const MIN_QUERY_LENGTH = 2;
@@ -52,6 +54,7 @@ export function InstrumentCombobox({
   queryPlaceholder = "Szukaj (np. Apple, BTC, XTB)",
   triggerClassName,
   listenForFocusShortcut = false,
+  renderItemAction,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -230,14 +233,17 @@ export function InstrumentCombobox({
                       <span className="truncate text-sm text-foreground/85">
                         {option.name}
                       </span>
-                      {option.exchange ? (
-                        <Badge
-                          className="max-w-[140px] truncate border-border/70 bg-muted/24 text-[10px] text-muted-foreground/90"
-                          title={option.exchange}
-                        >
-                          {option.exchange}
-                        </Badge>
-                      ) : null}
+                      <span className="flex items-center justify-end gap-1.5">
+                        {renderItemAction ? renderItemAction(option) : null}
+                        {option.exchange ? (
+                          <Badge
+                            className="max-w-[140px] truncate border-border/70 bg-muted/24 text-[10px] text-muted-foreground/90"
+                            title={option.exchange}
+                          >
+                            {option.exchange}
+                          </Badge>
+                        ) : null}
+                      </span>
                     </div>
                   </CommandItem>
                 );

@@ -39,6 +39,8 @@ Purpose: define an explicit caching/dynamic contract for each route so we avoid 
 | `/api/public/stocks/[providerKey]/chart` | `public-edge-cached-api` | Public market data, shared by URL, explicit edge cache headers. |
 | `/api/stocks/[providerKey]/chart` | `private-no-store-api` | Authenticated version of stock chart endpoint. |
 | `/api/stocks/[providerKey]/trade-markers` | `private-no-store-api` | User-scoped buy/sell markers for stock report chart overlays. |
+| `/api/stocks/watchlist` | `private-no-store-api` | User-scoped watchlist add/check endpoint for screener pins. |
+| `/api/stocks/watchlist/[providerKey]` | `private-no-store-api` | User-scoped watchlist delete endpoint for screener/report star actions. |
 | `/api/portfolio-snapshots/rebuild` | `private-no-store-api` | User-scoped rebuild state/work + revalidation side effects. |
 | `/api/portfolio-snapshots/rows` | `private-no-store-api` | Lazy full-history snapshot rows for authenticated user. |
 | `/api/portfolio-snapshots/bootstrap` | `private-no-store-api` | User-scoped bootstrap trigger. |
@@ -76,6 +78,7 @@ Write flows that must invalidate:
 - Dividend booking writes (`POST /api/dividends/book`): portfolio + transactions tags and path revalidation.
 - Portfolio create: portfolio + transactions tags and path revalidation.
 - Snapshot rebuild updates: portfolio tags and portfolio paths.
+- Stock watchlist writes (add/remove): `/stocks` path revalidation.
 
 ## Rules for New Routes
 
