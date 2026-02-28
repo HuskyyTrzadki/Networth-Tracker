@@ -2,10 +2,12 @@
 
 import { Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useQueryStates } from "nuqs";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
 
+import { portfolioQueryStateParsers } from "../lib/portfolio-query-state";
 import { buildPortfolioUrl } from "../lib/portfolio-url";
 import { CreatePortfolioDialog } from "./CreatePortfolioDialog";
 import { PortfolioSwitcher } from "./PortfolioSwitcher";
@@ -24,8 +26,22 @@ function PortfolioMobileHeaderActionsInner({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [, setQueryState] = useQueryStates(portfolioQueryStateParsers, {
+    history: "push",
+    shallow: false,
+    scroll: false,
+  });
 
   const handleCreated = (createdId: string) => {
+    const isPortfolioRoute = pathname === "/portfolio" || pathname.startsWith("/portfolio/");
+    if (!isPortfolioRoute) {
+      void setQueryState({
+        portfolio: createdId,
+        page: null,
+      });
+      return;
+    }
+
     const searchParamsString = searchParams?.toString() ?? "";
     router.push(
       buildPortfolioUrl({
@@ -36,7 +52,6 @@ function PortfolioMobileHeaderActionsInner({
       }),
       { scroll: false }
     );
-    router.refresh();
   };
 
   return (

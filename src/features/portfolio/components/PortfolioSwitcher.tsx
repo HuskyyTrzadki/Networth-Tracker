@@ -3,6 +3,7 @@
 import { Suspense, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useQueryStates } from "nuqs";
 
 import {
   Select,
@@ -14,6 +15,7 @@ import {
 import { cn } from "@/lib/cn";
 
 import { buildPortfolioUrl } from "../lib/portfolio-url";
+import { portfolioQueryStateParsers } from "../lib/portfolio-query-state";
 
 const ALL_VALUE = "all";
 
@@ -42,9 +44,25 @@ function PortfolioSwitcherInner({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [, setQueryState] = useQueryStates(portfolioQueryStateParsers, {
+    history: "push",
+    shallow: false,
+    scroll: false,
+    startTransition,
+  });
 
   const handlePortfolioChange = (nextValue: string) => {
     const nextPortfolioId = nextValue === ALL_VALUE ? null : nextValue;
+    const isPortfolioRoute = pathname === "/portfolio" || pathname.startsWith("/portfolio/");
+
+    if (!isPortfolioRoute) {
+      void setQueryState({
+        portfolio: nextPortfolioId,
+        page: resetPageParam ? 1 : null,
+      });
+      return;
+    }
+
     const searchParamsString = searchParams?.toString() ?? "";
     startTransition(() => {
       router.push(

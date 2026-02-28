@@ -10,11 +10,15 @@ import {
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
 import { LoaderCircle } from "lucide-react";
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/features/design-system/components/ui/chart";
 
 import type {
   StockChartOverlay,
@@ -252,6 +256,21 @@ export default function StockChartPlotImpl({
   const overlayAxisLabelValue = overlayAxisLabel ?? undefined;
   const chartCurrency = chart?.currency ?? "USD";
   const hoveredEventId = hoveredEventMarker?.id ?? null;
+  const chartConfig = normalizedOverlays.reduce<ChartConfig>(
+    (acc, overlay) => {
+      acc[overlay] = {
+        label: overlay,
+        color: OVERLAY_LINE_COLORS[overlay],
+      };
+      return acc;
+    },
+    {
+      price: {
+        label: "Cena",
+        color: priceLineColor,
+      },
+    }
+  );
 
   const handleEventMarkerHover = (
     marker: StockChartEventMarkerPoint | null,
@@ -270,206 +289,208 @@ export default function StockChartPlotImpl({
   return (
     <div className="relative h-[420px] w-full min-w-0">
       {chart ? (
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={mutableChartData}
-            margin={{ top: 56, right: 18, left: 6, bottom: 8 }}
-          >
-            <CartesianGrid
-              stroke="var(--border)"
-              strokeDasharray="4 6"
-              strokeOpacity={0.5}
-              vertical={false}
-            />
-            <XAxis
-              dataKey="t"
-              tickFormatter={(value: string | number) =>
-                formatXAxisTick(String(value), chart.resolvedRange)
-              }
-              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-              tickLine={false}
-              minTickGap={26}
-            />
-            <YAxis
-              yAxisId="price"
-              domain={priceAxisDomainForChart}
-              tickFormatter={(value: string | number) =>
-                typeof value === "number"
-                  ? new Intl.NumberFormat("pl-PL", {
-                      maximumFractionDigits: 2,
-                    }).format(value)
-                  : ""
-              }
-              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-              tickLine={false}
-              width={72}
-            />
-            {showOverlayAxis ? (
-              <YAxis
-                yAxisId="overlay"
-                orientation="right"
-                domain={overlayAxisDomainForChart}
-                label={
-                  overlayAxisLabelValue
-                    ? {
-                        value: overlayAxisLabelValue,
-                        angle: -90,
-                        position: "insideRight",
-                        style: {
-                          fill: "var(--muted-foreground)",
-                          fontSize: 10,
-                        },
-                      }
-                    : undefined
+        <ChartContainer config={chartConfig} className="h-full w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={mutableChartData}
+              margin={{ top: 56, right: 18, left: 6, bottom: 8 }}
+            >
+              <CartesianGrid
+                stroke="var(--border)"
+                strokeDasharray="4 6"
+                strokeOpacity={0.5}
+                vertical={false}
+              />
+              <XAxis
+                dataKey="t"
+                tickFormatter={(value: string | number) =>
+                  formatXAxisTick(String(value), chart.resolvedRange)
                 }
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
+                tickLine={false}
+                minTickGap={26}
+              />
+              <YAxis
+                yAxisId="price"
+                domain={priceAxisDomainForChart}
                 tickFormatter={(value: string | number) =>
                   typeof value === "number"
                     ? new Intl.NumberFormat("pl-PL", {
-                        maximumFractionDigits: 0,
+                        maximumFractionDigits: 2,
                       }).format(value)
                     : ""
                 }
                 tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                 axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
                 tickLine={false}
-                width={58}
+                width={72}
               />
-            ) : null}
-            <Tooltip
-              cursor={{ stroke: "var(--ring)", strokeOpacity: 0.4 }}
-              content={<StockChartTooltipPanel currency={chartCurrency} />}
-            />
-            <Area
-              yAxisId="price"
-              dataKey="price"
-              type="linear"
-              stroke="none"
-              baseValue={areaBaseValue}
-              fill={areaFillColor}
-              fillOpacity={1}
-              isAnimationActive={!animationDisabled}
-              animationDuration={areaAnimationDuration}
-              animationEasing="ease-out"
-            />
-            <Line
-              yAxisId="price"
-              dataKey="price"
-              type="linear"
-              stroke={priceLineColor}
-              strokeOpacity={hasEnabledOverlays ? 0.72 : 1}
-              strokeWidth={2.4}
-              style={{
-                filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.22))",
-              }}
-              dot={false}
-              activeDot={false}
-              connectNulls={false}
-              isAnimationActive={!animationDisabled}
-              animationDuration={chartAnimationDuration}
-              animationEasing="ease-out"
-              name="price"
-            />
-            {normalizedOverlays.map((overlay) => {
-              const lineDataKey = toOverlayLineDataKey(overlay, mode);
-              const hasData = chart.hasOverlayData[overlay];
-              if (!hasData) return null;
-
-              return (
-                <Line
-                  key={overlay}
-                  yAxisId={mode === "trend" ? "overlay" : "price"}
-                  dataKey={lineDataKey}
-                  type={overlay === "epsTtm" ? "stepAfter" : "linear"}
-                  stroke={OVERLAY_LINE_COLORS[overlay]}
-                  strokeWidth={2.8}
-                  strokeOpacity={0.97}
-                  dot={false}
-                  connectNulls={false}
-                  isAnimationActive={!animationDisabled}
-                  animationDuration={overlayAnimationDuration}
-                  animationEasing="ease-out"
-                  name={lineDataKey}
+              {showOverlayAxis ? (
+                <YAxis
+                  yAxisId="overlay"
+                  orientation="right"
+                  domain={overlayAxisDomainForChart}
+                  label={
+                    overlayAxisLabelValue
+                      ? {
+                          value: overlayAxisLabelValue,
+                          angle: -90,
+                          position: "insideRight",
+                          style: {
+                            fill: "var(--muted-foreground)",
+                            fontSize: 10,
+                          },
+                        }
+                      : undefined
+                  }
+                  tickFormatter={(value: string | number) =>
+                    typeof value === "number"
+                      ? new Intl.NumberFormat("pl-PL", {
+                          maximumFractionDigits: 0,
+                        }).format(value)
+                      : ""
+                  }
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
+                  tickLine={false}
+                  width={58}
                 />
-              );
-            })}
-            {eventMarkerPoints.map((marker) => (
-              <ReferenceLine
-                key={`event-line-${marker.id}`}
-                x={marker.t}
-                yAxisId="price"
-                stroke={
-                  marker.kind === "earnings"
-                    ? "#2563eb"
-                    : marker.kind === "userTrade"
-                      ? marker.side === "BUY"
-                        ? "var(--profit)"
-                        : "var(--loss)"
-                      : marker.kind === "globalNews"
-                        ? "#0f766e"
-                        : "#d97706"
-                }
-                strokeOpacity={hoveredEventId === marker.id ? 0.62 : 0.25}
-                strokeWidth={hoveredEventId === marker.id ? 1.4 : 1}
-                strokeDasharray={marker.kind === "userTrade" ? "2 4" : "3 5"}
-                ifOverflow="discard"
+              ) : null}
+              <ChartTooltip
+                cursor={{ stroke: "var(--ring)", strokeOpacity: 0.4 }}
+                content={<StockChartTooltipPanel currency={chartCurrency} />}
               />
-            ))}
-            {eventMarkerPoints.map((marker, markerIndex) => (
-              <ReferenceDot
-                key={`event-dot-${marker.id}`}
-                x={marker.t}
-                y={marker.markerY}
+              <Area
                 yAxisId="price"
-                ifOverflow="discard"
-                isFront
-                label={
-                  showNarrativeLabels &&
-                  isNarrativeEventMarker(marker) &&
-                  narrativeLabelLayout.get(marker.id)?.show
-                    ? {
-                        ...(narrativeLabelLayout.get(marker.id) ?? {
-                          show: true,
-                          dx: markerIndex % 2 === 0 ? 18 : -18,
-                          dy: marker.kind === "globalNews" ? -28 : -24,
-                          textAnchor: markerIndex % 2 === 0 ? "start" : "end",
-                          text: truncateNarrativeLabel(marker.annotationLabel),
-                        }),
-                        value:
-                          narrativeLabelLayout.get(marker.id)?.text ??
-                          truncateNarrativeLabel(marker.annotationLabel),
-                        position: "top",
-                        fill: "var(--muted-foreground)",
-                        fontSize: 9,
-                      }
-                    : undefined
-                }
-                shape={(props: unknown) => (
-                  <StockChartEventMarkerDot
-                    {...(props as StockChartEventMarkerDotProps)}
-                    payload={marker}
-                    isActive={hoveredEventId === marker.id}
-                    onHoverChange={handleEventMarkerHover}
+                dataKey="price"
+                type="linear"
+                stroke="none"
+                baseValue={areaBaseValue}
+                fill={areaFillColor}
+                fillOpacity={1}
+                isAnimationActive={!animationDisabled}
+                animationDuration={areaAnimationDuration}
+                animationEasing="ease-out"
+              />
+              <Line
+                yAxisId="price"
+                dataKey="price"
+                type="linear"
+                stroke={priceLineColor}
+                strokeOpacity={hasEnabledOverlays ? 0.72 : 1}
+                strokeWidth={2.4}
+                style={{
+                  filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.22))",
+                }}
+                dot={false}
+                activeDot={false}
+                connectNulls={false}
+                isAnimationActive={!animationDisabled}
+                animationDuration={chartAnimationDuration}
+                animationEasing="ease-out"
+                name="price"
+              />
+              {normalizedOverlays.map((overlay) => {
+                const lineDataKey = toOverlayLineDataKey(overlay, mode);
+                const hasData = chart.hasOverlayData[overlay];
+                if (!hasData) return null;
+
+                return (
+                  <Line
+                    key={overlay}
+                    yAxisId={mode === "trend" ? "overlay" : "price"}
+                    dataKey={lineDataKey}
+                    type={overlay === "epsTtm" ? "stepAfter" : "linear"}
+                    stroke={OVERLAY_LINE_COLORS[overlay]}
+                    strokeWidth={2.8}
+                    strokeOpacity={0.97}
+                    dot={false}
+                    connectNulls={false}
+                    isAnimationActive={!animationDisabled}
+                    animationDuration={overlayAnimationDuration}
+                    animationEasing="ease-out"
+                    name={lineDataKey}
                   />
-                )}
-              />
-            ))}
-            {visibleTradeMarkers.map((marker) => (
-              <ReferenceDot
-                key={marker.key}
-                x={marker.t}
-                y={marker.price}
-                yAxisId="price"
-                r={4}
-                isFront
-                fill={marker.side === "BUY" ? "var(--profit)" : "var(--loss)"}
-                stroke="var(--background)"
-                strokeWidth={1.2}
-              />
-            ))}
-          </ComposedChart>
-        </ResponsiveContainer>
+                );
+              })}
+              {eventMarkerPoints.map((marker) => (
+                <ReferenceLine
+                  key={`event-line-${marker.id}`}
+                  x={marker.t}
+                  yAxisId="price"
+                  stroke={
+                    marker.kind === "earnings"
+                      ? "var(--chart-2)"
+                      : marker.kind === "userTrade"
+                        ? marker.side === "BUY"
+                          ? "var(--profit)"
+                          : "var(--loss)"
+                        : marker.kind === "globalNews"
+                          ? "var(--chart-4)"
+                          : "var(--chart-3)"
+                  }
+                  strokeOpacity={hoveredEventId === marker.id ? 0.62 : 0.25}
+                  strokeWidth={hoveredEventId === marker.id ? 1.4 : 1}
+                  strokeDasharray={marker.kind === "userTrade" ? "2 4" : "3 5"}
+                  ifOverflow="discard"
+                />
+              ))}
+              {eventMarkerPoints.map((marker, markerIndex) => (
+                <ReferenceDot
+                  key={`event-dot-${marker.id}`}
+                  x={marker.t}
+                  y={marker.markerY}
+                  yAxisId="price"
+                  ifOverflow="discard"
+                  isFront
+                  label={
+                    showNarrativeLabels &&
+                    isNarrativeEventMarker(marker) &&
+                    narrativeLabelLayout.get(marker.id)?.show
+                      ? {
+                          ...(narrativeLabelLayout.get(marker.id) ?? {
+                            show: true,
+                            dx: markerIndex % 2 === 0 ? 18 : -18,
+                            dy: marker.kind === "globalNews" ? -28 : -24,
+                            textAnchor: markerIndex % 2 === 0 ? "start" : "end",
+                            text: truncateNarrativeLabel(marker.annotationLabel),
+                          }),
+                          value:
+                            narrativeLabelLayout.get(marker.id)?.text ??
+                            truncateNarrativeLabel(marker.annotationLabel),
+                          position: "top",
+                          fill: "var(--muted-foreground)",
+                          fontSize: 9,
+                        }
+                      : undefined
+                  }
+                  shape={(props: unknown) => (
+                    <StockChartEventMarkerDot
+                      {...(props as StockChartEventMarkerDotProps)}
+                      payload={marker}
+                      isActive={hoveredEventId === marker.id}
+                      onHoverChange={handleEventMarkerHover}
+                    />
+                  )}
+                />
+              ))}
+              {visibleTradeMarkers.map((marker) => (
+                <ReferenceDot
+                  key={marker.key}
+                  x={marker.t}
+                  y={marker.price}
+                  yAxisId="price"
+                  r={4}
+                  isFront
+                  fill={marker.side === "BUY" ? "var(--profit)" : "var(--loss)"}
+                  stroke="var(--background)"
+                  strokeWidth={1.2}
+                />
+              ))}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </ChartContainer>
       ) : null}
 
       <StockChartPlotStateOverlays

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -28,8 +28,8 @@ import {
   SelectValue,
 } from "@/features/design-system/components/ui/select";
 import { Switch } from "@/features/design-system/components/ui/switch";
+import { createPortfolioAction } from "@/features/portfolio/server/create-portfolio-action";
 
-import { createPortfolio } from "../client/create-portfolio";
 import {
   createPortfolioSchema,
   type CreatePortfolioInput,
@@ -50,7 +50,7 @@ export function CreatePortfolioDialog({
   createPortfolioFn,
 }: CreatePortfolioDialogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, startSubmitTransition] = useTransition();
 
   const form = useForm<CreatePortfolioInput>({
     resolver: zodResolver(createPortfolioSchema),
@@ -72,27 +72,24 @@ export function CreatePortfolioDialog({
   };
 
   const submitPortfolio = form.handleSubmit(async (values) => {
-    setIsSubmitting(true);
     form.clearErrors("root");
 
-    const create = createPortfolioFn ?? createPortfolio;
-    const created = await create(values).catch((error: unknown) => {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Nie udało się utworzyć portfela.";
-      form.setError("root", { message });
-      setIsSubmitting(false);
-      return null;
+    startSubmitTransition(() => {
+      const create = createPortfolioFn ?? createPortfolioAction;
+      void create(values)
+        .then((created) => {
+          resetForm();
+          setIsDialogOpen(false);
+          onCreated(created.id);
+        })
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Nie udało się utworzyć portfela.";
+          form.setError("root", { message });
+        });
     });
-    if (!created) {
-      return;
-    }
-
-    resetForm();
-    setIsDialogOpen(false);
-    onCreated(created.id);
-    setIsSubmitting(false);
   });
 
   const rootError = form.formState.errors.root?.message;

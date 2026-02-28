@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 
 import { getPublicStockSummaryCached } from "@/features/stocks";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
+import { isStockWatchlistFavorite } from "@/features/stocks/server/stock-watchlist";
+import { createClient } from "@/lib/supabase/server";
 
 import StockReportMainContent from "./StockReportMainContent";
 import StockReportSidebar from "./StockReportSidebar";
@@ -119,6 +122,23 @@ const getPublicInstrumentCached =
     return (data as InstrumentRow | null) ?? null;
   };
 
+const getInitialFavoriteState = async (providerKey: string): Promise<boolean> => {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data, error } = await supabase.auth.getUser();
+  const user = data.user ?? null;
+
+  if (error || !user) {
+    return false;
+  }
+
+  try {
+    return await isStockWatchlistFavorite(supabase, providerKey);
+  } catch {
+    return false;
+  }
+};
+
 
 
 export async function generateMetadata({
@@ -160,9 +180,10 @@ export default async function StockDetailsPage({
     notFound();
   }
 
-  const [stock, summary] = await Promise.all([
+  const [stock, summary, initialIsFavorite] = await Promise.all([
     getPublicInstrumentCached(providerKey),
     getPublicStockSummaryCached(providerKey),
+    getInitialFavoriteState(providerKey),
   ]);
 
   const symbol = stock?.symbol ?? providerKey;
@@ -180,6 +201,7 @@ export default async function StockDetailsPage({
         symbol={symbol}
         name={name}
         logoUrl={logoUrl}
+        initialIsFavorite={initialIsFavorite}
         exchange={stock?.exchange ?? "-"}
         region={stock?.region ?? "-"}
         metricCurrency={metricCurrency}

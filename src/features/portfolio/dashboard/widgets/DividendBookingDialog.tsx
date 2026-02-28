@@ -15,9 +15,9 @@ import {
 } from "@/features/design-system/components/ui/dialog";
 import { Input } from "@/features/design-system/components/ui/input";
 import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
+import { bookDividendAction } from "@/features/portfolio/server/dividends/book-dividend-action";
 import { parseDecimalInput } from "@/features/transactions/lib/parse-decimal";
 import type { DividendInboxItem } from "@/features/portfolio/lib/dividend-inbox";
-import { bookDividend } from "@/features/portfolio/client/dividend-inbox";
 import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
 import { cn } from "@/lib/cn";
 
@@ -65,7 +65,7 @@ export function DividendBookingDialog({
     onSubmitStateChange?.("loading");
 
     try {
-      await bookDividend({
+      await bookDividendAction({
         portfolioId,
         providerKey: item.providerKey,
         symbol: item.symbol,

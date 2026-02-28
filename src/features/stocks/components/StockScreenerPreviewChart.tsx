@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
+import { ChartContainer, type ChartConfig } from "@/features/design-system/components/ui/chart";
 
 import { cn } from "@/lib/cn";
 
@@ -63,16 +64,22 @@ export function StockScreenerPreviewChart({
   const domain: [number, number] = [minPrice - pad, maxPrice + pad];
   const formatPriceTick = buildPriceFormatter(currency);
   const chartData = [...safeData];
+  const chartConfig = {
+    price: {
+      label: "Cena",
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
 
   return (
-    <div className={cn("h-full w-full", className)}>
+    <ChartContainer config={chartConfig} className={cn("h-full w-full", className)}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 6, right: 8, bottom: 6, left: 8 }}>
           <defs>
             <linearGradient id={`screener-fill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.22} />
-              <stop offset="70%" stopColor="var(--chart-1)" stopOpacity={0.08} />
-              <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+              <stop offset="0%" stopColor="var(--color-price)" stopOpacity={0.22} />
+              <stop offset="70%" stopColor="var(--color-price)" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="var(--color-price)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
@@ -100,7 +107,7 @@ export function StockScreenerPreviewChart({
           <Area
             type="monotone"
             dataKey="price"
-            stroke="var(--chart-1)"
+            stroke="var(--color-price)"
             strokeWidth={2.5}
             fill={`url(#screener-fill-${gradientId})`}
             dot={false}
@@ -108,6 +115,6 @@ export function StockScreenerPreviewChart({
           />
         </AreaChart>
       </ResponsiveContainer>
-    </div>
+    </ChartContainer>
   );
 }

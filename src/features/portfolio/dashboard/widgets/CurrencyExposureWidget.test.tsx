@@ -60,9 +60,7 @@ describe("CurrencyExposureWidget", () => {
 
     expect(screen.getByText("Ekspozycja walutowa")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Gospodarcza" })).toBeInTheDocument();
-    expect(
-      screen.getByText(/po przełączeniu analizator łączy waluty instrumentów/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText("Notowania vs gospodarcza")).toBeInTheDocument();
     expect(screen.getAllByText("Dolar amerykański (USD)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Polski Złoty (PLN)").length).toBeGreaterThan(0);
   });
@@ -126,7 +124,7 @@ describe("CurrencyExposureWidget", () => {
     const usdLabels = screen.getAllByText("Dolar amerykański (USD)");
     fireEvent.click(usdLabels[usdLabels.length - 1]!);
 
-    expect(screen.getByText("100,0% waluty")).toBeInTheDocument();
-    expect(screen.getByText("70,0% portfela")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "100,0% w walucie")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "70,0% w portfelu")).toBeInTheDocument();
   });
 });

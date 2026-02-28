@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { StatusStrip } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -19,7 +18,6 @@ export function DividendInboxBookAction({ portfolioId, item }: Props) {
   const [submitState, setSubmitState] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
-  const router = useRouter();
 
   if (!portfolioId) {
     return null;
@@ -77,7 +75,6 @@ export function DividendInboxBookAction({ portfolioId, item }: Props) {
           onBooked={() => {
             setSubmitState("success");
             setIsOpen(false);
-            router.refresh();
           }}
         />
       ) : null}

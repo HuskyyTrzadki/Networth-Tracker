@@ -5,11 +5,15 @@ import {
   AreaChart,
   CartesianGrid,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
-import { TrendTooltipRow, TrendTooltipShell } from "./chart-tooltip";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/features/design-system/components/ui/chart";
 
 type Point = Readonly<{
   label: string;
@@ -35,62 +39,61 @@ export function PortfolioAreaChart({
   labelFormatter = defaultLabelFormatter,
 }: Props) {
   const chartData = [...data];
+  const chartConfig = {
+    value: {
+      label: "Wartość",
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
 
   return (
     <div className="w-full" style={{ height }}>
-      <ResponsiveContainer>
-        <AreaChart
-          data={chartData}
-          margin={{ top: 12, right: 8, bottom: 0, left: 0 }}
-        >
-          <defs>
-            <linearGradient id="portfolioFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.14} />
-              <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="label"
-            tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
-            tickLine={{ stroke: "var(--border)" }}
-          />
-          <YAxis
-            tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
-            tickLine={{ stroke: "var(--border)" }}
-            width={56}
-          />
-          <Tooltip
-            cursor={{ stroke: "var(--ring)" }}
-            content={({ active, label, payload }) => {
-              if (!active || !payload || payload.length === 0) {
-                return null;
+      <ChartContainer config={chartConfig} className="h-full w-full">
+        <ResponsiveContainer>
+          <AreaChart
+            data={chartData}
+            margin={{ top: 12, right: 8, bottom: 0, left: 0 }}
+          >
+            <defs>
+              <linearGradient id="portfolioFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.14} />
+                <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey="label"
+              tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={{ stroke: "var(--border)" }}
+            />
+            <YAxis
+              tick={{ fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={{ stroke: "var(--border)" }}
+              width={56}
+            />
+            <ChartTooltip
+              cursor={{ stroke: "var(--ring)" }}
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => valueFormatter(Number(value))}
+                  labelFormatter={(value) => labelFormatter(String(value ?? "—"))}
+                  indicator="line"
+                />
               }
-
-              const rawValue = payload[0]?.value;
-              if (typeof rawValue !== "number") {
-                return null;
-              }
-
-              return (
-                <TrendTooltipShell label={labelFormatter(String(label ?? "—"))}>
-                  <TrendTooltipRow label="Wartość" value={valueFormatter(rawValue)} />
-                </TrendTooltipShell>
-              );
-            }}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="var(--chart-1)"
-            strokeWidth={2.5}
-            fill="url(#portfolioFill)"
-            dot={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+            />
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="var(--color-value)"
+              strokeWidth={2.5}
+              fill="url(#portfolioFill)"
+              dot={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 }

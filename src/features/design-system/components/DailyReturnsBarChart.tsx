@@ -5,11 +5,16 @@ import {
   BarChart,
   ReferenceLine,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
   Cell,
 } from "@/lib/recharts-dynamic";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/features/design-system/components/ui/chart";
 
 type Point = Readonly<{
   label: string;
@@ -36,6 +41,12 @@ export function DailyReturnsBarChart({
   showZeroLine = true,
 }: Props) {
   const chartData = [...data];
+  const chartConfig = {
+    value: {
+      label: "Stopa zwrotu",
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
   const count = chartData.length;
 
   // Keep bars legible for short ranges, and avoid turning into a solid block for long ones.
@@ -55,52 +66,50 @@ export function DailyReturnsBarChart({
 
   return (
     <div className="w-full" style={{ height }}>
-      <ResponsiveContainer>
-        <BarChart
-          data={chartData}
-          margin={{ top: 12, right: 8, bottom: 0, left: 8 }}
-          barCategoryGap={barCategoryGap}
-        >
-          <XAxis
-            dataKey="label"
-            tick={tick}
-            interval={interval}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis hide />
-          {showZeroLine ? (
-            <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="3 3" />
-          ) : null}
-          <Tooltip
-            cursor={{ fill: "var(--muted)" }}
-            formatter={(value: string | number) => formatPercent(Number(value))}
-            contentStyle={{
-              background: "var(--popover)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              boxShadow: "var(--shadow)",
-              color: "var(--popover-foreground)",
-            }}
-            labelStyle={{ color: "var(--muted-foreground)" }}
-            itemStyle={{ color: "var(--popover-foreground)" }}
-          />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={barSize}>
-            {chartData.map((entry) => (
-              <Cell
-                key={entry.label}
-                fill={
-                  entry.value > 0
-                    ? "var(--profit)"
-                    : entry.value < 0
-                      ? "var(--loss)"
-                      : "var(--muted-foreground)"
-                }
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <ChartContainer config={chartConfig} className="h-full w-full">
+        <ResponsiveContainer>
+          <BarChart
+            data={chartData}
+            margin={{ top: 12, right: 8, bottom: 0, left: 8 }}
+            barCategoryGap={barCategoryGap}
+          >
+            <XAxis
+              dataKey="label"
+              tick={tick}
+              interval={interval}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis hide />
+            {showZeroLine ? (
+              <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="3 3" />
+            ) : null}
+            <ChartTooltip
+              cursor={{ fill: "var(--muted)" }}
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => formatPercent(Number(value))}
+                  indicator="line"
+                />
+              }
+            />
+            <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={barSize}>
+              {chartData.map((entry) => (
+                <Cell
+                  key={entry.label}
+                  fill={
+                    entry.value > 0
+                      ? "var(--profit)"
+                      : entry.value < 0
+                        ? "var(--loss)"
+                        : "var(--muted-foreground)"
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 }

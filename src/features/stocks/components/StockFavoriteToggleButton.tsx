@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2, Star } from "lucide-react";
 
@@ -12,11 +12,8 @@ import {
   removeStockWatchlistAction,
 } from "@/features/stocks/server/watchlist-actions";
 
-import {
-  getStockWatchlistStatus,
-} from "../client/stock-watchlist";
-
 type Props = Readonly<{
+  initialIsFavorite: boolean;
   providerKey: string;
   symbol: string;
   name: string;
@@ -26,6 +23,7 @@ type Props = Readonly<{
 }>;
 
 export function StockFavoriteToggleButton({
+  initialIsFavorite,
   providerKey,
   symbol,
   name,
@@ -35,38 +33,18 @@ export function StockFavoriteToggleButton({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isHydrating, setIsHydrating] = useState(true);
+  const [isFavorite, setOptimisticFavorite] = useOptimistic(
+    initialIsFavorite,
+    (_, next: boolean) => next
+  );
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void getStockWatchlistStatus(providerKey)
-      .then((result) => {
-        if (cancelled) return;
-        setIsFavorite(result.isFavorite);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setIsFavorite(false);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setIsHydrating(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [providerKey]);
 
   const onToggle = () => {
     if (isPending) return;
     const nextFavorite = !isFavorite;
 
     startTransition(() => {
-      setIsFavorite(nextFavorite);
+      setOptimisticFavorite(nextFavorite);
 
       const call = isFavorite
         ? removeStockWatchlistAction(providerKey)
@@ -80,7 +58,7 @@ export function StockFavoriteToggleButton({
 
       void call.catch((error: unknown) => {
           const message = error instanceof Error ? error.message : "";
-          setIsFavorite(!nextFavorite);
+          setOptimisticFavorite(!nextFavorite);
           if (message === "UNAUTHORIZED") {
             const nextPath = pathname || `/stocks/${encodeURIComponent(providerKey)}`;
             router.push(`/login?next=${encodeURIComponent(nextPath)}`);
@@ -107,12 +85,12 @@ export function StockFavoriteToggleButton({
           : "border-black/20 bg-background/90 text-muted-foreground hover:text-foreground",
         className
       )}
-      disabled={isPending || isHydrating}
+      disabled={isPending}
       onClick={onToggle}
       aria-label={isFavorite ? "Usuń z widoku" : "Dodaj do widoku"}
       title={isFavorite ? "Usuń z widoku" : "Dodaj do widoku"}
     >
-      {isPending || isHydrating ? (
+      {isPending ? (
         <Loader2 className="size-4 animate-spin" aria-hidden />
       ) : (
         <Star className={cn("size-4", isFavorite && "fill-current")} aria-hidden />

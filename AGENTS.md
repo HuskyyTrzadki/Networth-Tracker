@@ -43,6 +43,8 @@ Out of scope:
 - Use `cn()` for class composition.
 - Route handlers must be thin: validate input -> service call -> response.
 - Validate external provider interfaces against official docs before changing integrations.
+- URL query state in client components should use `nuqs` parser maps (avoid manual `URLSearchParams` mutation); use non-shallow updates when server data depends on search params.
+- Shared chart rendering should go through `src/components/ui/chart.tsx` (`ui/chart`) and preserve Modern Ledger standards: mono/tabular tooltip+legend typography, muted finance palette, subtle dashed grids.
 
 ## Supabase usage
 - Env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`, optional `LOGO_DEV_PUBLISHABLE_KEY` (recommended, server-held `pk_` token for `/api/public/image?ticker=...` fallback), legacy `LOGO_DEV_SECRET_KEY` still read for backward compatibility
@@ -127,8 +129,10 @@ When shipping feature/architecture changes:
   - App shell routes keep sidebar (`/(app)/*`).
   - Report/public shell hosts stock details and login (`/stocks/<providerKey>`, `/login`, `/pricing`).
 - App Router uses Cache Components (`cacheComponents: true`) with Suspense boundaries.
+- Root layout wraps app content in `NuqsAdapter` (`nuqs/adapters/next/app`) so query-state hooks are standardized across features.
 - Private dashboard/shell reads use tagged private cache (`portfolio:all`, `portfolio:<id>`, `transactions:*`).
 - Write APIs invalidate with `revalidateTag`/`revalidatePath`.
+- Transactions and portfolio filter controls use `nuqs` query-state parsers for deterministic URL/history behavior.
 - Public stock chart API (`/api/public/stocks/[providerKey]/chart`) uses edge cache headers (`s-maxage`, `stale-while-revalidate`).
 - Public image proxy (`/api/public/image`) caches logo assets with long-lived edge headers (7d fresh + 30d stale) and supports ticker fallback for `img.logo.dev`.
 - Stock details support ranges + overlays (PE / EPS TTM / Revenue TTM) with Trend(100) and Raw modes, plus authenticated BUY/SELL markers from user transactions.
@@ -137,10 +141,12 @@ When shipping feature/architecture changes:
   - `DELETE /api/stocks/watchlist/[providerKey]`,
   - status check `GET /api/stocks/watchlist?providerKey=...`.
 - Watchlist add is fail-safe: backend mutation layer (server action + shared service) does synchronous market-data warmup (`instruments` upsert + quote + daily cache fetch) and rolls back watchlist row on warmup failure, so `/stocks` avoids empty cards for user-pinned tickers.
+- Stock report watchlist toggle (`StockFavoriteToggleButton`) receives initial favorite state from server render and uses optimistic Server Action updates (no client fetch/sync effect on mount).
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
 - Portfolio model includes `is_tax_advantaged` (IKE/IKZE) used by dividend smart-default hints.
 - Dividend booking is user-confirmed (`/api/dividends/book`) with idempotency key `dividend_event_key`; Yahoo is discovery-only (`/api/dividends/inbox`).
+- Portfolio create + dividend booking flows have Server Action mutation boundaries (`createPortfolioAction`, `bookDividendAction`) with cache revalidation; client dialogs no longer post directly to route handlers.
 - Dashboard includes `Ekspozycja walutowa` widget with `Notowania | Gospodarcza` toggle; `Gospodarcza` is user-triggered via `/api/portfolio/currency-exposure/economic` and uses deterministic AI config (`temperature: 0`).
 - Economic exposure cache uses instrument-set fingerprint only (sorted `instrumentId`s + scope/model/prompt version), then reweights cached per-asset splits with fresh `valueBase` on each request.
 

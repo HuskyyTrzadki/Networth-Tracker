@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { Loader2 } from "lucide-react";
+import { useQueryStates } from "nuqs";
 
 import { useDebouncedCallback } from "@/features/common/hooks/use-debounced-callback";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -22,6 +22,7 @@ import { PortfolioSwitcher } from "@/features/portfolio";
 import { cn } from "@/lib/cn";
 
 import type { TransactionSide, TransactionsSort } from "../server/filters";
+import { transactionsQueryStateParsers } from "../lib/transactions-query-state";
 
 type Props = Readonly<{
   query: string | null;
@@ -39,11 +40,6 @@ const searchDebounceMs = 300;
 const searchInputId = "transactions-search-input";
 const sortSelectId = "transactions-sort-select";
 
-const buildTransactionsUrl = (params: URLSearchParams) => {
-  const queryString = params.toString();
-  return queryString.length > 0 ? `/transactions?${queryString}` : "/transactions";
-};
-
 function TransactionsSearchToolbarInner({
   query,
   type,
@@ -51,43 +47,34 @@ function TransactionsSearchToolbarInner({
   portfolios,
   selectedPortfolioId,
 }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(query ?? "");
   const [isPending, startTransition] = useTransition();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const [, setQueryState] = useQueryStates(transactionsQueryStateParsers, {
+    history: "push",
+    shallow: false,
+    scroll: false,
+    startTransition,
+  });
 
-  const pushWithUpdates = (updates: Readonly<Record<string, string | null>>) => {
-    const params = new URLSearchParams(searchParams?.toString());
-
-    Object.entries(updates).forEach(([key, value]) => {
-      if (!value) {
-        params.delete(key);
-        return;
-      }
-
-      params.set(key, value);
-    });
-
-    params.set("page", "1");
-
-    startTransition(() => {
-      router.push(buildTransactionsUrl(params), { scroll: false });
+  const pushWithUpdates = (
+    updates: Readonly<{
+      type?: TransactionSide | null;
+      sort?: TransactionsSort | null;
+    }>
+  ) => {
+    void setQueryState({
+      ...updates,
+      page: 1,
     });
   };
 
   const debouncedCommit = useDebouncedCallback((value: string) => {
     const trimmed = value.trim();
-    const params = new URLSearchParams(searchParams?.toString());
-    if (trimmed.length > 0) {
-      params.set("q", trimmed);
-    } else {
-      params.delete("q");
-    }
-    params.set("page", "1");
 
-    startTransition(() => {
-      router.push(buildTransactionsUrl(params), { scroll: false });
+    void setQueryState({
+      q: trimmed.length > 0 ? trimmed : null,
+      page: 1,
     });
   }, searchDebounceMs);
 
@@ -177,9 +164,11 @@ function TransactionsSearchToolbarInner({
               <ToggleGroup
                 aria-label="Typ transakcji"
                 className="grid h-full grid-cols-3 gap-0.5"
-                onValueChange={(value) =>
-                  pushWithUpdates({ type: value === "all" ? null : value })
-                }
+                onValueChange={(value) => {
+                  const nextType =
+                    value === "BUY" || value === "SELL" ? value : null;
+                  pushWithUpdates({ type: nextType });
+                }}
                 type="single"
                 value={type ?? "all"}
               >
@@ -217,9 +206,10 @@ function TransactionsSearchToolbarInner({
             </Label>
             <Select
               disabled={isPending}
-              onValueChange={(value) =>
-                pushWithUpdates({ sort: value === "date_desc" ? null : value })
-              }
+              onValueChange={(value) => {
+                const nextSort = value === "date_asc" ? "date_asc" : null;
+                pushWithUpdates({ sort: nextSort });
+              }}
               value={sort}
             >
               <SelectTrigger

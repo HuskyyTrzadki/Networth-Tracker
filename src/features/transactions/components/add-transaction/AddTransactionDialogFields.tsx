@@ -27,7 +27,7 @@ import { getTradeDateLowerBound } from "../../lib/trade-date";
 import { buildEmptyBalances, type AssetTab } from "./constants";
 import { applyCashCurrencyChange, applyCashTabState, applyCustomTabState, applyMarketTabState } from "./tab-state";
 import type { FormValues } from "../AddTransactionDialogContent";
-import { createPortfolio } from "@/features/portfolio/client/create-portfolio";
+import { createPortfolioAction } from "@/features/portfolio/server/create-portfolio-action";
 import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
 import { ScreenshotImportWizard } from "@/features/onboarding/components/ScreenshotImportWizard";
 
@@ -212,7 +212,7 @@ export function AddTransactionDialogFields({
   };
 
   const handleCreatePortfolio = async (input: CreatePortfolioInput) => {
-    const created = await createPortfolio(input);
+    const created = await createPortfolioAction(input);
     setLocalPortfolios((current) => {
       if (current.some((portfolio) => portfolio.id === created.id)) {
         return current;

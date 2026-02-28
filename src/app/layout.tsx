@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Newsreader } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { Suspense } from "react";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import "./globals.css";
 
@@ -63,7 +64,9 @@ export default function RootLayout({ children }: Props) {
             }
           })();`}
         </Script>
-        <Suspense fallback={null}>{children}</Suspense>
+        <NuqsAdapter>
+          <Suspense fallback={null}>{children}</Suspense>
+        </NuqsAdapter>
       </body>
     </html>
   );

@@ -41,9 +41,9 @@ export const OVERLAY_CONTROL_LABELS: Readonly<Record<StockChartOverlay, string>>
 };
 
 export const OVERLAY_LINE_COLORS: Readonly<Record<StockChartOverlay, string>> = {
-  pe: "#e11d48",
-  epsTtm: "#0284c7",
-  revenueTtm: "#d97706",
+  pe: "var(--chart-5)",
+  epsTtm: "var(--chart-4)",
+  revenueTtm: "var(--chart-3)",
 };
 const PRICE_LINE_COLOR = "var(--chart-1)";
 

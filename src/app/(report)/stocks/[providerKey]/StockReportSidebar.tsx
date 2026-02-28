@@ -17,6 +17,7 @@ type SidebarProps = Readonly<{
   symbol: string;
   name: string;
   logoUrl: string | null;
+  initialIsFavorite: boolean;
   exchange: string;
   region: string;
   metricCurrency: string;
@@ -42,6 +43,7 @@ export default function StockReportSidebar({
   symbol,
   name,
   logoUrl,
+  initialIsFavorite,
   exchange,
   region,
   metricCurrency,
@@ -151,6 +153,7 @@ export default function StockReportSidebar({
               />
             ) : null}
             <StockFavoriteToggleButton
+              initialIsFavorite={initialIsFavorite}
               providerKey={providerKey}
               symbol={symbol}
               name={name}

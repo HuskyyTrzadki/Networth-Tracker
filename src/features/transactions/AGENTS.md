@@ -33,6 +33,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Pagination UI: `src/features/transactions/components/TransactionsPagination.tsx`
 - Row actions menu: `src/features/transactions/components/TransactionsRowActions.tsx`
 - Form schema: `src/features/transactions/lib/add-transaction-form-schema.ts`
+- Query-state parsers: `src/features/transactions/lib/transactions-query-state.ts`
 - Decimal helpers: `src/lib/decimal.ts`
 - Currency formatting: `src/lib/format-currency.ts`
 - Client API: `src/features/transactions/client/create-transaction.ts`
@@ -78,6 +79,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts` and `src/app/api/transactions/[transactionId]/route.ts`.
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
 - Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
+- Transactions filters/pagination sync with URL via `nuqs` parser state (`transactions-query-state.ts`) instead of manual `URLSearchParams` mutation.
 - `transactions.dividend_event_key` is reserved for dividend booking idempotency (unique per user+portfolio+event for `cashflow_type=DIVIDEND`, `leg_role=ASSET`).
 - Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.
 - Global instruments cache stores canonical Yahoo quoteType in `public.instruments.instrument_type` for allocation/grouping.
@@ -114,6 +116,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction modal shows "Dostępne do sprzedaży (na teraz)" hints for selected sell instrument per portfolio.
 - Add-transaction modal shows screenshot-import CTA below portfolio selection with a short explanation; CTA is disabled until a portfolio is selected.
 - Portfolio selector includes a `+ Stwórz nowy portfel` option that opens the create-portfolio dialog inline.
+- Inline portfolio creation in add-transaction uses portfolio server action (`create + revalidatePath`) and updates selector options from returned portfolio payload.
 - Screenshot import inside add-transaction writes holdings into the selected portfolio via `POST /api/transactions/screenshot/commit` (no new portfolio creation).
 - Screenshot review preview fetches USD totals via `POST /api/transactions/screenshot/preview` using cached Yahoo quotes + FX.
 - After successful save in the intercepted portfolio modal route, dialog closes immediately; empty-dashboard refresh/loader is handled by portfolio-side rebuild status UI.

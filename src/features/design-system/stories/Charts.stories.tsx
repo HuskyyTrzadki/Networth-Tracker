@@ -70,9 +70,9 @@ function ChartsStory() {
     <DesignSurface className="p-6">
       <Container className="max-w-6xl space-y-6">
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Wykresy (Recharts)</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Wykresy (ui/chart)</h1>
           <p className="text-sm text-muted-foreground">
-            Komponenty Recharts podpięte pod semantyczne tokeny kolorów.
+            Komponenty oparte o `ui/chart` i paletę Modern Ledger.
           </p>
         </div>
 
@@ -194,7 +194,7 @@ function ChartsStory() {
 }
 
 const meta: Meta<typeof ChartsStory> = {
-  title: "Design System/Charts (Recharts)",
+  title: "Design System/Charts (ui-chart)",
   component: ChartsStory,
 };
 

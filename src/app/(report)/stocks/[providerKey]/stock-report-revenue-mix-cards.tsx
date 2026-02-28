@@ -1,10 +1,16 @@
 "use client";
 
 import { ArrowDown } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "@/lib/recharts-dynamic";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "@/lib/recharts-dynamic";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/features/design-system/components/ui/chart";
 
 import StockReportInfoHint from "./StockReportInfoHint";
 import {
@@ -127,6 +133,14 @@ export function DonutCard({
   subtitle: string;
   slices: readonly Slice[];
 }>) {
+  const chartConfig = slices.reduce<ChartConfig>((acc, slice) => {
+    acc[slice.key] = {
+      label: slice.label,
+      color: slice.color,
+    };
+    return acc;
+  }, {});
+
   return (
     <article className="border-t border-dashed border-black/15 pt-3">
       <div className="flex items-start justify-between gap-3">
@@ -139,37 +153,37 @@ export function DonutCard({
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[260px_minmax(0,1fr)]">
         <div className="h-[260px]">
           {slices.length ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[...slices]}
-                  dataKey="value"
-                  nameKey="label"
-                  innerRadius={76}
-                  outerRadius={112}
-                  paddingAngle={2}
-                  labelLine
-                  label={({ name, percent }) => buildDonutLabel(name, percent)}
-                  stroke="var(--background)"
-                  strokeWidth={2}
-                  isAnimationActive={false}
-                >
-                  {slices.map((slice) => (
-                    <Cell key={slice.key} fill={slice.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name]}
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px dashed var(--report-rule)",
-                    borderRadius: "4px",
-                    color: "var(--popover-foreground)",
-                    boxShadow: "none",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <ChartContainer config={chartConfig} className="h-full w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[...slices]}
+                    dataKey="value"
+                    nameKey="label"
+                    innerRadius={76}
+                    outerRadius={112}
+                    paddingAngle={2}
+                    labelLine
+                    label={({ name, percent }) => buildDonutLabel(name, percent)}
+                    stroke="var(--background)"
+                    strokeWidth={2}
+                    isAnimationActive={false}
+                  >
+                    {slices.map((slice) => (
+                      <Cell key={slice.key} fill={slice.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(value) => `${Number(value).toFixed(1)}%`}
+                        indicator="dot"
+                      />
+                    }
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           ) : (
             <div className="flex h-full items-center justify-center border-y border-dashed border-black/15 bg-card/35 text-sm text-muted-foreground">
               Brak danych do wykresu
