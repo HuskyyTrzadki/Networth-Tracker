@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
@@ -90,48 +92,55 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                 : "border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 text-[color:var(--loss)]";
 
             return (
-              <li
-                key={mover.instrumentId}
-                className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <InstrumentLogoImage
-                      alt=""
-                      className="size-7 shrink-0"
-                      fallbackText={visual.label}
-                      size={28}
-                      ticker={visual.logoTicker}
-                      src={mover.logoUrl}
-                    />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-semibold text-foreground">
-                          {mover.symbol}
-                        </span>
-                        <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                          {formatQuotePrice(mover.price, mover.currency)}
-                        </span>
-                      </div>
-                      <div className="truncate text-[11px] text-muted-foreground">
-                        {mover.name}
+              <li key={mover.instrumentId}>
+                <Link
+                  className="group block rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2 transition-colors hover:border-border hover:bg-background/84 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  href={`/stocks/${encodeURIComponent(mover.providerKey)}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <InstrumentLogoImage
+                        alt=""
+                        className="size-7 shrink-0"
+                        fallbackText={visual.label}
+                        size={28}
+                        ticker={visual.logoTicker}
+                        src={mover.logoUrl}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12px] font-semibold text-foreground">
+                            {mover.symbol}
+                          </span>
+                          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                            {formatQuotePrice(mover.price, mover.currency)}
+                          </span>
+                        </div>
+                        <div className="truncate text-[11px] text-muted-foreground">
+                          {mover.name}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <Badge className={cn("rounded-md border px-2 py-0.5", badgeTone)}>
+                          {trendLabel} {percentLabel}
+                        </Badge>
+                        <div
+                          className={cn(
+                            "mt-1 font-mono text-[12px] font-semibold tabular-nums",
+                            trendTone
+                          )}
+                        >
+                          {changeLabel ?? "—"}
+                        </div>
+                      </div>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground transition-colors group-hover:text-foreground/75">
+                        Raport
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Badge className={cn("rounded-md border px-2 py-0.5", badgeTone)}>
-                      {trendLabel} {percentLabel}
-                    </Badge>
-                    <span
-                      className={cn(
-                        "font-mono text-[12px] font-semibold tabular-nums",
-                        trendTone
-                      )}
-                    >
-                      {changeLabel ?? "—"}
-                    </span>
-                  </div>
-                </div>
+                </Link>
               </li>
             );
           })}
@@ -141,14 +150,6 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
           Brak zmian dziennych.
         </div>
       )}
-      {summary.isPartial ? (
-        <StatusStrip
-          className="mt-3"
-          hint={`Braki danych: ceny ${summary.missingQuotes}, FX ${summary.missingFx}.`}
-          label="Status: częściowe"
-          tone="warning"
-        />
-      ) : null}
     </ChartCard>
   );
 }

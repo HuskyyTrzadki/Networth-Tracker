@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { ChartCard, StatusStrip } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Dialog,
@@ -46,12 +46,6 @@ const formatPercent = (value: number, maxFractionDigits = 1) =>
     style: "percent",
     maximumFractionDigits: maxFractionDigits,
   }).format(value);
-
-const formatAsOf = (value: string) =>
-  new Intl.DateTimeFormat("pl-PL", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 
 const clampProgress = (value: number | null) => {
   if (value === null || !Number.isFinite(value)) return null;
@@ -165,13 +159,6 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
                 Tabela
               </ToggleGroupItem>
             </ToggleGroup>
-            {summary.asOf ? (
-              <StatusStrip
-                className="hidden md:inline-flex"
-                hint="Stan wyceny z ostatniego odświeżenia notowań."
-                label={`Stan: ${formatAsOf(summary.asOf)}`}
-              />
-            ) : null}
             {canExpandView ? (
               <DialogTrigger asChild>
                 <Button
@@ -245,14 +232,6 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               <X className="size-4" aria-hidden />
             </button>
           </div>
-        ) : null}
-        {summary.isPartial ? (
-          <StatusStrip
-            className="mt-3"
-            hint={`Braki danych: ceny ${summary.missingQuotes}, FX ${summary.missingFx}.`}
-            label="Status: częściowe"
-            tone="warning"
-          />
         ) : null}
       </ChartCard>
       <DialogContent className="h-[92vh] w-[96vw] max-w-[1800px] gap-0 overflow-hidden border border-border/70 bg-card/96 p-0">

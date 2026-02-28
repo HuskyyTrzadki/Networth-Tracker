@@ -17,8 +17,7 @@ export type FiveYearTrendAnalysis = Readonly<{
 
 export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
   title: "Analiza trendu 5-letniego",
-  subtitle:
-    "Kompleksowe spojrzenie na ewolucje finansowa i kierunek strategiczny spolki w perspektywie ostatnich pieciu lat.",
+  subtitle: "Przychody, marze, bilans i inwestycje z ostatnich 5 lat.",
   sections: [
     {
       title: "Podsumowanie zarzadcze",

@@ -68,7 +68,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
             Dodaj transakcję
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Zaloguj się, aby dodać nową operację do wybranego portfela.
+            Zaloguj się, aby dodać transakcję.
           </p>
           <Button asChild className="mt-5 h-11">
             <Link

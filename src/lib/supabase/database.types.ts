@@ -143,6 +143,30 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_upgrade_nudge_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          step: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          step: number
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          step?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       instrument_daily_prices_cache: {
         Row: {
           adj_close: number | null
@@ -722,18 +746,24 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          guest_upgrade_nudge_15_dismissed_at: string | null
+          guest_upgrade_nudge_5_dismissed_at: string | null
           last_active_at: string
           upgraded_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          guest_upgrade_nudge_15_dismissed_at?: string | null
+          guest_upgrade_nudge_5_dismissed_at?: string | null
           last_active_at?: string
           upgraded_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          guest_upgrade_nudge_15_dismissed_at?: string | null
+          guest_upgrade_nudge_5_dismissed_at?: string | null
           last_active_at?: string
           upgraded_at?: string | null
           user_id?: string

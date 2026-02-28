@@ -35,7 +35,7 @@ describe("HomeHero", () => {
 
     expect(fetch).toHaveBeenCalledWith("/api/auth/anonymous", { method: "POST" });
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/search");
+      expect(replaceMock).toHaveBeenCalledWith("/onboarding");
     });
   });
 

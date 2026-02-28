@@ -188,7 +188,7 @@ export default function StockReportRevenueMixSection() {
         <SectionHeader
           as="h3"
           title="Jak firma zarabia"
-          description="Najpierw wynik i marze, potem mix przychodow."
+          description="Wynik, marze i mix przychodow."
         />
 
         <ProfitabilitySnapshot mode={profitMode} onModeChange={setProfitMode} />
@@ -199,8 +199,8 @@ export default function StockReportRevenueMixSection() {
                 <h4 className="text-base font-semibold tracking-tight">
                   Mix przychodow ({mixVisual === "sankey" ? "diagram przeplywu" : "wykresy kolowe"})
                 </h4>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Widok: <span className="font-mono tabular-nums">{periodLabel}</span>
+                <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+                  {periodLabel}
                 </p>
               </div>
 
@@ -274,7 +274,7 @@ export default function StockReportRevenueMixSection() {
                 />
                 <DonutCard
                   title="Geografia przychodow"
-                  subtitle={`Osobny widok geograficzny (${periodLabel})`}
+                  subtitle={periodLabel}
                   slices={geoSlices}
                 />
               </div>

@@ -54,9 +54,7 @@ export default function StockReportLeadershipSection() {
     <section id="sekcja-zarzad" className="space-y-3 border-b border-dashed border-black/15 pb-6">
       <div>
         <h3 className="font-serif text-2xl font-bold tracking-tight">Kto steruje statkiem</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Profil zarzadu i aktywnosc insiderow pomagaja ocenic jakosc decyzji w dlugim terminie.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Zarzad, staz i insiderzy.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
@@ -109,9 +107,7 @@ export default function StockReportLeadershipSection() {
             </li>
           ))}
         </ol>
-        <p className="mt-3 text-[11px] text-muted-foreground">
-          Dane demonstracyjne do czasu podlaczenia feedu insider transactions.
-        </p>
+        <p className="mt-3 text-[11px] text-muted-foreground">Dane demonstracyjne.</p>
       </article>
     </section>
   );

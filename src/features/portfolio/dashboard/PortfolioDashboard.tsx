@@ -1,8 +1,8 @@
 import { cn } from "@/lib/cn";
 import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal, StatusStrip } from "@/features/design-system";
 import { Alert } from "@/features/design-system/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
 
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
@@ -17,6 +17,7 @@ import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-alloc
 import type { DividendInboxResult } from "../lib/dividend-inbox";
 import { DividendInboxWidget } from "./widgets/DividendInboxWidget";
 import { PortfolioRecentTransactionsWidget } from "./widgets/PortfolioRecentTransactionsWidget";
+import { formatDashboardAsOf } from "./dashboard-formatters";
 
 type Props = Readonly<{
   portfolios: readonly {
@@ -73,10 +74,14 @@ export function PortfolioDashboard({
     ? portfolios.find((portfolio) => portfolio.id === selectedPortfolioId)?.name ?? "—"
     : "Wszystkie portfele";
 
-  const portfolioLabel = selectedPortfolioId
-    ? `Portfel: ${selectedPortfolioName}`
-    : "Portfel: Wszystkie portfele";
+  const portfolioLabel = selectedPortfolioName;
   const dailyChangeBase = resolveDailyChangeBase(summary.holdings);
+  const asOfLabel = summary.asOf ? formatDashboardAsOf(summary.asOf) : null;
+  const healthLabel = summary.isPartial ? "Dane częściowe" : "Dane kompletne";
+  const healthTone = summary.isPartial ? "warning" : "positive";
+  const healthHint = summary.isPartial
+    ? `Braki danych: ceny ${summary.missingQuotes}, FX ${summary.missingFx}. Wyniki mogą być zaniżone.`
+    : "Wycena obejmuje komplet notowań i kursów FX dla bieżącego widoku.";
 
   return (
     <div className={cn("mx-auto w-full max-w-7xl space-y-5", className)}>
@@ -86,23 +91,38 @@ export function PortfolioDashboard({
           baseCurrency={summary.baseCurrency}
           totalValueBase={summary.totalValueBase}
           dailyChangeBase={dailyChangeBase}
-          isPartial={summary.isPartial}
+          asOf={asOfLabel}
         />
       </AnimatedReveal>
-      {summary.isPartial ? (
-        <AnimatedReveal delay={0.03}>
-          <Alert className="flex items-start gap-2 rounded-md border border-dashed border-border/70 border-l-[3px] border-l-[color:var(--chart-3)] bg-background/72 px-3 py-2.5 text-foreground shadow-[var(--surface-shadow)]">
-            <AlertTriangle
-              className="mt-0.5 size-4 shrink-0 text-[color:var(--chart-3)]"
-              aria-hidden
-            />
-            <p className="text-sm text-foreground/90">
-              Dane wyceny są częściowe: brak cen dla {summary.missingQuotes} pozycji
-              i brak FX dla {summary.missingFx}. Wyniki mogą być zaniżone.
-            </p>
-          </Alert>
-        </AnimatedReveal>
-      ) : null}
+      <AnimatedReveal delay={0.03}>
+        <Alert className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-border/70 bg-background/72 px-3 py-2.5 text-foreground shadow-[var(--surface-shadow)]">
+          <div className="flex min-w-0 items-start gap-2">
+            {summary.isPartial ? (
+              <AlertTriangle
+                className="mt-0.5 size-4 shrink-0 text-[color:var(--chart-3)]"
+                aria-hidden
+              />
+            ) : (
+              <ShieldCheck
+                className="mt-0.5 size-4 shrink-0 text-[color:var(--profit)]"
+                aria-hidden
+              />
+            )}
+            <div className="min-w-0">
+              <p className="text-sm text-foreground/90">
+                {summary.isPartial
+                  ? `Dane wyceny są częściowe: brak cen dla ${summary.missingQuotes} pozycji i brak FX dla ${summary.missingFx}.`
+                  : "Wycena kompletna dla bieżącego widoku."}
+              </p>
+              <p className="text-xs text-muted-foreground">Notowania opóźnione.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusStrip hint={healthHint} label={healthLabel} tone={healthTone} />
+            {asOfLabel ? <StatusStrip label={asOfLabel} /> : null}
+          </div>
+        </Alert>
+      </AnimatedReveal>
       {selectedPortfolioId === null ? (
         <AnimatedReveal className="hidden md:block" delay={0.04}>
           <div className="inline-flex rounded-lg border border-dashed border-border/75 bg-card/92 px-2.5 py-3 shadow-[var(--surface-shadow)]">

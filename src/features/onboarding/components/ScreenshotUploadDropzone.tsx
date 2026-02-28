@@ -30,12 +30,35 @@ export function ScreenshotUploadDropzone({
 }>) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   const handleFiles = (incoming: FileList | null) => {
     if (!incoming) return;
-    const filtered = Array.from(incoming).filter(isSupportedImage);
-    if (filtered.length === 0) return;
+    const incomingList = Array.from(incoming);
+    const filtered = incomingList.filter(isSupportedImage);
+
+    if (files.length >= maxFiles) {
+      setFeedbackMessage(`Osiągnięto limit ${maxFiles} plików.`);
+      return;
+    }
+
+    if (filtered.length === 0) {
+      setFeedbackMessage("Obsługiwane formaty to PNG oraz JPG.");
+      return;
+    }
+
     const next = [...files, ...filtered].slice(0, maxFiles);
+    const skippedCount = incomingList.length - filtered.length;
+    const limitedByMax = files.length + filtered.length > maxFiles;
+
+    if (skippedCount > 0) {
+      setFeedbackMessage("Niektóre pliki pominięto: obsługiwane są tylko PNG/JPG.");
+    } else if (limitedByMax) {
+      setFeedbackMessage(`Dodano maksymalnie ${maxFiles} plików.`);
+    } else {
+      setFeedbackMessage(null);
+    }
+
     onFilesChange(next);
   };
 
@@ -81,6 +104,7 @@ export function ScreenshotUploadDropzone({
         <p className="mt-1 text-xs text-muted-foreground">
           Maksymalnie {maxFiles} plików, formaty PNG/JPG
         </p>
+        {feedbackMessage ? <p className="mt-2 text-xs font-medium text-destructive">{feedbackMessage}</p> : null}
         <Button
           type="button"
           variant="outline"

@@ -7,36 +7,35 @@ describe("PortfolioNetValueHero", () => {
   it("renders formatted net value in base currency", () => {
     render(
       <PortfolioNetValueHero
-        portfolioLabel="Portfel: XYZ"
+        portfolioLabel="XYZ"
         baseCurrency="PLN"
         totalValueBase="12345.67"
         dailyChangeBase="10"
-        isPartial={false}
+        asOf="9 lut 2026, 13:00"
       />
     );
 
-    expect(screen.getByText("Portfel: XYZ")).toBeInTheDocument();
+    expect(screen.getByText("XYZ")).toBeInTheDocument();
     expect(screen.getByText("Wartość netto")).toBeInTheDocument();
     expect(screen.getByText("12 345,67")).toBeInTheDocument();
     expect(screen.getByText("zł")).toBeInTheDocument();
+    expect(screen.getByText("Stan na")).toBeInTheDocument();
+    expect(screen.getByText("9 lut 2026, 13:00")).toBeInTheDocument();
     expect(screen.getByText(/\+10/)).toBeInTheDocument();
   });
 
-  it("renders partial valuation note when summary is partial", () => {
+  it("renders placeholder when as-of timestamp is unavailable", () => {
     render(
       <PortfolioNetValueHero
-        portfolioLabel="Portfel: XYZ"
+        portfolioLabel="XYZ"
         baseCurrency="PLN"
         totalValueBase="100"
         dailyChangeBase={null}
-        isPartial
+        asOf={null}
       />
     );
 
-    expect(
-      screen.getByText(
-        "Częściowa wycena: część instrumentów nie ma aktualnych notowań lub FX."
-      )
-    ).toBeInTheDocument();
+    expect(screen.getByText("Stan na")).toBeInTheDocument();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 });

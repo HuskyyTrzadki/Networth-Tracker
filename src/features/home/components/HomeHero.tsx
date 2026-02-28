@@ -27,7 +27,7 @@ export function HomeHero() {
       return;
     }
 
-    router.replace("/search");
+    router.replace("/onboarding");
     setPending(false);
   };
 
@@ -49,15 +49,11 @@ export function HomeHero() {
         <div className="grid flex-1 items-center gap-10 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           <div className="space-y-6">
             <div className="space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Raport inwestora
-              </p>
               <h1 className="max-w-2xl font-serif text-5xl font-semibold tracking-tight text-foreground sm:text-6xl">
                 Szukaj akcji. Czytaj dane jak gazete.
               </h1>
               <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-                Stock report i portfolio management w jednym miejscu. Z naciskiem
-                na czytelnosc, nie na dashboardowy halas.
+                Raporty spolek i portfolio w jednym miejscu. Bez dashboardowego halasu.
               </p>
             </div>
 
@@ -73,7 +69,7 @@ export function HomeHero() {
                   Wypróbuj jako gość
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  Bez zakladania konta. Mozesz uaktualnic profil pozniej.
+                  Bez konta. Uaktualnisz profil pozniej.
                 </p>
                 {notice ? (
                   <div
@@ -90,14 +86,11 @@ export function HomeHero() {
           <div className="space-y-4">
             <Card className="border-black/5 bg-white">
               <CardContent className="p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                  Slot ilustracji
-                </p>
                 <h2 className="mt-3 font-serif text-2xl font-semibold tracking-tight text-foreground">
                   Astronauta czytajacy raport
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Wstaw wygenerowany obraz AI zgodny z motywem grawiury.
+                  Miejsce na ilustracje redakcyjna.
                 </p>
                 <div className="mt-5 h-[360px] rounded-sm border border-dashed border-black/15 bg-[#f7f4ec]" />
               </CardContent>

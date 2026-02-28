@@ -155,9 +155,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
         <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
           <header className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Dziennik portfela
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
             </div>
 
             <Button asChild size="lg" className="h-11 md:min-w-44">
@@ -216,12 +214,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
         <section className="rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
           <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
-                Księga operacji
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Aktywo i powiązane rozliczenie.
-              </p>
+              <p className="text-sm font-medium text-foreground">Historia operacji</p>
             </div>
             <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
           </div>

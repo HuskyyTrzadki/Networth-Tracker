@@ -15,7 +15,7 @@ type Props = Readonly<{
   baseCurrency: string;
   totalValueBase: string | null;
   dailyChangeBase: string | null;
-  isPartial: boolean;
+  asOf: string | null;
 }>;
 
 export function PortfolioNetValueHero({
@@ -23,7 +23,7 @@ export function PortfolioNetValueHero({
   baseCurrency,
   totalValueBase,
   dailyChangeBase,
-  isPartial,
+  asOf,
 }: Props) {
   const prefersReducedMotion = useReducedMotion() ?? false;
   const formatter = getCurrencyFormatter(baseCurrency);
@@ -146,7 +146,7 @@ export function PortfolioNetValueHero({
           {portfolioLabel}
         </div>
         <div className="inline-flex rounded-sm border border-border/60 bg-background/72 px-2 py-0.5 font-mono text-[11px] font-medium tabular-nums text-muted-foreground/90">
-          Bazowa: {baseCurrency}
+          {baseCurrency}
         </div>
       </div>
       <div className="mt-3 border-t border-dashed border-border/60 pt-2 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
@@ -172,10 +172,10 @@ export function PortfolioNetValueHero({
       <div className="grid gap-2 border-t border-dashed border-border/60 pt-2 sm:grid-cols-2">
         <div className="rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-            Status danych
+            Stan na
           </p>
-          <p className="mt-0.5 text-xs text-foreground/90">
-            {isPartial ? "Częściowe notowania" : "Kompletne notowania"}
+          <p className="mt-0.5 font-mono text-xs tabular-nums text-foreground/90">
+            {asOf ? asOf : "—"}
           </p>
         </div>
         <div className="rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
@@ -187,11 +187,6 @@ export function PortfolioNetValueHero({
           </p>
         </div>
       </div>
-      {isPartial ? (
-        <p className="mt-2 font-sans text-[13px] text-muted-foreground">
-          Częściowa wycena: część instrumentów nie ma aktualnych notowań lub FX.
-        </p>
-      ) : null}
     </section>
   );
 }

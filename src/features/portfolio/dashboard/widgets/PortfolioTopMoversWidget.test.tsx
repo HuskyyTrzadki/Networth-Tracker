@@ -28,6 +28,7 @@ describe("PortfolioTopMoversWidget", () => {
             {
               instrumentId: "a",
               provider: "yahoo",
+              providerKey: "AAPL",
               symbol: "AAPL",
               name: "Apple",
               exchange: null,
@@ -46,6 +47,7 @@ describe("PortfolioTopMoversWidget", () => {
             {
               instrumentId: "b",
               provider: "yahoo",
+              providerKey: "MSFT",
               symbol: "MSFT",
               name: "Microsoft",
               exchange: null,
@@ -69,6 +71,10 @@ describe("PortfolioTopMoversWidget", () => {
     expect(screen.getByText("Największe ruchy")).toBeInTheDocument();
     expect(screen.getByText("AAPL")).toBeInTheDocument();
     expect(screen.getByText("MSFT")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /AAPL/i })).toHaveAttribute(
+      "href",
+      "/stocks/AAPL"
+    );
     expect(screen.getAllByText(/100,00\s*USD/)).toHaveLength(2);
     expect(screen.getByText("Wzr. +2,00%")).toBeInTheDocument();
     expect(screen.getByText("Spad. -1,00%")).toBeInTheDocument();

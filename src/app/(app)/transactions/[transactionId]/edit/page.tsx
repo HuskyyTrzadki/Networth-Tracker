@@ -29,7 +29,7 @@ export default async function TransactionEditPage({ params }: Props) {
       <main className="mx-auto w-full max-w-[1560px] px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
-          Zaloguj się, aby edytować transakcję.
+          Zaloguj się, aby edytować wpis.
         </div>
         <Button asChild className="mt-4 h-11">
           <Link

@@ -46,6 +46,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Sidebar portfolio delete (`PortfolioSidebarItem`) executes server action (`delete-portfolio-action`) and redirects to `/portfolio` when the active portfolio is removed.
 - Sidebar navigation is optimistic: on plain left-click, active highlight switches immediately to intended destination (including portfolio rows) before pathname commit, then resets to canonical pathname when navigation completes.
 - Sidebar links explicitly prefetch on hover intent (`router.prefetch`) and keep `next/link` prefetch enabled, so desktop navigation warms RSC payloads before click.
+- Guest users now get a persistent warning pill next to sidebar `Ustawienia`, plus a shell-level dismissible upgrade banner once they pass transaction milestones (`>5`, `>15` asset legs). Only one banner shows at a time, dismissal is persisted server-side in `profiles`, and CTA always points to `/settings`.
+- Shell-owned page chrome should avoid duplicate context labels; prefer a single page title plus one short scope/status cue instead of stacked eyebrow + title + subtitle variants.
 
 ## Boundaries
 - No domain business logic; UI/navigation only.

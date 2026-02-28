@@ -276,9 +276,8 @@ export function AuthActions({
   const showGuestUpgradeForm = mode === "guest";
   const showEmailTabs = mode === "signedOut";
   const showOauthDivider = showGoogleAction && showEmailTabs;
-
   return (
-    <div className="max-w-xl space-y-4">
+    <div className="max-w-2xl space-y-4">
       {notice ? (
         <div
           className={cn(
@@ -293,31 +292,41 @@ export function AuthActions({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
-        {showGoogleAction ? (
-          <Button
-            onClick={startGoogleAuth}
-            disabled={pendingAction === "google"}
-            className="h-10 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
-          >
-            {primaryGoogleActionLabel}
-          </Button>
-        ) : (
-          <Button variant="secondary" disabled>
-            Google połączone
-          </Button>
-        )}
+      {mode === "guest" ? null : (
+        <div className="flex flex-wrap items-center gap-2.5">
+          {showGoogleAction ? (
+            <Button
+              onClick={startGoogleAuth}
+              disabled={pendingAction === "google"}
+              className="h-10 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
+            >
+              {primaryGoogleActionLabel}
+            </Button>
+          ) : (
+            <Button variant="secondary" disabled>
+              Google połączone
+            </Button>
+          )}
 
-        {mode === "signedOut" ? null : (
-          <Button
-            variant="secondary"
-            onClick={startSignOut}
-            disabled={pendingAction === "signout"}
-          >
-            Wyloguj
-          </Button>
-        )}
-      </div>
+          {mode === "signedOut" ? null : (
+            <Button
+              variant="secondary"
+              onClick={startSignOut}
+              disabled={pendingAction === "signout"}
+            >
+              Wyloguj
+            </Button>
+          )}
+        </div>
+      )}
+
+      {mode === "guest" ? (
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 border-t border-dashed border-border/70" />
+          albo użyj e-maila
+          <span className="h-px flex-1 border-t border-dashed border-border/70" />
+        </div>
+      ) : null}
 
       {showOauthDivider ? (
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -368,6 +377,19 @@ export function AuthActions({
 
       {mode === "signedIn" && userEmail ? (
         <p className="text-xs text-muted-foreground">Aktywne konto: {userEmail}</p>
+      ) : null}
+
+      {mode === "guest" ? (
+        <div className="flex justify-start">
+          <Button
+            variant="ghost"
+            className="h-auto px-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-foreground"
+            onClick={startSignOut}
+            disabled={pendingAction === "signout"}
+          >
+            Wyloguj z sesji gościa
+          </Button>
+        </div>
       ) : null}
     </div>
   );

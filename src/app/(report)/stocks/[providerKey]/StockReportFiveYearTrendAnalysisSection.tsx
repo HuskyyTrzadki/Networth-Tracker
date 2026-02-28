@@ -17,9 +17,6 @@ export default function StockReportFiveYearTrendAnalysisSection() {
             className="border-b border-dashed border-black/15 px-3 py-2.5"
             contentClassName="space-y-3 border-t border-dashed border-black/15 pt-2.5"
           >
-            {section.description ? (
-              <p className="text-sm text-muted-foreground">{section.description}</p>
-            ) : null}
             {section.subsections.map((subsection) => (
               <article key={subsection.title} className="space-y-1.5">
                 <h4 className="text-sm font-semibold tracking-tight">{subsection.title}</h4>

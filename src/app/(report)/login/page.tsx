@@ -23,15 +23,11 @@ export default async function LoginPage() {
       <section className="hidden h-full items-center justify-center lg:flex">
         <Card className="w-full max-w-[620px] border-black/5 bg-white">
           <CardContent className="p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-              Slot ilustracji
-            </p>
-            <h2 className="mt-3 font-serif text-3xl font-semibold tracking-tight text-foreground">
+            <h2 className="font-serif text-3xl font-semibold tracking-tight text-foreground">
               Obraz raportu finansowego
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Wstaw tutaj wygenerowana ilustracje AI w stylu grawiury
-              (astronauta/ledger/newspaper), aby uzyskac pelny StockTaper feel.
+              Miejsce na ilustracje w stylu reportu.
             </p>
             <div className="mt-6 h-[360px] rounded-sm border border-dashed border-black/15 bg-[#f7f4ec]" />
           </CardContent>

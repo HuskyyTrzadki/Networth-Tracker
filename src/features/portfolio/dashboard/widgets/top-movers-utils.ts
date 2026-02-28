@@ -9,6 +9,7 @@ type Trend = "UP" | "DOWN";
 
 export type TopMoverRow = Readonly<{
   instrumentId: string;
+  providerKey: string;
   symbol: string;
   name: string;
   logoUrl: string | null;
@@ -21,6 +22,7 @@ export type TopMoverRow = Readonly<{
 
 type Candidate = Readonly<{
   instrumentId: string;
+  providerKey: string;
   symbol: string;
   name: string;
   logoUrl: string | null;
@@ -42,6 +44,7 @@ const compareByMagnitudeDesc = (a: Candidate, b: Candidate) => {
 function toCandidate(holding: ValuedHolding): Candidate | null {
   if (holding.instrumentType === "CURRENCY") return null;
   if (holding.provider === "custom") return null;
+  if (!holding.providerKey) return null;
   if (!holding.todayChangeBase) return null;
 
   const change = parseDecimalString(holding.todayChangeBase);
@@ -49,6 +52,7 @@ function toCandidate(holding: ValuedHolding): Candidate | null {
 
   return {
     instrumentId: holding.instrumentId,
+    providerKey: holding.providerKey,
     symbol: holding.symbol,
     name: holding.name,
     logoUrl: holding.logoUrl,
@@ -103,6 +107,7 @@ export function buildTopMovers(
 
   return selected.slice(0, limit).map((row) => ({
     instrumentId: row.instrumentId,
+    providerKey: row.providerKey,
     symbol: row.symbol,
     name: row.name,
     logoUrl: row.logoUrl,

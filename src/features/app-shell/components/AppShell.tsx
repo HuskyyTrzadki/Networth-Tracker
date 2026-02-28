@@ -3,6 +3,7 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+import type { GuestUpgradeBanner as GuestUpgradeBannerModel } from "@/features/auth/lib/guest-upgrade-nudge";
 import {
   SidebarInset,
   SidebarProvider,
@@ -11,6 +12,7 @@ import { cn } from "@/lib/cn";
 
 import { AppSidebar } from "./AppSidebar";
 import { AppToastHost } from "./AppToastHost";
+import { GuestUpgradeBanner } from "./GuestUpgradeBanner";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { getPortfolioIdFromPathname } from "../lib/path";
 
@@ -21,10 +23,18 @@ type Props = Readonly<{
     name: string;
     baseCurrency: string;
   }[];
+  guestUpgradeBanner?: GuestUpgradeBannerModel | null;
+  showGuestSettingsBadge?: boolean;
   className?: string;
 }>;
 
-export function AppShell({ children, portfolios, className }: Props) {
+export function AppShell({
+  children,
+  portfolios,
+  guestUpgradeBanner = null,
+  showGuestSettingsBadge = false,
+  className,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname() ?? "/";
   const sidebarStyle = {
@@ -67,7 +77,10 @@ export function AppShell({ children, portfolios, className }: Props) {
 
   return (
     <SidebarProvider style={sidebarStyle}>
-      <AppSidebar portfolios={portfolios} />
+      <AppSidebar
+        portfolios={portfolios}
+        showGuestSettingsBadge={showGuestSettingsBadge}
+      />
       <a
         href="#main-content"
         className="sr-only z-50 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-[var(--surface-shadow)] focus:not-sr-only focus:absolute focus:left-3 focus:top-3"
@@ -78,7 +91,14 @@ export function AppShell({ children, portfolios, className }: Props) {
         className={cn("min-h-dvh pb-24 md:pb-0", className)}
         onKeyDownCapture={onKeyDownCapture}
       >
-        <div id="main-content">{children}</div>
+        <div id="main-content">
+          {guestUpgradeBanner && pathname !== "/settings" ? (
+            <div className="px-6 pt-6">
+              <GuestUpgradeBanner banner={guestUpgradeBanner} />
+            </div>
+          ) : null}
+          {children}
+        </div>
         <MobileBottomNav />
         <AppToastHost />
       </SidebarInset>

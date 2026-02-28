@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { cookies } from "next/headers";
 
+import { recordGuestUpgradeNudgesUpgraded } from "./guest-upgrade-nudge-events";
 import { ensureProfileExists, markProfileUpgradedIfNeeded } from "./profiles";
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -30,6 +31,9 @@ export async function exchangeOAuthCodeForSession(
 ) {
   // OAuth callback: exchange the code for a session and set cookies.
   const supabase: SupabaseServerClient = createClient(cookieStore);
+  const {
+    data: { user: previousUser },
+  } = await supabase.auth.getUser();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) throw new Error(error.message);
@@ -39,6 +43,9 @@ export async function exchangeOAuthCodeForSession(
   await ensureProfileExists(supabase, user.id);
   if (!user.is_anonymous) {
     await markProfileUpgradedIfNeeded(supabase, user.id);
+    if (previousUser?.is_anonymous) {
+      await recordGuestUpgradeNudgesUpgraded(supabase, user.id);
+    }
   }
 
   return {
@@ -60,6 +67,9 @@ export async function upgradeToEmailPassword(
 ) {
   // Link email/password credentials to the current session.
   const supabase: SupabaseServerClient = createClient(cookieStore);
+  const {
+    data: { user: previousUser },
+  } = await supabase.auth.getUser();
   const { data, error } = await supabase.auth.updateUser(input);
 
   if (error) throw new Error(error.message);
@@ -68,6 +78,9 @@ export async function upgradeToEmailPassword(
 
   await ensureProfileExists(supabase, user.id);
   await markProfileUpgradedIfNeeded(supabase, user.id);
+  if (previousUser?.is_anonymous && !user.is_anonymous) {
+    await recordGuestUpgradeNudgesUpgraded(supabase, user.id);
+  }
 
   return { userId: user.id } as const;
 }

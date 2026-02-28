@@ -30,7 +30,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
       <main className="px-6 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Onboarding</h1>
         <div className="mt-6 rounded-lg border border-border bg-card px-6 py-6 text-sm text-muted-foreground">
-          Zaloguj się, aby przejść onboarding.
+          Zaloguj się, aby kontynuować.
         </div>
         <Button asChild className="mt-4 h-11">
           <Link

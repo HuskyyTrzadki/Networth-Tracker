@@ -1,11 +1,18 @@
 import { cookies } from "next/headers";
+import { AlertTriangle } from "lucide-react";
 
 import { getAuthUser } from "@/features/auth/server/service";
 import { AnimatedReveal } from "@/features/design-system";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/features/design-system/components/ui/alert";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import { cn } from "@/lib/cn";
 
 import { AuthActions } from "./AuthActions";
+import { GuestUpgradeGoogleButton } from "./GuestUpgradeGoogleButton";
 
 type Props = Readonly<{
   showAuthError: boolean;
@@ -23,10 +30,10 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
   const title = mode === "signedOut" ? "Logowanie" : "Konto";
   const subtitle =
     mode === "signedOut"
-      ? "Zaloguj się, aby używać portfela na wielu urządzeniach."
+      ? "Zaloguj się, aby wrócić do portfela."
       : mode === "guest"
-        ? "Sesja gościa. Uaktualnij konto, aby zachować dane."
-        : "Zarządzaj dostępem do konta.";
+        ? "Uaktualnij konto, aby zachować dane."
+        : "Zarządzaj dostępem.";
   const statusLabel = mode === "guest" ? "Sesja gościa" : "Zalogowano";
   const primaryGoogleActionLabel =
     mode === "signedOut"
@@ -38,20 +45,35 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
           : "Połącz z Google";
 
   return (
-    <section className="mt-6">
+    <section>
       <AnimatedReveal>
-        <Card className="mx-auto max-w-3xl border-black/5 bg-white">
-          <CardContent className="space-y-5 p-5 sm:p-6">
-            <header className="space-y-1.5">
+        <Card className="border-black/8 bg-white shadow-[var(--surface-shadow)]">
+          <CardContent className="space-y-5 p-6 sm:p-7">
+            <header className="space-y-2">
               <h2 className="font-serif text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 {title}
               </h2>
-              <p className="text-sm text-muted-foreground">
-                {subtitle}
-              </p>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{subtitle}</p>
             </header>
 
-            {mode === "signedOut" ? null : (
+            {mode === "guest" ? (
+              <Alert className="border-amber-300/70 bg-amber-50/65 px-4 py-4 text-foreground shadow-none">
+                <AlertTriangle className="mt-0.5 size-4 text-amber-700" aria-hidden="true" />
+                <div className="space-y-3">
+                  <AlertTitle className="text-sm font-semibold text-amber-950">
+                    Konto gościa jest tymczasowe
+                  </AlertTitle>
+                  <AlertDescription className="text-sm leading-6 text-amber-900/85">
+                    Dane nie są jeszcze zapisane na stałe.
+                  </AlertDescription>
+                  <div>
+                    <GuestUpgradeGoogleButton nextPath={nextPath} />
+                  </div>
+                </div>
+              </Alert>
+            ) : null}
+
+            {mode === "signedOut" || mode === "guest" ? null : (
               <div className="flex items-center justify-between rounded-md border border-border/70 bg-background/80 px-3 py-2.5">
                 <p className="text-sm font-medium text-foreground">{statusLabel}</p>
                 <span
@@ -88,8 +110,8 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
             />
 
             {mode === "guest" ? (
-              <p className="text-xs text-muted-foreground">
-                Dane gościa są usuwane po 60 dniach braku aktywności.
+              <p className="border-t border-dashed border-border/70 pt-4 text-xs text-muted-foreground">
+                Dane gościa mogą zostać usunięte po 60 dniach braku aktywności.
               </p>
             ) : null}
           </CardContent>

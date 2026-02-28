@@ -35,10 +35,6 @@ type Props = Readonly<{
     optionId: ComparisonOptionId,
     enabled: boolean
   ) => void;
-  performancePartial: boolean;
-  valueIsPartial: boolean;
-  missingQuotes: number;
-  missingFx: number;
   rebuildStatus: "idle" | "queued" | "running" | "failed";
   rebuildMessage: string | null;
   isAllHistoryLoading?: boolean;
@@ -48,9 +44,11 @@ type Props = Readonly<{
 const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
 const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
 const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
-const CONTROL_BOARD_CLASS =
-  "flex flex-wrap items-end gap-2 rounded-md border border-dashed border-border/65 bg-background/68 p-2 xl:flex-nowrap";
-const CONTROL_PANEL_CLASS = "space-y-1 rounded-md border border-border/60 bg-background/76 p-1.5";
+const PRIMARY_BOARD_CLASS =
+  "flex flex-wrap items-end gap-2 rounded-md border border-dashed border-border/65 bg-background/68 p-2";
+const PRIMARY_PANEL_CLASS = "space-y-1 rounded-md border border-border/60 bg-background/80 p-1.5";
+const SECONDARY_BOARD_CLASS = "flex flex-wrap items-center gap-2";
+const SECONDARY_PANEL_CLASS = "space-y-1";
 const CONTROL_LABEL_CLASS =
   "px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85";
 const LEDGER_TOGGLE_GROUP_CLASS =
@@ -69,10 +67,6 @@ export function PortfolioValueOverTimeHeader({
   selectedComparisons = EMPTY_SELECTED_COMPARISONS,
   loadingComparisons = EMPTY_LOADING_COMPARISONS,
   onComparisonChange,
-  performancePartial,
-  valueIsPartial,
-  missingQuotes,
-  missingFx,
   rebuildStatus,
   rebuildMessage,
   isAllHistoryLoading = false,
@@ -82,8 +76,8 @@ export function PortfolioValueOverTimeHeader({
 
   return (
     <div className="space-y-3">
-      <div className={CONTROL_BOARD_CLASS}>
-        <div className={CONTROL_PANEL_CLASS}>
+      <div className={PRIMARY_BOARD_CLASS}>
+        <div className={PRIMARY_PANEL_CLASS}>
           <div className={CONTROL_LABEL_CLASS}>Tryb</div>
           <ToggleGroup
             type="single"
@@ -96,14 +90,14 @@ export function PortfolioValueOverTimeHeader({
             className={LEDGER_TOGGLE_GROUP_CLASS}
           >
             <ToggleGroupItem
-              className={LEDGER_TOGGLE_ITEM_CLASS}
+              className="h-8 px-3 font-sans text-[12px]"
               value="PERFORMANCE"
               variant="ledger"
             >
               Performance
             </ToggleGroupItem>
             <ToggleGroupItem
-              className={LEDGER_TOGGLE_ITEM_CLASS}
+              className="h-8 px-3 font-sans text-[12px]"
               value="VALUE"
               variant="ledger"
             >
@@ -112,7 +106,7 @@ export function PortfolioValueOverTimeHeader({
           </ToggleGroup>
         </div>
 
-        <div className={CONTROL_PANEL_CLASS}>
+        <div className={PRIMARY_PANEL_CLASS}>
           <div className={CONTROL_LABEL_CLASS}>Zakres</div>
           <ToggleGroup
             type="single"
@@ -137,8 +131,10 @@ export function PortfolioValueOverTimeHeader({
             ))}
           </ToggleGroup>
         </div>
+      </div>
 
-        <div className={CONTROL_PANEL_CLASS}>
+      <div className={SECONDARY_BOARD_CLASS}>
+        <div className={SECONDARY_PANEL_CLASS}>
           <div className={CONTROL_LABEL_CLASS}>Waluta</div>
           <ToggleGroup
             type="single"
@@ -175,12 +171,12 @@ export function PortfolioValueOverTimeHeader({
         </div>
 
         {mode === "PERFORMANCE" && comparisonOptions.length > 0 ? (
-          <div className={CONTROL_PANEL_CLASS}>
+          <div className={SECONDARY_PANEL_CLASS}>
             <div className={CONTROL_LABEL_CLASS}>Porównania</div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  className="h-7 gap-1.5 rounded-full px-2.5 text-[11px]"
+                  className="h-7 gap-1.5 rounded-full border-dashed px-2.5 text-[11px]"
                   type="button"
                   variant="outline"
                 >
@@ -230,22 +226,6 @@ export function PortfolioValueOverTimeHeader({
         ) : null}
       </div>
 
-      {mode === "PERFORMANCE" && performancePartial ? (
-        <StatusStrip
-          hint="Wynik został policzony na niepełnym zestawie notowań."
-          label="Status: wynik przybliżony"
-          tone="warning"
-        />
-      ) : null}
-
-      {mode === "VALUE" && valueIsPartial ? (
-        <StatusStrip
-          hint={`Braki danych: ceny ${missingQuotes}, FX ${missingFx}.`}
-          label="Status: częściowe dane"
-          tone="warning"
-        />
-      ) : null}
-
       {rebuildStatus === "failed" && rebuildMessage ? (
         <div className="rounded-sm border border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 px-2.5 py-1.5 text-xs text-destructive">
           Błąd przebudowy: {rebuildMessage}
@@ -256,9 +236,11 @@ export function PortfolioValueOverTimeHeader({
         <StatusStrip label="Status: wczytywanie ALL" />
       ) : null}
       {isAllHistoryTruncated && !isAllHistoryLoading ? (
-        <StatusStrip hint="Przełącz zakres na ALL, aby pobrać pełną historię." label="Status: skrócona historia" />
+        <StatusStrip
+          hint="Przełącz zakres na ALL, aby pobrać pełną historię."
+          label="Status: skrócona historia"
+        />
       ) : null}
-
     </div>
   );
 }

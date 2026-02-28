@@ -20,6 +20,7 @@ const summary: PortfolioSummary = {
     {
       instrumentId: "aapl",
       provider: "yahoo",
+      providerKey: "AAPL",
       symbol: "AAPL",
       name: "Apple",
       exchange: null,
@@ -35,6 +36,7 @@ const summary: PortfolioSummary = {
     {
       instrumentId: "cdr",
       provider: "yahoo",
+      providerKey: "CDR",
       symbol: "CDR",
       name: "CD Projekt",
       exchange: null,
@@ -120,6 +122,9 @@ describe("CurrencyExposureWidget", () => {
 
     expect(screen.queryByText(/Model:/)).not.toBeInTheDocument();
     expect(screen.getAllByText("Euro (EUR)").length).toBeGreaterThan(0);
+    expect(screen.getByText("vs Notowania")).toBeInTheDocument();
+    expect(screen.getByText("USD +10,0 pp")).toBeInTheDocument();
+    expect(screen.getByText("PLN -40,0 pp")).toBeInTheDocument();
 
     const usdLabels = screen.getAllByText("Dolar amerykański (USD)");
     fireEvent.click(usdLabels[usdLabels.length - 1]!);

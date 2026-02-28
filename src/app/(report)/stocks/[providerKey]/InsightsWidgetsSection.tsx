@@ -290,7 +290,7 @@ export default function InsightsWidgetsSection() {
       <SectionHeader
         as="h3"
         title="Szybkie wykresy fundamentalne"
-        description="Kliknij widget, aby otworzyc modal z wiekszym wykresem i opisem."
+        description="Kliknij, aby powiekszyc."
       />
 
       <ReportCard contentClassName="p-4 sm:p-6">

@@ -148,7 +148,7 @@ export function AuthLoginPanel() {
             Logowanie
           </h1>
           <p className="text-sm text-muted-foreground">
-            Zaloguj sie, aby korzystac z raportow i portfolio na wielu urzadzeniach.
+            Dostep do raportow i portfela.
           </p>
         </div>
 

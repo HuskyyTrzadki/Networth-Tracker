@@ -153,8 +153,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Hero stays live (cached quotes/FX) while the value/performance chart remains snapshot-based history.
 - Net-value hero shows dzienna zmiana wartości (suma `todayChangeBase` z wyceny) obok kwoty głównej, z zielonym/czerwonym kolorem dla dodatnich/ujemnych zmian.
 - Dashboard shows a dedicated partial-valuation warning banner when quotes/FX are missing, with explicit counts (`missingQuotes`, `missingFx`).
+- Dashboard health state is centralized in one top-level `Health` strip (partial/completeness + delayed quotes + shared `Stan na` context); widget-level status badges should stay only for widget-specific states such as delayed movers, rebuild failures, or truncated `ALL` history.
 - Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.
 - Net value hero and allocation/holdings widget use stronger typographic rhythm (monospace net value, cleaner heading/label contrast, calmer warning tones) without changing valuation logic.
+- Net-value hero exposes a compact `Stan na` timestamp card next to `Zmiana dzienna`; freshness should not be repeated in allocation controls anymore.
+- `Największe ruchy` rows are actionable cards linking to `/stocks/[providerKey]`, so dashboard exploration reuses the stock report route instead of read-only summary pills.
+- Currency exposure mode switch (`Notowania` vs `Gospodarcza`) shows compact delta chips (`pp`) against the alternate model once economic exposure is available, so mode changes communicate immediate value.
+- Recent transactions empty state includes a direct `Dodaj transakcję` CTA (scoped to the selected portfolio when present), not just passive copy.
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
 - Transaction edit flow marks dirty range from the earlier of old/new trade date (`min(old_trade_date, new_trade_date)`), so moved transactions correctly remove historical impact before re-applying.
 - Portfolio valuation includes per-user custom instruments (`custom_instruments`) as synthetic holdings with deterministic pricing (compounded annual rate) so they participate in totals and snapshot history.
@@ -209,6 +214,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Allocation module now prioritizes high-variance portfolios with `Mapa` (hierarchical treemap by category) and `Słupki` (ranked horizontal share bars), while `Tabela` stays as the precision ledger view.
 - Treemap groups assets by category (`Nieruchomości` / `Akcje` / `Lokaty i Obligacje` / `Gotówka` / `Inne`) so concentration is visible at category and instrument level in one view.
 - Value/performance filter groups (`Tryb`, `Zakres`, `Waluta`) were visually simplified by removing extra outer containers; segmented controls carry the hierarchy.
+- Value/performance chart header keeps `Tryb` and `Zakres` as the primary control row; `Waluta` and `Porównania` should read as secondary controls to reduce decision noise.
 - Performance mode chart now follows the same grounded treatment as value mode: primary cumulative-return curve rendered as area with subtle gradient fill and thicker stroke.
 - Portfolio chart control groups (`Tryb`, `Zakres`, `Waluta`, allocation `Mapa/Słupki/Tabela`) now use shared `ToggleGroup` `ledger` variant for stronger active-state hierarchy and lower border noise.
 - Allocation views keep a fixed desktop workspace (`h-[420px]`, `lg:h-[500px]`) with internal scroll to handle long holdings lists without layout jumps.
@@ -225,6 +231,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio dashboard microcopy was intentionally shortened across widgets (value/performance header notices, allocation/currency/dividend/top-movers states) to reduce cognitive load; prefer short status labels over explanatory paragraphs.
 - Widget micro-pattern now favors short mono status strips (`Status: ...` / `Stan: ...`) in key cards (`Ostatnie transakcje`, `Największe ruchy`, `Skrzynka dywidend`, `Alokacja per portfel`) to keep header hierarchy consistent.
 - `/portfolio` page header now uses concise scope strip (`Portfel: ...` / `Widok: wszystkie`) with hint text instead of long descriptive subtitle copy.
+- Portfolio route/header copy was tightened again: keep only the page title, base-currency meta, and one scope chip; avoid separate `Panel inwestora` / `Dashboard` / repeated portfolio-name labels.
+- Net-value hero scope label now uses the raw portfolio name (`XYZ`, `Wszystkie portfele`) and the base-currency chip shows only the currency code to reduce repetition.
+- Empty portfolio states and dialogs should use terse chrome (`Portfel`, `Pusty`, short one-line help) instead of editorial eyebrow + verbose helper copy.
 - Non-color financial cues were reinforced: top-movers badges include explicit trend tokens (`Wzr.`/`Spad.`), and value/performance period summaries show textual trend state (`Trend: wzrost/spadek/bez zmian`) alongside colored numbers.
 - Dividend booking flow now exposes explicit inline submit states near the action (`księgowanie` / `zaksięgowano` / `błąd`) in addition to dialog/toast feedback.
 - Typography cleanup removed outlier micro sizes in dashboard control/warning surfaces (no `9px/13px` in key value/allocation headers; compact scale stays on 10/11/12/14/16).

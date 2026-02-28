@@ -22,7 +22,15 @@ export function AuthGuestUpgradeForm({
   onSubmit,
 }: Props) {
   return (
-    <div className="space-y-4 rounded-lg border border-border/80 bg-background/75 p-4">
+    <div className="space-y-4 rounded-lg border border-dashed border-border/80 bg-background/72 p-4">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          Przez e-mail
+        </p>
+        <p className="text-sm leading-6 text-muted-foreground">
+          Jeśli nie chcesz używać Google, zapisz konto przez e-mail i hasło.
+        </p>
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="upgrade-email">E-mail</Label>
@@ -53,7 +61,7 @@ export function AuthGuestUpgradeForm({
           onClick={onSubmit}
           disabled={pendingAction === "upgrade"}
         >
-          Ustaw e-mail i hasło
+          Zapisz przez e-mail
         </Button>
       </div>
     </div>

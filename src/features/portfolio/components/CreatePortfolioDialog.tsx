@@ -115,7 +115,7 @@ export function CreatePortfolioDialog({
             <header className="border-b border-border px-6 py-5">
               <DialogTitle>Nowy portfel</DialogTitle>
               <DialogDescription className="mt-1">
-                Utwórz osobny portfel do śledzenia aktywów.
+                Osobny koszyk aktywów.
               </DialogDescription>
             </header>
 
@@ -172,7 +172,7 @@ export function CreatePortfolioDialog({
                       <div className="space-y-1">
                         <FormLabel className="text-sm">Konto emerytalne (IKE/IKZE)</FormLabel>
                         <p className="text-xs text-muted-foreground">
-                          Używane do sugestii netto dla dywidend.
+                          Wplywa na sugestie netto dla dywidend.
                         </p>
                       </div>
                       <FormControl>

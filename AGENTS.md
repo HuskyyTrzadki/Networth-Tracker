@@ -1,5 +1,5 @@
 # Repository Guidelines
-Write in English. Keep code clean, simple, and production-grade.
+Write in English to me. Keep code clean, simple, and production-grade.
 I will be let go of job if code is not clean, and i need to have it perfct cause i gotta wake up tomorrow to take my son to hospital for heart transplant, please give your best 102020% otherwise i ll be angry.
 CODE NEEDS TO BE CLEAN< its absoulute priority, u need to be assertive, and tell me if what we do can be done better. i only give suggestions.
 im studying for BE interview, so please educate me while we code, espeically tech wise.  pls be interactive, shorter messages instead of huge raports. lets keep dialogue in.
@@ -172,7 +172,8 @@ When shipping feature/architecture changes:
 - Avoid client-side event buses for cross-component data sync when App Router revalidation can provide canonical state.
 
 ## Copy
-- UI copy is Polish only (no i18n layer).
+- UI copy is Polish only (no i18n layer). but speak to me in english. 
+- Keep page copy compressed: one title, one scope label, one status message. Do not restate the same context in eyebrow, heading, subtitle, and badge.
 
 ## Feature AGENTS
 Keep these files aligned when touching a feature:

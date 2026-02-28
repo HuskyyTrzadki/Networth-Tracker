@@ -35,10 +35,10 @@ function DollarAllocationSection() {
   return (
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
           <h3 className="font-serif text-2xl font-semibold tracking-tight">Gdzie trafia kazda zlotowka przychodu</h3>
           <StockReportInfoHint
-            text="Podzial 1 USD przychodu na koszty i zysk. Pomaga ocenic, czy firma buduje marze, czy spala kapital."
+            text="Podzial przychodu na koszty i zysk."
             ariaLabel="Wyjasnienie sekcji"
           />
         </div>
@@ -95,10 +95,11 @@ function DollarAllocationSection() {
       </div>
 
       <article className="border-t border-dashed border-black/15 pt-4">
-        <h4 className="text-lg font-semibold tracking-tight">Co mowia priorytety wydatkow</h4>
-        <p className="mt-2 text-sm leading-7 text-foreground/90">{dataset.insight}</p>
-        <h5 className="mt-4 text-base font-semibold tracking-tight">Wniosek</h5>
-        <p className="mt-2 text-sm leading-7 text-foreground/90">{dataset.implication}</p>
+        <h4 className="text-lg font-semibold tracking-tight">Wniosek</h4>
+        <ul className="mt-2 space-y-2 text-sm leading-7 text-foreground/90">
+          <li>• {dataset.insight}</li>
+          <li>• {dataset.implication}</li>
+        </ul>
       </article>
     </section>
   );
@@ -110,7 +111,7 @@ function YearComparisonSection() {
       <div className="flex items-center gap-2">
         <h3 className="font-serif text-2xl font-semibold tracking-tight">Ten rok vs ostatni rok</h3>
         <StockReportInfoHint
-          text="Szybkie porownanie kluczowych wynikow rok do roku. Dobre do oceny kierunku biznesu."
+          text="Szybkie porownanie rok do roku."
           ariaLabel="Wyjasnienie sekcji"
         />
       </div>
@@ -146,12 +147,10 @@ function FreeCashFlowAnalysisSection() {
       <div className="flex items-center gap-2">
         <h3 className="font-serif text-2xl font-semibold tracking-tight">Analiza wolnych przeplywow pienieznych</h3>
         <StockReportInfoHint
-          text="FCF to gotowka po wydatkach inwestycyjnych. Pokazuje, ile pieniedzy zostaje firmie do dyspozycji."
+          text="FCF to gotowka po capex."
           ariaLabel="Wyjasnienie sekcji"
         />
       </div>
-
-      <p className="text-sm text-muted-foreground">Gotowka dostepna po utrzymaniu i rozwoju biznesu</p>
 
       <div className="overflow-hidden border-y border-dashed border-black/15">
         <div className="flex h-12">
@@ -173,18 +172,14 @@ function FreeCashFlowAnalysisSection() {
 
       <article className="space-y-4 border-t border-dashed border-black/15 pt-4 text-sm leading-relaxed text-foreground/90">
         <div>
-          <h4 className="text-lg font-semibold tracking-tight">Czym jest wolny przeplyw pieniezny?</h4>
-          <p className="mt-2">
-            Wolny przeplyw pieniezny (FCF) to gotowka generowana po odjeciu nakladow inwestycyjnych.
-            To pieniadz, ktory firma moze przeznaczyc na dywidendy, redukcje dlugu, skup akcji lub akwizycje.
-          </p>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold tracking-tight">Czy FCF jest wyzszy czy nizszy od zysku?</h4>
-          <p className="mt-2">
-            W tym ukladzie FCF (<span className="font-semibold font-mono tabular-nums">$24.5B</span>) jest nizszy od zysku netto,
-            ale wyzszy niz w poprzednim kwartale, co wspiera teze o poprawie jakosci zysku.
-          </p>
+          <h4 className="text-lg font-semibold tracking-tight">Wniosek</h4>
+          <ul className="mt-2 space-y-2">
+            <li>• FCF to gotowka po odjeciu capex.</li>
+            <li>
+              • W tym ukladzie FCF (
+              <span className="font-semibold font-mono tabular-nums">$24.5B</span>) jest pod presja wysokiego capex, ale nadal wspiera teze o dobrej jakosci zysku.
+            </li>
+          </ul>
         </div>
       </article>
     </section>

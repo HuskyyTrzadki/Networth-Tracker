@@ -176,7 +176,7 @@ export function ReportShell({ children, hasSession }: Props) {
                       variant="outline"
                       className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
                     >
-                      <Link href="/portfolio">Portfolio management</Link>
+                      <Link href="/portfolio">Portfel</Link>
                     </Button>
                   </SheetClose>
                   {hasSession ? (

@@ -1,4 +1,5 @@
 import type { createClient } from "@/lib/supabase/server";
+import type { GuestUpgradeNudgeStep } from "@/features/auth/lib/guest-upgrade-nudge";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -55,6 +56,31 @@ export async function touchProfileLastActive(
     .from("profiles")
     .update({ last_active_at: toIsoNow() })
     .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function dismissGuestUpgradeNudgeStep(
+  supabase: SupabaseServerClient,
+  userId: string,
+  step: GuestUpgradeNudgeStep
+) {
+  const dismissedAt = toIsoNow();
+  const column =
+    step === 5
+      ? "guest_upgrade_nudge_5_dismissed_at"
+      : "guest_upgrade_nudge_15_dismissed_at";
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      [column]: dismissedAt,
+      last_active_at: dismissedAt,
+    })
+    .eq("user_id", userId)
+    .is(column, null);
 
   if (error) {
     throw new Error(error.message);

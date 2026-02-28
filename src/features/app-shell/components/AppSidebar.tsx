@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, Plus } from "lucide-react";
+import { BriefcaseBusiness, CircleAlert, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type MouseEvent, useState } from "react";
@@ -41,9 +41,14 @@ type Props = Readonly<{
     name: string;
     baseCurrency: string;
   }[];
+  showGuestSettingsBadge?: boolean;
 }>;
 
-export function AppSidebar({ className, portfolios }: Props) {
+export function AppSidebar({
+  className,
+  portfolios,
+  showGuestSettingsBadge = false,
+}: Props) {
   const pathname = useAppPathname();
   const router = useRouter();
   const [optimisticPathname, setOptimisticPathname] = useState<string | null>(null);
@@ -221,7 +226,20 @@ export function AppSidebar({ className, portfolios }: Props) {
                     onClick={(event) => handleSidebarLinkClick(event, item.href)}
                   >
                     <Icon aria-hidden="true" />
-                    <LinkLabel>{item.label}</LinkLabel>
+                    <LinkLabel className="w-full justify-between gap-3">
+                      <span>{item.label}</span>
+                      {item.id === "settings" && showGuestSettingsBadge ? (
+                        <span className="ml-3 inline-flex items-center gap-2.5 rounded-full border border-amber-300/70 bg-amber-50/90 px-2.5 py-1 text-[10px] text-amber-900 shadow-[var(--surface-shadow)]">
+                          <span className="inline-flex items-center gap-1.5 font-semibold tracking-[0.04em]">
+                            <CircleAlert className="size-3" aria-hidden="true" />
+                            Sekcja gościa
+                          </span>
+                          <span className="inline-flex h-6 items-center rounded-full border border-amber-400/70 bg-white px-2.5 text-[10px] font-semibold tracking-[0.04em] text-amber-900">
+                            Uaktualnij
+                          </span>
+                        </span>
+                      ) : null}
+                    </LinkLabel>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

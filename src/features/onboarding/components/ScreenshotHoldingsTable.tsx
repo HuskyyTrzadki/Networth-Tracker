@@ -42,18 +42,45 @@ export function ScreenshotHoldingsTable({
     return formatCurrencyString(price, formatter) ?? `${price} ${currency}`;
   };
 
+  const getIssueScore = (row: HoldingRow) => {
+    const normalizedTicker = row.ticker.trim().toUpperCase();
+    const isCash = isSupportedCashCurrency(normalizedTicker);
+    const isMissingTicker = !normalizedTicker || missingTickers.includes(normalizedTicker);
+    const isMissingInstrument = !isCash && !row.instrument;
+    const priceInfo = row.instrument ? pricesByInstrumentId[row.instrument.id] : null;
+    const isMissingQuote = !isCash && Boolean(row.instrument) && !priceInfo?.price;
+    const quantity = parseDecimalString(row.quantity.trim());
+    const isInvalidQuantity = !quantity || quantity.lte(0);
+
+    return (
+      (isMissingTicker ? 3 : 0) +
+      (isMissingInstrument ? 3 : 0) +
+      (isMissingQuote ? 2 : 0) +
+      (isInvalidQuantity ? 1 : 0)
+    );
+  };
+
+  const sortedRows = rows
+    .map((row, index) => ({ row, index }))
+    .sort((left, right) => {
+      const scoreDiff = getIssueScore(right.row) - getIssueScore(left.row);
+      if (scoreDiff !== 0) return scoreDiff;
+      return left.index - right.index;
+    })
+    .map(({ row }) => row);
+
   return (
-    <div className="overflow-hidden rounded-lg border border-border/70">
-      <div className="grid grid-cols-[120px_minmax(0,560px)_120px_110px_140px_44px] items-center gap-3 border-b border-border/70 bg-muted/30 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <div className="overflow-hidden rounded-xl border border-border/70 bg-muted/10 shadow-[var(--surface-shadow)]">
+      <div className="grid grid-cols-[120px_minmax(0,560px)_120px_110px_140px_44px] items-center gap-2 border-b border-border/70 bg-muted/20 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         <span>Ticker</span>
         <span>Instrument</span>
-        <span className="text-right">Cena</span>
-        <span className="text-right">Ilość</span>
-        <span className="text-right">Wartość</span>
+        <span className="text-right">Kurs</span>
+        <span className="text-right">Liczba szt.</span>
+        <span className="text-right">Wartość pozycji</span>
         <span />
       </div>
       <div className="divide-y divide-border/70">
-        {rows.map((row) => {
+        {sortedRows.map((row, rowIndex) => {
           const normalizedTicker = row.ticker.trim().toUpperCase();
           const isMissing = missingTickers.includes(normalizedTicker);
           const isCash = isSupportedCashCurrency(normalizedTicker);
@@ -78,14 +105,14 @@ export function ScreenshotHoldingsTable({
             <div
               key={row.id}
               className={cn(
-                "grid grid-cols-[120px_minmax(0,560px)_120px_110px_140px_44px] items-center gap-3 px-4 py-2.5",
-                missingTicker ? "bg-amber-50/50" : "bg-background"
+                "grid grid-cols-[120px_minmax(0,560px)_120px_110px_140px_44px] items-center gap-2 px-3 py-1.5",
+                missingTicker ? "bg-amber-50/70" : rowIndex % 2 === 0 ? "bg-background" : "bg-muted/5"
               )}
             >
               <Input
                 value={row.ticker}
                 className={cn(
-                  "h-10 rounded-md font-mono tabular-nums",
+                  "h-9 rounded-md border-border/70 bg-background font-mono text-[13px] tabular-nums",
                   missingTicker ? "border-amber-300 bg-amber-50" : ""
                 )}
                 onChange={(event) => {
@@ -97,9 +124,9 @@ export function ScreenshotHoldingsTable({
                   );
                 }}
               />
-              <div className="flex h-10 items-center">
+              <div className="flex h-9 items-center">
                 {isCash ? (
-                  <span className="flex h-10 items-center text-xs text-muted-foreground">
+                  <span className="flex h-9 items-center text-[11px] text-muted-foreground">
                     Pozycja gotówkowa
                   </span>
                 ) : (
@@ -118,12 +145,12 @@ export function ScreenshotHoldingsTable({
                       searchClient={searchClient}
                       emptyLabel="Wyszukaj instrument"
                       queryPlaceholder="Szukaj instrumentu"
-                      triggerClassName="h-10 rounded-md text-xs"
+                      triggerClassName="h-9 rounded-md border-border/70 text-[11px]"
                     />
                   </div>
                 )}
               </div>
-              <div className="flex h-10 items-center justify-end text-right text-sm text-muted-foreground">
+              <div className="flex h-9 items-center justify-end text-right font-mono text-[13px] tabular-nums text-muted-foreground">
                 {isCash
                   ? "—"
                   : formatPrice(priceInfo?.price ?? null, priceInfo?.currency ?? "")}
@@ -131,7 +158,7 @@ export function ScreenshotHoldingsTable({
               <Input
                 value={row.quantity}
                 className={cn(
-                  "h-10 rounded-md font-mono tabular-nums text-right",
+                  "h-9 rounded-md border-border/70 bg-background font-mono text-[13px] tabular-nums text-right",
                   row.quantity.trim().length === 0 ? "border-amber-300 bg-amber-50" : ""
                 )}
                 inputMode="decimal"
@@ -152,13 +179,13 @@ export function ScreenshotHoldingsTable({
                   }
                 }}
               />
-              <div className="flex h-10 items-center justify-end text-right text-sm font-medium text-foreground">
+              <div className="flex h-9 items-center justify-end text-right font-mono text-[13px] font-semibold tabular-nums text-foreground">
                 {isCash ? "—" : (rowValue ?? "—")}
               </div>
               <Button
                 type="button"
                 variant="ghost"
-                className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground"
+                className="h-9 w-9 p-0 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
                 onClick={() => onChange(rows.filter((item) => item.id !== row.id))}
                 aria-label="Usuń pozycję"
               >

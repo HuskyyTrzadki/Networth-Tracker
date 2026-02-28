@@ -16,6 +16,10 @@ const getTransactionsHref = (selectedPortfolioId: string | null) =>
   selectedPortfolioId
     ? `/transactions?portfolio=${selectedPortfolioId}&sort=date_desc`
     : "/transactions?sort=date_desc";
+const getCreateTransactionHref = (selectedPortfolioId: string | null) =>
+  selectedPortfolioId
+    ? `/transactions/new?portfolio=${selectedPortfolioId}`
+    : "/transactions/new";
 
 export function PortfolioRecentTransactionsWidget({
   selectedPortfolioId,
@@ -50,6 +54,14 @@ export function PortfolioRecentTransactionsWidget({
           <p className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
             Brak wpisów
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Dodaj pierwszą transakcję, aby zobaczyć historię operacji.
+          </p>
+          <Button asChild className="mt-4 rounded-full" size="sm">
+            <Link href={getCreateTransactionHref(selectedPortfolioId)} scroll={false}>
+              Dodaj transakcję
+            </Link>
+          </Button>
         </div>
       )}
     </ChartCard>

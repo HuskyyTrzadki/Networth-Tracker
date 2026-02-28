@@ -145,7 +145,6 @@ function PortfolioValueOverTimeChartContent({
   hasHoldings,
   shouldBootstrap,
   viewModel,
-  liveTotals,
   isAllHistoryLoading,
   includesFullHistory,
   transactionCreateHref,
@@ -168,7 +167,6 @@ function PortfolioValueOverTimeChartContent({
   hasHoldings: boolean;
   shouldBootstrap: boolean;
   viewModel: PortfolioChartViewModel;
-  liveTotals: LiveTotals;
   isAllHistoryLoading: boolean;
   includesFullHistory: boolean;
   transactionCreateHref: string;
@@ -194,10 +192,6 @@ function PortfolioValueOverTimeChartContent({
         selectedComparisons={selectedComparisons}
         loadingComparisons={loadingBenchmarkIds}
         onComparisonChange={onComparisonChange}
-        performancePartial={viewModel.performancePartial}
-        valueIsPartial={liveTotals.totalValue !== null && liveTotals.isPartial}
-        missingQuotes={liveTotals.missingQuotes}
-        missingFx={liveTotals.missingFx}
         rebuildStatus={rebuild.status}
         rebuildMessage={rebuild.message}
         isAllHistoryLoading={isAllHistoryLoading}
@@ -519,7 +513,6 @@ export function PortfolioValueOverTimeChart({
       hasHoldings={hasHoldings}
       shouldBootstrap={shouldBootstrap}
       viewModel={viewModel}
-      liveTotals={liveTotals}
       isAllHistoryLoading={isAllHistoryLoading}
       includesFullHistory={includesFullHistory}
       transactionCreateHref={transactionCreateHref}

@@ -22,11 +22,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Notes
 - `profiles.last_active_at` is touched by write actions (e.g. transactions) via `touchProfileLastActive`.
+- `profiles` now also persists guest-upgrade nudge dismissals (`guest_upgrade_nudge_5_dismissed_at`, `guest_upgrade_nudge_15_dismissed_at`) so guest warnings can be dismissed permanently across devices.
+- Guest upgrade nudges now emit lightweight Supabase analytics events (`guest_upgrade_nudge_events`) for `shown`, `dismissed`, and `upgraded`, without adding a third-party tracker.
 - Email/password sign-up uses callback `next=/onboarding`, so confirmed registrations continue through onboarding before portfolio work.
 - Settings auth UI is now state-driven:
   - `signedOut`: minimal login/register form + Google sign-in.
   - `guest`: minimal upgrade actions (Google/email) + short 60-day retention note.
   - `signedIn`: compact account status + sign-out, without guest messaging.
+- Guest upgrade nudges are server-derived from `user.is_anonymous` plus count of `transactions.leg_role = 'ASSET'`; milestones are `>5` and `>15`, with the stronger second nudge taking precedence.
 - Signed-in Google CTA semantics were corrected: no more "Kontynuuj z Google" when already logged in; signed-in users can only see Google linking action when not linked.
 - Auth callback and signup confirmation redirects now resolve origin via forwarded headers (`x-forwarded-host/proto`) to avoid accidental localhost redirects behind proxies.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.
@@ -34,6 +37,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Auth settings and login wrappers now use the shared tactile `Card` primitive (`bg-white`, subtle shadow token, light border) instead of one-off container styling.
 - Auth forms now keep a constrained inner width (`max-w-md`) to avoid over-wide desktop inputs.
 - Login/register mode switch uses compact typography tabs with dashed underline active state; OAuth/email split uses explicit `lub` divider.
+- Auth marketing/supporting copy should stay terse: avoid repeating `konto`/`logowanie` in eyebrow, title, and description when the page already provides that context.
 
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.

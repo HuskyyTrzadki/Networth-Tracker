@@ -34,7 +34,7 @@ function SummaryStartSection() {
     <ReportSection
       id="sekcja-podsumowanie"
       title="Najwazniejsze wnioski"
-      description="Szybki skrot raportu pod inwestora. Ten blok ma prowadzic czytanie, zanim wejdziesz w szczegoly."
+      description="Najwazniejsze punkty."
     >
       <ReportCard contentClassName="space-y-5 p-6 lg:p-8">
           <div className="grid gap-6 text-sm lg:grid-cols-3">
@@ -93,9 +93,9 @@ function SummaryStartSection() {
             </div>
           </div>
 
-          <EditorsNote title="Jak to czytac">
-            To jest mapa ryzyka i przewag, nie sygnal kupna/sprzedazy. Potwierdz tezy
-            w sekcjach marz, bilansu i przeplywow pienieznych.
+          <EditorsNote title="Uwaga">
+            To mapa ryzyk i przewag, nie sygnal kupna lub sprzedazy. Potwierdz ja w
+            sekcjach marz, bilansu i przeplywow pienieznych.
           </EditorsNote>
       </ReportCard>
     </ReportSection>
@@ -132,7 +132,7 @@ function BalanceSnapshotSection() {
       <div className="border-t border-dashed border-black/15 pt-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            Szybkie podsumowanie
+            Bilans w skrocie
           </p>
           <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${riskTone}`}>
             Ryzyko: {narrative.risk}
@@ -230,8 +230,8 @@ function EarningsSummarySection() {
   return (
     <ReportSection
       id="sekcja-earnings"
-      title="Podsumowanie konferencji wynikowej Q4 2025"
-      description="Skrot konferencji wynikowej META za Q4 2025"
+      title="Konferencja wynikowa Q4 2025"
+      description="Kluczowe punkty z calla."
     >
       <div className="space-y-4">
         {EARNINGS_CALL_BLOCKS.map((block, index) => (

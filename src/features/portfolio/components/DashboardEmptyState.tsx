@@ -26,10 +26,10 @@ export function DashboardEmptyState({
     <section className="w-full max-w-2xl rounded-lg border border-border/80 bg-card/95 shadow-[var(--surface-shadow)]">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/75 px-5 py-3 sm:px-6">
         <span className="inline-flex rounded-sm border border-dashed border-border/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          Rejestr portfela
+          Portfel
         </span>
         <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-          Status: pusty
+          Pusty
         </span>
       </header>
 

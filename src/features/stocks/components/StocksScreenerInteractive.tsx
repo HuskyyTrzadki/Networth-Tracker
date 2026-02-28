@@ -108,19 +108,11 @@ export function StocksScreenerInteractive({
     <>
       <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
         <header className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/85">
-              Screener
-            </p>
+          <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>
-            <p className="text-sm text-muted-foreground">
-              Twoje akcje z wszystkich portfeli w jednym miejscu.
-            </p>
+            <p className="text-sm text-muted-foreground">Spółki z portfeli i obserwowanych.</p>
           </div>
-          <div className="w-full max-w-xl space-y-2 lg:w-[26rem] lg:max-w-none">
-            <p className="text-sm font-medium text-muted-foreground">
-              Szukasz czegoś innego?
-            </p>
+          <div className="w-full max-w-xl lg:w-[26rem] lg:max-w-none">
             <StockSearchBar
               initialFavoriteProviderKeys={favoriteProviderKeys}
               onOptimisticAdd={(card) => {

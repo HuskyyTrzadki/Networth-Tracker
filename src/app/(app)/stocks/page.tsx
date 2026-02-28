@@ -50,7 +50,7 @@ export default async function StocksPage() {
         <div
           className={`mt-6 px-6 py-6 text-sm text-muted-foreground ${cardVariants()}`}
         >
-          Zaloguj się, aby korzystać ze screenera akcji.
+          Zaloguj się, aby otworzyć akcje.
         </div>
         <Button asChild className="mt-4 h-11">
           <Link

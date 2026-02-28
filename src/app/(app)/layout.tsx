@@ -1,6 +1,8 @@
 import { connection } from "next/server";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 
+import { getGuestUpgradeNudgeState } from "@/features/auth/server/guest-upgrade-nudges";
 import { AppShell } from "@/features/app-shell";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
@@ -26,9 +28,20 @@ type AuthenticatedAppShellProps = Readonly<{
 
 async function AuthenticatedAppShell({ children }: AuthenticatedAppShellProps) {
   await connection();
-  const portfolios = await getSidebarPortfoliosCached();
+  const [portfolios, guestUpgradeState] = await Promise.all([
+    getSidebarPortfoliosCached(),
+    getGuestUpgradeNudgeState(await cookies()),
+  ]);
 
-  return <AppShell portfolios={portfolios}>{children}</AppShell>;
+  return (
+    <AppShell
+      portfolios={portfolios}
+      guestUpgradeBanner={guestUpgradeState.banner}
+      showGuestSettingsBadge={guestUpgradeState.showSettingsBadge}
+    >
+      {children}
+    </AppShell>
+  );
 }
 
 function AppShellFallback() {

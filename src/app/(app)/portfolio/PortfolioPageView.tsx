@@ -55,12 +55,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
   }
 
   const baseCurrency = selectedPortfolio?.baseCurrency ?? "PLN";
-  const scopeLabel = selectedPortfolio
-    ? `Portfel: ${selectedPortfolio.name}`
-    : "Widok: wszystkie";
-  const scopeHint = selectedPortfolio
-    ? "Dashboard pokazuje dane dla wybranego portfela."
-    : "Widok zbiorczy sumuje wszystkie portfele.";
+  const scopeLabel = selectedPortfolio ? selectedPortfolio.name : "Wszystkie portfele";
 
   return (
     <main
@@ -69,9 +64,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
       <AnimatedReveal>
         <header className="rounded-lg border border-border/80 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/70 pb-3">
-            <p className="inline-flex items-center rounded-sm border border-dashed border-border/70 bg-background/70 px-2 py-1 font-mono text-xs font-medium uppercase tracking-[0.13em] text-muted-foreground">
-              Panel inwestora
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">Portfel</h1>
             <p className="font-mono text-xs tabular-nums uppercase tracking-[0.12em] text-muted-foreground">
               Waluta bazowa: {baseCurrency}
             </p>
@@ -79,11 +72,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
 
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <p className="inline-flex items-center rounded-md border border-border/60 bg-background/72 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-                Dashboard
-              </p>
-              <h1 className="text-2xl font-semibold tracking-tight">Portfele</h1>
-              <StatusStrip className="w-fit" hint={scopeHint} label={scopeLabel} />
+              <StatusStrip className="w-fit" label={scopeLabel} />
             </div>
             <Button asChild size="lg" className="h-11 w-full lg:w-auto">
               <Link

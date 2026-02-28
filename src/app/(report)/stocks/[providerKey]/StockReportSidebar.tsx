@@ -212,34 +212,18 @@ export default function StockReportSidebar({
           </section>
 
           <section className="border-b border-dashed border-black/15 pb-6">
-            <div className="grid grid-cols-[1fr_auto] gap-3">
-              <div className="space-y-3">
-                <div className="border-b border-dashed border-black/15 pb-2">
-                  <p className="text-sm text-muted-foreground">Branza</p>
-                  <p className="text-sm font-bold">Internet i media spolecznosciowe</p>
-                </div>
-                <div className="border-b border-dashed border-black/15 pb-2">
-                  <p className="text-sm text-muted-foreground">Sektor</p>
-                  <p className="text-sm font-bold">Technologia</p>
-                </div>
-                <div className="border-b border-dashed border-black/15 pb-2">
-                  <p className="text-sm text-muted-foreground">Debiut</p>
-                  <p className="text-sm font-bold">18 maj 2012</p>
-                </div>
-                <div className="border-b border-dashed border-black/15 pb-2">
-                  <p className="text-sm text-muted-foreground">Forma wejscia</p>
-                  <p className="text-sm font-bold">IPO</p>
-                </div>
-                <div className="border-b border-dashed border-black/15 pb-2">
-                  <p className="text-sm text-muted-foreground">Zatrudnienie</p>
-                  <p className="text-sm font-bold">76,834</p>
-                </div>
-              </div>
-            </div>
+            <h2 className="text-[15px] font-semibold tracking-tight">Profil</h2>
+            <dl className="mt-4 space-y-2">
+              <FactRow label="Branza" value="Internet i media spolecznosciowe" />
+              <FactRow label="Sektor" value="Technologia" />
+              <FactRow label="Debiut" value="18 maj 2012" />
+              <FactRow label="Forma wejscia" value="IPO" />
+              <FactRow label="Zatrudnienie" value="76,834" />
+            </dl>
           </section>
 
           <section className="pb-4">
-            <h3 className="text-xl font-semibold tracking-tight">Ciekawostki</h3>
+            <h3 className="text-[15px] font-semibold tracking-tight">Kluczowe obserwacje</h3>
             <ul className="mt-3 space-y-2 text-sm text-foreground/90">
               <li className="border-b border-dashed border-black/15 pb-2">
                 • Ponad 98% przychodow pochodzi z reklam cyfrowych.
@@ -254,7 +238,7 @@ export default function StockReportSidebar({
                 • Wzrost EPS jest szybszy niz wzrost przychodow, co wspiera wycene.
               </li>
               <li className="pb-1">
-                • Klucz do obserwacji: relacja kosztow AI do tempa monetyzacji.
+                • Kluczowy watchpoint: relacja kosztow AI do tempa monetyzacji.
               </li>
             </ul>
           </section>

@@ -1,11 +1,10 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { LoaderCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/features/design-system/components/ui/button";
-import { AnimatedReveal, StatusStrip } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system";
 import { DialogClose, DialogDescription, DialogTitle } from "@/features/design-system/components/ui/dialog";
 import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/snapshot-rebuild-events";
 import { Form } from "@/features/design-system/components/ui/form";
@@ -14,7 +13,6 @@ import { createAddTransactionFormSchema, type AssetMode, type TransactionType } 
 import { DEFAULT_CUSTOM_ASSET_TYPE, type CustomAssetType } from "../lib/custom-asset-types";
 import type { CashflowTypeUi } from "../lib/cashflow-types";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
-import { SUPPORTED_CASH_CURRENCIES, isSupportedCashCurrency, type CashCurrency } from "../lib/system-currencies";
 import {
   createTransactionAction,
   deleteTransactionAction,
@@ -22,8 +20,14 @@ import {
 } from "../server/transaction-actions";
 import type { InstrumentSearchClient } from "../client/search-instruments";
 import { buildSubmitPayloadFields, triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
-import { resolveInitialTab, type AssetTab } from "./add-transaction/constants";
+import type { AssetTab } from "./add-transaction/constants";
+import { AddTransactionDialogFooter } from "./add-transaction/AddTransactionDialogFooter";
 import { AddTransactionDialogFields } from "./add-transaction/AddTransactionDialogFields";
+import {
+  buildAddTransactionDefaultValues,
+  resolveDialogInitialTab,
+  resolveInitialCashCurrency,
+} from "./add-transaction/form-defaults";
 export type FormValues = Readonly<{
   assetMode: AssetMode;
   type: TransactionType;
@@ -81,57 +85,28 @@ export function AddTransactionDialogContent({
 }>) {
   const schema = createAddTransactionFormSchema();
   const isEditMode = mode === "edit";
+  const defaultActiveTab = resolveDialogInitialTab(initialValues, initialInstrument);
+  const initialCashCurrency = resolveInitialCashCurrency({
+    initialInstrument,
+    portfolios,
+    initialPortfolioId,
+  });
+  const defaultValues = buildAddTransactionDefaultValues({
+    initialValues,
+    initialInstrument,
+    initialPortfolioId,
+    initialCashCurrency,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScreenshotMode, setIsScreenshotMode] = useState(false);
+  const [submitIntent, setSubmitIntent] = useState<"close" | "addAnother">("close");
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentSearchResult | null>(initialInstrument ?? null);
-  const [activeTab, setActiveTab] = useState<AssetTab>(() =>
-    initialValues?.assetMode ?? resolveInitialTab(initialInstrument)
-  );
-
-  const initialAssetId = initialInstrument?.id ?? "";
-  const initialCurrency = initialInstrument?.currency ?? "";
-  const initialPortfolio = portfolios.find(
-    (portfolio) => portfolio.id === initialPortfolioId
-  );
-  const initialInstrumentCurrency =
-    initialInstrument && isSupportedCashCurrency(initialInstrument.currency)
-      ? initialInstrument.currency
-      : null;
-  const initialCashCurrency: CashCurrency =
-    (initialInstrumentCurrency ??
-      (initialPortfolio && isSupportedCashCurrency(initialPortfolio.baseCurrency)
-        ? initialPortfolio.baseCurrency
-        : SUPPORTED_CASH_CURRENCIES[0])) ?? "USD";
-
-  const initialCashflowType =
-    initialInstrument?.instrumentType === "CURRENCY"
-      ? (initialValues?.type === "SELL" ? "WITHDRAWAL" : "DEPOSIT")
-      : undefined;
+  const [activeTab, setActiveTab] = useState<AssetTab>(defaultActiveTab);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      assetMode: initialValues?.assetMode ?? resolveInitialTab(initialInstrument),
-      type: "BUY",
-      portfolioId: initialPortfolioId,
-      assetId: initialAssetId,
-      currency: initialCurrency,
-      consumeCash: false,
-      cashCurrency: initialCashCurrency,
-      fxFee: "",
-      cashflowType: initialCashflowType,
-      date: format(new Date(), "yyyy-MM-dd"),
-      quantity: "",
-      price: initialInstrument?.instrumentType === "CURRENCY" ? "1" : "",
-      fee: initialInstrument?.instrumentType === "CURRENCY" ? "0" : "",
-      notes: "",
-      customAssetType: DEFAULT_CUSTOM_ASSET_TYPE,
-      customName: "",
-      customCurrency: initialCashCurrency,
-      customAnnualRatePct: "",
-      ...initialValues,
-    },
+    defaultValues,
     mode: "onChange",
   });
 
@@ -158,6 +133,29 @@ export function AddTransactionDialogContent({
     });
     triggerSnapshotRebuild("PORTFOLIO", portfolioId);
     triggerSnapshotRebuild("ALL", null);
+  };
+
+  const resetCreateForm = (portfolioId: string) => {
+    const nextInitialCashCurrency = resolveInitialCashCurrency({
+      initialInstrument,
+      portfolios,
+      initialPortfolioId: portfolioId,
+    });
+    const nextDefaultValues = buildAddTransactionDefaultValues({
+      initialValues: {
+        ...initialValues,
+        portfolioId,
+      },
+      initialInstrument,
+      initialPortfolioId: portfolioId,
+      initialCashCurrency: nextInitialCashCurrency,
+    });
+
+    form.reset(nextDefaultValues);
+    setActiveTab(resolveDialogInitialTab(initialValues, initialInstrument));
+    setSelectedInstrument(initialInstrument ?? null);
+    setIsScreenshotMode(false);
+    setSubmitIntent("close");
   };
 
   const submitTransaction = form.handleSubmit(async (values) => {
@@ -287,7 +285,15 @@ export function AddTransactionDialogContent({
           },
         },
       });
+
+      if (submitIntent === "addAnother") {
+        onSubmitSuccess?.();
+        resetCreateForm(resolvedPortfolioId);
+        setIsSubmitting(false);
+        return;
+      }
     }
+
     onSubmitSuccess?.();
     // Close dialog after submit side effects are scheduled.
     onClose({ force: true });
@@ -362,49 +368,16 @@ export function AddTransactionDialogContent({
           />
 
           {!isScreenshotMode ? (
-            <footer className="sticky bottom-0 z-10 border-t border-dashed border-border/65 bg-card/92 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-h-5 space-y-1">
-                  {isSubmitting ? (
-                    <StatusStrip label="Status: zapisywanie" />
-                  ) : rootError ? (
-                    <StatusStrip label="Status: błąd zapisu" tone="negative" />
-                  ) : isDirty ? (
-                    <StatusStrip label="Status: w edycji" />
-                  ) : (
-                    <StatusStrip label="Status: gotowe" />
-                  )}
-                  {rootError ? (
-                    <p className="text-[12px] text-[color:var(--loss)]">{rootError}</p>
-                  ) : null}
-                </div>
-                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                  <Button
-                    onClick={() => onClose()}
-                    type="button"
-                    variant="outline"
-                    disabled={isSubmitting}
-                    className="h-10 rounded-full px-6"
-                  >
-                    Anuluj
-                  </Button>
-                  <Button
-                    disabled={!isSubmittable || isSubmitting}
-                    type="submit"
-                    className="h-10 min-w-32 rounded-full px-6"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <LoaderCircle className="size-4 animate-spin" aria-hidden />
-                        Zapisywanie...
-                      </>
-                    ) : (
-                      isEditMode ? "Zapisz zmiany" : "Zapisz"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </footer>
+            <AddTransactionDialogFooter
+              isDirty={isDirty}
+              isEditMode={isEditMode}
+              isSubmittable={isSubmittable}
+              isSubmitting={isSubmitting}
+              onClose={() => onClose()}
+              onSubmitIntentChange={setSubmitIntent}
+              rootError={rootError}
+              submitIntent={submitIntent}
+            />
           ) : null}
         </form>
       </AnimatedReveal>

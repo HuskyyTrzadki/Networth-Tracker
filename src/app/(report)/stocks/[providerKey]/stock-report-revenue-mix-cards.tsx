@@ -251,9 +251,6 @@ export function ProfitabilitySnapshot({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="text-base font-semibold tracking-tight">Jak firma zamienia przychody na zysk</h4>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Szybkie podsumowanie i struktura marz (ostatni kwartal vs ostatni rok).
-          </p>
         </div>
 
         <div className="inline-flex items-center gap-2">
@@ -307,19 +304,12 @@ export function ProfitabilitySnapshot({
         <MarginBar label="Marza netto" description="Po odsetkach i podatkach" valuePercent={netMargin} />
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <div className="border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2 text-sm text-foreground/90">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-            Jak to czytac
-          </p>
-          <p className="mt-1 italic leading-relaxed">{explanation}</p>
-        </div>
-        <div className="border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2 text-sm text-foreground/90">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-            Co to oznacza
-          </p>
-          <p className="mt-1 italic leading-relaxed">{implication}</p>
-        </div>
+      <div className="mt-5 border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2 text-sm text-foreground/90">
+        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          Wniosek
+        </p>
+        <p className="mt-1 italic leading-relaxed">{explanation}</p>
+        <p className="mt-2 italic leading-relaxed">{implication}</p>
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2 text-sm md:grid-cols-2">

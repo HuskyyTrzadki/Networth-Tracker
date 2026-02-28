@@ -3,10 +3,17 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowUpRight, Monitor, Smartphone } from "lucide-react";
+import { PenLine, ScanSearch, Sparkles } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/features/design-system/components/ui/card";
+import { Badge } from "@/features/design-system/components/ui/badge";
 import { Button } from "@/features/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/features/design-system/components/ui/card";
 import { CreatePortfolioDialog } from "@/features/portfolio";
 
 import { ScreenshotImportDialog } from "./ScreenshotImportDialog";
@@ -26,15 +33,9 @@ export function OnboardingWizard({
   return (
     <div className="space-y-8">
       <header className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Start
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Zacznij śledzić swój portfel
-        </h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Wybierz najszybszą ścieżkę. Możesz wgrać zrzuty ekranu i zacząć od dzisiaj
-          albo dodać transakcje ręcznie.
+        <h1 className="text-3xl font-semibold tracking-tight">Dwie drogi. Jeden portfel.</h1>
+        <p className="text-sm text-muted-foreground">
+          Wybierz szybszy start albo pełną historię.
         </p>
         {existingPortfolioId ? (
           <div className="flex flex-wrap items-center gap-3">
@@ -53,63 +54,62 @@ export function OnboardingWizard({
         ) : null}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <Card className="relative overflow-hidden">
-            <CardHeader>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Ścieżka A
-              </p>
-              <CardTitle className="text-xl">Szybki Start – AI Zrzut</CardTitle>
-              <CardDescription>
-                Zacznij śledzić od dzisiaj. Wgraj zrzut ekranu portfela. Czas: 1 minuta.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <div className="flex h-40 items-center justify-center rounded-lg border border-border/70 bg-muted/30">
-                    <Monitor className="size-12 text-muted-foreground" aria-hidden />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Zrzut z aplikacji desktop</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex h-40 items-center justify-center rounded-lg border border-border/70 bg-muted/30">
-                    <Smartphone className="size-12 text-muted-foreground" aria-hidden />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Zrzut z aplikacji mobilnej</p>
-                </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="flex h-full flex-col border-border/75 transition-shadow duration-200 hover:shadow-[0_20px_48px_-24px_rgb(15_23_42/0.22)]">
+          <CardHeader className="pb-0">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex size-16 items-center justify-center rounded-full border border-border/60 bg-muted/50">
+                <Sparkles className="size-7 text-primary" aria-hidden />
               </div>
-              <div className="grid gap-2 text-sm text-muted-foreground">
-                <p>1. Wgraj zrzuty ekranu z brokerów.</p>
-                <p>2. Potwierdź tickery i ilości.</p>
-                <p>3. Otrzymaj gotowy dashboard w PLN.</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button className="h-11 px-6" onClick={() => setIsScreenshotOpen(true)}>
-                  Rozpocznij
-                  <ArrowRight className="size-4" aria-hidden />
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Nie przechowujemy zrzutów po analizie.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              <Badge variant="secondary" className="shrink-0">
+                Najszybsza
+              </Badge>
+            </div>
+          </CardHeader>
 
-        <Card className="border-border/70">
-            <CardHeader>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Ścieżka B
-              </p>
-              <CardTitle className="text-xl">Dodaj ręcznie</CardTitle>
-              <CardDescription>
-                Klasyczny formularz transakcji. Dobre, jeśli masz pełną historię.
+          <CardContent className="flex flex-1 flex-col gap-6 pt-6">
+            <div className="space-y-3">
+              <CardTitle className="text-2xl">Aktualny stan portfela (AI)</CardTitle>
+              <CardDescription className="max-w-[42ch] text-sm leading-6">
+                Wgraj zrzuty z konta maklerskiego. System rozpozna Twoje akcje w kilka
+                sekund, bez wpisywania historii.
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-sm text-muted-foreground">
-                Najpierw utworzysz portfel, potem dodasz transakcje ręcznie.
+            </div>
+
+            <div className="mt-auto flex">
+              <Button
+                className="h-14 min-w-[220px] rounded-xl px-7 text-sm shadow-sm"
+                onClick={() => setIsScreenshotOpen(true)}
+              >
+                <ScanSearch className="size-4" aria-hidden />
+                Wgraj zrzuty
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="flex h-full flex-col border-border/75 transition-shadow duration-200 hover:shadow-[0_20px_48px_-24px_rgb(15_23_42/0.22)]">
+          <CardHeader className="pb-0">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex size-16 items-center justify-center rounded-full border border-border/60 bg-muted/50">
+                <PenLine className="size-7 text-foreground/75" aria-hidden />
               </div>
+              <Badge variant="outline" className="shrink-0">
+                Pełna historia
+              </Badge>
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex flex-1 flex-col gap-6 pt-6">
+            <div className="space-y-3">
+              <CardTitle className="text-2xl">Pełna analityka i historia</CardTitle>
+              <CardDescription className="max-w-[42ch] text-sm leading-6">
+                Dodaj transakcje ręcznie, aby odblokować pełną historię, wpływ FX na
+                wynik i śledzenie dywidend.
+              </CardDescription>
+            </div>
+
+            <div className="mt-auto flex">
               <CreatePortfolioDialog
                 onCreated={(createdId) => {
                   router.push(`/transactions/new?portfolio=${createdId}`);
@@ -118,26 +118,27 @@ export function OnboardingWizard({
                 trigger={({ open, disabled }) => (
                   <Button
                     type="button"
-                    variant="outline"
-                    className="h-11 px-6"
+                    className="h-14 min-w-[220px] rounded-xl px-7 text-sm shadow-sm"
                     onClick={open}
                     disabled={disabled}
                   >
-                    Dodaj ręcznie
+                    Dodaj transakcję
                   </Button>
                 )}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-9 px-2 text-muted-foreground"
-                onClick={() => setIsScreenshotOpen(true)}
-              >
-                Wolę szybki import
-                <ArrowUpRight className="size-4" aria-hidden />
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-2 text-center text-sm text-muted-foreground">
+        Chcesz najpierw zobaczyć, jak to działa?{" "}
+        <button
+          type="button"
+          className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground"
+        >
+          Otwórz portfel demonstracyjny
+        </button>
       </div>
 
       <ScreenshotImportDialog

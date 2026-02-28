@@ -40,6 +40,8 @@ const BAR_COLORS = [
 ] as const;
 
 const formatPercent = (value: number) => `${percentFormatter.format(value)}%`;
+const formatDelta = (value: number) =>
+  `${value > 0 ? "+" : value < 0 ? "" : ""}${percentFormatter.format(value)} pp`;
 
 const SPECIAL_CURRENCY_LABELS: Record<string, string> = {
   INNE: "Inne",
@@ -72,6 +74,37 @@ const findDetailsForCurrency = (
   details: readonly CurrencyExposureDetailsRow[],
   currencyCode: string
 ) => details.find((row) => row.currencyCode === currencyCode)?.drivers ?? [];
+
+const buildExposureDeltaChips = (
+  currentRows: readonly CurrencyExposureChartRow[],
+  comparisonRows: readonly CurrencyExposureChartRow[]
+) => {
+  const comparisonShareByCurrency = new Map(
+    comparisonRows.map((row) => [row.currencyCode, row.sharePct] as const)
+  );
+  const currentShareByCurrency = new Map(
+    currentRows.map((row) => [row.currencyCode, row.sharePct] as const)
+  );
+  const currencyCodes = new Set([
+    ...currentRows.map((row) => row.currencyCode),
+    ...comparisonRows.map((row) => row.currencyCode),
+  ]);
+
+  return Array.from(currencyCodes)
+    .map((currencyCode) => {
+      const currentShare = currentShareByCurrency.get(currencyCode) ?? 0;
+      const comparisonShare = comparisonShareByCurrency.get(currencyCode) ?? 0;
+      const delta = currentShare - comparisonShare;
+
+      return {
+        currencyCode,
+        delta,
+      };
+    })
+    .filter((row) => Math.abs(row.delta) >= 0.1)
+    .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))
+    .slice(0, 4);
+};
 
 function ExposureBars({
   rows,
@@ -189,6 +222,12 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
   const activeChart = mode === "GOSPODARCZA" ? economicResponse?.chart ?? [] : investorData.chart;
   const activeDetails =
     mode === "GOSPODARCZA" ? economicResponse?.details ?? [] : investorData.details;
+  const comparisonChart =
+    mode === "GOSPODARCZA" ? investorData.chart : economicResponse?.chart ?? [];
+  const deltaChips = economicResponse
+    ? buildExposureDeltaChips(activeChart, comparisonChart)
+    : [];
+  const deltaReferenceLabel = mode === "GOSPODARCZA" ? "vs Notowania" : "vs Gospodarcza";
 
   const calculateEconomicExposure = async () => {
     if (isLoading || economicResponse) return;
@@ -270,6 +309,27 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
       subtitle="Notowania vs gospodarcza"
     >
       <div className="space-y-4">
+        {deltaChips.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+              {deltaReferenceLabel}
+            </span>
+            {deltaChips.map((chip) => (
+              <span
+                key={`${mode}:${chip.currencyCode}`}
+                className={cn(
+                  "inline-flex rounded-sm border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em]",
+                  chip.delta > 0
+                    ? "border-[color:var(--profit)]/40 bg-[color:var(--profit)]/10 text-[color:var(--profit)]"
+                    : "border-[color:var(--loss)]/40 bg-[color:var(--loss)]/10 text-[color:var(--loss)]"
+                )}
+              >
+                {chip.currencyCode} {formatDelta(chip.delta)}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         {mode === "GOSPODARCZA" && isLoading ? (
           <div className="rounded-md border border-dashed border-border/70 bg-background/72 p-3">
             <div className="flex items-center gap-2 text-sm text-foreground">
