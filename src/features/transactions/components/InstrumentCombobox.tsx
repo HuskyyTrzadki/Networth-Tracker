@@ -190,7 +190,7 @@ export function InstrumentCombobox({
                 {emptyMessage}
               </CommandEmpty>
             ) : null}
-            <CommandGroup heading={showAll ? "Wyniki globalne" : "Najtrafniejsze"}>
+            <CommandGroup>
               {results.map((option) => {
                 const visual = resolveInstrumentVisual({
                   symbol: option.symbol,

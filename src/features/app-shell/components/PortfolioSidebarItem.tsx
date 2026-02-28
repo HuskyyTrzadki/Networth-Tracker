@@ -20,6 +20,7 @@ import {
   PopoverTrigger,
 } from "@/features/design-system/components/ui/popover";
 import {
+  SidebarMenuAction,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/features/design-system/components/ui/sidebar";
@@ -93,7 +94,7 @@ export function PortfolioSidebarItem({
   };
 
   return (
-    <SidebarMenuSubItem className="group relative">
+    <SidebarMenuSubItem className="group/menu-item relative">
       <SidebarMenuSubButton
         asChild
         isActive={isActive}
@@ -119,21 +120,24 @@ export function PortfolioSidebarItem({
 
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
-          <Button
+          <SidebarMenuAction
             aria-label={`Więcej akcji: ${portfolio.name}`}
             className={cn(
-              "absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 rounded-md border-none px-0",
-              "pointer-events-none opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100",
-              isPopoverOpen ? "pointer-events-auto opacity-100" : null
+              "right-1 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-md",
+              "hover:bg-sidebar-accent/80",
+              isPopoverOpen ? "opacity-100" : null
             )}
-            size="icon"
             type="button"
-            variant="ghost"
+            showOnHover
           >
             <MoreHorizontal className="size-4" aria-hidden />
-          </Button>
+          </SidebarMenuAction>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-36 p-1.5">
+        <PopoverContent
+          align="end"
+          className="w-36 p-1.5"
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
           <Link
             className={cn(menuItemClasses, "justify-between")}
             href={`/transactions/new?portfolio=${portfolio.id}`}

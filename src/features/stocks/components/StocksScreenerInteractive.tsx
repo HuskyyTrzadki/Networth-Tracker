@@ -106,25 +106,40 @@ export function StocksScreenerInteractive({
 
   return (
     <>
+      <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+        <header className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/85">
+              Screener
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>
+            <p className="text-sm text-muted-foreground">
+              Twoje akcje z wszystkich portfeli w jednym miejscu.
+            </p>
+          </div>
+          <div className="w-full max-w-xl space-y-2 lg:w-[26rem] lg:max-w-none">
+            <p className="text-sm font-medium text-muted-foreground">
+              Szukasz czegoś innego?
+            </p>
+            <StockSearchBar
+              initialFavoriteProviderKeys={favoriteProviderKeys}
+              onOptimisticAdd={(card) => {
+                applyOptimistic({ type: "add", card });
+              }}
+              onOptimisticRemove={(providerKey) => {
+                applyOptimistic({ type: "remove", providerKey });
+              }}
+            />
+          </div>
+        </header>
+      </section>
+
       <StockScreenerGrid
+        className="mt-5"
         cards={optimisticCards}
         onRemoveFavorite={onRemoveFavorite}
         isRemovingFavorite={isRemovingFavorite}
       />
-      <div className="mt-8 max-w-xl space-y-2">
-        <p className="text-sm font-medium text-muted-foreground">
-          Szukasz czegoś innego?
-        </p>
-        <StockSearchBar
-          initialFavoriteProviderKeys={favoriteProviderKeys}
-          onOptimisticAdd={(card) => {
-            applyOptimistic({ type: "add", card });
-          }}
-          onOptimisticRemove={(providerKey) => {
-            applyOptimistic({ type: "remove", providerKey });
-          }}
-        />
-      </div>
     </>
   );
 }
