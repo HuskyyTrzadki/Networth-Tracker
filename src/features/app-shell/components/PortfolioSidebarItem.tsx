@@ -2,7 +2,7 @@
 
 import { MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { type MouseEvent, useState, useTransition } from "react";
 
 import { deletePortfolioAction } from "@/features/portfolio/server/delete-portfolio-action";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -35,12 +35,20 @@ type Props = Readonly<{
   };
   isActive: boolean;
   onDeleted: (portfolioId: string) => void;
+  onNavigateIntent: (href: string) => void;
+  onPrefetchIntent: (href: string) => void;
 }>;
 
 const menuItemClasses =
   "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-muted/60";
 
-export function PortfolioSidebarItem({ portfolio, isActive, onDeleted }: Props) {
+export function PortfolioSidebarItem({
+  portfolio,
+  isActive,
+  onDeleted,
+  onNavigateIntent,
+  onPrefetchIntent,
+}: Props) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -67,6 +75,23 @@ export function PortfolioSidebarItem({ portfolio, isActive, onDeleted }: Props) 
     });
   };
 
+  const portfolioHref = `/portfolio/${portfolio.id}`;
+
+  const handlePortfolioNavigationClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    onNavigateIntent(portfolioHref);
+  };
+
   return (
     <SidebarMenuSubItem className="group relative">
       <SidebarMenuSubButton
@@ -79,7 +104,12 @@ export function PortfolioSidebarItem({ portfolio, isActive, onDeleted }: Props) 
           "data-[active=true]:before:absolute data-[active=true]:before:bottom-1.5 data-[active=true]:before:left-0 data-[active=true]:before:top-1.5 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-foreground data-[active=true]:before:content-['']"
         )}
       >
-        <Link href={`/portfolio/${portfolio.id}`}>
+        <Link
+          href={portfolioHref}
+          prefetch={true}
+          onMouseEnter={() => onPrefetchIntent(portfolioHref)}
+          onClick={handlePortfolioNavigationClick}
+        >
           <LinkLabel className="min-w-0 flex-1 truncate">{portfolio.name}</LinkLabel>
           <span className="ml-auto font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
             {portfolio.baseCurrency}

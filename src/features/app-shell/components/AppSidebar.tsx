@@ -3,6 +3,7 @@
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { type MouseEvent, useState } from "react";
 
 import { CreatePortfolioDialog } from "@/features/portfolio";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -24,7 +25,11 @@ import { cn } from "@/lib/cn";
 
 import { useAppPathname } from "../hooks/useAppPathname";
 import { primaryNavItems, secondaryNavItems } from "../lib/nav-items";
-import { getPortfolioIdFromPathname, isHrefActive } from "../lib/path";
+import {
+  getPortfolioIdFromPathname,
+  isHrefActive,
+  normalizeAppPath,
+} from "../lib/path";
 import { PortfolioSidebarItem } from "./PortfolioSidebarItem";
 import { LinkLabel } from "./SidebarLinkLabel";
 import { ThemeSwitch } from "./ThemeSwitch";
@@ -41,9 +46,35 @@ type Props = Readonly<{
 export function AppSidebar({ className, portfolios }: Props) {
   const pathname = useAppPathname();
   const router = useRouter();
-  const activePortfolioId = getPortfolioIdFromPathname(pathname);
-  const isPortfolioActive = isHrefActive(pathname, "/portfolio");
+  const [optimisticPathname, setOptimisticPathname] = useState<string | null>(null);
+  const activePathname =
+    optimisticPathname &&
+    normalizeAppPath(optimisticPathname) !== normalizeAppPath(pathname)
+      ? optimisticPathname
+      : pathname;
+  const activePortfolioId = getPortfolioIdFromPathname(activePathname);
+  const isPortfolioActive = isHrefActive(activePathname, "/portfolio");
   const isOverviewActive = isPortfolioActive && !activePortfolioId;
+  const activePortfolioIdFromPath = getPortfolioIdFromPathname(pathname);
+
+  const handleSidebarLinkHover = (href: string) => {
+    void router.prefetch(href);
+  };
+
+  const handleSidebarLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    setOptimisticPathname(href);
+  };
 
   return (
     <Sidebar
@@ -93,7 +124,12 @@ export function AppSidebar({ className, portfolios }: Props) {
                         "[&[data-active=true]>svg]:text-primary"
                       )}
                     >
-                      <Link href={item.href}>
+                      <Link
+                        href={item.href}
+                        prefetch={true}
+                        onMouseEnter={() => handleSidebarLinkHover(item.href)}
+                        onClick={(event) => handleSidebarLinkClick(event, item.href)}
+                      >
                         <Icon aria-hidden="true" />
                         <LinkLabel>{item.label}</LinkLabel>
                       </Link>
@@ -115,8 +151,14 @@ export function AppSidebar({ className, portfolios }: Props) {
                 <PortfolioSidebarItem
                   key={portfolio.id}
                   isActive={activePortfolioId === portfolio.id}
+                  onNavigateIntent={(href) => {
+                    setOptimisticPathname(href);
+                  }}
+                  onPrefetchIntent={(href) => {
+                    void router.prefetch(href);
+                  }}
                   onDeleted={(deletedPortfolioId) => {
-                    if (activePortfolioId === deletedPortfolioId) {
+                    if (activePortfolioIdFromPath === deletedPortfolioId) {
                       router.push("/portfolio", { scroll: false });
                     }
                   }}
@@ -172,7 +214,12 @@ export function AppSidebar({ className, portfolios }: Props) {
                     "[&[data-active=true]>svg]:text-primary"
                   )}
                 >
-                  <Link href={item.href}>
+                  <Link
+                    href={item.href}
+                    prefetch={true}
+                    onMouseEnter={() => handleSidebarLinkHover(item.href)}
+                    onClick={(event) => handleSidebarLinkClick(event, item.href)}
+                  >
                     <Icon aria-hidden="true" />
                     <LinkLabel>{item.label}</LinkLabel>
                   </Link>
