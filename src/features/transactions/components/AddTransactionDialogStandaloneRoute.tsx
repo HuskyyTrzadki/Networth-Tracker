@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 
 import { AddTransactionDialog } from "./AddTransactionDialog";
 import type { FormValues } from "./AddTransactionDialogContent";
@@ -24,6 +25,25 @@ export function AddTransactionDialogStandaloneRoute({
   initialInstrument?: InstrumentSearchResult;
 }>) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPortfolioSwitchPending, startTransition] = useTransition();
+
+  const handlePortfolioSelectionChange = (nextPortfolioId: string) => {
+    const currentPortfolioId =
+      searchParams.get("portfolioId") ?? searchParams.get("portfolio");
+    if (currentPortfolioId === nextPortfolioId) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("portfolioId", nextPortfolioId);
+    params.delete("portfolio");
+
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
 
   return (
     <AddTransactionDialog
@@ -35,6 +55,8 @@ export function AddTransactionDialogStandaloneRoute({
       assetBalancesByPortfolio={assetBalancesByPortfolio}
       initialPortfolioId={initialPortfolioId}
       forcedPortfolioId={forcedPortfolioId}
+      isPortfolioSwitchPending={isPortfolioSwitchPending}
+      onPortfolioSelectionChange={handlePortfolioSelectionChange}
       onSubmitSuccess={() => {
         router.refresh();
       }}

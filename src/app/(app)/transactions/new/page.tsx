@@ -109,7 +109,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
     selectedPortfolio?.baseCurrency ?? null
   );
 
-  const portfolioIds = portfolioOptions.map((portfolio) => portfolio.id);
+  const portfolioIds = [selection.initialPortfolioId];
   const [cashBalancesByPortfolio, assetBalancesByPortfolio] = await Promise.all([
     getCashBalancesByPortfolio(supabase, portfolioIds),
     getAssetBalancesByPortfolio(supabase, portfolioIds),
@@ -121,7 +121,7 @@ export default async function TransactionNewPage({ searchParams }: Props) {
       cashBalancesByPortfolio={cashBalancesByPortfolio}
       assetBalancesByPortfolio={assetBalancesByPortfolio}
       initialPortfolioId={selection.initialPortfolioId}
-      forcedPortfolioId={selection.forcedPortfolioId}
+      forcedPortfolioId={null}
       initialInstrument={dialogPreset.initialInstrument}
       initialValues={dialogPreset.initialValues}
     />

@@ -28,6 +28,7 @@ export function AddTransactionPortfolioTypeFields({
   portfolios,
   isCashTab,
   isCustomTab,
+  isPortfolioSwitchPending = false,
   onPortfolioChange,
   onTypeChange,
   onOpenScreenshot,
@@ -39,6 +40,7 @@ export function AddTransactionPortfolioTypeFields({
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   isCashTab: boolean;
   isCustomTab: boolean;
+  isPortfolioSwitchPending?: boolean;
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
   onOpenScreenshot: () => void;
@@ -59,7 +61,7 @@ export function AddTransactionPortfolioTypeFields({
           <FormItem>
             <FormLabel className={fieldLabelClass}>Portfel</FormLabel>
             <Select
-              disabled={Boolean(forcedPortfolioId) || isEditMode}
+              disabled={Boolean(forcedPortfolioId) || isEditMode || isPortfolioSwitchPending}
               onValueChange={(next) => {
                 if (next === CREATE_PORTFOLIO_VALUE) {
                   const controls = createDialogControls.current;

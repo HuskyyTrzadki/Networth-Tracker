@@ -13,7 +13,9 @@ const getFirstParam = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
 const parsePortfolioParam = (searchParams: SearchParams) => {
-  const raw = getFirstParam(searchParams.portfolio)?.trim();
+  const raw =
+    getFirstParam(searchParams.portfolioId)?.trim() ??
+    getFirstParam(searchParams.portfolio)?.trim();
   if (!raw || raw === "all") return null;
   return raw;
 };

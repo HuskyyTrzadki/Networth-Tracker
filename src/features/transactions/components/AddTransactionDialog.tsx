@@ -35,6 +35,8 @@ export function AddTransactionDialog({
   assetBalancesByPortfolio,
   initialPortfolioId,
   forcedPortfolioId,
+  isPortfolioSwitchPending = false,
+  onPortfolioSelectionChange,
   onSubmitSuccess,
   open,
   onOpenChange,
@@ -49,6 +51,8 @@ export function AddTransactionDialog({
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
+  isPortfolioSwitchPending?: boolean;
+  onPortfolioSelectionChange?: (nextPortfolioId: string) => void;
   onSubmitSuccess?: () => void;
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
@@ -114,7 +118,9 @@ export function AddTransactionDialog({
             initialInstrument={initialInstrument}
             initialPortfolioId={initialPortfolioId}
             initialValues={initialValues}
+            isPortfolioSwitchPending={isPortfolioSwitchPending}
             onDirtyChange={setIsDirty}
+            onPortfolioSelectionChange={onPortfolioSelectionChange}
             onSubmittingChange={setIsSubmitting}
             onSubmitSuccess={onSubmitSuccess}
             onClose={requestClose}

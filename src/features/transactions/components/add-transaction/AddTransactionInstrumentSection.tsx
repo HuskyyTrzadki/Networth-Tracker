@@ -48,6 +48,7 @@ type Props = Readonly<{
   isCustomTab: boolean;
   activeTab: AssetTab;
   onTabChange: (nextTab: AssetTab) => void;
+  isPortfolioSwitchPending?: boolean;
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
   resolvedCashCurrency: CashCurrency;
@@ -71,6 +72,7 @@ export function AddTransactionInstrumentSection({
   isCustomTab,
   activeTab,
   onTabChange,
+  isPortfolioSwitchPending = false,
   onPortfolioChange,
   onTypeChange,
   resolvedCashCurrency,
@@ -101,6 +103,7 @@ export function AddTransactionInstrumentSection({
         portfolios={portfolios}
         isCashTab={isCashTab}
         isCustomTab={isCustomTab}
+        isPortfolioSwitchPending={isPortfolioSwitchPending}
         onPortfolioChange={onPortfolioChange}
         onTypeChange={onTypeChange}
         onOpenScreenshot={onOpenScreenshot}

@@ -3,6 +3,30 @@ import { describe, expect, it } from "vitest";
 import { resolvePortfolioSelection } from "./resolve-portfolio-selection";
 
 describe("resolvePortfolioSelection", () => {
+  it("supports portfolioId query param", () => {
+    const result = resolvePortfolioSelection({
+      searchParams: { portfolioId: "portfolio-2" },
+      portfolios: [{ id: "portfolio-1" }, { id: "portfolio-2" }],
+    });
+
+    expect(result).toEqual({
+      forcedPortfolioId: "portfolio-2",
+      initialPortfolioId: "portfolio-2",
+    });
+  });
+
+  it("prefers portfolioId over legacy portfolio param", () => {
+    const result = resolvePortfolioSelection({
+      searchParams: { portfolio: "portfolio-1", portfolioId: "portfolio-2" },
+      portfolios: [{ id: "portfolio-1" }, { id: "portfolio-2" }],
+    });
+
+    expect(result).toEqual({
+      forcedPortfolioId: "portfolio-2",
+      initialPortfolioId: "portfolio-2",
+    });
+  });
+
   it("locks selection when URL contains a valid id", () => {
     const result = resolvePortfolioSelection({
       searchParams: { portfolio: "portfolio-2" },

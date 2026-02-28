@@ -59,7 +59,9 @@ export function AddTransactionDialogFields({
   assetBalancesByPortfolio,
   forcedPortfolioId,
   initialCashCurrency,
+  isPortfolioSwitchPending = false,
   isEditMode = false,
+  onPortfolioSelectionChange,
   onScreenshotModeChange,
   onRequestCloseDialog,
 }: Readonly<{
@@ -74,7 +76,9 @@ export function AddTransactionDialogFields({
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   forcedPortfolioId: string | null;
   initialCashCurrency: CashCurrency;
+  isPortfolioSwitchPending?: boolean;
   isEditMode?: boolean;
+  onPortfolioSelectionChange?: (nextPortfolioId: string) => void;
   onScreenshotModeChange?: (next: boolean) => void;
   onRequestCloseDialog?: () => void;
 }>) {
@@ -224,6 +228,11 @@ export function AddTransactionDialogFields({
     return { id: created.id };
   };
 
+  const handlePortfolioSelection = (nextPortfolioId: string) => {
+    handlePortfolioChange(nextPortfolioId);
+    onPortfolioSelectionChange?.(nextPortfolioId);
+  };
+
   const openScreenshotImport = () => {
     setIsScreenshotOpen(true);
     onScreenshotModeChange?.(true);
@@ -248,10 +257,10 @@ export function AddTransactionDialogFields({
                     Portfel
                   </FormLabel>
                   <Select
-                    disabled={Boolean(forcedPortfolioId)}
+                    disabled={Boolean(forcedPortfolioId) || isPortfolioSwitchPending}
                     onValueChange={(next) => {
                       field.onChange(next);
-                      handlePortfolioChange(next);
+                      handlePortfolioSelection(next);
                     }}
                     value={field.value}
                   >
@@ -292,7 +301,8 @@ export function AddTransactionDialogFields({
                 isCustomTab={isCustomTab}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
-                onPortfolioChange={handlePortfolioChange}
+                isPortfolioSwitchPending={isPortfolioSwitchPending}
+                onPortfolioChange={handlePortfolioSelection}
                 onTypeChange={handleTypeChange}
                 resolvedCashCurrency={resolvedCashCurrency}
                 onCashCurrencyChange={handleCashCurrencyChange}

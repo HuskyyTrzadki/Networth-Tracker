@@ -80,7 +80,7 @@ export default async function AddTransactionModalPage({
     selectedPortfolio?.baseCurrency ?? null
   );
 
-  const portfolioIds = portfolioOptions.map((portfolio) => portfolio.id);
+  const portfolioIds = [selection.initialPortfolioId];
   const [cashBalancesByPortfolio, assetBalancesByPortfolio] = await Promise.all([
     getCashBalancesByPortfolio(supabase, portfolioIds),
     getAssetBalancesByPortfolio(supabase, portfolioIds),
@@ -92,7 +92,7 @@ export default async function AddTransactionModalPage({
       cashBalancesByPortfolio={cashBalancesByPortfolio}
       assetBalancesByPortfolio={assetBalancesByPortfolio}
       initialPortfolioId={selection.initialPortfolioId}
-      forcedPortfolioId={selection.forcedPortfolioId}
+      forcedPortfolioId={null}
       initialInstrument={dialogPreset.initialInstrument}
       initialValues={dialogPreset.initialValues}
     />
