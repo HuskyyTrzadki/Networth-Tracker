@@ -19,6 +19,8 @@ type TransactionRow = Readonly<{
   leg_role: "ASSET" | "CASH";
   leg_key: string;
   cashflow_type: string | null;
+  instrument_id: string | null;
+  custom_instrument_id: string | null;
   instrument:
     | Readonly<{
         symbol: string;
@@ -94,12 +96,18 @@ export async function listTransactions(
   const offset = (filters.page - 1) * filters.pageSize;
   const rangeEnd = offset + filters.pageSize;
   const ascending = filters.sort === "date_asc";
+  const search =
+    typeof filters.query === "string" ? sanitizeSearchQuery(filters.query) : "";
+  const hasSearch = search.length > 0;
+  const instrumentSelect = hasSearch
+    ? "instrument:instruments!inner(symbol, name, currency, region, logo_url, instrument_type)"
+    : "instrument:instruments(symbol, name, currency, region, logo_url, instrument_type)";
 
   // Query only current user data (RLS), with joins for instrument metadata.
   let query = supabase
     .from("transactions")
     .select(
-      "id, trade_date, side, quantity, price, fee, group_id, leg_role, leg_key, cashflow_type, instrument:instruments(symbol, name, currency, region, logo_url, instrument_type), custom_instrument:custom_instruments(name, currency, kind)"
+      `id, trade_date, side, quantity, price, fee, group_id, leg_role, leg_key, cashflow_type, instrument_id, custom_instrument_id, ${instrumentSelect}, custom_instrument:custom_instruments(name, currency, kind)`
     )
     .order("trade_date", { ascending })
     .order("created_at", { ascending })
@@ -115,15 +123,10 @@ export async function listTransactions(
     query = query.eq("side", filters.type);
   }
 
-  if (filters.query) {
-    const search = sanitizeSearchQuery(filters.query);
-
-    if (search.length > 0) {
-      query = query.or(
-        `symbol.ilike.%${search}%,name.ilike.%${search}%`,
-        { foreignTable: "instruments" }
-      );
-    }
+  if (hasSearch) {
+    query = query.or(`symbol.ilike.%${search}%,name.ilike.%${search}%`, {
+      foreignTable: "instruments",
+    });
   }
 
   const { data, error } = await query;
@@ -144,20 +147,30 @@ export async function listTransactions(
       const customInstrument = Array.isArray(row.custom_instrument)
         ? row.custom_instrument[0] ?? null
         : row.custom_instrument;
+      const hasInstrumentRef = row.instrument_id !== null;
+      const hasCustomInstrumentRef = row.custom_instrument_id !== null;
       const customAssetType =
         customInstrument?.kind && isCustomAssetType(customInstrument.kind)
           ? customInstrument.kind
-          : customInstrument
+          : customInstrument || hasCustomInstrumentRef
             ? "OTHER"
             : null;
 
       if (!instrument && !customInstrument) {
-        throw new Error("Missing instrument data for transaction row.");
+        if (!hasInstrumentRef && !hasCustomInstrumentRef) {
+          throw new Error("Missing instrument data for transaction row.");
+        }
+
+        console.error("Missing joined instrument relation for transaction row.", {
+          transactionId: row.id,
+          instrumentId: row.instrument_id,
+          customInstrumentId: row.custom_instrument_id,
+        });
       }
 
       const resolved = instrument ?? {
-        symbol: "CUSTOM",
-        name: customInstrument?.name ?? "Custom asset",
+        symbol: hasInstrumentRef ? "UNKNOWN" : "CUSTOM",
+        name: customInstrument?.name ?? "Nieznany instrument",
         currency: customInstrument?.currency ?? "PLN",
         region: null,
         logo_url: null,

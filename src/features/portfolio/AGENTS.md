@@ -38,6 +38,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/create-portfolio.ts`
 - `src/features/portfolio/server/create-portfolio-action.ts`
 - `src/features/portfolio/server/delete-portfolio.ts`
+- `src/features/portfolio/server/delete-portfolio-action.ts`
 - `src/features/portfolio/server/get-portfolio-holdings.ts`
 - `src/features/portfolio/server/custom-instruments/compound-annual-rate.ts`
 - `src/features/portfolio/server/get-portfolio-average-buy-prices.ts`
@@ -129,7 +130,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Onboarding route (`/onboarding`) now offers a screenshot import path that creates a new portfolio via a dedicated wizard and bootstraps transactions dated today, then navigates to canonical `/portfolio/<id>`.
 - Portfolio create flows (`sidebar`, `mobile header`, transactions modal, onboarding) use server action `create-portfolio-action` (`create + revalidatePath`) and only navigate client-side after success.
 - Portfolio create/edit model includes tax profile flag `is_tax_advantaged` (UI label: `Konto emerytalne (IKE/IKZE)`), used by dividend smart-default hints.
-- Portfolio delete flow (desktop sidebar 3-dot menu) uses `DELETE /api/portfolios/<id>` and removes the portfolio plus its transactions, then revalidates portfolio/transaction tags and paths.
+- Portfolio delete flow (desktop sidebar 3-dot menu) uses server action `delete-portfolio-action` (`delete + revalidate`) and removes the portfolio plus its transactions.
 - Dividend inbox is split by scope: `/portfolio/<id>` is actionable (`Zaksięguj`), while aggregate `/portfolio` is awareness-only (upcoming list without booking action).
 - Dividend inbox is server-first on dashboard render; booking action/modal uses server action `book-dividend-action` (`book + revalidatePath`) with optimistic submit state in client controls.
 - Dividend inbox provider fetch is abstracted behind `market-data` (`getInstrumentDividendSignalsCached`); portfolio layer composes holdings/tax/idempotency only and does not call Yahoo directly.

@@ -119,7 +119,6 @@ export function AppSidebar({ className, portfolios }: Props) {
                     if (activePortfolioId === deletedPortfolioId) {
                       router.push("/portfolio", { scroll: false });
                     }
-                    router.refresh();
                   }}
                   portfolio={portfolio}
                 />
@@ -130,7 +129,6 @@ export function AppSidebar({ className, portfolios }: Props) {
                     router.push(`/portfolio/${createdId}`, {
                       scroll: false,
                     });
-                    router.refresh();
                   }}
                   trigger={({ open, disabled }) => (
                     <Button

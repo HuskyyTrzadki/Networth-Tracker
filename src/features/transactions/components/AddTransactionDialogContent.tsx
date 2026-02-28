@@ -15,9 +15,11 @@ import { DEFAULT_CUSTOM_ASSET_TYPE, type CustomAssetType } from "../lib/custom-a
 import type { CashflowTypeUi } from "../lib/cashflow-types";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
 import { SUPPORTED_CASH_CURRENCIES, isSupportedCashCurrency, type CashCurrency } from "../lib/system-currencies";
-import { createTransaction } from "../client/create-transaction";
-import { deleteTransaction } from "../client/delete-transaction";
-import { updateTransaction } from "../client/update-transaction";
+import {
+  createTransactionAction,
+  deleteTransactionAction,
+  updateTransactionAction,
+} from "../server/transaction-actions";
 import type { InstrumentSearchClient } from "../client/search-instruments";
 import { buildSubmitPayloadFields, triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
 import { resolveInitialTab, type AssetTab } from "./add-transaction/constants";
@@ -171,15 +173,15 @@ export function AddTransactionDialogContent({
         return;
       }
 
-      const updated = await updateTransaction(editTransactionId, {
+      const updated = await updateTransactionAction(editTransactionId, {
         type: values.type,
         date: values.date,
         quantity: values.quantity,
         ...payloadFields,
         notes: values.notes,
-        ...(isCustomTab
-          ? { customAnnualRatePct: values.customAnnualRatePct ?? "" }
-          : {}),
+        customAnnualRatePct: isCustomTab
+          ? (values.customAnnualRatePct ?? "")
+          : undefined,
       }).catch((error: unknown) => {
         const message =
           error instanceof Error
@@ -201,7 +203,7 @@ export function AddTransactionDialogContent({
         tone: "success",
       });
     } else {
-      const createResult = await createTransaction({
+      const createResult = await createTransactionAction({
         type: values.type,
         date: values.date,
         quantity: values.quantity,
@@ -209,6 +211,9 @@ export function AddTransactionDialogContent({
         notes: values.notes,
         portfolioId: resolvedPortfolioId,
         clientRequestId: crypto.randomUUID(),
+        customAnnualRatePct: isCustomTab
+          ? (values.customAnnualRatePct ?? "")
+          : undefined,
         ...(isCustomTab
           ? {
               customInstrument: {
@@ -255,7 +260,9 @@ export function AddTransactionDialogContent({
           label: "Cofnij",
           onClick: async () => {
             try {
-              const undoResult = await deleteTransaction(createResult.transactionId);
+              const undoResult = await deleteTransactionAction(
+                createResult.transactionId
+              );
               triggerRebuildSignals(undoResult.portfolioId);
               dispatchAppToast({
                 title: "Cofnięto transakcję.",

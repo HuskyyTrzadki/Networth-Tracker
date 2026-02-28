@@ -36,7 +36,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Query-state parsers: `src/features/transactions/lib/transactions-query-state.ts`
 - Decimal helpers: `src/lib/decimal.ts`
 - Currency formatting: `src/lib/format-currency.ts`
-- Client API: `src/features/transactions/client/create-transaction.ts`
 - Client FX preview API: `src/features/transactions/client/get-fx-preview.ts`
 - Client cash as-of API: `src/features/transactions/client/get-cash-balance-on-date.ts`
 - Server service: `src/features/transactions/server/create-transaction.ts`
@@ -57,6 +56,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server filters: `src/features/transactions/server/filters.ts`
 - Server helper: `src/features/transactions/server/resolve-portfolio-selection.ts`
 - Cache invalidation helper: `src/features/transactions/server/revalidate-transaction-views.ts`
+- Server actions (mutation boundary): `src/features/transactions/server/transaction-actions.ts`
 - API schema: `src/features/transactions/server/schema.ts`
 - FX preview API: `src/app/api/transactions/fx-preview/route.ts`
 - Cash balance as-of API: `src/app/api/transactions/cash-balance-on-date/route.ts`
@@ -76,7 +76,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - UI should not depend on provider-specific market data shapes.
-- Server logic lives under `src/features/transactions/server/*` and is called by `src/app/api/transactions/route.ts` and `src/app/api/transactions/[transactionId]/route.ts`.
+- Server logic lives under `src/features/transactions/server/*` and is called by API routes and transaction server actions (`transaction-actions.ts`).
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
 - Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
 - Transactions filters/pagination sync with URL via `nuqs` parser state (`transactions-query-state.ts`) instead of manual `URLSearchParams` mutation.
@@ -143,7 +143,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Modal receipt summary (`TransactionLiveSummary`) also splits amount/unit tokens and keeps all monetary rows right-aligned with `font-mono tabular-nums`.
 - Transactions table rows keep lightweight visual feedback via alternating striping + short “fresh stamp” highlight (`~0.5s`) on newly added rows; no heavy row-motion choreography.
 - Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.
-- Add-transaction route wrappers trigger `router.refresh()` on submit success before closing/navigation, so transactions list reflects newly saved rows immediately.
+- Add/edit transaction modal now writes via server actions (`createTransactionAction` / `updateTransactionAction`) with server revalidation; some route wrappers still use `router.refresh()` after close/navigation to guarantee back-stack list sync.
 - Add-transaction close guard uses an in-app confirmation dialog (`Odrzucić niezapisane zmiany?`) instead of `window.confirm`, so behavior stays consistent with design-system modals.
 - Add-transaction close guard now uses shared `AlertDialog` shim primitives (`AlertDialogAction`/`AlertDialogCancel`) for clearer destructive-confirm semantics while keeping current dependency set.
 - Add-transaction dialog container marks submit-in-progress semantics on the shell (`aria-busy`, `data-submitting`) to align modal accessibility with async state.
@@ -151,7 +151,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.
-- Save success UX includes global toast feedback with undo (`Cofnij` for 10s). Undo calls `DELETE /api/transactions/[transactionId]` and re-triggers snapshot rebuild events.
+- Save success UX includes global toast feedback with undo (`Cofnij` for 10s). Undo uses transaction server action delete and re-triggers snapshot rebuild events.
+- Transactions row delete uses optimistic hide with rollback on failure (`TransactionsTable` + `TransactionsRowActions`) and executes delete via server action.
+- Transactions row delete confirmation uses design-system `AlertDialog` (no native `window.confirm` browser prompt).
 - Edit success UX reuses the same modal and rebuild trigger flow, with save CTA/text switched to edit mode.
 - Row action `Edytuj` is shown only for `ASSET` legs and opens `/transactions/<transactionId>/edit` (standalone or intercepted modal).
 - Add-transaction routes accept `preset=cash-deposit` and prefill cash instrument + deposit defaults for faster first cash funding flow.

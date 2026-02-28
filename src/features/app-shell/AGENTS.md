@@ -42,7 +42,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - App shell provides keyboard accessibility anchor points (`Przejdz do tresci` skip link + `#main-content`) for faster keyboard navigation across route content.
 - Active desktop sidebar items use an editorial anchor marker: a 2px vertical left rule on the active row in addition to active background/ring states.
 - Desktop sidebar portfolio rows expose per-item actions via a 3-dot popover; `Usuń` opens a compact confirmation dialog before portfolio deletion.
-- Sidebar `Nowy portfel` create flow navigates to `/portfolio/<id>` and calls `router.refresh()` to refresh layout-level portfolio props immediately.
+- Sidebar `Nowy portfel` create flow navigates to `/portfolio/<id>` after server action success; refresh is handled by App Router revalidation.
+- Sidebar portfolio delete (`PortfolioSidebarItem`) executes server action (`delete-portfolio-action`) and redirects to `/portfolio` when the active portfolio is removed.
 
 ## Boundaries
 - No domain business logic; UI/navigation only.

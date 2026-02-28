@@ -2,9 +2,9 @@
 
 import { MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
-import { deletePortfolio } from "@/features/portfolio/client/delete-portfolio";
+import { deletePortfolioAction } from "@/features/portfolio/server/delete-portfolio-action";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Dialog,
@@ -43,24 +43,28 @@ const menuItemClasses =
 export function PortfolioSidebarItem({ portfolio, isActive, onDeleted }: Props) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleDelete = async () => {
     setIsDeleting(true);
     setErrorMessage(null);
-
-    try {
-      await deletePortfolio(portfolio.id);
-      setIsDialogOpen(false);
-      onDeleted(portfolio.id);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Nie udało się usunąć portfela."
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+    startTransition(() => {
+      void deletePortfolioAction(portfolio.id)
+        .then(() => {
+          setIsDialogOpen(false);
+          onDeleted(portfolio.id);
+        })
+        .catch((error: unknown) => {
+          setErrorMessage(
+            error instanceof Error ? error.message : "Nie udało się usunąć portfela."
+          );
+        })
+        .finally(() => {
+          setIsDeleting(false);
+        });
+    });
   };
 
   return (
@@ -162,7 +166,7 @@ export function PortfolioSidebarItem({ portfolio, isActive, onDeleted }: Props) 
               type="button"
               variant="destructive"
             >
-              Usuń portfel
+              {isDeleting || isPending ? "Usuwanie..." : "Usuń portfel"}
             </Button>
           </DialogFooter>
         </DialogContent>

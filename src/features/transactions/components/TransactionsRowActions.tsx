@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { LoaderCircle, MoreHorizontal } from "lucide-react";
 
 import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/features/design-system/components/ui/alert-dialog";
 import { Button } from "@/features/design-system/components/ui/button";
 import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/snapshot-rebuild-events";
 import {
@@ -14,7 +23,7 @@ import {
   PopoverTrigger,
 } from "@/features/design-system/components/ui/popover";
 import { cn } from "@/lib/cn";
-import { deleteTransaction } from "../client/delete-transaction";
+import { deleteTransactionAction } from "../server/transaction-actions";
 import type { TransactionListItem } from "../server/list-transactions";
 import { triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
 
@@ -26,67 +35,68 @@ export const canEditTransactionRow = (transaction: TransactionListItem) =>
 
 export function TransactionsRowActions({
   transaction,
-  onDeleted,
+  onDeleteOptimistic,
+  onDeleteRollback,
 }: Readonly<{
   transaction: TransactionListItem;
-  onDeleted?: (deletedGroupId: string) => void;
+  onDeleteOptimistic: (deletedGroupId: string) => void;
+  onDeleteRollback: (deletedGroupId: string) => void;
 }>) {
-  const router = useRouter();
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [, startDeleteTransition] = useTransition();
   const canEdit = canEditTransactionRow(transaction);
   const isAssetRow = transaction.legRole === "ASSET";
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = () => {
     if (isDeleting) {
       return;
     }
 
-    const isConfirmed = window.confirm(
-      isAssetRow
-        ? "Usunąć transakcję? Operacja usunie też powiązane rozliczenia gotówki."
-        : "Usunąć ten zapis? Operacja usunie całą grupę transakcji."
-    );
-    if (!isConfirmed) {
-      return;
-    }
-
     setIsDeleting(true);
-    try {
-      const deleted = await deleteTransaction(transaction.id);
-      dispatchSnapshotRebuildTriggeredEvent({
-        scope: "PORTFOLIO",
-        portfolioId: deleted.portfolioId,
-      });
-      dispatchSnapshotRebuildTriggeredEvent({
-        scope: "ALL",
-        portfolioId: null,
-      });
-      triggerSnapshotRebuild("PORTFOLIO", deleted.portfolioId);
-      triggerSnapshotRebuild("ALL", null);
-      onDeleted?.(transaction.groupId);
-      router.refresh();
-      dispatchAppToast({
-        title: "Transakcja usunięta.",
-        description: "Zmiany zostały zapisane.",
-        tone: "success",
-      });
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Nie udało się usunąć transakcji.";
-      dispatchAppToast({
-        title: "Nie udało się usunąć transakcji.",
-        description: message,
-        tone: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
+    startDeleteTransition(() => {
+      onDeleteOptimistic(transaction.groupId);
+      void deleteTransactionAction(transaction.id)
+        .then((deleted) => {
+          dispatchSnapshotRebuildTriggeredEvent({
+            scope: "PORTFOLIO",
+            portfolioId: deleted.portfolioId,
+          });
+          dispatchSnapshotRebuildTriggeredEvent({
+            scope: "ALL",
+            portfolioId: null,
+          });
+          triggerSnapshotRebuild("PORTFOLIO", deleted.portfolioId);
+          triggerSnapshotRebuild("ALL", null);
+          dispatchAppToast({
+            title: "Transakcja usunięta.",
+            description: "Zmiany zostały zapisane.",
+            tone: "success",
+          });
+          setIsConfirmDeleteOpen(false);
+        })
+        .catch((error: unknown) => {
+          onDeleteRollback(transaction.groupId);
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Nie udało się usunąć transakcji.";
+          dispatchAppToast({
+            title: "Nie udało się usunąć transakcji.",
+            description: message,
+            tone: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsDeleting(false);
+        });
+    });
   };
 
   return (
-    <Popover>
+    <>
+    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <PopoverTrigger asChild>
         <Button
           aria-label="Więcej akcji"
@@ -101,18 +111,20 @@ export function TransactionsRowActions({
       <PopoverContent align="end" className="w-40 p-1.5">
         {canEdit ? (
           <Link
-          className={menuItemClasses}
-          href={`/transactions/${transaction.groupId}/edit`}
-          scroll={false}
-        >
-          Edytuj
-        </Link>
-      ) : null}
+            className={menuItemClasses}
+            href={`/transactions/${transaction.groupId}/edit`}
+            onClick={() => setIsPopoverOpen(false)}
+            scroll={false}
+          >
+            Edytuj
+          </Link>
+        ) : null}
         <button
           className={cn(menuItemClasses, "text-[color:var(--loss)]")}
           disabled={isDeleting}
           onClick={() => {
-            void handleDelete();
+            setIsPopoverOpen(false);
+            setIsConfirmDeleteOpen(true);
           }}
           type="button"
         >
@@ -127,5 +139,38 @@ export function TransactionsRowActions({
         </button>
       </PopoverContent>
     </Popover>
+    <AlertDialog
+      open={isConfirmDeleteOpen}
+      onOpenChange={(nextOpen) => {
+        if (isDeleting) {
+          return;
+        }
+        setIsConfirmDeleteOpen(nextOpen);
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Usunąć transakcję?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {isAssetRow
+              ? "Operacja usunie też powiązane rozliczenia gotówki."
+              : "Operacja usunie całą grupę transakcji."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Anuluj</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={isDeleting}
+            onClick={(event) => {
+              event.preventDefault();
+              handleDeleteConfirm();
+            }}
+          >
+            {isDeleting ? "Usuwanie..." : "Usuń"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import {
   Table,
@@ -32,6 +32,7 @@ type Props = Readonly<{
 
 const HEADER_CELL_CLASS =
   "px-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/88";
+const EMPTY_HIDDEN_GROUP_IDS: ReadonlySet<string> = new Set<string>();
 
 const getTypeLabel = (item: TransactionListItem) => {
   if (item.cashflowType) {
@@ -167,7 +168,8 @@ type TransactionsLedgerRowProps = Readonly<{
   row: LedgerRow;
   index: number;
   isNew: boolean;
-  onDeleted: (deletedGroupId: string) => void;
+  onDeleteOptimistic: (deletedGroupId: string) => void;
+  onDeleteRollback: (deletedGroupId: string) => void;
 }>;
 
 function LedgerMonetaryValue({
@@ -197,7 +199,8 @@ function TransactionsLedgerRow({
   row,
   index,
   isNew,
-  onDeleted,
+  onDeleteOptimistic,
+  onDeleteRollback,
 }: TransactionsLedgerRowProps) {
   const { item, isCashLeg, hasGroupDivider } = row;
   const visual = resolveInstrumentVisual({
@@ -282,33 +285,49 @@ function TransactionsLedgerRow({
         <LedgerMonetaryValue emphasized label={valueLabel} />
       </TableCell>
       <TableCell className="px-2 py-2">
-        <TransactionsRowActions transaction={item} onDeleted={onDeleted} />
+        <TransactionsRowActions
+          transaction={item}
+          onDeleteOptimistic={onDeleteOptimistic}
+          onDeleteRollback={onDeleteRollback}
+        />
       </TableCell>
     </TableRow>
   );
 }
 
 export function TransactionsTable({ items }: Props) {
-  const [hiddenGroupIds, setHiddenGroupIds] = useState<ReadonlySet<string>>(
-    new Set()
+  const [optimisticHiddenGroupIds, applyOptimisticHiddenGroups] = useOptimistic(
+    EMPTY_HIDDEN_GROUP_IDS,
+    (
+      current: ReadonlySet<string>,
+      action: Readonly<{ type: "hide" | "show"; groupId: string }>
+    ) => {
+      const next = new Set(current);
+      if (action.type === "hide") {
+        next.add(action.groupId);
+      } else {
+        next.delete(action.groupId);
+      }
+      return next;
+    }
   );
   const visibleItems = useMemo(
-    () => items.filter((item) => !hiddenGroupIds.has(item.groupId)),
-    [items, hiddenGroupIds]
+    () => items.filter((item) => !optimisticHiddenGroupIds.has(item.groupId)),
+    [items, optimisticHiddenGroupIds]
   );
   const rows = useMemo(() => toLedgerRows(visibleItems), [visibleItems]);
   const previousRowKeysRef = useRef<ReadonlySet<string>>(new Set());
   const [newRowKeys, setNewRowKeys] = useState<ReadonlySet<string>>(new Set());
-  const handleDeletedGroup = (deletedGroupId: string) => {
-    setHiddenGroupIds((previous) => {
-      if (previous.has(deletedGroupId)) {
-        return previous;
-      }
-      const next = new Set(previous);
-      next.add(deletedGroupId);
-      return next;
+  const handleDeleteOptimistic = (deletedGroupId: string) =>
+    applyOptimisticHiddenGroups({
+      type: "hide",
+      groupId: deletedGroupId,
     });
-  };
+  const handleDeleteRollback = (deletedGroupId: string) =>
+    applyOptimisticHiddenGroups({
+      type: "show",
+      groupId: deletedGroupId,
+    });
 
   useEffect(() => {
     const nextKeys = new Set(rows.map((row) => row.rowKey));
@@ -362,7 +381,8 @@ export function TransactionsTable({ items }: Props) {
             row={row}
             index={index}
             isNew={newRowKeys.has(row.rowKey)}
-            onDeleted={handleDeletedGroup}
+            onDeleteOptimistic={handleDeleteOptimistic}
+            onDeleteRollback={handleDeleteRollback}
           />
         ))}
       </TableBody>
