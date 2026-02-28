@@ -6,6 +6,7 @@ import {
   buildInstrumentId,
   getDisplayTicker,
   isAllowedInstrumentType,
+  normalizeExchangeLabel,
 } from "./search-utils";
 
 const normalizeName = (input: Readonly<{
@@ -18,7 +19,10 @@ const normalizeExchange = (input: Readonly<{
   exchange?: string;
   exchDisp?: string;
   fullExchangeName?: string;
-}>) => input.exchDisp ?? input.fullExchangeName ?? input.exchange;
+}>) =>
+  normalizeExchangeLabel(
+    input.exchDisp ?? input.fullExchangeName ?? input.exchange
+  );
 
 export const normalizeLocalInstrument = (
   row: Readonly<{
@@ -45,7 +49,7 @@ export const normalizeLocalInstrument = (
     name: row.name,
     currency: row.currency.toUpperCase(),
     instrumentType: row.instrument_type ?? undefined,
-    exchange: row.exchange ?? undefined,
+    exchange: normalizeExchangeLabel(row.exchange),
     region: row.region ?? undefined,
     logoUrl: row.logo_url ?? null,
   };

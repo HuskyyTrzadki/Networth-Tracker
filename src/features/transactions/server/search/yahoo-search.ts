@@ -4,6 +4,7 @@ import type { InstrumentSearchResult, InstrumentType } from "../../lib/instrumen
 import type { YahooQuote, YahooSearchQuote } from "./search-types";
 import { normalizeYahooInstrument } from "./search-normalize";
 import {
+  getExchangePriority,
   isAllowedByFilter,
   isAllowedInstrumentType,
   rankQuote,
@@ -94,6 +95,19 @@ export const searchYahooInstruments = async (
       const aScore = rankQuote(a, normalizedQuery);
       const bScore = rankQuote(b, normalizedQuery);
       if (aScore !== bScore) return aScore - bScore;
+
+      const aExchangePriority = getExchangePriority({
+        exchange: a.exchange,
+        exchangeDisplayName: a.exchDisp,
+      });
+      const bExchangePriority = getExchangePriority({
+        exchange: b.exchange,
+        exchangeDisplayName: b.exchDisp,
+      });
+      if (aExchangePriority !== bExchangePriority) {
+        return aExchangePriority - bExchangePriority;
+      }
+
       return (b.score ?? 0) - (a.score ?? 0);
     });
 

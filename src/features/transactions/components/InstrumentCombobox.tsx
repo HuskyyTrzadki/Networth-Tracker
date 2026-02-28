@@ -38,6 +38,7 @@ type Props = Readonly<{
   triggerClassName?: string;
   listenForFocusShortcut?: boolean;
   renderItemAction?: (option: InstrumentSearchResult) => ReactNode;
+  showSelectedIndicator?: boolean;
 }>;
 
 const MIN_QUERY_LENGTH = 2;
@@ -55,6 +56,7 @@ export function InstrumentCombobox({
   triggerClassName,
   listenForFocusShortcut = false,
   renderItemAction,
+  showSelectedIndicator = true,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -209,13 +211,15 @@ export function InstrumentCombobox({
                     }}
                     value={`${option.ticker} ${option.name} ${option.symbol}`}
                   >
-                    <Check
-                      aria-hidden
-                      className={cn(
-                        "mr-2 size-4",
-                        option.id === value?.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
+                    {showSelectedIndicator ? (
+                      <Check
+                        aria-hidden
+                        className={cn(
+                          "mr-2 size-4",
+                          option.id === value?.id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    ) : null}
                     <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
                       <div className="flex items-center gap-2">
                         <InstrumentLogoImage
@@ -235,6 +239,12 @@ export function InstrumentCombobox({
                       </span>
                       <span className="flex items-center justify-end gap-1.5">
                         {renderItemAction ? renderItemAction(option) : null}
+                        <Badge
+                          className="border-border/70 bg-muted/24 font-mono text-[10px] tabular-nums text-muted-foreground/90"
+                          title={option.currency}
+                        >
+                          {option.currency}
+                        </Badge>
                         {option.exchange ? (
                           <Badge
                             className="max-w-[140px] truncate border-border/70 bg-muted/24 text-[10px] text-muted-foreground/90"

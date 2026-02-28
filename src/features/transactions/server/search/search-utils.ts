@@ -2,6 +2,36 @@ import type { InstrumentProvider, InstrumentType } from "../../lib/instrument-se
 
 import { ALLOWED_QUOTE_TYPES, MAX_LIMIT } from "./search-types";
 
+const EXCHANGE_PRIORITY = new Map<string, number>([
+  ["NYSE", 0],
+  ["NASDAQ", 1],
+  ["LSE", 2],
+  ["WSE", 3],
+  ["FRANKFURT", 4],
+]);
+
+const NASDAQ_ALIASES = new Set([
+  "NASDAQ",
+  "NMS",
+  "NGM",
+  "NCM",
+  "NASDAQGS",
+  "NASDAQGM",
+  "NASDAQCM",
+]);
+
+const NYSE_ALIASES = new Set(["NYSE", "NYQ", "NYE"]);
+const LSE_ALIASES = new Set(["LSE", "LON", "XLON"]);
+const WSE_ALIASES = new Set(["WSE", "WARSAW", "WARSZAWA", "GPW", "XWAR"]);
+const FRANKFURT_ALIASES = new Set([
+  "FRANKFURT",
+  "FRA",
+  "XFRA",
+  "XETRA",
+  "ETR",
+  "XETR",
+]);
+
 export const isAllowedInstrumentType = (
   value?: string | null
 ): value is InstrumentType =>
@@ -60,6 +90,66 @@ export const getDisplayTicker = (
 
 export const clampLimit = (value: number) =>
   Math.max(1, Math.min(value, MAX_LIMIT));
+
+const sanitizeExchange = (value: string) =>
+  value.trim().toUpperCase().replace(/\s+/g, " ");
+
+export const normalizeExchangeLabel = (value?: string | null) => {
+  const normalized = value ? sanitizeExchange(value) : "";
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (
+    NASDAQ_ALIASES.has(normalized) ||
+    normalized.includes("NASDAQ")
+  ) {
+    return "NASDAQ";
+  }
+
+  if (NYSE_ALIASES.has(normalized) || normalized.includes("NEW YORK")) {
+    return "NYSE";
+  }
+
+  if (
+    LSE_ALIASES.has(normalized) ||
+    normalized.includes("LONDON STOCK EXCHANGE")
+  ) {
+    return "LSE";
+  }
+
+  if (
+    WSE_ALIASES.has(normalized) ||
+    normalized.includes("WARSAW") ||
+    normalized.includes("GIELD")
+  ) {
+    return "WSE";
+  }
+
+  if (
+    FRANKFURT_ALIASES.has(normalized) ||
+    normalized.includes("FRANKFURT")
+  ) {
+    return "FRANKFURT";
+  }
+
+  return normalized;
+};
+
+export const getExchangePriority = (input: Readonly<{
+  exchange?: string | null;
+  exchangeDisplayName?: string | null;
+}>) => {
+  const normalized =
+    normalizeExchangeLabel(input.exchangeDisplayName) ??
+    normalizeExchangeLabel(input.exchange);
+
+  if (!normalized) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return EXCHANGE_PRIORITY.get(normalized) ?? Number.POSITIVE_INFINITY;
+};
 
 export const rankQuote = (
   quote: Readonly<{
