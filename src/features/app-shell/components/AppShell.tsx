@@ -22,17 +22,20 @@ type Props = Readonly<{
     id: string;
     name: string;
     baseCurrency: string;
+    isDemo: boolean;
   }[];
+  demoSidebarCallout?: React.ReactNode;
   guestUpgradeBanner?: GuestUpgradeBannerModel | null;
-  showGuestSettingsBadge?: boolean;
+  settingsBadge?: "guest" | "demo" | null;
   className?: string;
 }>;
 
 export function AppShell({
   children,
   portfolios,
+  demoSidebarCallout = null,
   guestUpgradeBanner = null,
-  showGuestSettingsBadge = false,
+  settingsBadge = null,
   className,
 }: Props) {
   const router = useRouter();
@@ -78,8 +81,9 @@ export function AppShell({
   return (
     <SidebarProvider style={sidebarStyle}>
       <AppSidebar
+        demoCallout={demoSidebarCallout}
         portfolios={portfolios}
-        showGuestSettingsBadge={showGuestSettingsBadge}
+        settingsBadge={settingsBadge}
       />
       <a
         href="#main-content"

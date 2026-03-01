@@ -6,6 +6,7 @@ import { Button } from "@/features/design-system/components/ui/button";
 import { AnimatedReveal, StatusStrip } from "@/features/design-system";
 import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import {
+  DemoPortfolioBadge,
   PortfolioDashboardSkeleton,
   PortfolioMobileHeaderActions,
 } from "@/features/portfolio";
@@ -56,6 +57,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
 
   const baseCurrency = selectedPortfolio?.baseCurrency ?? "PLN";
   const scopeLabel = selectedPortfolio ? selectedPortfolio.name : "Wszystkie portfele";
+  const isDemo = selectedPortfolio?.isDemo ?? false;
 
   return (
     <main
@@ -72,7 +74,10 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
 
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <StatusStrip className="w-fit" label={scopeLabel} />
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusStrip className="w-fit" label={scopeLabel} />
+                {isDemo ? <DemoPortfolioBadge className="px-3 py-1.5 text-xs" /> : null}
+              </div>
             </div>
             <Button asChild size="lg" className="h-11 w-full lg:w-auto">
               <Link

@@ -105,14 +105,12 @@ export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
       }
     >
       <div className="space-y-4">
-        {!isReadOnly ? (
-          <Section
-            title="60 dni wstecz"
-            items={data.pastItems}
-            isReadOnly={isReadOnly}
-            portfolioId={selectedPortfolioId}
-          />
-        ) : null}
+        <Section
+          title="60 dni wstecz"
+          items={data.pastItems}
+          isReadOnly={isReadOnly}
+          portfolioId={selectedPortfolioId}
+        />
         <Section
           title="60 dni naprzód"
           items={data.upcomingItems}

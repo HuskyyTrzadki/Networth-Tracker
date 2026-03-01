@@ -2,14 +2,12 @@
 
 import { LoaderCircle } from "lucide-react";
 
-import { StatusStrip } from "@/features/design-system";
 import { Button } from "@/features/design-system/components/ui/button";
 
 type SubmitIntent = "close" | "addAnother";
 
 export function AddTransactionDialogFooter({
   isEditMode,
-  isDirty,
   isSubmitting,
   isSubmittable,
   rootError,
@@ -18,7 +16,6 @@ export function AddTransactionDialogFooter({
   onSubmitIntentChange,
 }: Readonly<{
   isEditMode: boolean;
-  isDirty: boolean;
   isSubmitting: boolean;
   isSubmittable: boolean;
   rootError?: string;
@@ -26,25 +23,15 @@ export function AddTransactionDialogFooter({
   onClose: () => void;
   onSubmitIntentChange: (nextIntent: SubmitIntent) => void;
 }>) {
+  const errorMessage = rootError ? (
+    <p className="text-[12px] text-[color:var(--loss)]">{rootError}</p>
+  ) : null;
+
   return (
     <footer className="sticky bottom-0 z-10 border-t border-dashed border-border/65 bg-card/92 px-5 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:px-6 md:py-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-h-5 space-y-1">
-          {isSubmitting ? (
-            <StatusStrip label="Status: zapisywanie" />
-          ) : rootError ? (
-            <StatusStrip label="Status: błąd zapisu" tone="negative" />
-          ) : isDirty ? (
-            <StatusStrip label="Status: w edycji" />
-          ) : (
-            <StatusStrip label="Status: gotowe" />
-          )}
-          {rootError ? (
-            <p className="text-[12px] text-[color:var(--loss)]">{rootError}</p>
-          ) : null}
-        </div>
-
-        {isEditMode ? (
+      {isEditMode ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-h-5">{errorMessage}</div>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button
               onClick={onClose}
@@ -70,8 +57,11 @@ export function AddTransactionDialogFooter({
               )}
             </Button>
           </div>
-        ) : (
-          <div className="flex w-full max-w-[320px] flex-col gap-2 sm:ml-auto">
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {errorMessage}
+          <div className="flex w-full flex-col gap-2">
             <Button
               disabled={!isSubmittable || isSubmitting}
               onClick={() => onSubmitIntentChange("close")}
@@ -104,8 +94,8 @@ export function AddTransactionDialogFooter({
               )}
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </footer>
   );
 }

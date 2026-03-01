@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { type MouseEvent, useState } from "react";
 
 import { CreatePortfolioDialog } from "@/features/portfolio";
+import { DemoPortfolioBadge } from "@/features/portfolio";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Sidebar,
@@ -40,14 +41,17 @@ type Props = Readonly<{
     id: string;
     name: string;
     baseCurrency: string;
+    isDemo: boolean;
   }[];
-  showGuestSettingsBadge?: boolean;
+  demoCallout?: React.ReactNode;
+  settingsBadge?: "guest" | "demo" | null;
 }>;
 
 export function AppSidebar({
   className,
   portfolios,
-  showGuestSettingsBadge = false,
+  demoCallout = null,
+  settingsBadge = null,
 }: Props) {
   const pathname = useAppPathname();
   const router = useRouter();
@@ -197,6 +201,9 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
+        {settingsBadge === "demo" ? (
+          <div className="px-2 pt-2">{demoCallout}</div>
+        ) : null}
         <div className="px-2 pt-2">
           <ThemeSwitch />
         </div>
@@ -228,7 +235,7 @@ export function AppSidebar({
                     <Icon aria-hidden="true" />
                     <LinkLabel className="w-full justify-between gap-3">
                       <span>{item.label}</span>
-                      {item.id === "settings" && showGuestSettingsBadge ? (
+                      {item.id === "settings" && settingsBadge === "guest" ? (
                         <span className="ml-3 inline-flex items-center gap-2.5 rounded-full border border-amber-300/70 bg-amber-50/90 px-2.5 py-1 text-[10px] text-amber-900 shadow-[var(--surface-shadow)]">
                           <span className="inline-flex items-center gap-1.5 font-semibold tracking-[0.04em]">
                             <CircleAlert className="size-3" aria-hidden="true" />
@@ -238,6 +245,9 @@ export function AppSidebar({
                             Uaktualnij
                           </span>
                         </span>
+                      ) : null}
+                      {item.id === "settings" && settingsBadge === "demo" ? (
+                        <DemoPortfolioBadge className="ml-3 px-2.5 py-1 text-[10px] tracking-[0.14em]" />
                       ) : null}
                     </LinkLabel>
                   </Link>

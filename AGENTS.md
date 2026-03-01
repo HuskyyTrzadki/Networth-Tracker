@@ -144,6 +144,9 @@ When shipping feature/architecture changes:
 - Stock report watchlist toggle (`StockFavoriteToggleButton`) receives initial favorite state from server render and uses optimistic Server Action updates (no client fetch/sync effect on mount).
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
+- Onboarding CTA `Otwórz portfel demonstracyjny` now clones a backend-seeded demo bundle into the current guest/authenticated user instead of using a shared demo login.
+- Demo bundle V1 includes two portfolios (`IKE` + regular), a prominent `DEMO` badge in portfolio surfaces, broad seeded history (PL + US stocks, custom assets, buys/sells, cash deposits/withdrawals), and must stay idempotent per user.
+- Demo snapshot history is optimized via shared cache (`demo_bundle_snapshot_cache`) in copy-on-clone mode: the first generated demo history can be reused by later demo users without shared UI reads or per-user full rebuild waits.
 - Portfolio model includes `is_tax_advantaged` (IKE/IKZE) used by dividend smart-default hints.
 - Dividend booking is user-confirmed (`/api/dividends/book`) with idempotency key `dividend_event_key`; Yahoo is discovery-only (`/api/dividends/inbox`).
 - Portfolio create + dividend booking flows have Server Action mutation boundaries (`createPortfolioAction`, `bookDividendAction`) with cache revalidation; client dialogs no longer post directly to route handlers.

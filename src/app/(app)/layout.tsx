@@ -3,7 +3,11 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import { getGuestUpgradeNudgeState } from "@/features/auth/server/guest-upgrade-nudges";
-import { AppShell } from "@/features/app-shell";
+import {
+  AppShell,
+  DemoAccountCallout,
+  DemoAccountPageFooter,
+} from "@/features/app-shell";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 type Props = Readonly<{
@@ -35,11 +39,23 @@ async function AuthenticatedAppShell({ children }: AuthenticatedAppShellProps) {
 
   return (
     <AppShell
+      demoSidebarCallout={
+        guestUpgradeState.settingsBadge === "demo" ? <DemoAccountCallout /> : null
+      }
       portfolios={portfolios}
       guestUpgradeBanner={guestUpgradeState.banner}
-      showGuestSettingsBadge={guestUpgradeState.showSettingsBadge}
+      settingsBadge={guestUpgradeState.settingsBadge}
     >
-      {children}
+      <>
+        {children}
+        {guestUpgradeState.settingsBadge === "demo" ? (
+          <DemoAccountPageFooter>
+            <div className="px-6 pb-10 pt-6">
+              <DemoAccountCallout className="max-w-sm" />
+            </div>
+          </DemoAccountPageFooter>
+        ) : null}
+      </>
     </AppShell>
   );
 }
@@ -65,6 +81,7 @@ const getSidebarPortfoliosCached = async () => {
       id: string;
       name: string;
       baseCurrency: string;
+      isDemo: boolean;
     }[];
   }
 };

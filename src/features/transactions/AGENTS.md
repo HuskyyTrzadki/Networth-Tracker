@@ -149,7 +149,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction close guard uses an in-app confirmation dialog (`Odrzucić niezapisane zmiany?`) instead of `window.confirm`, so behavior stays consistent with design-system modals.
 - Add-transaction close guard now uses shared `AlertDialog` shim primitives (`AlertDialogAction`/`AlertDialogCancel`) for clearer destructive-confirm semantics while keeping current dependency set.
 - Add-transaction dialog container marks submit-in-progress semantics on the shell (`aria-busy`, `data-submitting`) to align modal accessibility with async state.
-- Add-transaction footer now uses explicit status rhythm (`Status: gotowe / w edycji / zapisywanie / błąd zapisu`) plus short inline error text, instead of error-only feedback.
+- Add-transaction footer is intentionally simpler now: create mode uses full-width primary/secondary actions across the modal width and only shows inline error text when needed, without passive status strips.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.

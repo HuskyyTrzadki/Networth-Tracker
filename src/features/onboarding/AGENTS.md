@@ -26,9 +26,19 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Exact duplicates (same ticker + same quantity) are deduped silently; different quantities remain separate rows.
 - Commit creates a new portfolio, writes BUY transactions dated today with `consumeCash=false`, and bootstraps snapshots for today.
 - Bootstrap writes include notes tag `[SYSTEM: ONBOARDING_BOOTSTRAP]` for later reporting.
+- Onboarding choice CTA `Otwórz portfel demonstracyjny` now uses server action `open-demo-portfolio-action` to clone a backend-seeded demo bundle into the current user instead of relying on a shared demo login.
+- Demo bundle templates live in Supabase tables (`demo_bundles`, `demo_bundle_portfolios`, `demo_bundle_transactions`) and are backend-only; user-owned clone mappings live in `demo_bundle_instances` + `demo_bundle_instance_portfolios`.
+- Demo clone V1 creates two portfolios (`Demo IKE Globalny`, `Demo Portfel Aktywny`), replays seeded buys/sells/cash deposits/withdrawals/custom assets, and redirects to `/portfolio`.
+- Demo history now uses shared snapshot cache (`demo_bundle_snapshot_cache`) in copy-on-clone mode:
+  - if cache exists, snapshot rows are copied directly into the new user’s `portfolio_snapshots`,
+  - if cache is empty, the first clone still returns after current snapshot bootstrap and warms the shared cache in best effort, so onboarding does not block on a long rebuild.
 - The same wizard can run in dialog mode for an existing portfolio; in that mode the portfolio step is skipped and commits target the selected portfolio instead of creating a new one.
 - Import does not store screenshot files after extraction.
 - Review step auto-matches tickers using instrument search and shows a USD total preview based on cached Yahoo quotes + FX.
-- Onboarding choice screen should use two equal-height cards with mirrored internal structure, short compare-friendly copy, and one primary takeaway per path to reduce decision fatigue.
+- Onboarding now starts with one unified step: create the user's own portfolio inline on the page before showing any method choice.
+- Only after portfolio creation should the choice screen appear with the two equal-height cards (`Wgraj zrzuty` vs `Dodaj transakcję`).
 - Primary CTAs on the onboarding choice cards should be visually prominent: larger than default buttons, matched in size across both cards, and clearly separated from secondary mode-switch actions.
-- The onboarding choice screen should avoid checklist-style `1. 2. 3.` content; prefer one centered icon, one badge, one title, one short paragraph, and one strong CTA per card so the speed-vs-precision trade-off is understandable within a few seconds.
+- The method-choice screen should avoid checklist-style `1. 2. 3.` content; prefer one centered icon, one badge, one title, one short paragraph, and one strong CTA per card so the speed-vs-precision trade-off is understandable within a few seconds.
+- Choice cards are informational containers, not clickable cards; do not add hover states that imply the whole card is an action when only the contained CTA/button is interactive.
+- Demo CTA under the choice cards should read like an inline text link (`Przygotuj portfel demonstracyjny`) rather than a tertiary button.
+- Demo accounts must not see that inline demo CTA on `/onboarding`; once the user is already inside demo, onboarding should only help them start a real portfolio.

@@ -30,6 +30,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `guest`: minimal upgrade actions (Google/email) + short 60-day retention note.
   - `signedIn`: compact account status + sign-out, without guest messaging.
 - Guest upgrade nudges are server-derived from `user.is_anonymous` plus count of `transactions.leg_role = 'ASSET'`; milestones are `>5` and `>15`, with the stronger second nudge taking precedence.
+- Anonymous demo accounts are treated separately from normal guests:
+  - shell upgrade banner is suppressed,
+  - sidebar settings chip shows `DEMO` instead of upgrade messaging,
+  - settings panel explains that the next step is to return to onboarding and start a real portfolio,
+  - demo settings intentionally hide Google/email upgrade controls and show only one primary CTA back to onboarding.
+- Demo exit CTAs must not be plain links: they should reset the anonymous demo session into a fresh non-demo anonymous session before redirecting to `/onboarding`, so demo and real portfolios never mix under one guest account.
+- Avoid exporting server-only auth UI through broad feature barrels when client/report code only needs one safe button; prefer direct imports for mixed server/client auth surfaces.
 - Signed-in Google CTA semantics were corrected: no more "Kontynuuj z Google" when already logged in; signed-in users can only see Google linking action when not linked.
 - Auth callback and signup confirmation redirects now resolve origin via forwarded headers (`x-forwarded-host/proto`) to avoid accidental localhost redirects behind proxies.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.

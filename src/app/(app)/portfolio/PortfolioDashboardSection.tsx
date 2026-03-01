@@ -15,7 +15,12 @@ import { listTransactions } from "@/features/transactions/server/list-transactio
 import { createClient } from "@/lib/supabase/server";
 
 type Props = Readonly<{
-  portfolios: readonly { id: string; name: string; baseCurrency: string }[];
+  portfolios: readonly {
+    id: string;
+    name: string;
+    baseCurrency: string;
+    isDemo: boolean;
+  }[];
   selectedPortfolioId: string | null;
   baseCurrency: string;
 }>;
@@ -58,7 +63,12 @@ const INITIAL_DASHBOARD_SNAPSHOT_DAYS = 400;
 const getPortfolioDashboardDataCached = async (
   selectedPortfolioId: string | null,
   baseCurrency: string,
-  portfolios: readonly { id: string; name: string; baseCurrency: string }[]
+  portfolios: readonly {
+    id: string;
+    name: string;
+    baseCurrency: string;
+    isDemo: boolean;
+  }[]
 ): Promise<DashboardData> => {
   "use cache: private";
 

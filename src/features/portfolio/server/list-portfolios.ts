@@ -1,11 +1,14 @@
 import type { createClient } from "@/lib/supabase/server";
 
+import { listDemoPortfolioIds } from "./list-demo-portfolio-ids";
+
 export type PortfolioSummary = Readonly<{
   id: string;
   name: string;
   baseCurrency: string;
   isTaxAdvantaged: boolean;
   createdAt: string;
+  isDemo: boolean;
 }>;
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
@@ -33,6 +36,7 @@ export async function listPortfolios(
   }
 
   const rows = (data ?? []) as PortfolioRow[];
+  const demoPortfolioIds = await listDemoPortfolioIds(rows.map((row) => row.id));
 
   return rows.map((row) => ({
     id: row.id,
@@ -40,5 +44,6 @@ export async function listPortfolios(
     baseCurrency: row.base_currency,
     isTaxAdvantaged: row.is_tax_advantaged,
     createdAt: row.created_at,
+    isDemo: demoPortfolioIds.has(row.id),
   }));
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
+import { DemoPortfolioBadge } from "../components/DemoPortfolioBadge";
 import {
   formatCurrencyString,
   getCurrencyFormatter,
@@ -12,6 +13,7 @@ import { cn } from "@/lib/cn";
 
 type Props = Readonly<{
   portfolioLabel: string;
+  isDemo?: boolean;
   baseCurrency: string;
   totalValueBase: string | null;
   dailyChangeBase: string | null;
@@ -20,6 +22,7 @@ type Props = Readonly<{
 
 export function PortfolioNetValueHero({
   portfolioLabel,
+  isDemo = false,
   baseCurrency,
   totalValueBase,
   dailyChangeBase,
@@ -142,8 +145,11 @@ export function PortfolioNetValueHero({
   return (
     <section className="rounded-lg border border-border/72 bg-card/94 px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="inline-flex rounded-sm border border-border/65 bg-background/72 px-2 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-[0.11em] text-muted-foreground/80">
-          {portfolioLabel}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-sm border border-border/65 bg-background/72 px-2 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-[0.11em] text-muted-foreground/80">
+            {portfolioLabel}
+          </div>
+          {isDemo ? <DemoPortfolioBadge className="px-3 py-1.5 text-xs" /> : null}
         </div>
         <div className="inline-flex rounded-sm border border-border/60 bg-background/72 px-2 py-0.5 font-mono text-[11px] font-medium tabular-nums text-muted-foreground/90">
           {baseCurrency}

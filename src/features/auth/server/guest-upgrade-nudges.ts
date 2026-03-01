@@ -8,6 +8,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 import { dismissGuestUpgradeNudgeStep } from "./profiles";
+import { isDemoAccount } from "./demo-account";
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
 type SupabaseServerClient = ReturnType<typeof createClient>;
@@ -19,7 +20,7 @@ type ProfileNudgeRow = Readonly<{
 
 export type GuestUpgradeNudgeState = Readonly<{
   isGuest: boolean;
-  showSettingsBadge: boolean;
+  settingsBadge: "guest" | "demo" | null;
   banner: GuestUpgradeBanner | null;
 }>;
 
@@ -43,7 +44,17 @@ export async function getGuestUpgradeNudgeState(
   if (!context || !context.user.is_anonymous) {
     return {
       isGuest: false,
-      showSettingsBadge: false,
+      settingsBadge: null,
+      banner: null,
+    };
+  }
+
+  const isDemoGuest = await isDemoAccount(context.user.id);
+
+  if (isDemoGuest) {
+    return {
+      isGuest: true,
+      settingsBadge: "demo",
       banner: null,
     };
   }
@@ -75,7 +86,7 @@ export async function getGuestUpgradeNudgeState(
 
   return {
     isGuest: true,
-    showSettingsBadge: true,
+    settingsBadge: "guest",
     banner,
   };
 }

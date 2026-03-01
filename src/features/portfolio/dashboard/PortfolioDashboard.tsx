@@ -24,6 +24,7 @@ type Props = Readonly<{
     id: string;
     name: string;
     baseCurrency: string;
+    isDemo: boolean;
   }[];
   selectedPortfolioId: string | null;
   summary: PortfolioSummary;
@@ -73,6 +74,10 @@ export function PortfolioDashboard({
   const selectedPortfolioName = selectedPortfolioId
     ? portfolios.find((portfolio) => portfolio.id === selectedPortfolioId)?.name ?? "—"
     : "Wszystkie portfele";
+  const isDemo =
+    selectedPortfolioId === null
+      ? false
+      : (portfolios.find((portfolio) => portfolio.id === selectedPortfolioId)?.isDemo ?? false);
 
   const portfolioLabel = selectedPortfolioName;
   const dailyChangeBase = resolveDailyChangeBase(summary.holdings);
@@ -88,6 +93,7 @@ export function PortfolioDashboard({
       <AnimatedReveal>
         <PortfolioNetValueHero
           portfolioLabel={portfolioLabel}
+          isDemo={isDemo}
           baseCurrency={summary.baseCurrency}
           totalValueBase={summary.totalValueBase}
           dailyChangeBase={dailyChangeBase}
@@ -114,7 +120,7 @@ export function PortfolioDashboard({
                   ? `Dane wyceny są częściowe: brak cen dla ${summary.missingQuotes} pozycji i brak FX dla ${summary.missingFx}.`
                   : "Wycena kompletna dla bieżącego widoku."}
               </p>
-              <p className="text-xs text-muted-foreground">Notowania opóźnione.</p>
+              <p className="text-xs text-muted-foreground">Notowania opóźnione 10 minut</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">

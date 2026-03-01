@@ -77,6 +77,317 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_bundle_instance_portfolios: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          portfolio_id: string
+          portfolio_template_key: string
+          user_id: string
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          portfolio_id: string
+          portfolio_template_key: string
+          user_id: string
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          portfolio_id?: string
+          portfolio_template_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_bundle_instance_portfolios_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "demo_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demo_bundle_instance_portfolios_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_bundle_instances: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_bundle_instances_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "demo_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_bundle_portfolios: {
+        Row: {
+          base_currency: string
+          bundle_id: string
+          created_at: string
+          id: string
+          is_tax_advantaged: boolean
+          name: string
+          sort_order: number
+          template_key: string
+        }
+        Insert: {
+          base_currency: string
+          bundle_id: string
+          created_at?: string
+          id?: string
+          is_tax_advantaged?: boolean
+          name: string
+          sort_order: number
+          template_key: string
+        }
+        Update: {
+          base_currency?: string
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          is_tax_advantaged?: boolean
+          name?: string
+          sort_order?: number
+          template_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_bundle_portfolios_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "demo_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_bundle_transactions: {
+        Row: {
+          asset_source: string
+          bundle_id: string
+          cash_currency: string | null
+          cashflow_type: string | null
+          consume_cash: boolean
+          created_at: string
+          custom_annual_rate_pct: number | null
+          custom_currency: string | null
+          custom_kind: string | null
+          custom_name: string | null
+          custom_valuation_kind: string | null
+          fee: number
+          id: string
+          notes: string | null
+          portfolio_template_key: string
+          price: number
+          provider: string | null
+          provider_key: string | null
+          quantity: number
+          side: Database["public"]["Enums"]["transaction_side"]
+          sort_order: number
+          trade_date: string
+        }
+        Insert: {
+          asset_source: string
+          bundle_id: string
+          cash_currency?: string | null
+          cashflow_type?: string | null
+          consume_cash?: boolean
+          created_at?: string
+          custom_annual_rate_pct?: number | null
+          custom_currency?: string | null
+          custom_kind?: string | null
+          custom_name?: string | null
+          custom_valuation_kind?: string | null
+          fee?: number
+          id?: string
+          notes?: string | null
+          portfolio_template_key: string
+          price: number
+          provider?: string | null
+          provider_key?: string | null
+          quantity: number
+          side: Database["public"]["Enums"]["transaction_side"]
+          sort_order: number
+          trade_date: string
+        }
+        Update: {
+          asset_source?: string
+          bundle_id?: string
+          cash_currency?: string | null
+          cashflow_type?: string | null
+          consume_cash?: boolean
+          created_at?: string
+          custom_annual_rate_pct?: number | null
+          custom_currency?: string | null
+          custom_kind?: string | null
+          custom_name?: string | null
+          custom_valuation_kind?: string | null
+          fee?: number
+          id?: string
+          notes?: string | null
+          portfolio_template_key?: string
+          price?: number
+          provider?: string | null
+          provider_key?: string | null
+          quantity?: number
+          side?: Database["public"]["Enums"]["transaction_side"]
+          sort_order?: number
+          trade_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_bundle_transactions_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "demo_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_bundle_snapshot_cache: {
+        Row: {
+          as_of_eur: string | null
+          as_of_pln: string | null
+          as_of_usd: string | null
+          bucket_date: string
+          bundle_id: string
+          captured_at: string
+          id: string
+          is_partial_eur: boolean
+          is_partial_pln: boolean
+          is_partial_usd: boolean
+          missing_fx_eur: number
+          missing_fx_pln: number
+          missing_fx_usd: number
+          missing_quotes_eur: number
+          missing_quotes_pln: number
+          missing_quotes_usd: number
+          net_external_cashflow_eur: number | null
+          net_external_cashflow_pln: number | null
+          net_external_cashflow_usd: number | null
+          net_implicit_transfer_eur: number | null
+          net_implicit_transfer_pln: number | null
+          net_implicit_transfer_usd: number | null
+          portfolio_template_key: string | null
+          scope: Database["public"]["Enums"]["portfolio_snapshot_scope"]
+          total_value_eur: number | null
+          total_value_pln: number | null
+          total_value_usd: number | null
+        }
+        Insert: {
+          as_of_eur?: string | null
+          as_of_pln?: string | null
+          as_of_usd?: string | null
+          bucket_date: string
+          bundle_id: string
+          captured_at?: string
+          id?: string
+          is_partial_eur?: boolean
+          is_partial_pln?: boolean
+          is_partial_usd?: boolean
+          missing_fx_eur?: number
+          missing_fx_pln?: number
+          missing_fx_usd?: number
+          missing_quotes_eur?: number
+          missing_quotes_pln?: number
+          missing_quotes_usd?: number
+          net_external_cashflow_eur?: number | null
+          net_external_cashflow_pln?: number | null
+          net_external_cashflow_usd?: number | null
+          net_implicit_transfer_eur?: number | null
+          net_implicit_transfer_pln?: number | null
+          net_implicit_transfer_usd?: number | null
+          portfolio_template_key?: string | null
+          scope: Database["public"]["Enums"]["portfolio_snapshot_scope"]
+          total_value_eur?: number | null
+          total_value_pln?: number | null
+          total_value_usd?: number | null
+        }
+        Update: {
+          as_of_eur?: string | null
+          as_of_pln?: string | null
+          as_of_usd?: string | null
+          bucket_date?: string
+          bundle_id?: string
+          captured_at?: string
+          id?: string
+          is_partial_eur?: boolean
+          is_partial_pln?: boolean
+          is_partial_usd?: boolean
+          missing_fx_eur?: number
+          missing_fx_pln?: number
+          missing_fx_usd?: number
+          missing_quotes_eur?: number
+          missing_quotes_pln?: number
+          missing_quotes_usd?: number
+          net_external_cashflow_eur?: number | null
+          net_external_cashflow_pln?: number | null
+          net_external_cashflow_usd?: number | null
+          net_implicit_transfer_eur?: number | null
+          net_implicit_transfer_pln?: number | null
+          net_implicit_transfer_usd?: number | null
+          portfolio_template_key?: string | null
+          scope?: Database["public"]["Enums"]["portfolio_snapshot_scope"]
+          total_value_eur?: number | null
+          total_value_pln?: number | null
+          total_value_usd?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_bundle_snapshot_cache_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "demo_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_bundles: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       fx_daily_rates_cache: {
         Row: {
           as_of: string

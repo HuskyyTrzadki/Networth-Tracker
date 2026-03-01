@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 
-import { ReportShellMenuTrigger } from "@/features/app-shell";
+import { ReportShellMenuTrigger } from "@/features/app-shell/components/ReportShell";
 import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { StockFavoriteToggleButton } from "@/features/stocks/components/StockFavoriteToggleButton";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";

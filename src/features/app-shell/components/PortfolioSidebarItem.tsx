@@ -6,6 +6,7 @@ import { type MouseEvent, useState, useTransition } from "react";
 
 import { deletePortfolioAction } from "@/features/portfolio/server/delete-portfolio-action";
 import { Button } from "@/features/design-system/components/ui/button";
+import { DemoPortfolioBadge } from "@/features/portfolio";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ type Props = Readonly<{
     id: string;
     name: string;
     baseCurrency: string;
+    isDemo: boolean;
   };
   isActive: boolean;
   onDeleted: (portfolioId: string) => void;
@@ -112,7 +114,10 @@ export function PortfolioSidebarItem({
           onClick={handlePortfolioNavigationClick}
         >
           <LinkLabel className="min-w-0 flex-1 truncate">{portfolio.name}</LinkLabel>
-          <span className="ml-auto font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
+          {portfolio.isDemo ? (
+            <DemoPortfolioBadge className="ml-auto mr-2 shrink-0 border-emerald-800/70 bg-emerald-400 px-2 py-0.5 text-[9px] tracking-[0.18em] text-emerald-950" />
+          ) : null}
+          <span className="font-mono text-[11px] text-sidebar-foreground/45 tabular-nums">
             {portfolio.baseCurrency}
           </span>
         </Link>

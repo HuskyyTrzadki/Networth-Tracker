@@ -369,7 +369,6 @@ export function AddTransactionDialogContent({
 
           {!isScreenshotMode ? (
             <AddTransactionDialogFooter
-              isDirty={isDirty}
               isEditMode={isEditMode}
               isSubmittable={isSubmittable}
               isSubmitting={isSubmitting}

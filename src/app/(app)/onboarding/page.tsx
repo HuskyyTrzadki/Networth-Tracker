@@ -2,8 +2,8 @@ import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { isDemoAccount } from "@/features/auth/server/demo-account";
 import { Button } from "@/features/design-system/components/ui/button";
-import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { OnboardingWizard } from "@/features/onboarding";
 import { createClient } from "@/lib/supabase/server";
 
@@ -46,8 +46,9 @@ export default async function OnboardingPage({ searchParams }: Props) {
     );
   }
 
-  const portfolios = await listPortfolios(supabase);
-  const firstPortfolioId = portfolios[0]?.id ?? null;
+  const demoGuest = data.user.is_anonymous
+    ? await isDemoAccount(data.user.id).catch(() => false)
+    : false;
   const initialMode =
     getFirstParam(params.quickStart) === "1" ||
     getFirstParam(params.mode) === "screenshot"
@@ -57,8 +58,8 @@ export default async function OnboardingPage({ searchParams }: Props) {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-6 py-10">
       <OnboardingWizard
-        existingPortfolioId={firstPortfolioId}
         initialMode={initialMode}
+        showDemoPortfolioCta={!demoGuest}
       />
     </main>
   );

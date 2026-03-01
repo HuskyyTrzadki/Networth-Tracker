@@ -126,6 +126,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio selector UI (desktop `PortfolioSwitcher` + mobile `PortfolioMobileHeaderActions`) is shown only in aggregate view (`/portfolio`) and hidden in single-portfolio view (`/portfolio/<id>`).
 - Portfolio selection keeps canonical path navigation for `/portfolio` and `/portfolio/<id>`; on other pages it syncs `portfolio` URL query with `nuqs` parser state (`portfolio-query-state.ts`).
 - Single-portfolio view (`/portfolio/<id>`) exposes a prominent `Dodaj transakcję` CTA in the header; it opens intercepted `/transactions/new?portfolio=<id>` modal with forced portfolio selection.
+- Portfolio summaries now include `isDemo`, derived server-side from `demo_bundle_instance_portfolios`, so shell/header/hero surfaces can render explicit demo chrome without Supabase-specific UI joins.
+- Demo portfolios render a large `DEMO` badge in both page header and net-value hero; treat this as V1-required visibility, not optional ornament.
+- Dividend inbox now renders the past 60-day section even in aggregate read-only mode, so demo/overview views can still show recent unpaid events without allowing booking from `/portfolio`.
 - Aggregate and single-portfolio routes share one loading skeleton (`src/app/(app)/portfolio/PortfolioRouteLoading.tsx`) so switching portfolios displays immediate pending feedback.
 - Portfolio route loaders (`/portfolio` and `/portfolio/<id>`) gate heavy skeleton rendering behind a short client delay (~150ms) via `DelayedPortfolioRouteLoading` to avoid flash/flicker on fast cached transitions.
 - Onboarding route (`/onboarding`) now offers a screenshot import path that creates a new portfolio via a dedicated wizard and bootstraps transactions dated today, then navigates to canonical `/portfolio/<id>`.

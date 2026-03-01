@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { AlertTriangle } from "lucide-react";
 
 import { getAuthUser } from "@/features/auth/server/service";
+import { isDemoAccount } from "@/features/auth/server/demo-account";
 import { AnimatedReveal } from "@/features/design-system";
 import {
   Alert,
@@ -13,13 +14,18 @@ import { cn } from "@/lib/cn";
 
 import { AuthActions } from "./AuthActions";
 import { GuestUpgradeGoogleButton } from "./GuestUpgradeGoogleButton";
+import { StartRealPortfolioButton } from "./StartRealPortfolioButton";
 
 type Props = Readonly<{
   showAuthError: boolean;
 }>;
 
 export async function AuthSettingsSection({ showAuthError }: Props) {
-  const user = await getAuthUser(await cookies());
+  const cookieStore = await cookies();
+  const user = await getAuthUser(cookieStore);
+  const demoGuest = user?.is_anonymous
+    ? await isDemoAccount(user.id).catch(() => false)
+    : false;
 
   const mode = !user ? "signedOut" : user.is_anonymous ? "guest" : "signedIn";
   const hasGoogleIdentity = Boolean(
@@ -32,14 +38,18 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
     mode === "signedOut"
       ? "Zaloguj się, aby wrócić do portfela."
       : mode === "guest"
-        ? "Uaktualnij konto, aby zachować dane."
+        ? demoGuest
+          ? "To konto pokazuje demo. Następny krok to uruchomić własny portfel."
+          : "Uaktualnij konto, aby zachować dane."
         : "Zarządzaj dostępem.";
   const statusLabel = mode === "guest" ? "Sesja gościa" : "Zalogowano";
   const primaryGoogleActionLabel =
     mode === "signedOut"
       ? "Kontynuuj z Google"
       : mode === "guest"
-        ? "Uaktualnij przez Google"
+        ? demoGuest
+          ? null
+          : "Uaktualnij przez Google"
         : hasGoogleIdentity
           ? null
           : "Połącz z Google";
@@ -58,17 +68,25 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
 
             {mode === "guest" ? (
               <Alert className="border-amber-300/70 bg-amber-50/65 px-4 py-4 text-foreground shadow-none">
-                <AlertTriangle className="mt-0.5 size-4 text-amber-700" aria-hidden="true" />
+                <AlertTriangle className="mt-0.5 mb-0.5 size-4 text-amber-700" aria-hidden="true" />
                 <div className="space-y-3">
                   <AlertTitle className="text-sm font-semibold text-amber-950">
-                    Konto gościa jest tymczasowe
+                    {demoGuest ? "Tryb demo" : "Konto gościa jest tymczasowe"}
                   </AlertTitle>
                   <AlertDescription className="text-sm leading-6 text-amber-900/85">
-                    Dane nie są jeszcze zapisane na stałe.
+                    {demoGuest
+                      ? "To konto zawiera przykładowe dane demonstracyjne. Wróć do onboardingu, aby zacząć od własnego portfela i własnej historii."
+                      : "Uaktualnij konto, aby nie stracić danych."}
                   </AlertDescription>
-                  <div>
-                    <GuestUpgradeGoogleButton nextPath={nextPath} />
-                  </div>
+                  {demoGuest ? (
+                    <div>
+                      <StartRealPortfolioButton className="h-9 rounded-md bg-black px-4 text-white hover:bg-black/90" />
+                    </div>
+                  ) : (
+                    <div>
+                      <GuestUpgradeGoogleButton nextPath={nextPath} />
+                    </div>
+                  )}
                 </div>
               </Alert>
             ) : null}
@@ -102,18 +120,14 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
               </div>
             ) : null}
 
-            <AuthActions
-              mode={mode}
-              nextPath={nextPath}
-              userEmail={userEmail}
-              primaryGoogleActionLabel={primaryGoogleActionLabel}
-            />
-
-            {mode === "guest" ? (
-              <p className="border-t border-dashed border-border/70 pt-4 text-xs text-muted-foreground">
-                Dane gościa mogą zostać usunięte po 60 dniach braku aktywności.
-              </p>
-            ) : null}
+            {demoGuest && mode === "guest" ? null : (
+              <AuthActions
+                mode={mode}
+                nextPath={nextPath}
+                userEmail={userEmail}
+                primaryGoogleActionLabel={primaryGoogleActionLabel}
+              />
+            )}
           </CardContent>
         </Card>
       </AnimatedReveal>

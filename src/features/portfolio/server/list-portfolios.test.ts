@@ -7,16 +7,28 @@ type QueryResult<T> = Promise<{
   error: { message: string } | null;
 }>;
 
-const createSupabaseStub = <T>(result: QueryResult<T>) => {
-  const query = {
-    select: () => query,
-    eq: () => query,
-    is: () => query,
-    order: () => result,
-  };
+const createSupabaseStub = <T, U>(
+  portfolioResult: QueryResult<T>,
+  demoResult: QueryResult<U> = Promise.resolve({ data: [], error: null })
+) => {
+  const createPortfolioQuery = () => ({
+    select: () => ({
+      is: () => ({
+        order: () => portfolioResult,
+      }),
+    }),
+  });
 
   return {
-    from: () => query,
+    from: (table: string) => {
+      if (table === "demo_bundle_instance_portfolios") {
+        return {
+          select: () => demoResult,
+        };
+      }
+
+      return createPortfolioQuery();
+    },
   };
 };
 
@@ -34,6 +46,10 @@ describe("listPortfolios", () => {
           },
         ],
         error: null,
+      }),
+      Promise.resolve({
+        data: [{ portfolio_id: "p1" }],
+        error: null,
       })
     );
 
@@ -44,6 +60,7 @@ describe("listPortfolios", () => {
         baseCurrency: "PLN",
         isTaxAdvantaged: true,
         createdAt: "2026-01-01",
+        isDemo: true,
       },
     ]);
   });

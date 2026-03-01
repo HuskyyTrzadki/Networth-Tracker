@@ -46,7 +46,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Sidebar portfolio delete (`PortfolioSidebarItem`) executes server action (`delete-portfolio-action`) and redirects to `/portfolio` when the active portfolio is removed.
 - Sidebar navigation is optimistic: on plain left-click, active highlight switches immediately to intended destination (including portfolio rows) before pathname commit, then resets to canonical pathname when navigation completes.
 - Sidebar links explicitly prefetch on hover intent (`router.prefetch`) and keep `next/link` prefetch enabled, so desktop navigation warms RSC payloads before click.
-- Guest users now get a persistent warning pill next to sidebar `Ustawienia`, plus a shell-level dismissible upgrade banner once they pass transaction milestones (`>5`, `>15` asset legs). Only one banner shows at a time, dismissal is persisted server-side in `profiles`, and CTA always points to `/settings`.
+- Guest users now get a sidebar settings badge driven by server state: normal guests see the existing upgrade pill, while demo guests see a simple `DEMO` badge instead of upgrade pressure.
+- Shell-level guest upgrade banner still appears for normal anonymous users after transaction milestones (`>5`, `>15` asset legs), but it is intentionally suppressed for demo guests so demo mode does not look like a real portfolio at risk.
+- Demo guests get a reusable `DemoAccountCallout` with one primary exit CTA (`Załóż własny portfel`); it should stay visible in the sidebar footer and again at the bottom of app pages so demo users always have a clear way back to onboarding.
+- That demo CTA should reset the anonymous demo session into a fresh non-demo guest session before going to `/onboarding`; it must not be a plain link, otherwise demo and real portfolios get mixed in one account.
+- The bottom-page `DemoAccountCallout` is intentionally hidden on `/settings` and `/onboarding` to avoid repeating the same demo guidance on pages that already explain the next step.
+- Report/public shell consumers should avoid importing the broad `app-shell` barrel when they only need a small client-safe primitive like `ReportShellMenuTrigger`; use direct component imports to avoid pulling unrelated server-only exports into report bundles.
+- Portfolio rows now accept `isDemo` from server portfolio summaries; demo portfolios render a prominent `DEMO` badge directly in the desktop sidebar row.
 - Shell-owned page chrome should avoid duplicate context labels; prefer a single page title plus one short scope/status cue instead of stacked eyebrow + title + subtitle variants.
 
 ## Boundaries
