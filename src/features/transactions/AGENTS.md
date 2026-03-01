@@ -152,6 +152,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction footer is intentionally simpler now: create mode uses full-width primary/secondary actions across the modal width and only shows inline error text when needed, without passive status strips.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
+- Trade markers exposed to the stock report are merged server-side per day:
+  - net-positive day -> green buy marker,
+  - net-negative day -> red sell marker,
+  - net-flat day -> hidden,
+  - hover uses merged trade totals plus per-portfolio breakdown.
 - DB index migration `20260216120000_transactions_query_indexes.sql` aligns transaction query paths with list/trade-marker/snapshot range predicates.
 - Save success UX includes global toast feedback with undo (`Cofnij` for 10s). Undo uses transaction server action delete and re-triggers snapshot rebuild events.
 - Transactions row delete uses optimistic hide with rollback on failure (`TransactionsTable` + `TransactionsRowActions`) and executes delete via server action.

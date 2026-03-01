@@ -148,7 +148,7 @@ export type StockChartResponse = Readonly<{
   points: readonly StockChartPoint[];
 }>;
 
-export type StockTradeMarker = Readonly<{
+export type StockTradeMarkerTrade = Readonly<{
   id: string;
   tradeDate: string;
   side: "BUY" | "SELL";
@@ -156,4 +156,29 @@ export type StockTradeMarker = Readonly<{
   quantity: number;
   portfolioId: string;
   portfolioName: string;
+}>;
+
+export type StockTradeMarkerPortfolioSummary = Readonly<{
+  portfolioId: string;
+  portfolioName: string;
+  side: "BUY" | "SELL";
+  netQuantity: number;
+  grossNotional: number;
+  tradeCount: number;
+}>;
+
+export type StockTradeMarker = Readonly<{
+  id: string;
+  tradeDate: string;
+  side: "BUY" | "SELL";
+  netQuantity: number;
+  weightedPrice: number;
+  grossNotional: number;
+  buyQuantity: number;
+  sellQuantity: number;
+  buyNotional: number;
+  sellNotional: number;
+  tradeCount: number;
+  portfolios: readonly StockTradeMarkerPortfolioSummary[];
+  trades: readonly StockTradeMarkerTrade[];
 }>;

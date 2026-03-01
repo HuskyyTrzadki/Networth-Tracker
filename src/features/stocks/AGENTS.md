@@ -85,6 +85,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Valuation summary service is fail-soft: when Yahoo summary fetch fails and no DB cache row exists, it returns an empty normalized summary (null metrics) instead of throwing, to avoid crashing report prefetch/render.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
 - Private chart API (`/api/stocks/[providerKey]/chart`) and trade-markers API (`/api/stocks/[providerKey]/trade-markers`) use shared route auth helper (`src/lib/http/route-handler.ts`) and delegate to feature/server services.
+- Report page stays public/cache-first; personalized trade markers are fetched client-side from the authenticated trade-markers API so stock content still paints instantly for anonymous users.
+- Report chart also receives initial trade markers from server render when the user is authenticated, so stock report pages do not rely on a client refetch to show existing BUY/SELL markers on first paint.
 - Stock details sections (`StockChartSection`, `StockMetricsSection`, instrument header) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads.
 - Report route keeps public URL `/stocks/[providerKey]` and now uses a 2-column clarity-first layout:
   - left rail: quick facts + company profile + CEO/compensation + insider trades,
@@ -128,6 +130,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - flat -> `--chart-1`.
 - Chart draw animation is intentionally slower and reduced-motion safe.
 - `StockChartCard` overlays optional buy/sell trade markers from authenticated transactions.
+- Real trade markers are merged per day before they reach the chart:
+  - same-day buys/sells collapse into one marker,
+  - marker direction follows net quantity (`BUY` for net positive, `SELL` for net negative),
+  - flat day activity (net zero) is hidden,
+  - marker size is scaled from merged dominant-side notional with a compressed small-radius curve,
+  - hover card shows compact merged trade details (`netto`, `srednia cena`, `wartosc`, count summary).
+- Real trade markers render in the shared chart annotation band above the price line (not directly on top of the series) and use dotted vertical guides for temporal anchoring.
+- Trade markers are clustered client-side when they are too close on the active timeframe; clustering is presentation logic based on current chart width and keeps hover details aggregated.
 - `StockChartCard` supports optional mock event markers (`Wyniki (konsensus vs raport)`, `Wazne wydarzenia`) rendered as vertical guides with top-band dots, hover highlight, and floating cards:
   - earnings card: estimate vs reported for both revenue and EPS,
   - company event card: headline, short context, and placeholder image.

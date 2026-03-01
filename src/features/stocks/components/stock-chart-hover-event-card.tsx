@@ -55,6 +55,15 @@ const formatSignedPercent = (value: number) =>
     signDisplay: "always",
   }).format(value);
 
+const quantityFormatter = new Intl.NumberFormat("pl-PL", {
+  maximumFractionDigits: 2,
+});
+
+const formatQuantity = (value: number) => `${quantityFormatter.format(value)} szt.`;
+
+const formatSignedQuantity = (value: number, side: "BUY" | "SELL") =>
+  `${side === "BUY" ? "+" : "-"}${formatQuantity(value)}`;
+
 export function StockChartHoverEventCard({
   marker,
   x,
@@ -138,9 +147,51 @@ export function StockChartHoverEventCard({
     );
   }
 
+  if (marker.kind === "tradeMarker") {
+    const tradeAction = marker.side === "BUY" ? "Zakup netto" : "Sprzedaz netto";
+    const tradeDateLabel = marker.tradeDateEnd
+      ? `${formatLabelDate(marker.tradeDate)} - ${formatLabelDate(marker.tradeDateEnd)}`
+      : formatLabelDate(marker.tradeDate);
+    const compactSummary =
+      marker.clusteredMarkerCount > 1
+        ? `${marker.clusteredMarkerCount} znaczniki • ${marker.tradeCount} transakcji`
+        : `${marker.tradeCount} transakcji`;
+
+    return (
+      <div
+        className="pointer-events-none absolute z-20 w-[272px] rounded-md border border-border/80 bg-popover px-3 py-2 text-popover-foreground shadow-[var(--shadow)]"
+        style={cardStyle}
+      >
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          {tradeDateLabel}
+        </p>
+        <p className="mt-1 text-xs font-semibold">{tradeAction}</p>
+        <div className="mt-2 space-y-2 text-xs">
+          <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
+            <span className="text-muted-foreground">Netto</span>
+            <span className="text-right font-mono tabular-nums">
+              {formatSignedQuantity(marker.netQuantity, marker.side)}
+            </span>
+            <span className="text-muted-foreground">Srednia</span>
+            <span className="text-right font-mono tabular-nums">
+              {formatPrice(marker.weightedPrice, currency)}
+            </span>
+            <span className="text-muted-foreground">Wartosc</span>
+            <span className="text-right font-mono tabular-nums">
+              {formatCompactCurrency(marker.grossNotional, currency)}
+            </span>
+          </div>
+          <p className="border-t border-border/70 pt-1.5 text-[11px] text-muted-foreground">
+            {compactSummary}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (marker.kind === "userTrade") {
     const tradeAction = marker.side === "BUY" ? "Kupno" : "Sprzedaz";
-    const tradeDescription = `${tradeAction} ${new Intl.NumberFormat("pl-PL").format(marker.quantity)} akcji po cenie ${formatPrice(marker.executionPrice, currency)}.`;
+    const tradeDescription = `${tradeAction} ${quantityFormatter.format(marker.quantity)} akcji po cenie ${formatPrice(marker.executionPrice, currency)}.`;
 
     return (
       <div

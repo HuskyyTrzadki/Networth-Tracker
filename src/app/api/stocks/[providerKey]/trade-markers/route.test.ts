@@ -48,13 +48,38 @@ describe("GET /api/stocks/[providerKey]/trade-markers", () => {
 
     vi.mocked(listStockTradeMarkers).mockResolvedValueOnce([
       {
-        id: "tx-1",
+        id: "trade:2026-02-11:BUY",
         tradeDate: "2026-02-11",
         side: "BUY",
-        price: 120.5,
-        quantity: 2,
-        portfolioId: "p-1",
-        portfolioName: "Main",
+        netQuantity: 2,
+        weightedPrice: 120.5,
+        grossNotional: 241,
+        buyQuantity: 2,
+        sellQuantity: 0,
+        buyNotional: 241,
+        sellNotional: 0,
+        tradeCount: 1,
+        portfolios: [
+          {
+            portfolioId: "p-1",
+            portfolioName: "Main",
+            side: "BUY",
+            netQuantity: 2,
+            grossNotional: 241,
+            tradeCount: 1,
+          },
+        ],
+        trades: [
+          {
+            id: "tx-1",
+            tradeDate: "2026-02-11",
+            side: "BUY",
+            price: 120.5,
+            quantity: 2,
+            portfolioId: "p-1",
+            portfolioName: "Main",
+          },
+        ],
       },
     ]);
 
@@ -68,6 +93,13 @@ describe("GET /api/stocks/[providerKey]/trade-markers", () => {
 
     expect(response.status).toBe(200);
     expect(payload.markers).toHaveLength(1);
+    expect(payload.markers?.[0]).toEqual(
+      expect.objectContaining({
+        side: "BUY",
+        netQuantity: 2,
+        weightedPrice: 120.5,
+      })
+    );
     expect(vi.mocked(listStockTradeMarkers)).toHaveBeenCalledWith(
       expect.anything(),
       "GOOG"

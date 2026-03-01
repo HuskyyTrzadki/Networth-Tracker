@@ -13,6 +13,8 @@ export type {
   StockChartResponse,
   StockOverlayCoverage,
   StockScreenerCard,
+  StockTradeMarkerPortfolioSummary,
+  StockTradeMarkerTrade,
   StockTradeMarker,
   StockValuationRangeContext,
   StockValuationSummary,

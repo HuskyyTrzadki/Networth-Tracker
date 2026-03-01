@@ -1,6 +1,7 @@
 import type { createClient } from "@/lib/supabase/server";
 
-import type { StockTradeMarker } from "./types";
+import { mergeStockTradeMarkers } from "./merge-stock-trade-markers";
+import type { StockTradeMarker, StockTradeMarkerTrade } from "./types";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -51,7 +52,7 @@ export async function listStockTradeMarkers(
   }
 
   const rows = (data ?? []) as TradeMarkerRow[];
-  return rows
+  const trades = rows
     .map((row) => {
       const portfolio = Array.isArray(row.portfolio)
         ? row.portfolio[0] ?? null
@@ -72,7 +73,9 @@ export async function listStockTradeMarkers(
         quantity,
         portfolioId: row.portfolio_id,
         portfolioName: portfolio?.name ?? "Portfel",
-      } satisfies StockTradeMarker;
+      } satisfies StockTradeMarkerTrade;
     })
-    .filter((row): row is StockTradeMarker => row !== null);
+    .filter((row): row is StockTradeMarkerTrade => row !== null);
+
+  return mergeStockTradeMarkers(trades);
 }

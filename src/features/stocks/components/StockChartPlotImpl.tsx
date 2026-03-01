@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Area,
   CartesianGrid,
   ComposedChart,
   Line,
-  ReferenceDot,
-  ReferenceLine,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -23,7 +21,6 @@ import {
 import type {
   StockChartOverlay,
   StockChartResponse,
-  StockTradeMarker,
 } from "../server/types";
 import {
   OVERLAY_LINE_COLORS,
@@ -32,35 +29,17 @@ import {
   type StockChartMode,
 } from "./stock-chart-card-helpers";
 import type { StockChartEventMarker } from "./stock-chart-event-markers";
+import type { VisibleTradeMarker } from "./stock-chart-card-view-model";
+import { renderStockChartPlotMarkerLayers } from "./StockChartPlotMarkerLayers";
+import { buildNarrativeLabelLayout } from "./stock-chart-narrative-label-layout";
+import { buildPositionedTradeMarkers } from "./stock-chart-trade-marker-layout";
 import {
   buildStockChartEventMarkerPoints,
   StockChartHoverEventCard,
-  StockChartEventMarkerDot,
   StockChartTooltipPanel,
-  type StockChartEventMarkerDotProps,
-  type StockChartEventMarkerPoint,
+  type StockChartHoverMarker,
   type StockChartPlotDataPoint,
 } from "./stock-chart-plot-events";
-
-type VisibleMarker = Readonly<{
-  key: string;
-  t: string;
-  side: StockTradeMarker["side"];
-  portfolioName: string;
-  price: number;
-}>;
-
-type NarrativeEventMarkerPoint = Extract<
-  StockChartEventMarkerPoint,
-  Readonly<{ kind: "news" | "globalNews" }>
->;
-
-const isNarrativeEventMarker = (
-  marker: StockChartEventMarkerPoint
-): marker is NarrativeEventMarkerPoint =>
-  (marker.kind === "news" || marker.kind === "globalNews") &&
-  typeof marker.annotationLabel === "string" &&
-  marker.annotationLabel.length > 0;
 
 type Props = Readonly<{
   chart: StockChartResponse | null;
@@ -73,7 +52,7 @@ type Props = Readonly<{
   priceAxisDomainForChart: [number, number] | undefined;
   overlayAxisDomainForChart: [number, number] | undefined;
   overlayAxisLabel: string | null;
-  visibleTradeMarkers: readonly VisibleMarker[];
+  visibleTradeMarkers: readonly VisibleTradeMarker[];
   eventMarkers: readonly StockChartEventMarker[];
   showNarrativeLabels: boolean;
   isLoading: boolean;
@@ -84,14 +63,14 @@ export type StockChartPlotProps = Props;
 function StockChartPlotStateOverlays({
   chart,
   isLoading,
-  hoveredEventMarker,
-  hoveredEventCoordinates,
+  hoveredMarker,
+  hoveredMarkerCoordinates,
   chartCurrency,
 }: Readonly<{
   chart: StockChartResponse | null;
   isLoading: boolean;
-  hoveredEventMarker: StockChartEventMarkerPoint | null;
-  hoveredEventCoordinates: Readonly<{ x: number; y: number }> | null;
+  hoveredMarker: StockChartHoverMarker | null;
+  hoveredMarkerCoordinates: Readonly<{ x: number; y: number }> | null;
   chartCurrency: string;
 }>) {
   return (
@@ -114,11 +93,11 @@ function StockChartPlotStateOverlays({
         </div>
       ) : null}
 
-      {hoveredEventMarker && hoveredEventCoordinates ? (
+      {hoveredMarker && hoveredMarkerCoordinates ? (
         <StockChartHoverEventCard
-          marker={hoveredEventMarker}
-          x={hoveredEventCoordinates.x}
-          y={hoveredEventCoordinates.y}
+          marker={hoveredMarker}
+          x={hoveredMarkerCoordinates.x}
+          y={hoveredMarkerCoordinates.y}
           currency={chartCurrency}
         />
       ) : null}
@@ -142,11 +121,11 @@ export default function StockChartPlotImpl({
   showNarrativeLabels,
   isLoading,
 }: Props) {
-  const mutableChartData = [...chartData];
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [hoveredEventMarker, setHoveredEventMarker] =
-    useState<StockChartEventMarkerPoint | null>(null);
-  const [hoveredEventCoordinates, setHoveredEventCoordinates] = useState<{
+  const [chartWidth, setChartWidth] = useState(0);
+  const [hoveredMarker, setHoveredMarker] = useState<StockChartHoverMarker | null>(null);
+  const [hoveredMarkerCoordinates, setHoveredMarkerCoordinates] = useState<{
     x: number;
     y: number;
   } | null>(null);
@@ -162,6 +141,29 @@ export default function StockChartPlotImpl({
 
     return () => {
       mediaQuery.removeEventListener("change", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) {
+      return;
+    }
+
+    const updateWidth = () => {
+      setChartWidth(element.clientWidth);
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(() => {
+      updateWidth();
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
     };
   }, []);
 
@@ -192,70 +194,20 @@ export default function StockChartPlotImpl({
   );
   const truncateNarrativeLabel = (label: string) =>
     label.length > 26 ? `${label.slice(0, 26)}...` : label;
-  const narrativeLabelLayout = (() => {
-    const layout = new Map<
-      string,
-      Readonly<{
-        show: boolean;
-        dx: number;
-        dy: number;
-        textAnchor: "start" | "end";
-        text: string;
-      }>
-    >();
-    const labeledMarkers = eventMarkerPoints
-      .filter(isNarrativeEventMarker)
-      .sort((a, b) => Date.parse(a.t) - Date.parse(b.t));
-
-    let lastVisibleTs: number | null = null;
-    let visibleIndex = 0;
-    const minLabelGapMs = 320 * 24 * 60 * 60 * 1000;
-
-    for (const marker of labeledMarkers) {
-      const markerTs = Date.parse(marker.t);
-      const isTooCloseToPrevious =
-        Number.isFinite(markerTs) &&
-        lastVisibleTs !== null &&
-        markerTs - lastVisibleTs < minLabelGapMs;
-
-      if (isTooCloseToPrevious) {
-        layout.set(marker.id, {
-          show: false,
-          dx: 0,
-          dy: 0,
-          textAnchor: "start",
-          text: truncateNarrativeLabel(marker.annotationLabel ?? ""),
-        });
-        continue;
-      }
-
-      if (Number.isFinite(markerTs)) {
-        lastVisibleTs = markerTs;
-      }
-
-      const side = visibleIndex % 2 === 0 ? 1 : -1;
-      const tier = Math.floor(visibleIndex / 2) % 3;
-      const baseDx = 20;
-      const tierDx = 14;
-      const baseDy = marker.kind === "globalNews" ? -34 : -30;
-      const tierDy = 14;
-
-      layout.set(marker.id, {
-        show: true,
-        dx: side * (baseDx + tier * tierDx),
-        dy: baseDy - tier * tierDy,
-        textAnchor: side === 1 ? "start" : "end",
-        text: truncateNarrativeLabel(marker.annotationLabel ?? ""),
-      });
-
-      visibleIndex += 1;
-    }
-
-    return layout;
-  })();
+  const narrativeLabelLayout = buildNarrativeLabelLayout(
+    eventMarkerPoints,
+    truncateNarrativeLabel
+  );
   const overlayAxisLabelValue = overlayAxisLabel ?? undefined;
   const chartCurrency = chart?.currency ?? "USD";
-  const hoveredEventId = hoveredEventMarker?.id ?? null;
+  const hoveredMarkerId = hoveredMarker?.id ?? null;
+  const positionedTradeMarkers = buildPositionedTradeMarkers({
+    markers: visibleTradeMarkers,
+    chartData,
+    priceAxisDomain: priceAxisDomainForChart,
+    plotWidth: Math.max(chartWidth - 96, 0),
+  });
+  const mutableChartData = [...chartData];
   const chartConfig = normalizedOverlays.reduce<ChartConfig>(
     (acc, overlay) => {
       acc[overlay] = {
@@ -272,22 +224,22 @@ export default function StockChartPlotImpl({
     }
   );
 
-  const handleEventMarkerHover = (
-    marker: StockChartEventMarkerPoint | null,
+  const handleMarkerHover = (
+    marker: StockChartHoverMarker | null,
     coordinates?: Readonly<{ x: number; y: number }>
   ) => {
     if (!marker || !coordinates) {
-      setHoveredEventMarker(null);
-      setHoveredEventCoordinates(null);
+      setHoveredMarker(null);
+      setHoveredMarkerCoordinates(null);
       return;
     }
 
-    setHoveredEventMarker(marker);
-    setHoveredEventCoordinates({ x: coordinates.x, y: coordinates.y });
+    setHoveredMarker(marker);
+    setHoveredMarkerCoordinates({ x: coordinates.x, y: coordinates.y });
   };
 
   return (
-    <div className="relative h-[420px] w-full min-w-0">
+    <div ref={containerRef} className="relative h-[420px] w-full min-w-0">
       {chart ? (
         <ChartContainer config={chartConfig} className="h-full w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -414,80 +366,14 @@ export default function StockChartPlotImpl({
                   />
                 );
               })}
-              {eventMarkerPoints.map((marker) => (
-                <ReferenceLine
-                  key={`event-line-${marker.id}`}
-                  x={marker.t}
-                  yAxisId="price"
-                  stroke={
-                    marker.kind === "earnings"
-                      ? "var(--chart-2)"
-                      : marker.kind === "userTrade"
-                        ? marker.side === "BUY"
-                          ? "var(--profit)"
-                          : "var(--loss)"
-                        : marker.kind === "globalNews"
-                          ? "var(--chart-4)"
-                          : "var(--chart-3)"
-                  }
-                  strokeOpacity={hoveredEventId === marker.id ? 0.62 : 0.25}
-                  strokeWidth={hoveredEventId === marker.id ? 1.4 : 1}
-                  strokeDasharray={marker.kind === "userTrade" ? "2 4" : "3 5"}
-                  ifOverflow="discard"
-                />
-              ))}
-              {eventMarkerPoints.map((marker, markerIndex) => (
-                <ReferenceDot
-                  key={`event-dot-${marker.id}`}
-                  x={marker.t}
-                  y={marker.markerY}
-                  yAxisId="price"
-                  ifOverflow="discard"
-                  isFront
-                  label={
-                    showNarrativeLabels &&
-                    isNarrativeEventMarker(marker) &&
-                    narrativeLabelLayout.get(marker.id)?.show
-                      ? {
-                          ...(narrativeLabelLayout.get(marker.id) ?? {
-                            show: true,
-                            dx: markerIndex % 2 === 0 ? 18 : -18,
-                            dy: marker.kind === "globalNews" ? -28 : -24,
-                            textAnchor: markerIndex % 2 === 0 ? "start" : "end",
-                            text: truncateNarrativeLabel(marker.annotationLabel),
-                          }),
-                          value:
-                            narrativeLabelLayout.get(marker.id)?.text ??
-                            truncateNarrativeLabel(marker.annotationLabel),
-                          position: "top",
-                          fill: "var(--muted-foreground)",
-                          fontSize: 9,
-                        }
-                      : undefined
-                  }
-                  shape={(props: unknown) => (
-                    <StockChartEventMarkerDot
-                      {...(props as StockChartEventMarkerDotProps)}
-                      payload={marker}
-                      isActive={hoveredEventId === marker.id}
-                      onHoverChange={handleEventMarkerHover}
-                    />
-                  )}
-                />
-              ))}
-              {visibleTradeMarkers.map((marker) => (
-                <ReferenceDot
-                  key={marker.key}
-                  x={marker.t}
-                  y={marker.price}
-                  yAxisId="price"
-                  r={4}
-                  isFront
-                  fill={marker.side === "BUY" ? "var(--profit)" : "var(--loss)"}
-                  stroke="var(--background)"
-                  strokeWidth={1.2}
-                />
-              ))}
+              {renderStockChartPlotMarkerLayers({
+                eventMarkerPoints,
+                positionedTradeMarkers,
+                hoveredMarkerId,
+                showNarrativeLabels,
+                narrativeLabelLayout,
+                onMarkerHover: handleMarkerHover,
+              })}
             </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
@@ -496,8 +382,8 @@ export default function StockChartPlotImpl({
       <StockChartPlotStateOverlays
         chart={chart}
         isLoading={isLoading}
-        hoveredEventMarker={hoveredEventMarker}
-        hoveredEventCoordinates={hoveredEventCoordinates}
+        hoveredMarker={hoveredMarker}
+        hoveredMarkerCoordinates={hoveredMarkerCoordinates}
         chartCurrency={chartCurrency}
       />
     </div>

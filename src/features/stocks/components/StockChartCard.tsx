@@ -46,9 +46,14 @@ import {
 type Props = Readonly<{
   providerKey: string;
   initialChart: StockChartResponse;
+  initialTradeMarkers: readonly StockTradeMarker[];
 }>;
 
-export function StockChartCard({ providerKey, initialChart }: Props) {
+export function StockChartCard({
+  providerKey,
+  initialChart,
+  initialTradeMarkers,
+}: Props) {
   const rangeStorageKey = `stocks:chart-range:${providerKey}`;
   const [range, setRange] = useState<StockChartRange>(() => {
     if (typeof window === "undefined") {
@@ -159,9 +164,16 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
   const overlayAxisDomainForChart = overlayAxisMeta.domain
     ? ([overlayAxisMeta.domain[0], overlayAxisMeta.domain[1]] as [number, number])
     : undefined;
+  const tradeMarkers =
+    tradeMarkersResource.data === null
+      ? initialTradeMarkers
+      : tradeMarkersResource.data.length === 0 && initialTradeMarkers.length > 0
+        ? initialTradeMarkers
+        : tradeMarkersResource.data;
   const visibleTradeMarkers = chart
-    ? resolveVisibleTradeMarkers(tradeMarkersResource.data ?? [], chart.points)
+    ? resolveVisibleTradeMarkers(tradeMarkers, chart.points)
     : [];
+
   const eventMarkers = isEventRangeEligible
     ? buildMockChartEventMarkers(chartData, {
       includeEarnings: showEarningsEvents,
@@ -313,6 +325,15 @@ export function StockChartCard({ providerKey, initialChart }: Props) {
                   {item.label}
                 </span>
               ))}
+              {tradeMarkers.length > 0 ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full border-2 border-[color:var(--profit)] bg-white"
+                    aria-hidden="true"
+                  />
+                  Twoje transakcje
+                </span>
+              ) : null}
             </div>
           ) : null}
 

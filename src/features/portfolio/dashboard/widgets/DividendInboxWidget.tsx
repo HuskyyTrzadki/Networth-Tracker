@@ -1,6 +1,8 @@
 import { ChartCard, StatusStrip } from "@/features/design-system";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import type { DividendInboxItem, DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
+import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
+import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
 
 import { DividendInboxBookAction } from "./DividendInboxBookAction";
@@ -33,48 +35,64 @@ const Section = ({
     </h4>
     {items.length > 0 ? (
       <ul className="space-y-2">
-        {items.map((item) => (
-          <li
-            key={item.dividendEventKey}
-            className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2.5"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">{item.symbol}</p>
-                <p className="truncate text-xs text-muted-foreground">{item.name}</p>
-              </div>
-              <div className="text-right text-xs text-muted-foreground">
-                <p className="font-mono tabular-nums">{item.eventDate}</p>
-                <p className="font-mono tabular-nums">
-                  Brutto: {formatMoney(item.estimatedGross, item.payoutCurrency)}
-                </p>
-                <p className="font-mono tabular-nums">
-                  Netto: {formatMoney(item.netSuggested, item.payoutCurrency)}
-                </p>
-              </div>
-            </div>
+        {items.map((item) => {
+          const visual = resolveInstrumentVisual({
+            symbol: item.symbol,
+            name: item.name,
+          });
 
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {item.isBooked ? (
-                  <Badge className="border-border/70 bg-background/92 text-[color:var(--profit)]">
-                    Zaksięgowane
-                  </Badge>
-                ) : null}
-                {item.disabledReason ? (
-                  <span className="text-xs text-muted-foreground">{item.disabledReason}</span>
-                ) : null}
+          return (
+            <li
+              key={item.dividendEventKey}
+              className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2.5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-2.5">
+                  <InstrumentLogoImage
+                    alt=""
+                    className="mt-0.5 size-8 shrink-0"
+                    fallbackText={visual.label}
+                    size={32}
+                    ticker={visual.logoTicker}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">{item.symbol}</p>
+                    <p className="truncate text-xs text-muted-foreground">{item.name}</p>
+                  </div>
+                </div>
+                <div className="text-right text-xs text-muted-foreground">
+                  <p className="font-mono tabular-nums">{item.eventDate}</p>
+                  <p className="font-mono tabular-nums">
+                    Brutto: {formatMoney(item.estimatedGross, item.payoutCurrency)}
+                  </p>
+                  <p className="font-mono tabular-nums">
+                    Netto: {formatMoney(item.netSuggested, item.payoutCurrency)}
+                  </p>
+                </div>
               </div>
 
-              {!isReadOnly ? (
-                <DividendInboxBookAction
-                  item={item}
-                  portfolioId={portfolioId}
-                />
-              ) : null}
-            </div>
-          </li>
-        ))}
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {item.isBooked ? (
+                    <Badge className="border-border/70 bg-background/92 text-[color:var(--profit)]">
+                      Zaksięgowane
+                    </Badge>
+                  ) : null}
+                  {item.disabledReason ? (
+                    <span className="text-xs text-muted-foreground">{item.disabledReason}</span>
+                  ) : null}
+                </div>
+
+                {!isReadOnly ? (
+                  <DividendInboxBookAction
+                    item={item}
+                    portfolioId={portfolioId}
+                  />
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     ) : (
       <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-4 text-sm text-muted-foreground">

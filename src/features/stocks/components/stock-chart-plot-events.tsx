@@ -10,6 +10,7 @@ import {
   formatPrice,
   formatRevenue,
 } from "./stock-chart-card-helpers";
+import type { PositionedTradeMarker } from "./stock-chart-trade-marker-layout";
 
 export type StockChartPlotDataPoint = Readonly<{
   t: string;
@@ -29,9 +30,11 @@ export type StockChartEventMarkerPoint = StockChartEventMarker &
     markerSizeScale: number;
   }>;
 
+export type StockChartHoverMarker = StockChartEventMarkerPoint | PositionedTradeMarker;
+
 type TooltipPayloadEntry = Readonly<{
   name?: string | number;
-  payload?: StockChartPlotDataPoint | StockChartEventMarkerPoint;
+  payload?: StockChartPlotDataPoint | StockChartHoverMarker;
 }>;
 
 type TooltipMetricRow = Readonly<{
@@ -49,44 +52,49 @@ export type StockChartTooltipPanelProps = Readonly<{
 export type StockChartEventMarkerDotProps = Readonly<{
   cx?: number;
   cy?: number;
-  payload?: StockChartEventMarkerPoint;
+  payload?: StockChartHoverMarker;
   isActive?: boolean;
   onHoverChange?: (
-    marker: StockChartEventMarkerPoint | null,
+    marker: StockChartHoverMarker | null,
     coordinates?: Readonly<{ x: number; y: number }>
   ) => void;
 }>;
 
 export type StockChartHoverEventCardProps = Readonly<{
-  marker: StockChartEventMarkerPoint;
+  marker: StockChartHoverMarker;
   x: number;
   y: number;
   currency: string;
 }>;
 export { StockChartHoverEventCard } from "./stock-chart-hover-event-card";
 
-const isEventMarkerPoint = (value: unknown): value is StockChartEventMarkerPoint => {
+const isHoverMarker = (value: unknown): value is StockChartHoverMarker => {
   if (typeof value !== "object" || value === null) {
     return false;
   }
 
-  const candidate = value as Partial<StockChartEventMarkerPoint>;
+  const candidate = value as Partial<StockChartHoverMarker>;
   return (
     typeof candidate.t === "string" &&
     (candidate.kind === "earnings" ||
       candidate.kind === "news" ||
       candidate.kind === "globalNews" ||
-      candidate.kind === "userTrade") &&
-    typeof candidate.markerY === "number"
+      candidate.kind === "userTrade" ||
+      candidate.kind === "tradeMarker")
   );
 };
+
+const isTradeLikeMarker = (
+  marker: StockChartHoverMarker
+): marker is Extract<StockChartHoverMarker, Readonly<{ side: "BUY" | "SELL" }>> =>
+  marker.kind === "userTrade" || marker.kind === "tradeMarker";
 
 const resolveTooltipMetricRow = (
   entry: TooltipPayloadEntry,
   currency: string
 ): TooltipMetricRow | null => {
   const chartPayload = entry.payload;
-  if (!chartPayload || isEventMarkerPoint(chartPayload)) {
+  if (!chartPayload || isHoverMarker(chartPayload)) {
     return null;
   }
 
@@ -123,7 +131,7 @@ const resolveTooltipMetricRow = (
   return null;
 };
 
-export function StockChartEventMarkerDot({
+export function StockChartMarkerDot({
   cx,
   cy,
   payload,
@@ -134,10 +142,10 @@ export function StockChartEventMarkerDot({
     return null;
   }
 
-  const isUserTrade = payload.kind === "userTrade";
+  const isRealTradeMarker = payload.kind === "tradeMarker";
   const isCompanyNews = payload.kind === "news";
   const isGlobalNews = payload.kind === "globalNews";
-  const fillColor = isUserTrade
+  const fillColor = isTradeLikeMarker(payload)
     ? payload.side === "BUY"
       ? "var(--profit)"
       : "var(--loss)"
@@ -148,61 +156,96 @@ export function StockChartEventMarkerDot({
         : isGlobalNews
           ? "#0f766e"
           : "var(--muted-foreground)";
-  const hoverRingColor = isUserTrade
+  const hoverRingColor = isTradeLikeMarker(payload)
     ? "var(--foreground)"
     : payload.kind === "earnings"
       ? "var(--ring)"
       : isGlobalNews
         ? "#0b5f55"
         : "var(--muted-foreground)";
-  const tradeSizeScale = isUserTrade ? payload.markerSizeScale : 0.6;
+  const tradeSizeScale = isTradeLikeMarker(payload) ? payload.markerSizeScale : 0.6;
   const defaultBaseRadius = isActive ? 12 : 9;
   const defaultHaloRadius = isActive ? 17 : 14;
-  const tradeBaseRadius = 8 + tradeSizeScale * 12 + (isActive ? 2.5 : 0);
-  const tradeHaloRadius = tradeBaseRadius + 4.2;
-  const baseRadius = isUserTrade ? tradeBaseRadius : defaultBaseRadius;
-  const haloRadius = isUserTrade ? tradeHaloRadius : defaultHaloRadius;
+  const tradeBaseRadius =
+    5.6 + tradeSizeScale * 4.2 + (isActive ? (isRealTradeMarker ? 1.2 : 1.4) : 0);
+  const tradeHaloRadius = tradeBaseRadius + (isRealTradeMarker ? 3.2 : 3.4);
+  const baseRadius = isTradeLikeMarker(payload) ? tradeBaseRadius : defaultBaseRadius;
+  const haloRadius = isTradeLikeMarker(payload) ? tradeHaloRadius : defaultHaloRadius;
+  const hitAreaRadius = isRealTradeMarker ? 18 : 22;
 
   return (
     <g>
       <circle
         cx={cx}
         cy={cy}
-        r={22}
+        r={hitAreaRadius}
         fill="transparent"
         onMouseEnter={() => onHoverChange?.(payload, { x: cx, y: cy })}
         onMouseLeave={() => onHoverChange?.(null)}
       />
-      <circle
-        cx={cx}
-        cy={cy}
-        r={haloRadius}
-        fill={fillColor}
-        fillOpacity={isActive ? 0.28 : 0.18}
-        stroke="none"
-        pointerEvents="none"
-      />
-      <circle
-        cx={cx}
-        cy={cy}
-        r={baseRadius}
-        fill={fillColor}
-        stroke={isActive ? hoverRingColor : "var(--background)"}
-        strokeWidth={isActive ? 2.8 : 2.1}
-        style={{
-          transition:
-            "fill-opacity 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke-width 150ms cubic-bezier(0.25, 1, 0.5, 1)",
-        }}
-        pointerEvents="none"
-      />
-      {isUserTrade ? (
+      {isRealTradeMarker ? (
+        <>
+          <circle
+            cx={cx}
+            cy={cy}
+            r={haloRadius}
+            fill={fillColor}
+            fillOpacity={isActive ? 0.16 : 0.1}
+            stroke="none"
+            pointerEvents="none"
+          />
+          <circle
+            cx={cx}
+            cy={cy}
+            r={Math.max(4.6, baseRadius)}
+            fill={fillColor}
+            stroke={isActive ? hoverRingColor : "var(--background)"}
+            strokeWidth={isActive ? 2.8 : 2.2}
+            style={{
+              filter: "drop-shadow(0 1px 2px rgb(0 0 0 / 0.18))",
+              transition:
+                "fill-opacity 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke-width 150ms cubic-bezier(0.25, 1, 0.5, 1)",
+            }}
+            pointerEvents="none"
+          />
+        </>
+      ) : (
+        <>
+          <circle
+            cx={cx}
+            cy={cy}
+            r={haloRadius}
+            fill={fillColor}
+            fillOpacity={isActive ? 0.28 : 0.18}
+            stroke="none"
+            pointerEvents="none"
+          />
+          <circle
+            cx={cx}
+            cy={cy}
+            r={baseRadius}
+            fill={fillColor}
+            stroke={isActive ? hoverRingColor : "var(--background)"}
+            strokeWidth={isActive ? 2.8 : 2.1}
+            style={{
+              transition:
+                "fill-opacity 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke 150ms cubic-bezier(0.25, 1, 0.5, 1), stroke-width 150ms cubic-bezier(0.25, 1, 0.5, 1)",
+            }}
+            pointerEvents="none"
+          />
+        </>
+      )}
+      {isTradeLikeMarker(payload) ? (
         <text
           x={cx}
           y={cy}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="var(--background)"
-          fontSize={Math.max(11, baseRadius * 1.18)}
+          fill={isRealTradeMarker ? "var(--background)" : "var(--background)"}
+          fontSize={Math.max(
+            isRealTradeMarker ? 9 : 11,
+            baseRadius * (isRealTradeMarker ? 1.05 : 1.18)
+          )}
           fontWeight={800}
           pointerEvents="none"
         >
@@ -223,9 +266,9 @@ export function StockChartTooltipPanel({
     return null;
   }
 
-  const eventEntry = payload.find((entry) => isEventMarkerPoint(entry.payload));
+  const eventEntry = payload.find((entry) => isHoverMarker(entry.payload));
   const eventPayload =
-    eventEntry && isEventMarkerPoint(eventEntry.payload) ? eventEntry.payload : null;
+    eventEntry && isHoverMarker(eventEntry.payload) ? eventEntry.payload : null;
 
   if (eventPayload) {
     return null;
