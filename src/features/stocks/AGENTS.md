@@ -164,6 +164,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `StockMetricsSection` now reads summary + cached 5Y PE overlay context and renders contextual valuation instead of only raw rows:
   - PE shown on a range bar with min/max/median markers and percentile-based wording (`history low/mid/high`),
   - additional multiples and fundamentals moved into calmer supporting lists.
+- `StockMetricsGrid` keeps freshness metadata out of the raw fundamentals rows; `Stan na ...` is exposed through a compact `InfoHint` beside the `Fundamenty` heading instead.
 - Report concept section `Ten rok vs ostatni rok` now includes per-metric sparklines for trend context next to point-in-time YoY numbers.
 - Report concept section `Ten rok vs ostatni rok` uses ledger separators (`border-dotted`) between rows to stay consistent with transaction-table rhythm.
 - Report summary semantics are explicit: `Mocne strony` use positive icons/tone (green), while `Ryzyka` use warning/downside icons/tone (rose).

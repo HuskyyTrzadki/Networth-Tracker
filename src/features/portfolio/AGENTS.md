@@ -109,7 +109,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `Alokacja i pozycje` in `Mapa` mode exposes `Powiększ mapę` action (Lucide maximize icon) that opens a large dialog with treemap rendered on expanded height for detailed inspection.
 - W widoku agregowanym (`/portfolio`) dashboard renderuje dodatkowy widget `Alokacja per portfel` pod `Alokacja i pozycje`; każdy portfel dostaje poziomy pasek skumulowany 100% (segmenty kategorii) zamiast donutów.
 - `Alokacja per portfel` pokazuje pod paskiem pełną listę kategorii z udziałami, a segmenty używają natywnych hintów (`title`) dla szybkiego odczytu bez ryzyka obcinania etykiet.
-- `Alokacja per portfel` cards keep compact ledger headers (`Nazwa + wartość` + `Stan: ...`) and short partial-data status strips (`Status: częściowe` z hintem o brakujących cenach/FX).
+- `Alokacja per portfel` cards keep compact ledger headers (`Nazwa + wartość` + `InfoHint` for freshness) and short partial-data status strips (`Status: częściowe` z hintem o brakujących cenach/FX).
 - Widget allocation używa warstwy transformacji danych (`allocation-view-model.ts`): kategorie (`Nieruchomości`, `Akcje`, `Lokaty i Obligacje`, `Gotówka`, `Inne`) są normalizowane przed renderem, bez logiki klasyfikacji wewnątrz komponentów UI.
 - W trybie performance dla zakresów >=7D bazowa linia to nominalny zwrot skumulowany, a porównania są opcjonalne (checkboxy): inflacja PL, S&P 500 (VOO), WIG20 (ETFBW20TR), mWIG40 (ETFBM40TR).
 - Kontrolki porównań benchmarków w nagłówku wykresu są skonsolidowane do jednego popovera `Porównaj z...` (multi-select), aby zmniejszyć gęstość UI.
@@ -159,7 +159,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dashboard health state is centralized in one top-level `Health` strip (partial/completeness + delayed quotes + shared `Stan na` context); widget-level status badges should stay only for widget-specific states such as delayed movers, rebuild failures, or truncated `ALL` history.
 - Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.
 - Net value hero and allocation/holdings widget use stronger typographic rhythm (monospace net value, cleaner heading/label contrast, calmer warning tones) without changing valuation logic.
-- Net-value hero exposes a compact `Stan na` timestamp card next to `Zmiana dzienna`; freshness should not be repeated in allocation controls anymore.
+- Net-value hero no longer renders a standalone `Stan na` card; freshness lives behind a compact `InfoHint` next to `Wartość netto` to reduce cognitive load.
 - `Największe ruchy` rows are actionable cards linking to `/stocks/[providerKey]`, so dashboard exploration reuses the stock report route instead of read-only summary pills.
 - Currency exposure mode switch (`Notowania` vs `Gospodarcza`) shows compact delta chips (`pp`) against the alternate model once economic exposure is available, so mode changes communicate immediate value.
 - Recent transactions empty state includes a direct `Dodaj transakcję` CTA (scoped to the selected portfolio when present), not just passive copy.
@@ -232,7 +232,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Value/performance control board was densified to one height rhythm (`h-7` controls, compact panel paddings) so `Tryb/Zakres/Waluta/Porównania` align visually on desktop.
 - Portfolio loading + empty states now use ledger-first shells (`PortfolioRouteLoading`, `PortfolioDashboardSkeleton`, `DashboardEmptyState`) with status strips, dashed separators, and action-guidance copy so pending/empty views match the final dashboard tone.
 - Portfolio dashboard microcopy was intentionally shortened across widgets (value/performance header notices, allocation/currency/dividend/top-movers states) to reduce cognitive load; prefer short status labels over explanatory paragraphs.
-- Widget micro-pattern now favors short mono status strips (`Status: ...` / `Stan: ...`) in key cards (`Ostatnie transakcje`, `Największe ruchy`, `Skrzynka dywidend`, `Alokacja per portfel`) to keep header hierarchy consistent.
+- Widget micro-pattern now favors short mono status strips only for actionable/widget-specific state (`Status: ...`); freshness timestamps should move to compact `InfoHint` affordances instead of visible `Stan: ...` labels.
 - `/portfolio` page header now uses concise scope strip (`Portfel: ...` / `Widok: wszystkie`) with hint text instead of long descriptive subtitle copy.
 - Portfolio route/header copy was tightened again: keep only the page title, base-currency meta, and one scope chip; avoid separate `Panel inwestora` / `Dashboard` / repeated portfolio-name labels.
 - Net-value hero scope label now uses the raw portfolio name (`XYZ`, `Wszystkie portfele`) and the base-currency chip shows only the currency code to reduce repetition.

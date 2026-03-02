@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { DemoPortfolioBadge } from "../components/DemoPortfolioBadge";
+import { InfoHint } from "@/features/design-system";
 import {
   formatCurrencyString,
   getCurrencyFormatter,
@@ -141,6 +142,7 @@ export function PortfolioNetValueHero({
 
   const { amount: totalValueAmount, currency: totalValueCurrency } =
     splitCurrencyLabel(animatedTotalLabel);
+  const netValueHint = asOf ? `Stan na ${asOf}` : "Brak znacznika czasu dla tej wyceny.";
 
   return (
     <section className="rounded-lg border border-border/72 bg-card/94 px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
@@ -155,8 +157,23 @@ export function PortfolioNetValueHero({
           {baseCurrency}
         </div>
       </div>
-      <div className="mt-3 border-t border-dashed border-border/60 pt-2 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
-        Wartość netto
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-dashed border-border/60 pt-2">
+        <div className="flex items-center gap-1.5 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
+          <span>Wartość netto</span>
+          <InfoHint
+            text={netValueHint}
+            ariaLabel="Informacja o czasie wyceny wartości netto"
+            className="size-4 border-border/60 bg-background/72"
+          />
+        </div>
+        <div className="flex items-baseline gap-2 rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Zmiana dzienna
+          </p>
+          <p className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
+            {dailyChangeCombined ?? "—"}
+          </p>
+        </div>
       </div>
       <LazyMotion features={domAnimation}>
         <div className="mb-4 mt-1 flex flex-wrap items-end gap-3">
@@ -175,24 +192,6 @@ export function PortfolioNetValueHero({
           </m.div>
         </div>
       </LazyMotion>
-      <div className="grid gap-2 border-t border-dashed border-border/60 pt-2 sm:grid-cols-2">
-        <div className="rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-            Stan na
-          </p>
-          <p className="mt-0.5 font-mono text-xs tabular-nums text-foreground/90">
-            {asOf ? asOf : "—"}
-          </p>
-        </div>
-        <div className="rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-            Zmiana dzienna
-          </p>
-          <p className={cn("mt-0.5 font-mono text-xs tabular-nums", dailyChangeTone)}>
-            {dailyChangeCombined ?? "—"}
-          </p>
-        </div>
-      </div>
     </section>
   );
 }

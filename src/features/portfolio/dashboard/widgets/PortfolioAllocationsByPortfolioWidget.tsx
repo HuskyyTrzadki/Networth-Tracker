@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartCard, StatusStrip } from "@/features/design-system";
+import { ChartCard, InfoHint, StatusStrip } from "@/features/design-system";
 
 import type { PortfolioAllocationDonutCard } from "../../server/get-portfolio-allocation-donut-cards";
 
@@ -46,14 +46,16 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
             >
               <header className="mb-3 border-b border-dashed border-border/65 pb-2">
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="truncate text-sm font-semibold">{item.portfolioName}</h3>
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <h3 className="truncate text-sm font-semibold">{item.portfolioName}</h3>
+                    <InfoHint
+                      text={`Stan na ${formatAsOf(item.asOf)}`}
+                      ariaLabel={`Informacja o czasie wyceny portfela ${item.portfolioName}`}
+                      className="size-4 shrink-0 border-border/60 bg-background/72"
+                    />
+                  </div>
                   <p className="font-mono text-sm tabular-nums">{item.totalValueLabel}</p>
                 </div>
-                <StatusStrip
-                  className="mt-1"
-                  hint="Stan wyceny z ostatniego odświeżenia notowań."
-                  label={`Stan: ${formatAsOf(item.asOf)}`}
-                />
               </header>
 
               {sortedSlices.length > 0 && hasVisibleShare ? (

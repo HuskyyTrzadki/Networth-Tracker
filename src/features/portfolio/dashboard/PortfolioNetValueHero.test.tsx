@@ -19,8 +19,10 @@ describe("PortfolioNetValueHero", () => {
     expect(screen.getByText("Wartość netto")).toBeInTheDocument();
     expect(screen.getByText("12 345,67")).toBeInTheDocument();
     expect(screen.getByText("zł")).toBeInTheDocument();
-    expect(screen.getByText("Stan na")).toBeInTheDocument();
-    expect(screen.getByText("9 lut 2026, 13:00")).toBeInTheDocument();
+    expect(screen.queryByText("9 lut 2026, 13:00")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Informacja o czasie wyceny wartości netto" })
+    ).toBeInTheDocument();
     expect(screen.getByText(/\+10/)).toBeInTheDocument();
   });
 
@@ -35,7 +37,9 @@ describe("PortfolioNetValueHero", () => {
       />
     );
 
-    expect(screen.getByText("Stan na")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Informacja o czasie wyceny wartości netto" })
+    ).toBeInTheDocument();
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 });

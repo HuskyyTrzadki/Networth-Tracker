@@ -59,6 +59,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Typography split is explicit: UI/editorial copy uses Geist Sans (`--font-sans`), data/tickers/numerics use IBM Plex Mono (`--font-mono` + `tabular-nums`), and classes are applied directly in components (no global alias utilities).
 - `Badge` primitive includes a `stamp` variant (CVA-driven) for subdued metadata chips like valuation freshness labels.
 - Shared `StatusStrip` primitive (`components/StatusStrip.tsx`) centralizes mono dashed status labels with optional native tooltip hint (`title`) and semantic tones (`neutral/warning/positive/negative`).
+- Shared `InfoHint` primitive (`components/InfoHint.tsx`) standardizes small circled Lucide `Info` affordances with dashed tooltip chrome for progressive disclosure of low-priority explanatory/freshness copy.
 - Light-theme surface depth uses layered tokens (`--surface-base`, `--surface-card`, `--surface-interactive`) plus shared `--surface-shadow` (soft drop shadow + top inset highlight) reused by dashboard card surfaces.
 - Semantic gain/loss tokens (`--profit`, `--loss`) were softened to a more institutional tone and should be reused for all financial deltas/badges instead of per-widget ad-hoc colors.
 - `PortfolioComparisonChart` now uses `AreaChart` for portfolio value (stroke width `3` + subtle gradient fill) while invested-capital overlay remains a step line for clear comparison semantics.

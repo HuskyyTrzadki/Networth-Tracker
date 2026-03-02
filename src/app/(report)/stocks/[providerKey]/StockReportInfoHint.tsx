@@ -1,12 +1,6 @@
 "use client";
 
-import { Info } from "lucide-react";
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { InfoHint } from "@/features/design-system";
 
 export default function StockReportInfoHint({
   text,
@@ -15,20 +9,5 @@ export default function StockReportInfoHint({
   text: string;
   ariaLabel?: string;
 }>) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-          aria-label={ariaLabel}
-        >
-          <Info className="size-4" aria-hidden />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent className="max-w-xs border border-dashed border-black/15 bg-background text-foreground shadow-none">
-        {text}
-      </TooltipContent>
-    </Tooltip>
-  );
+  return <InfoHint text={text} ariaLabel={ariaLabel} className="border-none bg-transparent" />;
 }

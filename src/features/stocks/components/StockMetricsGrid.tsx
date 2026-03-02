@@ -2,6 +2,7 @@ import type {
   StockValuationRangeContext,
   StockValuationSummary,
 } from "@/features/stocks";
+import { InfoHint } from "@/features/design-system";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 
 const ratioFormatter = new Intl.NumberFormat("pl-PL", {
@@ -187,8 +188,10 @@ export function StockMetricsGrid({
     { label: "Stopa dywidendy", value: formatPercent(summary.dividendYield) },
     { label: "Wskaznik wyplaty", value: formatPercent(summary.payoutRatio) },
     { label: "Data wyplaty", value: formatDate(summary.payoutDate) },
-    { label: "Stan na", value: summary.asOf ? formatDate(summary.asOf.slice(0, 10)) : null },
   ].filter((row): row is { label: string; value: string } => row.value !== null);
+  const fundamentalsHint = summary.asOf
+    ? `Stan na ${formatDate(summary.asOf.slice(0, 10)) ?? summary.asOf.slice(0, 10)}`
+    : "Brak daty aktualizacji danych fundamentalnych.";
 
   return (
     <section className="space-y-3 pt-3">
@@ -218,9 +221,14 @@ export function StockMetricsGrid({
             </div>
 
             <div className="border-t border-dashed border-black/15 pt-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                Fundamenty
-              </p>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                <span>Fundamenty</span>
+                <InfoHint
+                  text={fundamentalsHint}
+                  ariaLabel="Informacja o czasie danych fundamentalnych"
+                  className="size-4 border-black/10 bg-white"
+                />
+              </div>
               <div className="mt-2">
                 {fundamentalRows.map((metric) => (
                   <MetricRow key={metric.label} label={metric.label} value={metric.value} />

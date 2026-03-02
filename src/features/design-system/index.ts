@@ -7,6 +7,7 @@ export { DesignSurface } from "./components/DesignSurface";
 export { DailyReturnsBarChart } from "./components/DailyReturnsBarChart";
 export { DailyReturnsLineChart } from "./components/DailyReturnsLineChart";
 export { HoldingsTable } from "./components/HoldingsTable";
+export { InfoHint } from "./components/InfoHint";
 export { MetricCard } from "./components/MetricCard";
 export { PnlBarChart } from "./components/PnlBarChart";
 export { PortfolioAreaChart } from "./components/PortfolioAreaChart";
