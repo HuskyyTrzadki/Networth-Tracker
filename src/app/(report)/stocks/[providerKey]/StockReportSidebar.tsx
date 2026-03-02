@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 
 import { ReportShellMenuTrigger } from "@/features/app-shell/components/ReportShell";
-import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { StockFavoriteToggleButton } from "@/features/stocks/components/StockFavoriteToggleButton";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { cn } from "@/lib/cn";
@@ -28,14 +26,11 @@ type SidebarProps = Readonly<{
 }>;
 
 const SECTION_LINKS = [
+  { id: "sekcja-snapshot", label: "Snapshot" },
   { id: "sekcja-wykres", label: "Wykres ceny" },
-  { id: "sekcja-podsumowanie", label: "Najwazniejsze wnioski" },
   { id: "sekcja-fundamenty", label: "Wycena i fundamenty" },
   { id: "sekcja-jak-zarabia", label: "Jak firma zarabia" },
-  { id: "sekcja-bilans", label: "Co firma posiada i co jest winna" },
-  { id: "sekcja-zarzad", label: "Zarzad i insiderzy" },
-  { id: "sekcja-widzety", label: "Kluczowe mini-wykresy" },
-  { id: "sekcja-earnings", label: "Podsumowanie konferencji" },
+  { id: "sekcja-zaawansowane", label: "Zaawansowane" },
 ] as const;
 
 export default function StockReportSidebar({
@@ -53,9 +48,6 @@ export default function StockReportSidebar({
   asOf,
 }: SidebarProps) {
   const [activeSectionId, setActiveSectionId] = useState<string>(SECTION_LINKS[0].id);
-  const reportImageSrc = buildRemoteImageProxyUrl(
-    "https://picsum.photos/110/110?grayscale&random=97"
-  );
   const sectionIds = useMemo<readonly string[]>(
     () => SECTION_LINKS.map((link) => link.id),
     []
@@ -128,30 +120,26 @@ export default function StockReportSidebar({
   }, [sectionIds, sectionIdSet]);
 
   return (
-    <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-8 lg:self-start lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-black/15 lg:pr-4 lg:pt-4">
+    <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-8 lg:self-start lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-[color:var(--report-rule)]/20 lg:pr-4 lg:pt-4">
       <div className="space-y-4 bg-background">
-        <section className="border-b border-dashed border-black/15 pb-4">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3">
+        <section className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-4">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
             <ReportShellMenuTrigger className="px-2" />
 
             <div className="flex min-w-0 items-center gap-3">
-              <InstrumentLogoImage src={logoUrl} size={52} fallbackText={symbol} alt={name} />
+              <InstrumentLogoImage
+                src={logoUrl}
+                size={52}
+                fallbackText={symbol}
+                alt={name}
+                loading="eager"
+                priority
+              />
               <div className="min-w-0">
                 <h1 className="truncate text-2xl font-semibold tracking-tight">{symbol}</h1>
                 <p className="truncate text-sm text-muted-foreground">{name}</p>
               </div>
             </div>
-
-            {reportImageSrc ? (
-              <Image
-                src={reportImageSrc}
-                alt="Ilustracja spolki"
-                width={110}
-                height={110}
-                sizes="44px"
-                className="h-auto w-[44px] rounded-none border border-dashed border-black/15 object-cover"
-              />
-            ) : null}
             <StockFavoriteToggleButton
               initialIsFavorite={initialIsFavorite}
               providerKey={providerKey}
@@ -198,7 +186,7 @@ export default function StockReportSidebar({
 
       <div className="report-scrollbar relative pb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
         <div className="space-y-6 pt-4">
-          <section className="border-b border-dashed border-black/15 pb-6">
+          <section className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-6">
             <h2 className="text-[15px] font-semibold tracking-tight">Fakty podstawowe</h2>
             <dl className="mt-4 space-y-2">
               <FactRow label="Gielda" value={exchange} />
@@ -211,34 +199,17 @@ export default function StockReportSidebar({
             </dl>
           </section>
 
-          <section className="border-b border-dashed border-black/15 pb-6">
-            <h2 className="text-[15px] font-semibold tracking-tight">Profil</h2>
-            <dl className="mt-4 space-y-2">
-              <FactRow label="Branza" value="Internet i media spolecznosciowe" />
-              <FactRow label="Sektor" value="Technologia" />
-              <FactRow label="Debiut" value="18 maj 2012" />
-              <FactRow label="Forma wejscia" value="IPO" />
-              <FactRow label="Zatrudnienie" value="76,834" />
-            </dl>
-          </section>
-
           <section className="pb-4">
-            <h3 className="text-[15px] font-semibold tracking-tight">Kluczowe obserwacje</h3>
+            <h3 className="text-[15px] font-semibold tracking-tight">Na szybko</h3>
             <ul className="mt-3 space-y-2 text-sm text-foreground/90">
-              <li className="border-b border-dashed border-black/15 pb-2">
-                • Ponad 98% przychodow pochodzi z reklam cyfrowych.
+              <li className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2">
+                • Najpierw przeczytaj snapshot, potem wycene i model biznesowy.
               </li>
-              <li className="border-b border-dashed border-black/15 pb-2">
-                • Segment Reality Labs nadal mocno inwestuje i obciaza marze.
-              </li>
-              <li className="border-b border-dashed border-black/15 pb-2">
-                • Gotowka netto pozostaje wysoka mimo rosnacego capex na AI.
-              </li>
-              <li className="border-b border-dashed border-black/15 pb-2">
-                • Wzrost EPS jest szybszy niz wzrost przychodow, co wspiera wycene.
+              <li className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2">
+                • Wykres ma teraz sluzyc do kontekstu dlugiego terminu, nie do day-tradingu.
               </li>
               <li className="pb-1">
-                • Kluczowy watchpoint: relacja kosztow AI do tempa monetyzacji.
+                • Reszte sekcji traktuj jako poglebienie, nie obowiazkowy pierwszy czyt.
               </li>
             </ul>
           </section>

@@ -20,6 +20,8 @@ type Props = Readonly<{
   className?: string;
   alt?: string;
   fallbackText: string;
+  loading?: "eager" | "lazy";
+  priority?: boolean;
 }>;
 
 const getFallbackInitials = (value: string) =>
@@ -40,6 +42,8 @@ export function InstrumentLogoImage({
   className,
   alt = "",
   fallbackText,
+  loading = "lazy",
+  priority = false,
 }: Props) {
   void _src;
   const [didLogoDevFail, setDidLogoDevFail] = useState(false);
@@ -82,8 +86,9 @@ export function InstrumentLogoImage({
         alt={alt}
         className={cn("block rounded-full object-contain object-center", className)}
         height={size}
-        loading="lazy"
+        loading={loading}
         onError={() => setDidLogoDevFail(true)}
+        priority={priority}
         sizes={`${size}px`}
         src={logoDevSrc}
         width={size}

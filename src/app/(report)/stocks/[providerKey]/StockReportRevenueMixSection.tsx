@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/features/design-system/components/ui/button";
 
 import { StockReportRevenueSankeyCard } from "./StockReportRevenueSankeyCard";
-import { ReportCard, SectionHeader } from "./ReportPrimitives";
+import { InvestorTakeaway, ReportCard, SectionHeader } from "./ReportPrimitives";
 import {
   QUARTER_LABELS,
   getQuarterCell,
@@ -77,7 +77,6 @@ export default function StockReportRevenueMixSection() {
   const [mode, setMode] = useState<MixMode>("now");
   const [quarter, setQuarter] = useState<QuarterKey>("q4");
   const [profitMode, setProfitMode] = useState<HowTheyMakeMoneyMode>("lastQuarter");
-  const [mixVisual, setMixVisual] = useState<"sankey" | "donut">("sankey");
 
   const productEntries = REVENUE_BY_PRODUCTS.map((row) => {
     const cell = mode === "annual" ? null : getQuarterCell(row, mode === "now" ? "q4" : quarter);
@@ -188,110 +187,88 @@ export default function StockReportRevenueMixSection() {
         <SectionHeader
           as="h3"
           title="Jak firma zarabia"
-          description="Wynik, marze i mix przychodow."
+          description="Marze i mix przychodow w jednej, spokojniejszej sekcji."
         />
 
         <ProfitabilitySnapshot mode={profitMode} onModeChange={setProfitMode} />
 
         <ReportCard contentClassName="space-y-4 p-6">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div className="min-w-0">
-                <h4 className="text-base font-semibold tracking-tight">
-                  Mix przychodow ({mixVisual === "sankey" ? "diagram przeplywu" : "wykresy kolowe"})
-                </h4>
-                <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
-                  {periodLabel}
-                </p>
-              </div>
-
-              <div className="inline-flex items-center gap-2">
-                <Button
-                  size="sm"
-                  className="h-8 rounded-none px-3 text-[11px]"
-                  variant={mixVisual === "sankey" ? "default" : "outline"}
-                  onClick={() => setMixVisual("sankey")}
-                >
-                  Sankey
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-8 rounded-none px-3 text-[11px]"
-                  variant={mixVisual === "donut" ? "default" : "outline"}
-                  onClick={() => setMixVisual("donut")}
-                >
-                  Kołowe
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-8 rounded-none px-3 text-[11px]"
-                  variant={mode === "now" ? "default" : "outline"}
-                  onClick={() => setMode("now")}
-                >
-                  Teraz
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-8 rounded-none px-3 text-[11px]"
-                  variant={mode === "quarterly" ? "default" : "outline"}
-                  onClick={() => setMode("quarterly")}
-                >
-                  Kwartalnie
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-8 rounded-none px-3 text-[11px]"
-                  variant={mode === "annual" ? "default" : "outline"}
-                  onClick={() => setMode("annual")}
-                >
-                  Rocznie
-                </Button>
-              </div>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h4 className="text-base font-semibold tracking-tight">Mix przychodow</h4>
+              <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+                {periodLabel}
+              </p>
             </div>
 
-            {mode === "quarterly" ? (
-              <div className="flex flex-wrap items-center gap-2">
-                {(["q1", "q2", "q3", "q4"] as const).map((nextQuarter) => (
-                  <Button
-                    key={nextQuarter}
-                    size="sm"
-                    className="h-7 rounded-none px-2.5 text-[11px] font-mono"
-                    variant={quarter === nextQuarter ? "default" : "outline"}
-                    onClick={() => setQuarter(nextQuarter)}
-                  >
-                    {QUARTER_LABELS[nextQuarter]}
-                  </Button>
-                ))}
-              </div>
-            ) : null}
+            <div className="inline-flex items-center gap-2">
+              <Button
+                size="sm"
+                className="h-8 rounded-none px-3 text-[11px]"
+                variant={mode === "now" ? "default" : "outline"}
+                onClick={() => setMode("now")}
+              >
+                Teraz
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 rounded-none px-3 text-[11px]"
+                variant={mode === "quarterly" ? "default" : "outline"}
+                onClick={() => setMode("quarterly")}
+              >
+                Kwartalnie
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 rounded-none px-3 text-[11px]"
+                variant={mode === "annual" ? "default" : "outline"}
+                onClick={() => setMode("annual")}
+              >
+                Rocznie
+              </Button>
+            </div>
+          </div>
 
-            {mixVisual === "sankey" ? (
-              <div className="space-y-3">
-                <StockReportRevenueSankeyCard
-                  revenueSegments={sankeySegments}
-                  costSlices={costSlices}
-                  netMarginPercent={netMarginPercent}
-                  netProfitDescription={netSlice?.help}
-                />
-                <DonutCard
-                  title="Geografia przychodow"
-                  subtitle={periodLabel}
-                  slices={geoSlices}
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                <DonutCard
-                  title="Przychody wedlug produktow"
-                  subtitle="Udzial segmentow w przychodach"
-                  slices={productsSlices}
-                />
-                <DonutCard
-                  title="Przychody wedlug regionu"
-                  subtitle="Udzial regionow w przychodach"
-                  slices={geoSlices}
-                />
-              </div>
-            )}
+          {mode === "quarterly" ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {(["q1", "q2", "q3", "q4"] as const).map((nextQuarter) => (
+                <Button
+                  key={nextQuarter}
+                  size="sm"
+                  className="h-7 rounded-none px-2.5 text-[11px] font-mono"
+                  variant={quarter === nextQuarter ? "default" : "outline"}
+                  onClick={() => setQuarter(nextQuarter)}
+                >
+                  {QUARTER_LABELS[nextQuarter]}
+                </Button>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="space-y-3">
+            <StockReportRevenueSankeyCard
+              revenueSegments={sankeySegments}
+              costSlices={costSlices}
+              netMarginPercent={netMarginPercent}
+              netProfitDescription={netSlice?.help}
+            />
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <DonutCard
+                title="Przychody wedlug produktow"
+                subtitle="Udzial segmentow w przychodach"
+                slices={productsSlices}
+              />
+              <DonutCard
+                title="Przychody wedlug regionu"
+                subtitle="Udzial regionow w przychodach"
+                slices={geoSlices}
+              />
+            </div>
+          </div>
+          <InvestorTakeaway>
+            Najwazniejsze pytanie brzmi, skad bierze sie zysk: czy firma ma zdrowa marze,
+            czy jeden segment dominuje za mocno i czy geografia przychodow daje dywersyfikacje.
+          </InvestorTakeaway>
         </ReportCard>
       </section>
     </TooltipProvider>

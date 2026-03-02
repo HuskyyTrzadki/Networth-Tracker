@@ -13,17 +13,10 @@ import type { StockChartOverlay } from "../server/types";
 type Props = Readonly<{
   mode: StockChartMode;
   isLoading: boolean;
-  isEventRangeEligible: boolean;
   hasTradeMarkers: boolean;
   activeOverlays: readonly StockChartOverlay[];
   showTradeMarkers: boolean;
-  showCompanyEvents: boolean;
-  showGlobalEvents: boolean;
-  showNarration: boolean;
   onToggleTradeMarkers: (enabled: boolean) => void;
-  onToggleCompanyEvents: (enabled: boolean) => void;
-  onToggleGlobalEvents: (enabled: boolean) => void;
-  onToggleNarration: (enabled: boolean) => void;
   onToggleOverlay: (overlay: StockChartOverlay, enabled: boolean) => void;
   onSetFundamentalsEnabled: (enabled: boolean) => void;
 }>;
@@ -80,26 +73,18 @@ const FUNDAMENTAL_OPTIONS = OVERLAY_KEYS;
 export function StockChartLayerControls({
   mode,
   isLoading,
-  isEventRangeEligible,
   hasTradeMarkers,
   activeOverlays,
   showTradeMarkers,
-  showCompanyEvents,
-  showGlobalEvents,
-  showNarration,
   onToggleTradeMarkers,
-  onToggleCompanyEvents,
-  onToggleGlobalEvents,
-  onToggleNarration,
   onToggleOverlay,
   onSetFundamentalsEnabled,
 }: Props) {
   const hasFundamentals = activeOverlays.length > 0;
-  const hasEvents = showCompanyEvents || showGlobalEvents;
-  const showSubRow = hasFundamentals || hasEvents;
+  const showSubRow = hasFundamentals;
 
   return (
-    <div className="space-y-2.5 border-b border-dashed border-black/15 pb-3.5">
+    <div className="space-y-2.5 border-b border-dashed border-[color:var(--report-rule)]/20 pb-3.5">
       <div className="flex flex-wrap items-center gap-2">
         {hasTradeMarkers ? (
           <LayerChip
@@ -110,81 +95,27 @@ export function StockChartLayerControls({
           />
         ) : null}
         <LayerChip
-          label="Wydarzenia"
-          active={hasEvents}
-          disabled={isLoading || !isEventRangeEligible}
-          onClick={() => {
-            const nextEnabled = !hasEvents;
-            onToggleCompanyEvents(nextEnabled);
-            onToggleGlobalEvents(false);
-            if (!nextEnabled) {
-              onToggleNarration(false);
-            }
-          }}
-        />
-        <LayerChip
           label="Fundamenty"
           active={hasFundamentals}
           disabled={isLoading}
           onClick={() => onSetFundamentalsEnabled(!hasFundamentals)}
         />
-        <LayerChip
-          label="Narracja"
-          active={showNarration}
-          disabled={isLoading || !isEventRangeEligible || !hasEvents}
-          onClick={() => onToggleNarration(!showNarration)}
-        />
       </div>
 
       {showSubRow ? (
-        <div className="ml-0.5 flex flex-wrap items-center gap-1.5 border-l border-dashed border-black/15 pl-3">
-          {hasEvents ? (
-            <>
-              <LayerChip
-                label="Spolka"
-                active={showCompanyEvents}
-                disabled={isLoading || !isEventRangeEligible}
-                compact
-                onClick={() => {
-                  const nextEnabled = !showCompanyEvents;
-                  onToggleCompanyEvents(nextEnabled);
-                  if (!nextEnabled && !showGlobalEvents) {
-                    onToggleNarration(false);
-                  }
-                }}
-              />
-              <LayerChip
-                label="Globalne"
-                active={showGlobalEvents}
-                disabled={isLoading || !isEventRangeEligible}
-                compact
-                onClick={() => {
-                  const nextEnabled = !showGlobalEvents;
-                  onToggleGlobalEvents(nextEnabled);
-                  if (!showCompanyEvents && !nextEnabled) {
-                    onToggleNarration(false);
-                  }
-                }}
-              />
-            </>
-          ) : null}
-
-          {hasFundamentals ? (
-            <>
-              {FUNDAMENTAL_OPTIONS.map((overlay) => (
-                <LayerChip
-                  key={overlay}
-                  label={OVERLAY_LABELS[overlay]}
-                  active={activeOverlays.includes(overlay)}
-                  disabled={isLoading || (mode === "raw" && overlay === "revenueTtm")}
-                  compact
-                  onClick={() =>
-                    onToggleOverlay(overlay, !activeOverlays.includes(overlay))
-                  }
-                />
-              ))}
-            </>
-          ) : null}
+        <div className="ml-0.5 flex flex-wrap items-center gap-1.5 border-l border-dashed border-[color:var(--report-rule)]/20 pl-3">
+          {FUNDAMENTAL_OPTIONS.map((overlay) => (
+            <LayerChip
+              key={overlay}
+              label={OVERLAY_LABELS[overlay]}
+              active={activeOverlays.includes(overlay)}
+              disabled={isLoading || (mode === "raw" && overlay === "revenueTtm")}
+              compact
+              onClick={() =>
+                onToggleOverlay(overlay, !activeOverlays.includes(overlay))
+              }
+            />
+          ))}
         </div>
       ) : null}
     </div>

@@ -50,7 +50,7 @@ export function StockChartPrimaryControls({
   isRangeDisabledOption,
 }: Props) {
   return (
-    <div className="grid gap-3 border-b border-dashed border-black/15 pb-3.5 xl:grid-cols-[1fr_auto] xl:items-stretch">
+    <div className="grid gap-3 border-b border-dashed border-[color:var(--report-rule)]/20 pb-3.5 xl:grid-cols-[1fr_auto] xl:items-stretch">
       <ControlGroup label="Zakres">
         <div className="inline-flex border border-black/15 bg-white/90 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
           <ToggleGroup

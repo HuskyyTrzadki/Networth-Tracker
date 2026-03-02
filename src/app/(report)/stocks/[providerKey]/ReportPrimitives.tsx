@@ -109,6 +109,28 @@ export function EditorsNote({
   );
 }
 
+export function InvestorTakeaway({
+  children,
+  className,
+}: Readonly<{
+  children: React.ReactNode;
+  className?: string;
+}>) {
+  return (
+    <aside
+      className={cn(
+        "border-t border-dashed border-[color:var(--report-rule)]/25 pt-3",
+        className
+      )}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        Co to znaczy dla inwestora?
+      </p>
+      <div className="mt-1 text-sm leading-relaxed text-foreground/90">{children}</div>
+    </aside>
+  );
+}
+
 export function ReportDataRow({
   label,
   value,

@@ -5,6 +5,8 @@ import { StockMetricsGrid } from "@/features/stocks/components/StockMetricsGrid"
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { buildPeValuationRangeContext } from "@/features/stocks/server/valuation-range-context";
 
+import { InvestorTakeaway } from "./ReportPrimitives";
+
 export default async function StockMetricsSection({
   providerKey,
   metricCurrency,
@@ -22,11 +24,18 @@ export default async function StockMetricsSection({
   });
 
   return (
-    <StockMetricsGrid
-      summary={summary}
-      currency={metricCurrency}
-      peContext={peContext}
-    />
+    <div className="space-y-4">
+      <StockMetricsGrid
+        summary={summary}
+        currency={metricCurrency}
+        peContext={peContext}
+      />
+      <InvestorTakeaway>
+        Dla inwestora dlugoterminowego te liczby odpowiadaja na dwa pytania: czy
+        biznes nadal potrafi rosnac z dobra marza i czy obecna wycena nie zaklada
+        juz zbyt wiele dobrych wiadomosci z gory.
+      </InvestorTakeaway>
+    </div>
   );
 }
 

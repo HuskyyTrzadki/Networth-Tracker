@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useReducer, useSyncExternalStore } from "react";
 
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
@@ -111,24 +111,55 @@ const resolveInitialFundamentalSelection = (
   return ["pe"];
 };
 
+const STOCK_CHART_RANGE_STORAGE_EVENT = "stock-chart-range-storage";
+
+const readStoredRange = (
+  storageKey: string,
+  fallbackRange: StockChartRange
+): StockChartRange => {
+  if (typeof window === "undefined") {
+    return fallbackRange;
+  }
+
+  const savedRange = window.localStorage.getItem(storageKey) as StockChartRange | null;
+  if (savedRange && STOCK_CHART_RANGES.includes(savedRange)) {
+    return savedRange;
+  }
+
+  return fallbackRange;
+};
+
 export function StockChartCard({
   providerKey,
   initialChart,
   initialTradeMarkers,
 }: Props) {
   const rangeStorageKey = `stocks:chart-range:${providerKey}`;
-  const [range, setRange] = useState<StockChartRange>(() => {
-    if (typeof window === "undefined") {
-      return initialChart.requestedRange;
-    }
+  const range = useSyncExternalStore(
+    (onStoreChange) => {
+      const onStorage = (event: StorageEvent) => {
+        if (event.key === rangeStorageKey) {
+          onStoreChange();
+        }
+      };
+      const onRangeStorage = (event: Event) => {
+        const customEvent = event as CustomEvent<{ key?: string }>;
+        if (customEvent.detail?.key === rangeStorageKey) {
+          onStoreChange();
+        }
+      };
 
-    const savedRange = window.localStorage.getItem(rangeStorageKey) as StockChartRange | null;
-    if (savedRange && STOCK_CHART_RANGES.includes(savedRange)) {
-      return savedRange;
-    }
+      window.addEventListener("storage", onStorage);
+      window.addEventListener(STOCK_CHART_RANGE_STORAGE_EVENT, onRangeStorage);
 
-    return initialChart.requestedRange;
-  });
+      return () => {
+        window.removeEventListener("storage", onStorage);
+        window.removeEventListener(STOCK_CHART_RANGE_STORAGE_EVENT, onRangeStorage);
+      };
+    },
+    () => readStoredRange(rangeStorageKey, initialChart.requestedRange),
+    () => initialChart.requestedRange
+  );
   const [uiState, dispatch] = useReducer(stockChartUiReducer, initialChart, createInitialUiState);
   const {
     mode,
@@ -138,10 +169,6 @@ export function StockChartCard({
     showGlobalNewsEvents,
     showNarration,
   } = uiState;
-
-  useEffect(() => {
-    window.localStorage.setItem(rangeStorageKey, range);
-  }, [range, rangeStorageKey]);
 
   const normalizedOverlays = normalizeOverlaysForMode(mode, activeOverlays);
   const initialOverlayKey = toOverlayRequestKey(initialChart.activeOverlays);
@@ -190,6 +217,19 @@ export function StockChartCard({
       type: "set_active_overlays",
       payload: resolveNextModeOverlayState(nextMode, activeOverlays),
     });
+  };
+
+  const setRange = (nextRange: StockChartRange) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(rangeStorageKey, nextRange);
+    window.dispatchEvent(
+      new CustomEvent<{ key: string }>(STOCK_CHART_RANGE_STORAGE_EVENT, {
+        detail: { key: rangeStorageKey },
+      })
+    );
   };
 
   const chartData = [...buildChartData(chart?.points ?? [])];
@@ -297,24 +337,11 @@ export function StockChartCard({
           <StockChartLayerControls
             mode={mode}
             isLoading={isLoading}
-            isEventRangeEligible={isEventRangeEligible}
             hasTradeMarkers={tradeMarkers.length > 0}
             activeOverlays={normalizedOverlays}
             showTradeMarkers={showTradeMarkers}
-            showCompanyEvents={showCompanyEvents}
-            showGlobalEvents={showGlobalNewsEvents}
-            showNarration={showNarration}
             onToggleTradeMarkers={(enabled) =>
               dispatch({ type: "set_show_trade_markers", payload: enabled })
-            }
-            onToggleCompanyEvents={(enabled) =>
-              dispatch({ type: "set_show_company_events", payload: enabled })
-            }
-            onToggleGlobalEvents={(enabled) =>
-              dispatch({ type: "set_show_global_news_events", payload: enabled })
-            }
-            onToggleNarration={(enabled) =>
-              dispatch({ type: "set_show_narration", payload: enabled })
             }
             onToggleOverlay={toggleOverlay}
             onSetFundamentalsEnabled={(enabled) =>

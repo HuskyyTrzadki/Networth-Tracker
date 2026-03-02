@@ -12,10 +12,10 @@ const getInitialStockChartCached = async (providerKey: string) => {
 
   cacheLife("minutes");
   cacheTag(`stock:${providerKey}`);
-  cacheTag(`stock:${providerKey}:chart:1m`);
+  cacheTag(`stock:${providerKey}:chart:1y`);
 
   const supabase = createPublicStocksSupabaseClient();
-  return getStockChartResponse(supabase, providerKey, "1M", []);
+  return getStockChartResponse(supabase, providerKey, "1Y", []);
 };
 
 export default async function StockChartSection({

@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, Check } from "lucide-react";
 
-import { Button } from "@/features/design-system/components/ui/button";
-
 import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
 import StockChartSection from "./StockChartSection";
 import StockReportCollapsible from "./StockReportCollapsible";
@@ -11,7 +9,13 @@ import StockReportFiveYearTrendAnalysisSection from "./StockReportFiveYearTrendA
 import StockReportLeadershipSection from "./StockReportLeadershipSection";
 import StockMetricsSection from "./StockMetricsSection";
 import StockReportRevenueMixSection from "./StockReportRevenueMixSection";
-import { EditorsNote, ReportCard, ReportSection, SectionHeader } from "./ReportPrimitives";
+import {
+  EditorsNote,
+  InvestorTakeaway,
+  ReportCard,
+  ReportSection,
+  SectionHeader,
+} from "./ReportPrimitives";
 import {
   BALANCE_SNAPSHOT,
   buildBalanceNarrative,
@@ -32,15 +36,25 @@ type MainContentProps = Readonly<{
 function SummaryStartSection() {
   return (
     <ReportSection
-      id="sekcja-podsumowanie"
-      title="Najwazniejsze wnioski"
-      description="Najwazniejsze punkty."
+      id="sekcja-snapshot"
+      title="Snapshot"
+      description="Najpierw ogolny obraz, potem szczegoly."
     >
       <ReportCard contentClassName="space-y-5 p-6 lg:p-8">
+          <div className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Teza w 1 zdaniu
+            </p>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/90">
+              To spolka o wysokiej jakosci biznesu i mocnej generacji gotowki, ale jej
+              wycena nadal wymaga pilnowania tempa wzrostu oraz zwrotu z inwestycji.
+            </p>
+          </div>
+
           <div className="grid gap-6 text-sm lg:grid-cols-3">
             <div>
               <h3 className="font-semibold">Mocne strony</h3>
-              <ul className="mt-2 space-y-1 text-foreground/90">
+              <ul className="mt-2 space-y-1.5 text-foreground/90">
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
                   Wysoka rentownosc operacyjna utrzymuje sie mimo skali inwestycji.
@@ -49,16 +63,12 @@ function SummaryStartSection() {
                   <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
                   Przeplywy operacyjne pozostaja mocne i stabilne kwartalnie.
                 </li>
-                <li className="flex items-start gap-2">
-                  <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
-                  Konwersja przychodow na gotowke wspiera elastycznosc finansowa.
-                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold">Ryzyka</h3>
-              <ul className="mt-2 space-y-1 text-foreground/90">
+              <ul className="mt-2 space-y-1.5 text-foreground/90">
                 <li className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
                   Rosnace koszty AI zwiekszaja presje na marze w slabszym cyklu.
@@ -67,16 +77,12 @@ function SummaryStartSection() {
                   <ArrowDownRight className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
                   Wyzej ustawiona baza porownawcza utrudnia utrzymanie dynamiki wzrostu.
                 </li>
-                <li className="flex items-start gap-2">
-                  <ArrowDownRight className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
-                  Wysoki capex podnosi ryzyko opoznionego zwrotu z inwestycji.
-                </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold">Co zmienilo sie ostatnio</h3>
-              <ul className="mt-2 space-y-1 text-foreground/90">
+              <h3 className="font-semibold">Na co patrzec teraz</h3>
+              <ul className="mt-2 space-y-1.5 text-foreground/90">
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
                   EPS nadal rosnie szybciej niz przychody.
@@ -84,10 +90,6 @@ function SummaryStartSection() {
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
                   Naklady inwestycyjne wyraznie wzrosly kwartal do kwartalu.
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
-                  Priorytet strategiczny przesunal sie mocniej w strone AI i infrastruktury.
                 </li>
               </ul>
             </div>
@@ -97,6 +99,10 @@ function SummaryStartSection() {
             To mapa ryzyk i przewag, nie sygnal kupna lub sprzedazy. Potwierdz ja w
             sekcjach marz, bilansu i przeplywow pienieznych.
           </EditorsNote>
+          <InvestorTakeaway>
+            To dobry punkt startowy dla poczatkujacego inwestora: jesli teza, ryzyka i
+            watchpoint sa dla Ciebie niejasne, nie schodz jeszcze do sekcji zaawansowanych.
+          </InvestorTakeaway>
       </ReportCard>
     </ReportSection>
   );
@@ -117,16 +123,7 @@ function BalanceSnapshotSection() {
         as="h3"
         title="Co firma posiada i co jest winna"
         titleClassName="font-semibold"
-        actions={
-          <>
-          <Button size="sm" className="h-8 rounded-none px-3 text-[11px]">
-            Ostatni kwartal
-          </Button>
-          <Button size="sm" variant="outline" className="h-8 rounded-none px-3 text-[11px]">
-            Ostatni rok
-          </Button>
-          </>
-        }
+        description="Bilans w skrocie na bazie ostatniego dostepnego okresu."
       />
 
       <div className="border-t border-dashed border-black/15 pt-3">
@@ -222,6 +219,11 @@ function BalanceSnapshotSection() {
           </div>
         </div>
       </div>
+      <InvestorTakeaway>
+        W tej sekcji patrz przede wszystkim na relacje: ile dlugu przypada na kapital,
+        czy plynnosc daje bufor oraz czy obecna rentownosc wystarczy, by ten bilans
+        utrzymac bez napiecia.
+      </InvestorTakeaway>
     </section>
   );
 }
@@ -231,7 +233,6 @@ function EarningsSummarySection() {
     <ReportSection
       id="sekcja-earnings"
       title="Konferencja wynikowa Q4 2025"
-      description="Kluczowe punkty z calla."
     >
       <div className="space-y-4">
         {EARNINGS_CALL_BLOCKS.map((block, index) => (
@@ -253,6 +254,10 @@ function EarningsSummarySection() {
           </article>
         ))}
       </div>
+      <InvestorTakeaway>
+        Czytaj te punkty jako komentarz zarzadu do liczb: pomagaja zrozumiec priorytety,
+        ale nie powinny byc wazniejsze niz realne marze, cash flow i wycena.
+      </InvestorTakeaway>
     </ReportSection>
   );
 }
@@ -276,12 +281,47 @@ function DeepDivesSection() {
   );
 }
 
+function AdvancedSection() {
+  return (
+    <ReportSection
+      id="sekcja-zaawansowane"
+      title="Zaawansowane"
+      description="Dalsza analiza dla osob, ktore chca wejsc poziom glebiej."
+    >
+      <ReportCard contentClassName="space-y-4 p-6">
+        <p className="max-w-3xl text-sm leading-relaxed text-foreground/90">
+          Domyslnie najwazniejsze wnioski masz juz wyzej. Tutaj zbieramy sekcje, ktore
+          pomagaja sprawdzic bilans, jakosc zarzadu, konferencje wynikowe i dluzszy
+          kontekst liczbowy.
+        </p>
+        <StockReportCollapsible
+          title="Otworz sekcje zaawansowane"
+          className="border-b border-dashed border-[color:var(--report-rule)]/20 px-0 py-0"
+          contentClassName="space-y-6 border-t border-dashed border-[color:var(--report-rule)]/20 pt-4"
+        >
+          <BalanceSnapshotSection />
+          <StockReportLeadershipSection />
+          <section id="sekcja-widzety">
+            <InsightsWidgetsSectionLazy />
+          </section>
+          <EarningsSummarySection />
+          <StockReportFiveYearTrendAnalysisSection />
+          <StockReportConceptSections />
+          <DeepDivesSection />
+        </StockReportCollapsible>
+      </ReportCard>
+    </ReportSection>
+  );
+}
+
 export default function StockReportMainContent({
   providerKey,
   metricCurrency,
 }: MainContentProps) {
   return (
     <section className="flex min-w-0 w-full max-w-screen-xl flex-1 flex-col gap-6 lg:pl-4 lg:pt-4">
+      <SummaryStartSection />
+
       <section id="sekcja-wykres" className="border-b border-dashed border-black/15 pb-6">
         <Suspense
           fallback={
@@ -291,8 +331,6 @@ export default function StockReportMainContent({
           <StockChartSection providerKey={providerKey} />
         </Suspense>
       </section>
-
-      <SummaryStartSection />
 
       <section
         id="sekcja-fundamenty"
@@ -310,18 +348,7 @@ export default function StockReportMainContent({
       <section id="sekcja-jak-zarabia">
         <StockReportRevenueMixSection />
       </section>
-
-      <BalanceSnapshotSection />
-      <StockReportLeadershipSection />
-
-      <section id="sekcja-widzety">
-        <InsightsWidgetsSectionLazy />
-      </section>
-
-      <EarningsSummarySection />
-      <StockReportFiveYearTrendAnalysisSection />
-      <StockReportConceptSections />
-      <DeepDivesSection />
+      <AdvancedSection />
     </section>
   );
 }

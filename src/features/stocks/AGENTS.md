@@ -92,8 +92,18 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Report chart also receives initial trade markers from server render when the user is authenticated, so stock report pages do not rely on a client refetch to show existing BUY/SELL markers on first paint.
 - Stock details sections (`StockChartSection`, `StockMetricsSection`, instrument header) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads.
 - Report route keeps public URL `/stocks/[providerKey]` and now uses a 2-column clarity-first layout:
-  - left rail: quick facts + company profile + CEO/compensation + insider trades,
-  - right rail: chart-first reading stream with business/geo tables, balance-sheet snapshot, earnings-call summary, peers, and expandable deep-dive notes.
+  - left rail: identity, quick facts, and a simplified sticky table of contents,
+  - right rail: beginner-first reading stream (`Snapshot` -> `Wykres` -> `Wycena i fundamenty` -> `Jak firma zarabia` -> `Zaawansowane`).
+- Stock report default reading order must stay short and beginner-friendly:
+  - above the fold should answer what the company is, the core thesis, and the longer-term price context,
+  - advanced sections should not compete with the first read.
+- Stock report keeps a single grouped `Zaawansowane` section for deeper content:
+  - balance snapshot,
+  - leadership / insiders,
+  - widgets,
+  - earnings summary,
+  - five-year analysis,
+  - concept/deep-dive blocks.
 - Report route includes an `Insights Widgets` section in the main reading stream:
   - small quarter-based charts (FCF, cash/debt, dividends, shares outstanding, expenses, valuation),
   - centered modal drill-down per widget with larger chart and explanatory copy,
@@ -109,7 +119,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - fallback `Kołowe` view (existing product/geo donuts).
 - Sankey uses one central revenue aggregator to avoid "spaghetti" crossings; costs follow investor-first waterfall order (`COGS`, `OPEX` as `R&D+SG&A`, `Podatki`) and net profit is rendered as the final terminal stage.
 - In Sankey mode, geography is shown as a separate circular card under the flow (`Geografia przychodow`) so business-source mix and regional exposure are not conflated.
-- Price chart controls include a `Narracja` toggle (default ON for long ranges) that reveals labeled event annotations on vertical guides.
+- Price chart keeps timeframe as the primary report control; secondary non-ready layers should stay hidden from the public report surface.
+- Stock report chart defaults to `1Y` so the report opens in long-term context instead of short-term trading context.
+- Timeframe selection remains a primary chart control; non-ready secondary controls should be hidden rather than shown disabled.
 - Report stream now includes `Zarzad i insiderzy` section (`#sekcja-zarzad`) with leadership cards and insider timeline (demo data).
 - Concept-heavy sections expose hover tooltips via an `i` icon to clarify definitions in-place.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
@@ -176,6 +188,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `ReportCard` for shared tactile white surface wrapper (`border-black/5`, consistent content padding),
   - `ReportSection` for vertical rhythm + faint dashed section rules,
   - `EditorsNote` for educational marginalia blocks,
+  - `InvestorTakeaway` for the standard `Co to znaczy dla inwestora?` close on key sections,
   - `ReportDataRow` for strict label-left/value-right financial rows (`font-mono tabular-nums`).
 - Stock report chart controls are intentionally grouped as:
   - tight `Zakres` / `Tryb` strips with sharp corners,
