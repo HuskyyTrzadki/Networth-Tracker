@@ -17,7 +17,7 @@ export type FiveYearTrendAnalysis = Readonly<{
 
 export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
   title: "Analiza trendu 5-letniego",
-  subtitle: "Przychody, marze, bilans i inwestycje z ostatnich 5 lat.",
+  subtitle: "Jak wyglada caly cykl, a nie tylko ostatni raport.",
   sections: [
     {
       title: "Podsumowanie zarzadcze",
@@ -25,17 +25,17 @@ export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
         {
           title: "Mocne strony",
           body:
-            "Spolka laczy przyspieszajacy wzrost przychodow z poprawa marz, silna generacja gotowki i nadal solidnym bilansem. Glowny biznes ma ogromny zasieg i powtarzalny popyt, a kompetencje w obszarze AI oraz infrastruktura tworza realne bariery wejscia. Dywersyfikacja strumieni przychodow, wysoka rentownosc i kultura R&D stawiaja firme w dobrej pozycji do dalszego ksztaltowania kluczowych segmentow gospodarki cyfrowej.",
+            "W dluzszym okresie spolka pokazuje to, co inwestor lubi najbardziej: wzrost przychodow, mocne marze i wysoka generacje gotowki. Core biznes pozostaje bardzo silny, a skala i infrastruktura dalej buduja przewage.",
         },
         {
           title: "Ryzyka",
           body:
-            "Najwieksze ryzyka to rosnaca konkurencja w AI i chmurze, potencjalna zmiana modelu wyszukiwania i reklam oraz nasilona presja regulacyjna. Wyrazny wzrost nakladow inwestycyjnych i wykorzystania dlugu, przy wysokich kosztach R&D i overhead, podnosi stawke realizacji: jesli tempo wzrostu spadnie lub zwrot z tych inwestycji bedzie nizszy od oczekiwan, marze i wolne przeplywy pieniezne moga znalezc sie pod presja. Istnieje tez ryzyko zmiany zachowan uzytkownikow w kierunku agentow AI, social discovery lub zamknietych ekosystemow.",
+            "Najwieksze ryzyko nie lezy w jednym slabszym kwartale, tylko w tym, ze rosnace inwestycje nie zwroca sie wystarczajaco szybko. Dochodzi do tego presja konkurencyjna i regulacyjna, ktora moze podnosic koszt utrzymania przewagi.",
         },
         {
           title: "Perspektywy",
           body:
-            "Na bazie dostepnych danych spolka wchodzi w kolejna faze z pozycji sily, ale w trudniejszym otoczeniu niz w poprzedniej dekadzie. Wysokie inwestycje w AI, chmure i infrastrukture sugeruja podejscie ofensywne. Jesli uda sie dostosowac kluczowe produkty do swiata AI-first, skalowac chmure z rentownoscia oraz przeksztalcac dlugoterminowe projekty w realne biznesy, perspektywa pozostaje atrakcyjna. Sciezka moze byc jednak bardziej zmienna, a decyzje regulacyjne i ruchy konkurencji beda mialy wiekszy wplyw niz wczesniej.",
+            "Spolka wchodzi w kolejna faze z pozycji sily, ale poprzeczka jest wyzej niz kilka lat temu. Jesli nowe inwestycje zaczna donosic realny wzrost i monetyzacje, perspektywa zostaje dobra. Jesli nie, rynek szybko zrobi sie mniej cierpliwy.",
         },
       ],
     },
@@ -45,7 +45,7 @@ export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
         {
           title: "Kluczowe wnioski",
           body:
-            "Rachunek wynikow pokazuje firme w dobrej formie: przychody rosna, marze sie poprawiaja, a zysk na akcje rośnie szybciej niz sprzedaz. Pozytywne motywy to skala, pricing power w core oraz inwestycje w innowacje. Najwazniejszy watchpoint to szybki wzrost kosztow operacyjnych (R&D i koszty ogolne), ktore musza dostarczac mierzalny zwrot. Trendy sa ogolnie korzystne, ale dyscyplina kosztowa bedzie coraz wazniejsza.",
+            "Rachunek wynikow dalej pracuje na korzysc tezy: przychody rosna, marze sa mocne, a EPS potrafi rosnac szybciej niz sprzedaz. Watchpoint pozostaje ten sam: koszty musza dawac realny zwrot.",
         },
         {
           title: "Przychody",
@@ -70,7 +70,7 @@ export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
         {
           title: "Kluczowe wnioski",
           body:
-            "Bilans pozostaje istotnym atutem: rosnacy kapital wlasny, solidna plynnosc i wysoki poziom retained earnings wspieraja dzialalnosc i inwestycje. Zmienna, ktora warto monitorowac, jest podejscie do zadluzenia: wieksze wykorzystanie dlugu zwieksza elastycznosc, ale podnosi ryzyko lewarowania.",
+            "Bilans zostaje atutem, ale warto pilnowac kierunku lewaru. Sama skala aktywow nie wystarczy, jesli koszt finansowania i capex zaczna rosnac szybciej niz operacyjna sila biznesu.",
         },
         {
           title: "Plynnosc",
@@ -95,7 +95,7 @@ export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
         {
           title: "Kluczowe wnioski",
           body:
-            "Cash flow jest kluczowa przewaga: wysoka gotowka z dzialalnosci operacyjnej oraz znaczny wolny przeplyw po inwestycjach. Wprowadzenie dywidendy obok skupu akcji bywa sygnalem wiary w stabilnosc przeplywow. Trade-off to rosnacy capex i czasem wieksze wykorzystanie dlugu, co zwieksza wage decyzji alokacyjnych.",
+            "Cash flow jest tu glownym dowodem jakosci. Dopoki gotowka rosnie mimo wysokiego capex, teza pozostaje mocna. Problem zacznie sie wtedy, gdy inwestycje beda rosnac szybciej niz zdolnosc do ich finansowania.",
         },
         {
           title: "Gotowka operacyjna",
@@ -120,7 +120,7 @@ export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
         {
           title: "Kluczowe wnioski",
           body:
-            "Pozycja konkurencyjna opiera sie na skali, danych, marce i integracji produktowej. Otoczenie jest jednak bardziej konkurencyjne i bardziej ograniczone regulacyjnie. Kluczowe bedzie, czy spolka potrafi adaptowac core produkty do swiata AI-first, broniac marz.",
+            "Skala i ekosystem dalej daja przewage, ale rynek nie jest juz tak latwy jak dawniej. Kluczowe bedzie to, czy firma obroni marze i pozycje w swiecie bardziej AI-first niz feed-first.",
         },
         {
           title: "Pozycja rynkowa",
@@ -145,7 +145,7 @@ export const FIVE_YEAR_TREND_ANALYSIS: FiveYearTrendAnalysis = {
         {
           title: "Kluczowe wnioski",
           body:
-            "Wysokie naklady na R&D to strategiczny wybor: wydatki dzis maja zabezpieczyc przewage w kolejnej dekadzie. AI jest w centrum inicjatyw, a chmura i infrastruktura sa fundamentem. To wzmacnia moat, ale podnosi koszty i wymagania wykonawcze.",
+            "Wysokie R&D ma sens tylko wtedy, gdy zamienia sie w wyzsza monetyzacje, mocniejszy produkt albo nizszy koszt przewagi. To wzmacnia moat, ale podnosi koszt pomylki.",
         },
         {
           title: "Biezace inicjatywy",

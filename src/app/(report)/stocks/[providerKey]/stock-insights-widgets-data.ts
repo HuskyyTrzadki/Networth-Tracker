@@ -71,11 +71,11 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     subtitle: "Wolna gotowka po inwestycjach",
     badge: "Przeplywy",
     description:
-      "Wolny przeplyw pieniezny rosl niemal w kazdym kwartale, co daje wieksza elastycznosc na skup akcji, dywidendy i inwestycje.",
+      "FCF rosl prawie w kazdym kwartale, wiec firma ma z czego finansowac wzrost i zwroty dla akcjonariuszy.",
     implication:
-      "Przy utrzymaniu trendu firma ma zapas na slabsze okresy bez podnoszenia zadluzenia.",
+      "To daje bufor na slabszy okres bez natychmiastowej potrzeby podnoszenia dlugu.",
     nextFocus:
-      "Sprawdz, czy wzrost FCF idzie w parze z marza operacyjna i tempem przychodow.",
+      "Sprawdz, czy FCF rosnie razem z marza operacyjna i przychodami.",
     valueFormat: "usd_billions",
     points: toPoints([4.2, 3.9, 4.8, 5.1, 5.7, 6.3, 6.8, 7.2, 7.8, 8.4, 8.1, 8.9]),
     series: [
@@ -93,11 +93,11 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     subtitle: "Gotowka vs zadluzenie",
     badge: "Bilans",
     description:
-      "Poduszka gotowkowa rosnie szybciej niz zadluzenie, co poprawia odpornosc na wyzsze stopy i spadek popytu.",
+      "Gotowka rosnie szybciej niz dlug, wiec bilans wyglada coraz bezpieczniej.",
     implication:
-      "Bilans pozostaje konserwatywny, a firma ma przestrzen na finansowanie nowych inicjatyw.",
+      "To daje miejsce na inwestycje bez mocnego podnoszenia ryzyka finansowego.",
     nextFocus:
-      "Obserwuj relacje gotowki do dlugu i kierunek odsetek w kolejnych raportach.",
+      "Pilnuj relacji gotowki do dlugu i kosztu odsetek.",
     valueFormat: "usd_billions",
     points: toPoints(
       [45, 46, 47, 48, 50, 52, 53, 55, 57, 59, 60, 62],
@@ -124,9 +124,9 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     subtitle: "Dywidenda na akcje",
     badge: "Kapital",
     description:
-      "Polityka dywidendowa jest przewidywalna: regularny wzrost z niewielkimi odchyleniami miedzy kwartalami.",
+      "Dywidenda rosnie spokojnie i bez duzych skokow, co sugeruje uporzadkowana alokacje kapitalu.",
     implication:
-      "Dla inwestora dochodowego to sygnal stabilnych przeplywow i dyscypliny zarzadu.",
+      "To dobry sygnal stabilnosci, ale nie glowny powod, zeby kupowac spolke wzrostowa.",
     nextFocus:
       "Sprawdz, czy wskaznik wyplaty nie rosnie szybciej niz zysk netto.",
     valueFormat: "usd_per_share",
@@ -146,9 +146,9 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     subtitle: "Liczba akcji w obiegu",
     badge: "Akcje",
     description:
-      "Liczba akcji stopniowo spada, co moze wspierac wzrost EPS nawet przy umiarkowanym wzroscie zysku.",
+      "Spadek liczby akcji pomaga EPS nawet wtedy, gdy sam zysk rosnie wolniej.",
     implication:
-      "Mniejsza liczba akcji zwieksza udzial pojedynczego inwestora w przyszlych zyskach.",
+      "To wspiera wartosc na akcje, o ile skup nie odbywa sie po zbyt wysokiej cenie.",
     nextFocus:
       "Porownaj skale skupu akcji z tempem generowania wolnej gotowki.",
     valueFormat: "shares_billions",
@@ -168,11 +168,11 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     subtitle: "Koszty operacyjne i sprzedazy",
     badge: "Efektywnosc",
     description:
-      "Koszty rosna, ale ich dynamika pozostaje nizsza niz wzrost przychodow, co wspiera marze.",
+      "Koszty rosna, ale na razie wolniej niz przychody, wiec marza sie broni.",
     implication:
-      "Kontrola kosztow to klucz, jesli przychody wejda w wolniejsza faze wzrostu.",
+      "Jesli wzrost spowolni, to wlasnie koszty beda pierwszym miejscem presji na wynik.",
     nextFocus:
-      "Pilnuj zmian kosztow operacyjnych wobec trendu marzy brutto.",
+      "Pilnuj relacji kosztow operacyjnych do marzy brutto.",
     valueFormat: "usd_billions",
     points: toPoints(
       [18.8, 19.1, 19.4, 19.8, 20.4, 20.9, 21.7, 22.2, 23.1, 23.8, 24.4, 25.1],
@@ -201,9 +201,9 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     subtitle: "Mnozniki wyceny",
     badge: "Mnozniki",
     description:
-      "Wycena pozostaje podwyzszona, ale bez skrajnych odchylen. Rynek wycenia utrzymanie wzrostu zyskow.",
+      "Wycena jest wymagajaca, ale nie oderwana od historii. Rynek dalej placi za utrzymanie wzrostu.",
     implication:
-      "Im wyzsze mnozniki, tym wieksza wrazliwosc kursu na jedno slabsze sprawozdanie.",
+      "Im wyzszy mnoznik, tym mniej miejsca na jeden slabszy raport.",
     nextFocus:
       "Obserwuj PE i EV/EBITDA razem z tempem wzrostu EPS.",
     valueFormat: "ratio",

@@ -211,7 +211,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Treemap tiles render logo badges as real HTML elements (`rounded-full`), with centered vertical stack (`ikonka -> ticker -> zmiana`) and muted explicit hex fills for stable cross-renderer visuals.
 - Treemap icon fallback is explicit: currency cash tiles always render a cash badge icon, and custom assets render `customGlyph` (with a neutral fallback glyph) when no logo image is available.
 - Allocation mode now gates `Mapa` for larger datasets only (`assets > 4`); smaller sets fall back to `Słupki` by default while keeping `Tabela` available.
-- Portfolio net-value hero now uses explicit typography split (sans labels + mono value) with a compact daily-change label placed next to the main amount.
+- Portfolio net-value hero now uses explicit typography split (sans labels + mono value) with a compact inline `Dzisiaj` delta chip placed next to the main amount; do not render daily change as a separate header block.
 - Portfolio hero/widget surfaces adopt shared light-theme depth token (`--surface-shadow`) for subtle paper-card lift without heavy decorative shadows.
 - Freshness badges (`Notowania z...`, `Kurs FX...`) are no longer shown in the hero or chart header.
 - Value comparison chart now renders as an area chart (thicker primary stroke + subtle gradient fill under `Wartość portfela`) to anchor trend perception.

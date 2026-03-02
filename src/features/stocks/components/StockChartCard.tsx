@@ -1,11 +1,8 @@
 "use client";
-
 import { useReducer, useSyncExternalStore } from "react";
-
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import { LoaderCircle } from "lucide-react";
-
 import { getStockChart } from "../client/get-stock-chart";
 import { getStockTradeMarkers } from "../client/get-stock-trade-markers";
 import {
@@ -21,9 +18,7 @@ import {
 import { buildMockChartEventMarkers } from "./stock-chart-event-markers";
 import { StockChartPlot } from "./StockChartPlot";
 import { getPriceTrendColor, resolveStockPriceTrend } from "./stock-chart-trend";
-import {
-  resolveVisibleTradeMarkers,
-} from "./stock-chart-card-view-model";
+import { resolveVisibleTradeMarkers } from "./stock-chart-card-view-model";
 import { StockChartCardHeader } from "./StockChartCardHeader";
 import {
   createInitialUiState,
@@ -42,13 +37,11 @@ import {
   type StockChartResponse,
   type StockTradeMarker,
 } from "../server/types";
-
 type Props = Readonly<{
   providerKey: string;
   initialChart: StockChartResponse;
   initialTradeMarkers: readonly StockTradeMarker[];
 }>;
-
 type VisibleLegendItem = Readonly<{
   key: string;
   label: string;
@@ -291,20 +284,20 @@ export function StockChartCard({
   const fallbackNotice =
     (chart ?? lastKnownChart).requestedRange === "1D" &&
     (chart ?? lastKnownChart).resolvedRange !== "1D"
-      ? "Brak intraday. Pokazano 1M."
+      ? "Brak danych intraday, wiec pokazujemy 1M."
       : (chart ?? lastKnownChart).requestedRange === "10Y" &&
           (chart ?? lastKnownChart).resolvedRange !== "10Y"
-        ? "Brak pelnego 10Y. Pokazano caly dostepny zakres."
+        ? "Brak pelnych 10 lat, wiec pokazujemy caly dostepny zakres."
         : null;
   const chartNotice = coverageWarnings.length > 0
     ? {
         tone: "warning" as const,
-        text: `Niepelne pokrycie: ${coverageWarnings.join(" · ")}`,
+        text: `Niepelne dane: ${coverageWarnings.join(" · ")}`,
       }
     : mode === "raw"
       ? {
           tone: "muted" as const,
-          text: "Surowe: jeden overlay naraz.",
+          text: "W trybie surowym pokazujemy jedna nakladke naraz.",
         }
       : fallbackNotice
         ? {
@@ -355,7 +348,7 @@ export function StockChartCard({
           {isLoading ? (
             <div className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
               <LoaderCircle className="size-3.5 animate-spin" />
-              Pobieram dane dla zakresu {range}...
+              Laduje wykres dla {range}...
             </div>
           ) : null}
 

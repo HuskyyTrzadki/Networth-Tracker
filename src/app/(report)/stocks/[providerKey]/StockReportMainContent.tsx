@@ -38,7 +38,7 @@ function SummaryStartSection() {
     <ReportSection
       id="sekcja-snapshot"
       title="Snapshot"
-      description="Najpierw ogolny obraz, potem szczegoly."
+      description="Najkrotsza hipoteza inwestycyjna na start."
     >
       <ReportCard contentClassName="space-y-5 p-6 lg:p-8">
           <div className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-4">
@@ -46,8 +46,9 @@ function SummaryStartSection() {
               Teza w 1 zdaniu
             </p>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/90">
-              To spolka o wysokiej jakosci biznesu i mocnej generacji gotowki, ale jej
-              wycena nadal wymaga pilnowania tempa wzrostu oraz zwrotu z inwestycji.
+              To nadal biznes wysokiej jakosci z mocnym cash flow, ale obecna wycena
+              wymaga, zeby AI i capex zaczely wracac w realnym wzroscie, nie tylko w
+              obietnicy.
             </p>
           </div>
 
@@ -57,11 +58,11 @@ function SummaryStartSection() {
               <ul className="mt-2 space-y-1.5 text-foreground/90">
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
-                  Wysoka rentownosc operacyjna utrzymuje sie mimo skali inwestycji.
+                  Core reklamowy dalej daje skale i marze, ktore trudno szybko podrobic.
                 </li>
                 <li className="flex items-start gap-2">
                   <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-emerald-700/80" aria-hidden />
-                  Przeplywy operacyjne pozostaja mocne i stabilne kwartalnie.
+                  Gotowka z operacji daje komfort inwestowania bez natychmiastowej presji na bilans.
                 </li>
               </ul>
             </div>
@@ -71,11 +72,11 @@ function SummaryStartSection() {
               <ul className="mt-2 space-y-1.5 text-foreground/90">
                 <li className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
-                  Rosnace koszty AI zwiekszaja presje na marze w slabszym cyklu.
+                  Koszt AI i infrastruktury rośnie szybciej, niz latwo go obronic w jednym czy dwoch raportach.
                 </li>
                 <li className="flex items-start gap-2">
                   <ArrowDownRight className="mt-0.5 size-3.5 shrink-0 text-rose-700/80" aria-hidden />
-                  Wyzej ustawiona baza porownawcza utrudnia utrzymanie dynamiki wzrostu.
+                  Przy takiej wycenie nawet lekkie spowolnienie reklam albo slabsza monetyzacja nowych produktow boli mocniej.
                 </li>
               </ul>
             </div>
@@ -85,23 +86,24 @@ function SummaryStartSection() {
               <ul className="mt-2 space-y-1.5 text-foreground/90">
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
-                  EPS nadal rosnie szybciej niz przychody.
+                  Czy przychody i EPS dalej rosna mimo wyzszego kosztu infrastruktury.
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-foreground/75" aria-hidden />
-                  Naklady inwestycyjne wyraznie wzrosly kwartal do kwartalu.
+                  Czy nowe inwestycje zaczynaja poprawiac monetyzacje, a nie tylko podbijac capex.
                 </li>
               </ul>
             </div>
           </div>
 
           <EditorsNote title="Uwaga">
-            To mapa ryzyk i przewag, nie sygnal kupna lub sprzedazy. Potwierdz ja w
-            sekcjach marz, bilansu i przeplywow pienieznych.
+            Ta teza ma sens tylko wtedy, gdy marza, bilans i cash flow potwierdzaja,
+            ze wzrost nie jest kupowany za kazda cene.
           </EditorsNote>
           <InvestorTakeaway>
-            To dobry punkt startowy dla poczatkujacego inwestora: jesli teza, ryzyka i
-            watchpoint sa dla Ciebie niejasne, nie schodz jeszcze do sekcji zaawansowanych.
+            Najpierw odpowiedz sobie, czy firma nadal umie rosnac bez psucia ekonomiki
+            biznesu. Jesli tak, wycena jest kolejnym filtrem. Jesli nie, reszta raportu
+            to tylko szczegoly.
           </InvestorTakeaway>
       </ReportCard>
     </ReportSection>
@@ -220,9 +222,8 @@ function BalanceSnapshotSection() {
         </div>
       </div>
       <InvestorTakeaway>
-        W tej sekcji patrz przede wszystkim na relacje: ile dlugu przypada na kapital,
-        czy plynnosc daje bufor oraz czy obecna rentownosc wystarczy, by ten bilans
-        utrzymac bez napiecia.
+        Patrz na trzy rzeczy: bufor plynnosci, skale dlugu i to, czy rentownosc wystarcza,
+        zeby ten bilans utrzymac bez napiecia.
       </InvestorTakeaway>
     </section>
   );
@@ -255,8 +256,8 @@ function EarningsSummarySection() {
         ))}
       </div>
       <InvestorTakeaway>
-        Czytaj te punkty jako komentarz zarzadu do liczb: pomagaja zrozumiec priorytety,
-        ale nie powinny byc wazniejsze niz realne marze, cash flow i wycena.
+        Traktuj to jako komentarz do liczb, nie zamiennik liczb. Najpierw marze, cash
+        flow i wycena, dopiero potem narracja zarzadu.
       </InvestorTakeaway>
     </ReportSection>
   );
@@ -282,20 +283,31 @@ function DeepDivesSection() {
 }
 
 function AdvancedSection() {
+  const sectionGroups = [
+    "Bilans i odpornosc finansowa",
+    "Zarzad, insiderzy i sygnaly z wynikow",
+    "Trend 5Y i dodatkowe rozbicia",
+  ] as const;
+
   return (
     <ReportSection
       id="sekcja-zaawansowane"
       title="Zaawansowane"
-      description="Dalsza analiza dla osob, ktore chca wejsc poziom glebiej."
+      description="Bilans, zarzad, wyniki i dluzszy kontekst w jednym miejscu."
     >
       <ReportCard contentClassName="space-y-4 p-6">
-        <p className="max-w-3xl text-sm leading-relaxed text-foreground/90">
-          Domyslnie najwazniejsze wnioski masz juz wyzej. Tutaj zbieramy sekcje, ktore
-          pomagaja sprawdzic bilans, jakosc zarzadu, konferencje wynikowe i dluzszy
-          kontekst liczbowy.
-        </p>
+        <div className="grid gap-2 text-sm text-foreground/90 lg:grid-cols-3">
+          {sectionGroups.map((label) => (
+            <div
+              key={label}
+              className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2 lg:border-b-0 lg:border-l lg:pl-3 first:lg:border-l-0 first:lg:pl-0"
+            >
+              {label}
+            </div>
+          ))}
+        </div>
         <StockReportCollapsible
-          title="Otworz sekcje zaawansowane"
+          title="Rozwin analize dodatkowa"
           className="border-b border-dashed border-[color:var(--report-rule)]/20 px-0 py-0"
           contentClassName="space-y-6 border-t border-dashed border-[color:var(--report-rule)]/20 pt-4"
         >

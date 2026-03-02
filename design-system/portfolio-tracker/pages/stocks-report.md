@@ -27,6 +27,8 @@
 - Prefer one short framing sentence over repeated subtitle patterns.
 - End major sections with `Co to znaczy dla inwestora?`.
 - Avoid academic over-explaining above the fold.
+- Delete any sentence that only restates the heading or explains obvious UI.
+- Explanatory copy must answer `co z tego wynika` or `na co patrzec dalej`.
 
 ## Controls
 - Timeframe selection is a primary control and stays visible.

@@ -1,3 +1,5 @@
+import { InvestorTakeaway } from "./ReportPrimitives";
+
 const LEADERSHIP_CARDS = [
   {
     name: "Mark Zuckerberg",
@@ -54,7 +56,6 @@ export default function StockReportLeadershipSection() {
     <section id="sekcja-zarzad" className="space-y-3 border-b border-dashed border-black/15 pb-6">
       <div>
         <h3 className="font-serif text-2xl font-bold tracking-tight">Kto steruje statkiem</h3>
-        <p className="mt-1 text-sm text-muted-foreground">Zarzad, staz i insiderzy.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
@@ -109,6 +110,10 @@ export default function StockReportLeadershipSection() {
         </ol>
         <p className="mt-3 text-[11px] text-muted-foreground">Dane demonstracyjne.</p>
       </article>
+      <InvestorTakeaway>
+        Patrz, czy zarzad ma dlugi horyzont, czy insiderzy robia cos wiecej niz rutynowe
+        ruchy i czy komunikacja idzie w parze z liczbami.
+      </InvestorTakeaway>
     </section>
   );
 }

@@ -35,12 +35,8 @@ function DollarAllocationSection() {
   return (
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
       <div className="flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <h3 className="font-serif text-2xl font-semibold tracking-tight">Gdzie trafia kazda zlotowka przychodu</h3>
-          <StockReportInfoHint
-            text="Podzial przychodu na koszty i zysk."
-            ariaLabel="Wyjasnienie sekcji"
-          />
         </div>
         <div className="inline-flex items-center gap-2">
           <Button
@@ -62,7 +58,9 @@ function DollarAllocationSection() {
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground">{dataset.quickSummary}</p>
+      <p className="text-sm text-muted-foreground">
+        Pokazuje, ile przychodu zostaje po kosztach i gdzie marza robi sie cienka.
+      </p>
 
       <div className="overflow-hidden border-y border-dashed border-black/15">
         <div className="flex h-10 w-full">
@@ -96,10 +94,9 @@ function DollarAllocationSection() {
 
       <article className="border-t border-dashed border-black/15 pt-4">
         <h4 className="text-lg font-semibold tracking-tight">Wniosek</h4>
-        <ul className="mt-2 space-y-2 text-sm leading-7 text-foreground/90">
-          <li>• {dataset.insight}</li>
-          <li>• {dataset.implication}</li>
-        </ul>
+        <p className="mt-2 text-sm leading-7 text-foreground/90">
+          {dataset.insight} {dataset.implication}
+        </p>
       </article>
     </section>
   );
@@ -110,10 +107,6 @@ function YearComparisonSection() {
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
       <div className="flex items-center gap-2">
         <h3 className="font-serif text-2xl font-semibold tracking-tight">Ten rok vs ostatni rok</h3>
-        <StockReportInfoHint
-          text="Szybkie porownanie rok do roku."
-          ariaLabel="Wyjasnienie sekcji"
-        />
       </div>
 
       <div className="border-t border-dashed border-black/15 pt-3">
@@ -147,7 +140,7 @@ function FreeCashFlowAnalysisSection() {
       <div className="flex items-center gap-2">
         <h3 className="font-serif text-2xl font-semibold tracking-tight">Analiza wolnych przeplywow pienieznych</h3>
         <StockReportInfoHint
-          text="FCF to gotowka po capex."
+          text="FCF pokazuje, ile gotowki zostaje po inwestycjach."
           ariaLabel="Wyjasnienie sekcji"
         />
       </div>
@@ -173,13 +166,11 @@ function FreeCashFlowAnalysisSection() {
       <article className="space-y-4 border-t border-dashed border-black/15 pt-4 text-sm leading-relaxed text-foreground/90">
         <div>
           <h4 className="text-lg font-semibold tracking-tight">Wniosek</h4>
-          <ul className="mt-2 space-y-2">
-            <li>• FCF to gotowka po odjeciu capex.</li>
-            <li>
-              • W tym ukladzie FCF (
-              <span className="font-semibold font-mono tabular-nums">$24.5B</span>) jest pod presja wysokiego capex, ale nadal wspiera teze o dobrej jakosci zysku.
-            </li>
-          </ul>
+          <p className="mt-2">
+            FCF (
+            <span className="font-semibold font-mono tabular-nums">$24.5B</span>) jest pod
+            presja wysokiego capex, ale nadal wspiera teze o dobrej jakosci zysku.
+          </p>
         </div>
       </article>
     </section>

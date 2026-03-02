@@ -1,7 +1,5 @@
 "use client";
-
 import { useEffect, useState } from "react";
-
 import {
   Area,
   Bar,
@@ -13,7 +11,6 @@ import {
   YAxis,
 } from "@/lib/recharts-dynamic";
 import { ArrowUpRight, Expand, X } from "lucide-react";
-
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Dialog,
@@ -28,7 +25,6 @@ import {
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";
 import { cn } from "@/lib/cn";
-
 import {
   STOCK_INSIGHTS_WIDGETS,
   type InsightChartPoint,
@@ -289,8 +285,8 @@ export default function InsightsWidgetsSection() {
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
       <SectionHeader
         as="h3"
-        title="Szybkie wykresy fundamentalne"
-        description="Kliknij, aby powiekszyc."
+        title="Wybrane trendy kwartalne"
+        description="Kilka liczb, ktore warto zobaczyc obok glownego raportu."
       />
 
       <ReportCard contentClassName="p-4 sm:p-6">
@@ -370,19 +366,19 @@ export default function InsightsWidgetsSection() {
               <div className="grid gap-3 border-t border-dashed border-black/15 pt-3 md:grid-cols-3">
                 <div className="space-y-1 border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    Co widzisz
+                    Obraz
                   </p>
                   <p className="text-sm leading-6 text-foreground/90">{activeWidget.description}</p>
                 </div>
                 <div className="space-y-1 border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    Co to znaczy
+                    Wniosek
                   </p>
                   <p className="text-sm leading-6 text-foreground/90">{activeWidget.implication}</p>
                 </div>
                 <div className="space-y-1 border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    Na co patrzec dalej
+                    Dalej
                   </p>
                   <p className="text-sm leading-6 text-foreground/90">{activeWidget.nextFocus}</p>
                 </div>
@@ -391,7 +387,7 @@ export default function InsightsWidgetsSection() {
                 href="#sekcja-wykres"
                 className="inline-flex items-center gap-1 text-[13px] font-semibold text-foreground hover:text-muted-foreground"
               >
-                Wroc do glownego wykresu
+                Wroc do wykresu
                 <ArrowUpRight className="size-4" aria-hidden />
               </a>
             </article>

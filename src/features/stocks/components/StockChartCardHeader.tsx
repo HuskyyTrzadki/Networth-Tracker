@@ -24,7 +24,7 @@ export function StockChartCardHeader({
           direction === "flat" && "text-muted-foreground"
         )}
       >
-        {rangeLabel}: {formatChangePercent(changePercent)}
+        Zmiana {rangeLabel}: {formatChangePercent(changePercent)}
       </p>
     </header>
   );

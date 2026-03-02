@@ -157,7 +157,7 @@ export function PortfolioNetValueHero({
           {baseCurrency}
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-dashed border-border/60 pt-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border/60 pt-2">
         <div className="flex items-center gap-1.5 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
           <span>Wartość netto</span>
           <InfoHint
@@ -165,14 +165,6 @@ export function PortfolioNetValueHero({
             ariaLabel="Informacja o czasie wyceny wartości netto"
             className="size-4 border-border/60 bg-background/72"
           />
-        </div>
-        <div className="flex items-baseline gap-2 rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-            Zmiana dzienna
-          </p>
-          <p className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
-            {dailyChangeCombined ?? "—"}
-          </p>
         </div>
       </div>
       <LazyMotion features={domAnimation}>
@@ -190,6 +182,14 @@ export function PortfolioNetValueHero({
               </span>
             ) : null}
           </m.div>
+          <div className="mb-1 inline-flex items-baseline gap-2 rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+              Dzisiaj
+            </p>
+            <p className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
+              {dailyChangeCombined ?? "—"}
+            </p>
+          </div>
         </div>
       </LazyMotion>
     </section>

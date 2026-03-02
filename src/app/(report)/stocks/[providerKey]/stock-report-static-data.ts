@@ -113,43 +113,43 @@ export const REVENUE_BY_GEO: readonly RevenueRow[] = [
 
 export const EARNINGS_CALL_BLOCKS: readonly EarningsCallBlock[] = [
   {
-    title: "1. Kluczowe wyniki finansowe i metryki",
+    title: "1. Wynik kwartalu",
     items: [
-      "Przychody Q4: $58.9B (+25% r/r), glownie napedzane przez reklamy.",
-      "Wolne przeplywy pieniezne: $14.1B; gotowka i papiery: $81.6B; dlug: $58.7B.",
-      "Liczba wyswietlen reklam +18%, srednia cena reklamy +6% r/r.",
+      "Przychody i liczba reklam dalej rosna, wiec core biznes wciaz dowozi skale.",
+      "Gotowka pozostaje wysoka, a FCF nadal daje spory margines bezpieczenstwa.",
+      "Cena reklamy tez idzie w gore, co pokazuje, ze popyt nie opiera sie tylko na wolumenie.",
     ],
   },
   {
-    title: "2. Aktualizacje strategiczne i najwazniejsze wydarzenia",
+    title: "2. Priorytety zarzadu",
     items: [
-      "Priorytet 2026: produkty AI i monetyzacja narzedzi reklamowych.",
-      "Reality Labs: koncentracja na okularach i wearables oraz stopniowe ograniczanie strat.",
-      "MetaCompute: inwestycje w infrastrukture, krzem i energie pod rozwoj AI.",
+      "AI i narzedzia reklamowe dalej sa centrum historii inwestycyjnej.",
+      "Reality Labs zostaje opcja na przyszlosc, ale nadal nie jest filarem wyniku.",
+      "Najwiekszy wydatek idzie w infrastrukture, czyli w zaklad o przyszla monetyzacje AI.",
     ],
   },
   {
-    title: "3. Prognoza i perspektywy",
+    title: "3. Co dalej",
     items: [
-      "Prognoza przychodow Q1 2026: $53.5B-$56.5B.",
-      "Koszty 2026: $162B-$169B; naklady inwestycyjne: $115B-$135B.",
-      "Oczekiwany wyzszy wynik operacyjny mimo presji kosztowej.",
+      "Guidance sugeruje dalszy wzrost, ale przy bardzo wysokim rachunku za inwestycje.",
+      "Capex i koszty operacyjne nadal beda rosnac szybciej, niz inwestor lubi widziec u dojrzalszej spolki.",
+      "Teza pozostaje mocna tylko wtedy, gdy ten wydatek zacznie wracac w przychodzie i marzy.",
     ],
   },
   {
-    title: "4. Ryzyka i obawy",
+    title: "4. Co moze pojsc slabiej",
     items: [
-      "Regulacje EU/US i potencjalny wplyw na reklamy oraz dane.",
-      "Wysokie tempo inwestycji AI podnosi ryzyko opoznionego ROI.",
-      "Reality Labs pozostaje segmentem o najwyzszej niepewnosci rentownosci.",
+      "Regulacje dalej wisza nad modelem reklamowym i praca na danych.",
+      "Najwieksze ryzyko nie lezy w jednym kwartale, tylko w zbyt wolnym zwrocie z AI capexu.",
+      "Reality Labs nadal potrafi spalac kapital szybciej, niz pokazuje wartosc biznesowa.",
     ],
   },
   {
-    title: "5. Najwazniejsze wnioski z Q&A",
+    title: "5. Co wynika z Q&A",
     items: [
-      "Zarzad podkresla dlugoterminowy zwrot z AI, nawet przy wysokim capex teraz.",
-      "Systemy reklamowe utrzymuja silny wzrost konwersji i lepsze targetowanie.",
-      "Dlugoterminowo firma chce zwiekszac udzial przychodow poza reklamami.",
+      "Zarzad brzmi pewnie co do AI, ale rynek bedzie chcial w koncu zobaczyc liczby, nie tylko narracje.",
+      "Reklamy dalej finansuja prawie wszystko, wiec to tam trzeba pilnowac pierwszych pekniec.",
+      "Kazdy nowy strumien przychodow poza reklamami bylby plusem, ale na razie to wciaz dodatek do core.",
     ],
   },
 ];
@@ -167,33 +167,33 @@ export const DEEP_DIVE_BLOCKS: readonly DeepDiveBlock[] = [
   {
     title: "Kondycja bilansu",
     takeaways: [
-      "Bilans pozostaje mocny: wysoka poduszka gotowkowa i przewaga kapitalu wlasnego nad dlugiem.",
-      "Wzrost zadluzenia kwartal do kwartalu jest widoczny, ale nadal miesci sie w konserwatywnym profilu ryzyka.",
-      "Najwazniejsze do monitorowania: dlug do kapitalu, tempo wzrostu aktywow oraz struktura zobowiazan krotkoterminowych.",
+      "Bilans nadal daje komfort: gotowka jest wysoka, a dlug nie wyglada jeszcze agresywnie.",
+      "Watchpoint to kierunek lewaru, nie sam jego poziom w jednym kwartale.",
+      "Najwazniejsze jest to, czy aktywa i zobowiazania rosna w tempie, ktore ma pokrycie w cash flow.",
     ],
   },
   {
     title: "Analiza przeplywow pienieznych",
     takeaways: [
-      "Spolka utrzymuje dodatnie przeplywy operacyjne i wysoki wolny przeplyw pieniezny.",
-      "Najwiecej wartosci daje relacja FCF do capex oraz stabilnosc marz operacyjnych.",
-      "Kluczowe pytanie na kolejne kwartaly: czy FCF nadal rosl bedzie szybciej niz koszty AI infrastruktury.",
+      "Cash flow nadal jest mocnym argumentem za jakoscia biznesu.",
+      "Najwieksza wartosc nie lezy w samym FCF, tylko w tym, czy dalej broni wysokiego capexu.",
+      "Jesli gotowka zacznie slabnac szybciej niz wynik ksiegowy, rynek to szybko zobaczy.",
     ],
   },
   {
     title: "Pozycja konkurencyjna",
     takeaways: [
-      "Przewaga konkurencyjna opiera sie na skali dystrybucji, danych i efektywnosci systemu reklamowego.",
-      "Rynek pozostaje agresywny: presja od platform retail media oraz dynamicznych formatow video.",
-      "Z perspektywy inwestora kluczowe sa wskazniki retencji reklamodawcow i monetyzacji nowych produktow AI.",
+      "Przewaga nadal bierze sie ze skali, danych i mocnego silnika reklamowego.",
+      "To juz nie jest jednak spokojny rynek, wiec przewage trzeba stale odnawiac.",
+      "Dla inwestora kluczowe sa retencja reklamodawcow i to, czy AI faktycznie podnosi monetyzacje.",
     ],
   },
   {
     title: "Innowacje i badania",
     takeaways: [
-      "Najwiekszy potencjal wartosci jest w narzedziach AI dla reklamodawcow oraz automatyzacji tworzenia kampanii.",
-      "Ryzyko wykonawcze dotyczy skali inwestycji, kosztu mocy obliczeniowej i czasu do komercjalizacji.",
-      "Warto obserwowac roadmape modeli i wskazniki adopcji funkcji AI przez userow i biznes.",
+      "Najwiekszy upside siedzi w AI, ale tylko wtedy, gdy zamieni sie w realny produkt i marze.",
+      "Ryzyko wykonawcze jest wysokie, bo koszt pomylki rośnie razem ze skala inwestycji.",
+      "Warto patrzec na adopcje produktow AI, nie tylko na liczbe zapowiedzi.",
     ],
   },
 ];
@@ -202,7 +202,7 @@ export const HOW_THEY_MAKE_MONEY: Readonly<Record<HowTheyMakeMoneyMode, HowTheyM
   {
     lastQuarter: {
       quickSummary:
-        "Silny kwartal: stabilne tempo przychodow, wysoka marza operacyjna i duza elastycznosc gotowkowa.",
+        "Kwartal wyglada zdrowo: marza jest wysoka, a gotowka nadal daje luz inwestycyjny.",
       slices: [
         {
           key: "COGS",
@@ -247,13 +247,13 @@ export const HOW_THEY_MAKE_MONEY: Readonly<Record<HowTheyMakeMoneyMode, HowTheyM
         { label: "Marza netto", value: "30.3%", change: "-3.9 pkt", changeDirection: "down" },
       ],
       insight:
-        "Wydatki na badania i rozwoj sa wyraznie wyzsze niz koszty sprzedazy i administracji, co wskazuje na nacisk na rozwój produktow i infrastruktury.",
+        "Najwiecej kosztu idzie w rozwoj i infrastrukture, nie w podtrzymywanie sprzedazy.",
       implication:
-        "To profil spolki stawiajacej na dlugoterminowy wzrost, nawet kosztem wolniejszej ekspansji marzy w krotkim terminie.",
+        "To profil spolki, ktora broni przyszlego wzrostu kosztem czesci marzy dzis.",
     },
     lastYear: {
       quickSummary:
-        "W ukladzie rocznym struktura marz jest bardziej stabilna i mniej podatna na jednorazowe odchylenia kwartalne.",
+        "Roczny obraz jest spokojniejszy: marza wyglada stabilniej niz w pojedynczym kwartale.",
       slices: [
         {
           key: "COGS",

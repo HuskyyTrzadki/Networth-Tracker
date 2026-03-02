@@ -266,8 +266,8 @@ export default function StockReportRevenueMixSection() {
             </div>
           </div>
           <InvestorTakeaway>
-            Najwazniejsze pytanie brzmi, skad bierze sie zysk: czy firma ma zdrowa marze,
-            czy jeden segment dominuje za mocno i czy geografia przychodow daje dywersyfikacje.
+            Szukaj odpowiedzi na trzy pytania: skad bierze sie zysk, czy jeden segment nie
+            dominuje za mocno i czy geografia przychodow daje dywersyfikacje.
           </InvestorTakeaway>
         </ReportCard>
       </section>

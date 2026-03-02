@@ -203,13 +203,13 @@ export default function StockReportSidebar({
             <h3 className="text-[15px] font-semibold tracking-tight">Na szybko</h3>
             <ul className="mt-3 space-y-2 text-sm text-foreground/90">
               <li className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2">
-                • Najpierw przeczytaj snapshot, potem wycene i model biznesowy.
+                • Zacznij od snapshotu, potem sprawdz wycene i model biznesowy.
               </li>
               <li className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2">
-                • Wykres ma teraz sluzyc do kontekstu dlugiego terminu, nie do day-tradingu.
+                • Wykres ma dawac kontekst dlugiego terminu, nie sygnal do szybkiej decyzji.
               </li>
               <li className="pb-1">
-                • Reszte sekcji traktuj jako poglebienie, nie obowiazkowy pierwszy czyt.
+                • Sekcje nizej doprecyzowuja teze, zamiast budowac ja od zera.
               </li>
             </ul>
           </section>

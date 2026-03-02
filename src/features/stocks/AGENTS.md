@@ -167,6 +167,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `/stocks` top section now follows the standard app header card pattern (`title/description` on the left, primary action slot on the right) with `StockSearchBar` as the right-side action; the old bottom-of-page `Szukasz czegoś innego?` search block was removed.
 - `/stocks` route copy should stay compact: keep `Akcje` as the sole title, a short combined scope line (`z portfeli i obserwowanych`), and no extra search prompt above the search field.
 - Stock report section intros should be short and functional; avoid descriptive subtitles that restate the section heading in longer words.
+- Stock report copy must stay utility-first:
+  - delete sentences that only restate the heading,
+  - avoid helper text like `kliknij, aby...` when the control already makes that obvious,
+  - explanatory text should answer `co z tego wynika` or `na co patrzec dalej`.
 - Long-form stock report education blocks (5Y analysis, concept sections, margin explainers, leadership) should prefer one short intro and one combined takeaway box; avoid stacked `what this is` + `how to read` + `what it means` copy for the same section.
 - Report wording should stay consistent across sections: prefer one label family (`Najwazniejsze punkty`, `Bilans w skrocie`, `Kluczowe obserwacje`, `Wniosek`) instead of mixing near-synonyms like `podsumowanie`, `skrot`, `sekcja`, and `na co patrzec` for the same job.
 - Desktop polish follow-up adjusted `/stocks` shell/readability on large screens (search width containment, loader/skeleton geometry, and screener card density/rhythm).

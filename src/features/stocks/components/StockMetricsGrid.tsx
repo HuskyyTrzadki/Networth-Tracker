@@ -201,12 +201,12 @@ export function StockMetricsGrid({
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
             <div className="space-y-2.5">
               <p className="text-sm text-muted-foreground">
-                Kontekst 5Y: odczyt biezacy na tle historii spolki.
+                Dzisiejszy odczyt na tle ostatnich 5 lat.
               </p>
               <ValuationRangeBar context={peContext} />
               <div className="border-t border-dashed border-black/15 pt-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  Dodatkowe mnozniki
+                  Reszta mnoznikow
                 </p>
                 <div className="mt-2">
                   {valuationRows.length > 0 ? (
@@ -214,7 +214,9 @@ export function StockMetricsGrid({
                       <MetricRow key={metric.label} label={metric.label} value={metric.value} />
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground">Brak dodatkowych mnoznikow.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Brak danych dla dodatkowych mnoznikow.
+                    </p>
                   )}
                 </div>
               </div>

@@ -31,9 +31,8 @@ export default async function StockMetricsSection({
         peContext={peContext}
       />
       <InvestorTakeaway>
-        Dla inwestora dlugoterminowego te liczby odpowiadaja na dwa pytania: czy
-        biznes nadal potrafi rosnac z dobra marza i czy obecna wycena nie zaklada
-        juz zbyt wiele dobrych wiadomosci z gory.
+        Tu sprawdzasz dwie rzeczy: czy biznes nadal rośnie z dobra marza i czy cena nie
+        zaklada juz zbyt wiele dobrych wiadomosci z gory.
       </InvestorTakeaway>
     </div>
   );
