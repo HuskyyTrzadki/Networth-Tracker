@@ -152,6 +152,7 @@ When shipping feature/architecture changes:
 - Portfolio create + dividend booking flows have Server Action mutation boundaries (`createPortfolioAction`, `bookDividendAction`) with cache revalidation; client dialogs no longer post directly to route handlers.
 - Dashboard includes `Ekspozycja walutowa` widget with `Notowania | Gospodarcza` toggle; `Gospodarcza` is user-triggered via `/api/portfolio/currency-exposure/economic` and uses deterministic AI config (`temperature: 0`).
 - Economic exposure cache uses instrument-set fingerprint only (sorted `instrumentId`s + scope/model/prompt version), then reweights cached per-asset splits with fresh `valueBase` on each request.
+- TradingView revenue geography must stay asynchronous-only: refresh via daily/backfill batch (`/api/cron/tradingview-revenue-geo/run` or CLI batch), never via request-path scraping. If geo cache is missing for Yahoo equities, economic exposure should return a graceful pending state rather than block, scrape, or fake readiness.
 
 
 ## Quality bar

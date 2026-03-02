@@ -10,6 +10,7 @@ import { getPortfolioHoldings } from "../get-portfolio-holdings";
 import { getPortfolioSummary } from "../get-portfolio-summary";
 import { readCurrencyExposureCache, loadRevenueGeoByProviderKey, saveCurrencyExposureCache } from "./cache";
 import { CURRENCY_EXPOSURE_MODEL, CURRENCY_EXPOSURE_PROMPT_VERSION, REVENUE_GEO_PROVIDER } from "./constants";
+import { findRevenueGeoCoverageGaps } from "./coverage";
 import { buildInstrumentSetFingerprint } from "./fingerprint";
 import { modelResponseSchema, normalizeCurrencyCode, normalizeCurrencyExposure, parseCachedBreakdown } from "./normalization";
 import { buildEconomicCurrencyExposurePrompt } from "./prompt";
@@ -117,6 +118,27 @@ const toAssetBreakdownFromModel = (
   });
 };
 
+const buildPendingEconomicCurrencyExposure = (
+  summary: Awaited<ReturnType<typeof getPortfolioSummary>>,
+  scope: CurrencyExposureScope,
+  portfolioId: string | null,
+  pendingProviderKeys: readonly string[]
+): EconomicCurrencyExposureApiResponse => ({
+  scope,
+  portfolioId,
+  asOf: summary.asOf,
+  modelMode: "ECONOMIC",
+  status: "PENDING_SOURCE_DATA",
+  chart: [],
+  details: [],
+  pendingProviderKeys,
+  meta: {
+    model: CURRENCY_EXPOSURE_MODEL,
+    promptVersion: CURRENCY_EXPOSURE_PROMPT_VERSION,
+    fromCache: false,
+  },
+});
+
 export async function getEconomicCurrencyExposure(
   input: Input
 ): Promise<EconomicCurrencyExposureApiResponse> {
@@ -192,6 +214,38 @@ export async function getEconomicCurrencyExposure(
       .map((holding) => holding?.providerKey ?? "")
       .filter((providerKey) => providerKey.length > 0)
   );
+
+  const coveredProviderKeys = new Set(
+    Array.from(revenueGeoByProviderKey.keys()).map((providerKey) =>
+      providerKey.trim().toUpperCase()
+    )
+  );
+  const pendingProviderKeys = findRevenueGeoCoverageGaps(
+    summary.holdings.map((holding) => {
+      const rawHolding = rawHoldingByInstrumentId.get(holding.instrumentId);
+      return {
+        instrumentId: holding.instrumentId,
+        provider: holding.provider,
+        providerKey: rawHolding?.providerKey ?? null,
+        instrumentType: holding.instrumentType,
+      };
+    }),
+    coveredProviderKeys
+  );
+
+  if (pendingProviderKeys.length > 0) {
+    logInfo(traceId, "pending_source_data", {
+      pendingProviderKeys,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return buildPendingEconomicCurrencyExposure(
+      summary,
+      scope,
+      input.portfolioId,
+      pendingProviderKeys
+    );
+  }
 
   const holdingsPayload: EconomicCurrencyExposurePromptHolding[] = summary.holdings.map((holding) => {
     const rawHolding = rawHoldingByInstrumentId.get(holding.instrumentId);

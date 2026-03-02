@@ -9,6 +9,8 @@ import { scrapeInstrumentRevenueGeo } from "./tradingview-revenue-geo-scrape.mjs
 const DEFAULT_PROVIDER = "yahoo";
 const DEFAULT_EXCHANGES = ["NASDAQ", "NYSE", "WSE"];
 const DEFAULT_REPORT_PATH = "/tmp/tradingview-revenue-geo-report.json";
+const DEFAULT_DELAY_MS = 0;
+const DEFAULT_TIME_BUDGET_MS = null;
 let envLoaded = false;
 const require = createRequire(import.meta.url);
 const { loadEnvConfig } = require("@next/env");
@@ -27,6 +29,8 @@ const parseArgs = (argv) => {
     instrumentType: null,
     limit: null,
     dryRun: false,
+    delayMs: DEFAULT_DELAY_MS,
+    timeBudgetMs: DEFAULT_TIME_BUDGET_MS,
     providerKeys: [],
     reportPath: DEFAULT_REPORT_PATH,
     localeSubdomain: "www",
@@ -35,6 +39,18 @@ const parseArgs = (argv) => {
   argv.forEach((rawArg) => {
     if (rawArg === "--dry-run") {
       args.dryRun = true;
+      return;
+    }
+
+    if (rawArg.startsWith("--delay-ms=")) {
+      const parsed = Number(rawArg.slice("--delay-ms=".length));
+      if (Number.isFinite(parsed) && parsed >= 0) args.delayMs = Math.floor(parsed);
+      return;
+    }
+
+    if (rawArg.startsWith("--time-budget-ms=")) {
+      const parsed = Number(rawArg.slice("--time-budget-ms=".length));
+      if (Number.isFinite(parsed) && parsed > 0) args.timeBudgetMs = Math.floor(parsed);
       return;
     }
 
@@ -166,28 +182,30 @@ const processInstrument = async ({
   return result;
 };
 
-export const runTradingViewRevenueGeoBatch = async (argv) => {
-  const args = parseArgs(argv);
-  const supabase = createSupabaseAdminClient();
-
-  const instruments = await readInstruments({
-    supabase,
-    provider: args.provider,
-    exchanges: args.exchanges,
-    allExchanges: args.allExchanges,
-    instrumentType: args.instrumentType,
-    providerKeys: args.providerKeys,
-    limit: args.limit,
+const sleep = async (delayMs) => {
+  if (!Number.isFinite(delayMs) || delayMs <= 0) return;
+  await new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
   });
+};
 
+export const processTradingViewRevenueGeoInstruments = async ({
+  supabase,
+  instruments,
+  provider,
+  localeSubdomain = "www",
+  dryRun = false,
+  delayMs = DEFAULT_DELAY_MS,
+  timeBudgetMs = DEFAULT_TIME_BUDGET_MS,
+}) => {
   const report = {
     startedAt: new Date().toISOString(),
     finishedAt: null,
-    dryRun: args.dryRun,
-    provider: args.provider,
-    allExchanges: args.allExchanges,
-    exchanges: args.exchanges,
-    instrumentType: args.instrumentType,
+    dryRun,
+    provider,
+    allExchanges: false,
+    exchanges: [],
+    instrumentType: null,
     instrumentsRequested: instruments.length,
     successes: 0,
     failures: 0,
@@ -197,9 +215,19 @@ export const runTradingViewRevenueGeoBatch = async (argv) => {
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
+  const startedAtMs = Date.now();
+  let processed = 0;
 
   try {
     for (const instrument of instruments) {
+      if (
+        Number.isFinite(timeBudgetMs) &&
+        timeBudgetMs > 0 &&
+        Date.now() - startedAtMs >= timeBudgetMs
+      ) {
+        break;
+      }
+
       const page = await context.newPage();
 
       try {
@@ -207,10 +235,12 @@ export const runTradingViewRevenueGeoBatch = async (argv) => {
           supabase,
           page,
           instrument,
-          provider: args.provider,
-          localeSubdomain: args.localeSubdomain,
-          dryRun: args.dryRun,
+          provider,
+          localeSubdomain,
+          dryRun,
         });
+
+        processed += 1;
 
         if (result.status === "SUCCESS") report.successes += 1;
         else if (result.status === "SKIPPED") report.skipped += 1;
@@ -231,6 +261,7 @@ export const runTradingViewRevenueGeoBatch = async (argv) => {
           `[tv-geo] ${instrument.provider_key} ${result.status} (${result.countriesCount} countries) ${result.message}`
         );
       } catch (error) {
+        processed += 1;
         report.failures += 1;
         report.items.push({
           providerKey: instrument.provider_key,
@@ -250,6 +281,8 @@ export const runTradingViewRevenueGeoBatch = async (argv) => {
       } finally {
         await page.close();
       }
+
+      await sleep(delayMs);
     }
   } finally {
     await context.close();
@@ -257,6 +290,45 @@ export const runTradingViewRevenueGeoBatch = async (argv) => {
   }
 
   report.finishedAt = new Date().toISOString();
+
+  return {
+    processed,
+    successes: report.successes,
+    failures: report.failures,
+    skipped: report.skipped,
+    done: processed >= instruments.length,
+    items: report.items,
+    report,
+  };
+};
+
+export const runTradingViewRevenueGeoBatch = async (argv) => {
+  const args = parseArgs(argv);
+  const supabase = createSupabaseAdminClient();
+
+  const instruments = await readInstruments({
+    supabase,
+    provider: args.provider,
+    exchanges: args.exchanges,
+    allExchanges: args.allExchanges,
+    instrumentType: args.instrumentType,
+    providerKeys: args.providerKeys,
+    limit: args.limit,
+  });
+
+  const { report } = await processTradingViewRevenueGeoInstruments({
+    supabase,
+    instruments,
+    provider: args.provider,
+    localeSubdomain: args.localeSubdomain,
+    dryRun: args.dryRun,
+    delayMs: args.delayMs,
+    timeBudgetMs: args.timeBudgetMs,
+  });
+  report.allExchanges = args.allExchanges;
+  report.exchanges = args.exchanges;
+  report.instrumentType = args.instrumentType;
+
   await writeReport(args.reportPath, report);
 
   console.log(`[tv-geo] report saved to ${args.reportPath}`);

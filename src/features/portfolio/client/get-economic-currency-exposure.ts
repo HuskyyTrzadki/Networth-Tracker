@@ -44,6 +44,7 @@ export async function getEconomicCurrencyExposure(
     console.info("[currency-exposure][economic] client_response", {
       traceId,
       durationMs: Math.round(performance.now() - requestStartedAt),
+      status: data.status,
       fromCache: data.meta.fromCache,
       model: data.meta.model,
       promptVersion: data.meta.promptVersion,

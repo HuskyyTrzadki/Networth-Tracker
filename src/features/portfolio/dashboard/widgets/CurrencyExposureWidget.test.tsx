@@ -73,6 +73,7 @@ describe("CurrencyExposureWidget", () => {
       portfolioId: null,
       asOf: "2026-02-23T08:00:00.000Z",
       modelMode: "ECONOMIC",
+      status: "READY",
       chart: [
         { currencyCode: "USD", sharePct: 70, valueBase: "700.00" },
         { currencyCode: "EUR", sharePct: 30, valueBase: "300.00" },
@@ -131,5 +132,35 @@ describe("CurrencyExposureWidget", () => {
 
     expect(screen.getByText((_, node) => node?.textContent === "100,0% w walucie")).toBeInTheDocument();
     expect(screen.getByText((_, node) => node?.textContent === "70,0% w portfelu")).toBeInTheDocument();
+  });
+
+  it("renders pending source data notice without retry CTA", async () => {
+    vi.mocked(getEconomicCurrencyExposure).mockResolvedValueOnce({
+      scope: "ALL",
+      portfolioId: null,
+      asOf: "2026-02-23T08:00:00.000Z",
+      modelMode: "ECONOMIC",
+      status: "PENDING_SOURCE_DATA",
+      chart: [],
+      details: [],
+      pendingProviderKeys: ["AAPL"],
+      meta: {
+        model: "gemini-2.5-flash-lite",
+        promptVersion: "currency_exposure_v1",
+        fromCache: false,
+      },
+    });
+
+    render(<CurrencyExposureWidget summary={summary} selectedPortfolioId={null} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Gospodarcza" }));
+
+    expect(
+      await screen.findByText("Dane geograficzne w trakcie opracowywania.")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Sprawdzimy je w najbliższym dziennym odświeżeniu.")
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Spróbuj ponownie/i })).not.toBeInTheDocument();
   });
 });

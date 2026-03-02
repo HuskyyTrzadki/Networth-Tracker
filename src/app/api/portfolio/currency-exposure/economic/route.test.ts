@@ -74,6 +74,7 @@ describe("POST /api/portfolio/currency-exposure/economic", () => {
       portfolioId: null,
       asOf: "2026-02-23T08:00:00.000Z",
       modelMode: "ECONOMIC",
+      status: "READY",
       chart: [{ currencyCode: "USD", sharePct: 60, valueBase: "6000.00" }],
       details: [],
       meta: {

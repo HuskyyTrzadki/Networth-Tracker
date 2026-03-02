@@ -1213,6 +1213,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_tradingview_revenue_geo_backfill_candidates: {
+        Args: { p_provider?: string; p_stale_before?: string }
+        Returns: number
+      }
       get_cash_balances: {
         Args: { p_portfolio_ids?: string[] }
         Returns: {
@@ -1339,6 +1343,23 @@ export type Database = {
           provider_key: string
           quantity: number
           symbol: string
+        }[]
+      }
+      list_tradingview_revenue_geo_backfill_candidates: {
+        Args: {
+          p_limit?: number
+          p_provider?: string
+          p_stale_before?: string
+        }
+        Returns: {
+          cache_fetched_at: string | null
+          exchange: string | null
+          instrument_type: Database["public"]["Enums"]["instrument_type"]
+          name: string | null
+          provider: string
+          provider_key: string
+          symbol: string
+          updated_at: string
         }[]
       }
       replace_transaction_group: {

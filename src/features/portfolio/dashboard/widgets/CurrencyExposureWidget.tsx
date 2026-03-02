@@ -218,13 +218,16 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [economicResponse, setEconomicResponse] =
     useState<EconomicCurrencyExposureApiResponse | null>(null);
+  const economicReadyResponse =
+    economicResponse?.status === "READY" ? economicResponse : null;
+  const isPendingSourceData = economicResponse?.status === "PENDING_SOURCE_DATA";
 
-  const activeChart = mode === "GOSPODARCZA" ? economicResponse?.chart ?? [] : investorData.chart;
+  const activeChart = mode === "GOSPODARCZA" ? economicReadyResponse?.chart ?? [] : investorData.chart;
   const activeDetails =
-    mode === "GOSPODARCZA" ? economicResponse?.details ?? [] : investorData.details;
+    mode === "GOSPODARCZA" ? economicReadyResponse?.details ?? [] : investorData.details;
   const comparisonChart =
-    mode === "GOSPODARCZA" ? investorData.chart : economicResponse?.chart ?? [];
-  const deltaChips = economicResponse
+    mode === "GOSPODARCZA" ? investorData.chart : economicReadyResponse?.chart ?? [];
+  const deltaChips = economicReadyResponse
     ? buildExposureDeltaChips(activeChart, comparisonChart)
     : [];
   const deltaReferenceLabel = mode === "GOSPODARCZA" ? "vs Notowania" : "vs Gospodarcza";
@@ -359,7 +362,18 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
           </div>
         ) : null}
 
-        <ExposureBars rows={activeChart} details={activeDetails} baseCurrency={summary.baseCurrency} />
+        {mode === "GOSPODARCZA" && isPendingSourceData ? (
+          <div className="rounded-md border border-dashed border-border/70 bg-background/72 px-3 py-3 text-sm">
+            <p className="text-foreground">Dane geograficzne w trakcie opracowywania.</p>
+            <p className="mt-1 text-muted-foreground">
+              Sprawdzimy je w najbliższym dziennym odświeżeniu.
+            </p>
+          </div>
+        ) : null}
+
+        {!isPendingSourceData ? (
+          <ExposureBars rows={activeChart} details={activeDetails} baseCurrency={summary.baseCurrency} />
+        ) : null}
       </div>
     </ChartCard>
   );

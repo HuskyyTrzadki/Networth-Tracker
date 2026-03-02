@@ -69,6 +69,7 @@ export function buildWeightedEconomicCurrencyExposure(
       portfolioId,
       asOf: summary.asOf,
       modelMode: "ECONOMIC",
+      status: "READY",
       chart: [],
       details: [],
       meta: {
@@ -166,6 +167,7 @@ export function buildWeightedEconomicCurrencyExposure(
     portfolioId,
     asOf: summary.asOf,
     modelMode: "ECONOMIC",
+    status: "READY",
     chart,
     details,
     meta: {
