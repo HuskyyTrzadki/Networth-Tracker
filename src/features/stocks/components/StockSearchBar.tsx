@@ -38,8 +38,8 @@ const buildOptimisticCard = (
   isHydrating: true,
   currency: option.currency.trim().toUpperCase(),
   price: null,
-  monthChangePercent: null,
-  monthChart: [],
+  previewChart: [],
+  tradeMarkers: [],
   asOf: null,
 });
 

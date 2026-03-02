@@ -10,12 +10,15 @@ import { cardVariants } from "@/features/design-system/components/ui/card";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import type { StockScreenerCard } from "@/features/stocks";
+import type { StockScreenerPreviewRange } from "@/features/stocks/server/types";
 import { cn } from "@/lib/cn";
 import { splitCurrencyLabel } from "@/lib/format-currency";
 import { StockScreenerPreviewChartLazy } from "./StockScreenerPreviewChartLazy";
+import { resolveScreenerPreviewData } from "./stock-screener-preview-range";
 
 type StockScreenerGridProps = Readonly<{
   cards: readonly StockScreenerCard[];
+  selectedRange: StockScreenerPreviewRange;
   className?: string;
   onRemoveFavorite: (card: StockScreenerCard) => void;
   isRemovingFavorite: boolean;
@@ -65,6 +68,7 @@ function ScreenerPriceLabel({ label }: Readonly<{ label: string }>) {
 
 export function StockScreenerGrid({
   cards,
+  selectedRange,
   className,
   onRemoveFavorite,
   isRemovingFavorite,
@@ -107,8 +111,9 @@ export function StockScreenerGrid({
             symbol: card.symbol,
             name: card.name,
           });
-          const move = toTrend(card.monthChangePercent);
-          const moveValue = move.text === "-" ? "-" : `1M ${move.text}`;
+          const preview = resolveScreenerPreviewData(card.previewChart, selectedRange);
+          const move = toTrend(preview.changePercent);
+          const moveValue = move.text === "-" ? "-" : `${selectedRange} ${move.text}`;
           const isHydrating = card.isHydrating === true;
           const showRemoveStar = card.isFavorite && !card.inPortfolio;
 
@@ -241,8 +246,9 @@ export function StockScreenerGrid({
                         </div>
                       ) : (
                         <StockScreenerPreviewChartLazy
-                          data={card.monthChart}
+                          data={preview.data}
                           currency={card.currency}
+                          tradeMarkers={card.tradeMarkers}
                         />
                       )}
                     </div>

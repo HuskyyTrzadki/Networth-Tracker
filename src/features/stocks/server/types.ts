@@ -26,13 +26,17 @@ export type StockScreenerCard = Readonly<{
   isHydrating?: boolean;
   currency: string;
   price: string | null;
-  monthChangePercent: number | null;
-  monthChart: readonly Readonly<{
+  previewChart: readonly Readonly<{
     date: string;
     price: number;
   }>[];
+  tradeMarkers: readonly StockTradeMarker[];
   asOf: string | null;
 }>;
+
+export const STOCK_SCREENER_PREVIEW_RANGES = ["1M", "3M", "6M", "12M"] as const;
+
+export type StockScreenerPreviewRange = (typeof STOCK_SCREENER_PREVIEW_RANGES)[number];
 
 export type StockValuationSummary = Readonly<{
   providerKey: string;

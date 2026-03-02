@@ -1,7 +1,4 @@
-import type {
-  StockChartResponse,
-  StockTradeMarker,
-} from "../server/types";
+import type { StockTradeMarker } from "../server/types";
 
 export type VisibleTradeMarker = Readonly<{
   kind: "tradeMarker";
@@ -86,7 +83,7 @@ export const formatChangePercent = (value: number | null) => {
 
 export const resolveVisibleTradeMarkers = (
   markers: readonly StockTradeMarker[],
-  chartPoints: StockChartResponse["points"]
+  chartPoints: readonly Readonly<{ t: string }>[]
 ): readonly VisibleTradeMarker[] => {
   if (markers.length === 0 || chartPoints.length === 0) {
     return [];

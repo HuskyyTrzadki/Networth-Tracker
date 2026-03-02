@@ -177,15 +177,15 @@ export default function StockChartPlotImpl({
   const areaFillColor =
     priceTrendDirection === "up"
       ? hasEnabledOverlays
-        ? "rgba(95, 174, 112, 0.36)"
-        : "rgba(95, 174, 112, 0.55)"
+        ? "rgba(95, 174, 112, 0.28)"
+        : "rgba(95, 174, 112, 0.42)"
       : priceTrendDirection === "down"
         ? hasEnabledOverlays
-          ? "rgba(208, 116, 109, 0.34)"
-          : "rgba(208, 116, 109, 0.5)"
+          ? "rgba(208, 116, 109, 0.26)"
+          : "rgba(208, 116, 109, 0.38)"
         : hasEnabledOverlays
-          ? "rgba(138, 138, 138, 0.24)"
-          : "rgba(138, 138, 138, 0.35)";
+          ? "rgba(138, 138, 138, 0.18)"
+          : "rgba(138, 138, 138, 0.28)";
   const areaBaseValue = priceAxisDomainForChart?.[0] ?? 0;
   const eventMarkerPoints = buildStockChartEventMarkerPoints(
     chartData,
@@ -250,7 +250,7 @@ export default function StockChartPlotImpl({
               <CartesianGrid
                 stroke="var(--border)"
                 strokeDasharray="4 6"
-                strokeOpacity={0.5}
+                strokeOpacity={0.38}
                 vertical={false}
               />
               <XAxis

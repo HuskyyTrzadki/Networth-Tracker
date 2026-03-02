@@ -1,10 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useOptimistic, useTransition } from "react";
 
 import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/features/design-system/components/ui/toggle-group";
 import type { StockScreenerCard } from "@/features/stocks";
 import { removeStockWatchlistAction } from "@/features/stocks/server/watchlist-actions";
+import { STOCK_SCREENER_PREVIEW_RANGES, type StockScreenerPreviewRange } from "@/features/stocks/server/types";
 
 import { StockScreenerGrid } from "./StockScreenerGrid";
 import { StockSearchBar } from "./StockSearchBar";
@@ -81,6 +87,8 @@ export function StocksScreenerInteractive({
   cards,
   favoriteProviderKeys,
 }: Props) {
+  const [selectedRange, setSelectedRange] =
+    useState<StockScreenerPreviewRange>("1M");
   const [isRemovingFavorite, startRemoveTransition] = useTransition();
   const [optimisticCards, applyOptimistic] = useOptimistic(
     cards,
@@ -124,11 +132,37 @@ export function StocksScreenerInteractive({
             />
           </div>
         </header>
+
+        <div className="mt-4 flex items-center justify-start border-t border-dashed border-black/10 pt-4">
+          <ToggleGroup
+            type="single"
+            value={selectedRange}
+            onValueChange={(value) => {
+              if (!value) return;
+              setSelectedRange(value as StockScreenerPreviewRange);
+            }}
+            className="gap-1"
+            aria-label="Zakres wykresow akcji"
+          >
+            {STOCK_SCREENER_PREVIEW_RANGES.map((range) => (
+              <ToggleGroupItem
+                key={range}
+                value={range}
+                variant="ledger"
+                size="sm"
+                className="rounded-none px-3 font-mono text-[11px]"
+              >
+                {range}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
       </section>
 
       <StockScreenerGrid
         className="mt-5"
         cards={optimisticCards}
+        selectedRange={selectedRange}
         onRemoveFavorite={onRemoveFavorite}
         isRemovingFavorite={isRemovingFavorite}
       />

@@ -75,4 +75,34 @@ describe("buildPositionedTradeMarkers", () => {
     expect(result).toHaveLength(2);
     expect(result.map((marker) => marker.clusteredMarkerCount)).toEqual([1, 1]);
   });
+
+  it("keeps nearly equal notionals visually similar in size", () => {
+    const result = buildPositionedTradeMarkers({
+      markers: [
+        {
+          ...markers[0],
+          grossNotional: 55_405.9,
+          buyNotional: 55_405.9,
+        },
+        {
+          ...markers[1],
+          side: "BUY",
+          netQuantity: 121,
+          grossNotional: 54_825.1,
+          buyQuantity: 121,
+          sellQuantity: 0,
+          buyNotional: 54_825.1,
+          sellNotional: 0,
+        },
+      ],
+      chartData,
+      priceAxisDomain: [90, 120],
+      plotWidth: 600,
+    });
+
+    expect(result).toHaveLength(2);
+    expect(Math.abs(result[0]!.markerSizeScale - result[1]!.markerSizeScale)).toBeLessThan(
+      0.02
+    );
+  });
 });

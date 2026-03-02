@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 
+import type { StockTradeMarker } from "../server/types";
 import type { StockScreenerPreviewPoint } from "./StockScreenerPreviewChart";
 
 const StockScreenerPreviewChart = dynamic(
@@ -23,16 +24,19 @@ const StockScreenerPreviewChart = dynamic(
 export function StockScreenerPreviewChartLazy({
   data,
   currency,
+  tradeMarkers,
   className,
 }: Readonly<{
   data: readonly StockScreenerPreviewPoint[];
   currency: string;
+  tradeMarkers: readonly StockTradeMarker[];
   className?: string;
 }>) {
   return (
     <StockScreenerPreviewChart
       data={data}
       currency={currency}
+      tradeMarkers={tradeMarkers}
       className={className}
     />
   );

@@ -40,19 +40,9 @@ describe("resolveVisibleTradeMarkers", () => {
       [
         {
           t: "2026-02-10T00:00:00.000Z",
-          price: 100,
-          pe: null,
-          peLabel: null,
-          epsTtm: null,
-          revenueTtm: null,
         },
         {
           t: "2026-02-11T00:00:00.000Z",
-          price: 119,
-          pe: null,
-          peLabel: null,
-          epsTtm: null,
-          revenueTtm: null,
         },
       ]
     );
@@ -93,11 +83,6 @@ describe("resolveVisibleTradeMarkers", () => {
       [
         {
           t: "2026-02-10T00:00:00.000Z",
-          price: 100,
-          pe: null,
-          peLabel: null,
-          epsTtm: null,
-          revenueTtm: null,
         },
       ]
     );
@@ -127,19 +112,9 @@ describe("resolveVisibleTradeMarkers", () => {
       [
         {
           t: "2026-02-20T00:00:00.000Z",
-          price: 447,
-          pe: null,
-          peLabel: null,
-          epsTtm: null,
-          revenueTtm: null,
         },
         {
           t: "2026-02-23T00:00:00.000Z",
-          price: 454,
-          pe: null,
-          peLabel: null,
-          epsTtm: null,
-          revenueTtm: null,
         },
       ]
     );

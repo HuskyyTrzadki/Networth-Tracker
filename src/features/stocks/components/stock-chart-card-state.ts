@@ -8,9 +8,8 @@ import type { StockChartOverlay, StockChartRange, StockChartResponse } from "../
 export type StockChartUiState = Readonly<{
   mode: StockChartMode;
   activeOverlays: readonly StockChartOverlay[];
-  showEarningsEvents: boolean;
-  showNewsEvents: boolean;
-  showUserTradeEvents: boolean;
+  showTradeMarkers: boolean;
+  showCompanyEvents: boolean;
   showGlobalNewsEvents: boolean;
   showNarration: boolean;
 }>;
@@ -18,9 +17,8 @@ export type StockChartUiState = Readonly<{
 export type StockChartUiAction =
   | { type: "set_mode"; payload: StockChartMode }
   | { type: "set_active_overlays"; payload: readonly StockChartOverlay[] }
-  | { type: "set_show_earnings_events"; payload: boolean }
-  | { type: "set_show_news_events"; payload: boolean }
-  | { type: "set_show_user_trade_events"; payload: boolean }
+  | { type: "set_show_trade_markers"; payload: boolean }
+  | { type: "set_show_company_events"; payload: boolean }
   | { type: "set_show_global_news_events"; payload: boolean }
   | { type: "set_show_narration"; payload: boolean };
 
@@ -29,11 +27,10 @@ export const createInitialUiState = (
 ): StockChartUiState => ({
   mode: "trend",
   activeOverlays: [...initialChart.activeOverlays],
-  showEarningsEvents: false,
-  showNewsEvents: true,
-  showUserTradeEvents: false,
-  showGlobalNewsEvents: true,
-  showNarration: true,
+  showTradeMarkers: true,
+  showCompanyEvents: false,
+  showGlobalNewsEvents: false,
+  showNarration: false,
 });
 
 export const stockChartUiReducer = (
@@ -45,12 +42,10 @@ export const stockChartUiReducer = (
       return { ...state, mode: action.payload };
     case "set_active_overlays":
       return { ...state, activeOverlays: action.payload };
-    case "set_show_earnings_events":
-      return { ...state, showEarningsEvents: action.payload };
-    case "set_show_news_events":
-      return { ...state, showNewsEvents: action.payload };
-    case "set_show_user_trade_events":
-      return { ...state, showUserTradeEvents: action.payload };
+    case "set_show_trade_markers":
+      return { ...state, showTradeMarkers: action.payload };
+    case "set_show_company_events":
+      return { ...state, showCompanyEvents: action.payload };
     case "set_show_global_news_events":
       return { ...state, showGlobalNewsEvents: action.payload };
     case "set_show_narration":

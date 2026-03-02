@@ -3,9 +3,7 @@
 import { useEffect, useReducer, useState } from "react";
 
 import { useKeyedAsyncResource } from "@/features/common/hooks/use-keyed-async-resource";
-import { Button } from "@/features/design-system/components/ui/button";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
-import { cn } from "@/lib/cn";
 import { LoaderCircle } from "lucide-react";
 
 import { getStockChart } from "../client/get-stock-chart";
@@ -27,7 +25,6 @@ import {
   resolveVisibleTradeMarkers,
 } from "./stock-chart-card-view-model";
 import { StockChartCardHeader } from "./StockChartCardHeader";
-import { StockChartAdvancedOverlays } from "./StockChartAdvancedOverlays";
 import {
   createInitialUiState,
   isRangeDisabledOption,
@@ -35,6 +32,9 @@ import {
   resolveNextOverlayState,
   stockChartUiReducer,
 } from "./stock-chart-card-state";
+import { StockChartPrimaryControls } from "./StockChartPrimaryControls";
+import { StockChartLayerControls } from "./StockChartLayerControls";
+import { StockChartLegend } from "./StockChartLegend";
 import {
   STOCK_CHART_RANGES,
   type StockChartOverlay,
@@ -48,6 +48,68 @@ type Props = Readonly<{
   initialChart: StockChartResponse;
   initialTradeMarkers: readonly StockTradeMarker[];
 }>;
+
+type VisibleLegendItem = Readonly<{
+  key: string;
+  label: string;
+  color: string;
+  variant?: "solid" | "ring";
+}>;
+
+const buildVisibleLegendItems = ({
+  baseLegendItems,
+  showTradeMarkers,
+  hasTradeMarkers,
+  showCompanyEvents,
+  showGlobalEvents,
+  hasVisibleEvents,
+}: Readonly<{
+  baseLegendItems: readonly VisibleLegendItem[];
+  showTradeMarkers: boolean;
+  hasTradeMarkers: boolean;
+  showCompanyEvents: boolean;
+  showGlobalEvents: boolean;
+  hasVisibleEvents: boolean;
+}>) => {
+  const items = [...baseLegendItems];
+
+  if (showTradeMarkers && hasTradeMarkers) {
+    items.push({
+      key: "trade-markers",
+      label: "Twoje transakcje",
+      color: "var(--profit)",
+      variant: "ring",
+    });
+  }
+
+  if (hasVisibleEvents && showCompanyEvents) {
+    items.push({
+      key: "company-events",
+      label: "Wydarzenia spolki",
+      color: "#d97706",
+    });
+  }
+
+  if (hasVisibleEvents && showGlobalEvents) {
+    items.push({
+      key: "global-events",
+      label: "Wydarzenia globalne",
+      color: "#0f766e",
+    });
+  }
+
+  return items;
+};
+
+const resolveInitialFundamentalSelection = (
+  activeOverlays: readonly StockChartOverlay[]
+): StockChartOverlay[] => {
+  if (activeOverlays.length > 0) {
+    return [...activeOverlays];
+  }
+
+  return ["pe"];
+};
 
 export function StockChartCard({
   providerKey,
@@ -71,9 +133,8 @@ export function StockChartCard({
   const {
     mode,
     activeOverlays,
-    showEarningsEvents,
-    showNewsEvents,
-    showUserTradeEvents,
+    showTradeMarkers,
+    showCompanyEvents,
     showGlobalNewsEvents,
     showNarration,
   } = uiState;
@@ -141,13 +202,7 @@ export function StockChartCard({
     chart !== null &&
     normalizedOverlays.some((overlay) => chart.hasOverlayData[overlay]);
 
-  const coverageWarnings = chart
-    ? buildCoverageWarnings(chart, normalizedOverlays)
-    : [];
-  const legendItems =
-    chart !== null
-      ? buildLegendItems(mode, normalizedOverlays, chart.hasOverlayData)
-      : [];
+  const coverageWarnings = chart ? buildCoverageWarnings(chart, normalizedOverlays) : [];
   const overlayAxisMeta =
     chart !== null
       ? buildOverlayAxisMeta(
@@ -170,142 +225,122 @@ export function StockChartCard({
       : tradeMarkersResource.data.length === 0 && initialTradeMarkers.length > 0
         ? initialTradeMarkers
         : tradeMarkersResource.data;
-  const visibleTradeMarkers = chart
-    ? resolveVisibleTradeMarkers(tradeMarkers, chart.points)
-    : [];
+  const visibleTradeMarkers =
+    showTradeMarkers && chart ? resolveVisibleTradeMarkers(tradeMarkers, chart.points) : [];
 
   const eventMarkers = isEventRangeEligible
     ? buildMockChartEventMarkers(chartData, {
-      includeEarnings: showEarningsEvents,
-      includeNews: showNarration && showNewsEvents,
-      includeUserTrades: showUserTradeEvents,
-      includeGlobalNews: showNarration && showGlobalNewsEvents,
-    })
+        includeEarnings: showCompanyEvents,
+        includeNews: showCompanyEvents,
+        includeUserTrades: false,
+        includeGlobalNews: showGlobalNewsEvents,
+      })
     : [];
+  const hasVisibleEvents = isEventRangeEligible && (showCompanyEvents || showGlobalNewsEvents);
+  const legendItems = buildVisibleLegendItems({
+    baseLegendItems:
+      chart !== null
+        ? buildLegendItems(mode, normalizedOverlays, chart.hasOverlayData)
+        : [],
+    showTradeMarkers,
+    hasTradeMarkers: tradeMarkers.length > 0,
+    showCompanyEvents,
+    showGlobalEvents: showGlobalNewsEvents,
+    hasVisibleEvents,
+  });
+  const fallbackNotice =
+    (chart ?? lastKnownChart).requestedRange === "1D" &&
+    (chart ?? lastKnownChart).resolvedRange !== "1D"
+      ? "Brak intraday. Pokazano 1M."
+      : (chart ?? lastKnownChart).requestedRange === "10Y" &&
+          (chart ?? lastKnownChart).resolvedRange !== "10Y"
+        ? "Brak pelnego 10Y. Pokazano caly dostepny zakres."
+        : null;
+  const chartNotice = coverageWarnings.length > 0
+    ? {
+        tone: "warning" as const,
+        text: `Niepelne pokrycie: ${coverageWarnings.join(" · ")}`,
+      }
+    : mode === "raw"
+      ? {
+          tone: "muted" as const,
+          text: "Surowe: jeden overlay naraz.",
+        }
+      : fallbackNotice
+        ? {
+            tone: "muted" as const,
+            text: fallbackNotice,
+          }
+        : null;
 
   return (
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
       <StockChartCardHeader
         direction={priceTrend.direction}
         changePercent={priceTrend.changePercent}
+        rangeLabel={(chart ?? lastKnownChart).resolvedRange}
       />
 
-      <Card className="rounded-md border-black/5 bg-white">
-        <CardContent className="space-y-4 p-6">
-          <div className="grid gap-2 border-b border-dashed border-black/15 pb-2 xl:grid-cols-[1fr_auto] xl:items-end">
-          <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
-              Zakres
-            </div>
-            <div className="inline-flex flex-wrap items-center gap-1 border border-black/15 p-1">
-              {STOCK_CHART_RANGES.map((rangeOption) => (
-                <Button
-                  key={rangeOption}
-                  size="sm"
-                  type="button"
-                  variant={range === rangeOption ? "default" : "outline"}
-                  onClick={() => setRange(rangeOption)}
-                  disabled={isRangeDisabledOption(
-                    isLoading,
-                    isTenYearUnavailable,
-                    rangeOption
-                  )}
-                  className={cn("h-8 min-w-10 rounded-none px-2.5 font-mono text-[11px]")}
-                >
-                  {rangeOption}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className="xl:justify-self-end">
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-muted-foreground/90">
-              Tryb
-            </div>
-            <div className="inline-flex border border-black/15 p-1">
-              <Button
-                size="sm"
-                type="button"
-                variant={mode === "trend" ? "default" : "ghost"}
-                onClick={() => switchMode("trend")}
-                disabled={isLoading}
-                className="h-8 rounded-none px-3 text-xs"
-              >
-                Trend (100)
-              </Button>
-              <Button
-                size="sm"
-                type="button"
-                variant={mode === "raw" ? "default" : "ghost"}
-                onClick={() => switchMode("raw")}
-                disabled={isLoading}
-                className="h-8 rounded-none px-3 text-xs"
-              >
-                Surowe
-              </Button>
-            </div>
-          </div>
-          </div>
-
-          <StockChartAdvancedOverlays
-            resolvedRange={(chart ?? lastKnownChart).resolvedRange}
-            normalizedOverlays={normalizedOverlays}
+      <Card className="rounded-sm border-black/5 bg-white shadow-[0_1px_0_rgba(0,0,0,0.03),0_12px_32px_-24px_rgba(0,0,0,0.16)]">
+        <CardContent className="space-y-3.5 p-6">
+          <StockChartPrimaryControls
+            range={range}
             mode={mode}
             isLoading={isLoading}
-            isEventRangeEligible={isEventRangeEligible}
-            showNarration={showNarration}
-            showEarningsEvents={showEarningsEvents}
-            showNewsEvents={showNewsEvents}
-            showUserTradeEvents={showUserTradeEvents}
-            showGlobalNewsEvents={showGlobalNewsEvents}
-            onToggleOverlay={toggleOverlay}
-            onToggleNarration={(enabled) =>
-              dispatch({ type: "set_show_narration", payload: enabled })
-            }
-            onToggleEarnings={(enabled) =>
-              dispatch({ type: "set_show_earnings_events", payload: enabled })
-            }
-            onToggleNews={(enabled) =>
-              dispatch({ type: "set_show_news_events", payload: enabled })
-            }
-            onToggleUserTrades={(enabled) =>
-              dispatch({ type: "set_show_user_trade_events", payload: enabled })
-            }
-            onToggleGlobalNews={(enabled) =>
-              dispatch({ type: "set_show_global_news_events", payload: enabled })
+            onRangeChange={setRange}
+            onModeChange={switchMode}
+            isRangeDisabledOption={(rangeOption) =>
+              isRangeDisabledOption(isLoading, isTenYearUnavailable, rangeOption)
             }
           />
 
-          {mode === "raw" ? (
-            <p className="text-xs text-muted-foreground">
-              W trybie Surowe mozna porownac tylko jeden overlay naraz (PE lub EPS
-              TTM).
-            </p>
-          ) : null}
+          <StockChartLayerControls
+            mode={mode}
+            isLoading={isLoading}
+            isEventRangeEligible={isEventRangeEligible}
+            hasTradeMarkers={tradeMarkers.length > 0}
+            activeOverlays={normalizedOverlays}
+            showTradeMarkers={showTradeMarkers}
+            showCompanyEvents={showCompanyEvents}
+            showGlobalEvents={showGlobalNewsEvents}
+            showNarration={showNarration}
+            onToggleTradeMarkers={(enabled) =>
+              dispatch({ type: "set_show_trade_markers", payload: enabled })
+            }
+            onToggleCompanyEvents={(enabled) =>
+              dispatch({ type: "set_show_company_events", payload: enabled })
+            }
+            onToggleGlobalEvents={(enabled) =>
+              dispatch({ type: "set_show_global_news_events", payload: enabled })
+            }
+            onToggleNarration={(enabled) =>
+              dispatch({ type: "set_show_narration", payload: enabled })
+            }
+            onToggleOverlay={toggleOverlay}
+            onSetFundamentalsEnabled={(enabled) =>
+              dispatch({
+                type: "set_active_overlays",
+                payload: enabled ? resolveInitialFundamentalSelection(activeOverlays) : [],
+              })
+            }
+          />
 
           {isLoading ? (
-            <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
               <LoaderCircle className="size-3.5 animate-spin" />
               Pobieram dane dla zakresu {range}...
             </div>
           ) : null}
 
-          {(chart ?? lastKnownChart).requestedRange === "1D" &&
-          (chart ?? lastKnownChart).resolvedRange !== "1D" ? (
-            <p className="text-xs text-muted-foreground">
-              Brak danych intraday. Pokazano zakres 1M.
-            </p>
-          ) : null}
-          {(chart ?? lastKnownChart).requestedRange === "10Y" &&
-          (chart ?? lastKnownChart).resolvedRange !== "10Y" ? (
-            <p className="text-xs text-muted-foreground">
-              Brak pełnej historii 10Y. Pokazano pełny dostępny zakres.
-            </p>
-          ) : null}
-
-          {coverageWarnings.length > 0 ? (
-            <p className="text-xs text-amber-700 dark:text-amber-300">
-              Niepełne pokrycie danych: {coverageWarnings.join(" · ")}
+          {chartNotice ? (
+            <p
+              className={
+                chartNotice.tone === "warning"
+                  ? "text-[11px] text-amber-700 dark:text-amber-300"
+                  : "text-[11px] text-muted-foreground"
+              }
+            >
+              {chartNotice.text}
             </p>
           ) : null}
 
@@ -313,29 +348,7 @@ export function StockChartCard({
             <p className="text-sm text-loss">{chartResource.errorMessage}</p>
           ) : null}
 
-          {legendItems.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {legendItems.map((item) => (
-                <span key={item.key} className="inline-flex items-center gap-1.5">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                    aria-hidden="true"
-                  />
-                  {item.label}
-                </span>
-              ))}
-              {tradeMarkers.length > 0 ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full border-2 border-[color:var(--profit)] bg-white"
-                    aria-hidden="true"
-                  />
-                  Twoje transakcje
-                </span>
-              ) : null}
-            </div>
-          ) : null}
+          <StockChartLegend items={legendItems} />
 
           <StockChartPlot
             chart={chart}
@@ -350,7 +363,7 @@ export function StockChartCard({
             overlayAxisLabel={overlayAxisMeta.label}
             visibleTradeMarkers={visibleTradeMarkers}
             eventMarkers={eventMarkers}
-            showNarrativeLabels={showNarration && isEventRangeEligible}
+            showNarrativeLabels={showNarration && hasVisibleEvents}
             isLoading={isLoading}
           />
 

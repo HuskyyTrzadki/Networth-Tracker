@@ -19,33 +19,19 @@ const MIN_MARKER_BAND_OFFSET_RATIO = 0.08;
 
 const resolveMarkerSizeScale = (
   grossNotional: number,
-  minGrossNotional: number,
   maxGrossNotional: number
 ) => {
-  if (
-    !Number.isFinite(grossNotional) ||
-    !Number.isFinite(minGrossNotional) ||
-    !Number.isFinite(maxGrossNotional)
-  ) {
+  if (!Number.isFinite(grossNotional) || !Number.isFinite(maxGrossNotional)) {
     return 0.5;
   }
 
-  if (maxGrossNotional <= minGrossNotional) {
+  const safeGrossNotional = Math.max(grossNotional, 0);
+  const safeMaxGrossNotional = Math.max(maxGrossNotional, 0);
+  if (safeMaxGrossNotional <= 0) {
     return 0.5;
   }
 
-  const compressedValue = Math.sqrt(Math.max(grossNotional, 0));
-  const compressedMin = Math.sqrt(Math.max(minGrossNotional, 0));
-  const compressedMax = Math.sqrt(Math.max(maxGrossNotional, 0));
-
-  if (compressedMax <= compressedMin) {
-    return 0.5;
-  }
-
-  return Math.min(
-    1,
-    Math.max(0, (compressedValue - compressedMin) / (compressedMax - compressedMin))
-  );
+  return Math.min(1, Math.max(0, Math.sqrt(safeGrossNotional / safeMaxGrossNotional)));
 };
 
 const buildClusteredTradeMarker = (
@@ -206,7 +192,6 @@ export const buildPositionedTradeMarkers = ({
   }
 
   const grossNotionals = clusteredMarkers.map((marker) => marker.grossNotional);
-  const minGrossNotional = Math.min(...grossNotionals);
   const maxGrossNotional = Math.max(...grossNotionals);
   const topDomainPrice = priceAxisDomain?.[1] ?? 0;
   const bottomDomainPrice = priceAxisDomain?.[0] ?? 0;
@@ -221,7 +206,6 @@ export const buildPositionedTradeMarkers = ({
     markerY,
     markerSizeScale: resolveMarkerSizeScale(
       marker.grossNotional,
-      minGrossNotional,
       maxGrossNotional
     ),
   }));

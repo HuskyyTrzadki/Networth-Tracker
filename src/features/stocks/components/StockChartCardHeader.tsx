@@ -7,12 +7,14 @@ import { formatChangePercent } from "./stock-chart-card-view-model";
 export function StockChartCardHeader({
   direction,
   changePercent,
+  rangeLabel,
 }: Readonly<{
   direction: "up" | "down" | "flat";
   changePercent: number | null;
+  rangeLabel: string;
 }>) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-2">
+    <header className="flex flex-wrap items-start justify-between gap-3">
       <h2 className="font-serif text-2xl font-bold tracking-tight">Wykres ceny</h2>
       <p
         className={cn(
@@ -22,7 +24,7 @@ export function StockChartCardHeader({
           direction === "flat" && "text-muted-foreground"
         )}
       >
-        Zmiana zakresu: {formatChangePercent(changePercent)}
+        {rangeLabel}: {formatChangePercent(changePercent)}
       </p>
     </header>
   );

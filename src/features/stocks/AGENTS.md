@@ -71,6 +71,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - click row -> navigate to `/stocks/[providerKey]`,
   - click per-item star -> add ticker to `stock_watchlist` without navigation.
 - `/stocks` page server-renders initial watchlist provider keys into `StockSearchBar`, so favorite stars are correct on first paint without extra client fetch.
+- `/stocks` screener cards now ship one shared 12M daily preview series per card and slice it client-side into `1M / 3M / 6M / 12M`; avoid fetch-per-card/per-range preview requests.
+- `/stocks` screener mini-charts reuse the same merged stock trade marker pipeline as the report chart, but only render buy/sell markers (always-on, no PE/news/event overlays in card previews).
+- `/stocks` screener mini-charts expose compact hover info: standard date/price tooltip for the line and a smaller trade hover card for buy/sell markers.
 - Optimistic watchlist UX follows React 19 + App Router standard:
   - `StocksScreenerInteractive` owns `useOptimistic` (no local mirror state / no sync effect),
   - `StockSearchBar` applies optimistic favorite toggle + optimistic card skeleton via callbacks,
@@ -174,9 +177,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `EditorsNote` for educational marginalia blocks,
   - `ReportDataRow` for strict label-left/value-right financial rows (`font-mono tabular-nums`).
 - Stock report chart controls are intentionally grouped as:
-  - tight range/mode strips with sharp corners,
-  - collapsible `Zaawansowane nakladki` panel for overlays/events (to avoid 8+ always-visible toggle buttons).
-- `StockChartCard.tsx` was split with extracted UI subcomponents (`StockChartCardHeader.tsx`, `StockChartAdvancedOverlays.tsx`, `stock-chart-card-state.ts`) to keep file size under repo limits and preserve readability.
+  - tight `Zakres` / `Tryb` strips with sharp corners,
+  - secondary `Warstwy` chip row with progressive disclosure for `Spolka/Globalne` and fundamental overlays,
+  - secondary chips should stay visually softer than the primary segmented controls so the chart still leads,
+  - active state on secondary chips must still be explicit at a glance (stronger border/fill + small status dot), but should not mimic form checkboxes,
+  - chart copy should stay compressed: avoid helper headings like `Widoczne` / `Warstwy` when the UI is already self-explanatory, and prefer one compact notice line over stacked micro-messages,
+  - no production-facing mock trade toggle in the public report UI.
+- `StockChartCard.tsx` stays split into focused subcomponents (`StockChartCardHeader.tsx`, `StockChartPrimaryControls.tsx`, `StockChartLayerControls.tsx`, `StockChartLegend.tsx`, `stock-chart-card-state.ts`) to keep file size under repo limits and preserve readability.
 - Report shell styling follows the `Tactile Ledger` standard:
   - desk/page uses warm paper tone while major report blocks sit on tactile white cards with layered shadows,
   - chart/table internals keep faint dashed ledger separators (`border-black/15`) and strict mono numeric alignment,
