@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
-import { AddTransactionDialogRoute } from "@/features/transactions";
+import { AddTransactionDialogRoute } from "@/features/transactions/components/AddTransactionDialogRoute";
 import { getAssetBalancesByPortfolio } from "@/features/transactions/server/get-asset-balances";
 import { resolvePortfolioSelection } from "@/features/transactions/server/resolve-portfolio-selection";
 import { getCashBalancesByPortfolio } from "@/features/transactions/server/get-cash-balances";

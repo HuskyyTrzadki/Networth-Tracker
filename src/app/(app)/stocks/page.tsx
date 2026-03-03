@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 
 import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cardVariants } from "@/features/design-system/components/ui/card";
 import { createClient } from "@/lib/supabase/server";

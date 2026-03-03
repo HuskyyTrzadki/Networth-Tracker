@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { format } from "date-fns";
 import { useState } from "react";
 
-import { AddTransactionDialog } from "@/features/transactions";
+import { AddTransactionDialog } from "@/features/transactions/components/AddTransactionDialog";
 import { Button } from "@/features/design-system/components/ui/button";
 import type { InstrumentSearchResult } from "@/features/transactions/lib/instrument-search";
 import type { InstrumentSearchClient } from "@/features/transactions/client/search-instruments";

@@ -5,14 +5,12 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { Button } from "@/features/design-system/components/ui/button";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
 import { createClient } from "@/lib/supabase/server";
-import {
-  TransactionsEmptyState,
-  TransactionsSearchToolbar,
-  TransactionsPagination,
-  TransactionsTable,
-} from "@/features/transactions";
+import { TransactionsEmptyState } from "@/features/transactions/components/TransactionsEmptyState";
+import { TransactionsSearchToolbar } from "@/features/transactions/components/TransactionsSearchToolbar";
+import { TransactionsPagination } from "@/features/transactions/components/TransactionsPagination";
+import { TransactionsTable } from "@/features/transactions/components/TransactionsTable";
 import { parseTransactionsFilters } from "@/features/transactions/server/filters";
 import { listTransactions } from "@/features/transactions/server/list-transactions";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";

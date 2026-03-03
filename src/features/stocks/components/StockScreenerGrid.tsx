@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Loader2, Star } from "lucide-react";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 
-import { ChangePill } from "@/features/design-system";
+import { ChangePill } from "@/features/design-system/components/ChangePill";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cardVariants } from "@/features/design-system/components/ui/card";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";

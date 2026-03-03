@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
 import { cacheLife, cacheTag } from "next/cache";
 
-import {
-  PortfolioDashboard,
-} from "@/features/portfolio";
+import { PortfolioDashboard } from "@/features/portfolio/dashboard/PortfolioDashboard";
 import { getPolishCpiSeriesCached, type CurrencyCode } from "@/features/market-data";
 import { emptyDashboardBenchmarkSeries } from "@/features/portfolio/dashboard/lib/benchmark-config";
 import { getPortfolioLiveTotals } from "@/features/portfolio/server/get-portfolio-live-totals";

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PortfolioRecentTransactionsWidget } from "./PortfolioRecentTransactionsWidget";
 
-vi.mock("@/features/transactions", () => ({
+vi.mock("@/features/transactions/components/TransactionsTable", () => ({
   TransactionsTable: () => <div data-testid="transactions-table" />,
 }));
 

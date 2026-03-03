@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartCard } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
 import type { PolishCpiPoint } from "@/features/market-data/types";
 import type { SnapshotScope } from "../../server/snapshots/types";
 import type { LiveTotalsResult } from "../../server/get-portfolio-live-totals";

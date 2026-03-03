@@ -1,7 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { cookies } from "next/headers";
 
-import { getStockChartResponse } from "@/features/stocks";
+import { getStockChartResponse } from "@/features/stocks/server/get-stock-chart-response";
 import { StockChartCard } from "@/features/stocks/components/StockChartCard";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { listStockTradeMarkers } from "@/features/stocks/server/list-stock-trade-markers";

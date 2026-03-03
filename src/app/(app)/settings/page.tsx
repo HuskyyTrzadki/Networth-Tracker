@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthSettingsSection } from "@/features/auth";
+import { AuthSettingsSection } from "@/features/auth/ui/AuthSettingsSection";
 
 type Props = Readonly<{
   searchParams: Promise<{

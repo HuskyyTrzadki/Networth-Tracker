@@ -133,11 +133,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `StockReportRevenueMixSectionLazy` uses viewport gating + dynamic import so revenue-mix charts are not part of initial `/stocks/[providerKey]` route chunk,
   - `StockReportConceptSectionsLazy` keeps concept sparkline bundle out of initial chunk and loads after advanced section expansion + visibility.
 - Import boundary is strict:
-  - `src/features/stocks/index.ts` exports server-facing services and should be consumed by server files/routes only,
-  - client files must import stock DTO constants/types from `src/features/stocks/types.ts` instead of the server barrel.
+  - feature barrel `src/features/stocks/index.ts` was removed; use direct server/client-safe file imports,
+  - client files must import stock DTO constants/types from `src/features/stocks/types.ts` instead of server service files.
 - Performance boundary is strict on report pages:
   - prefer direct design-system component-path imports (`components/InfoHint`, `components/Sparkline`) in `/stocks/[providerKey]` and stock metrics widgets,
-  - avoid importing those from `src/features/design-system/index.ts` on performance-sensitive stock routes, because that can inflate shared initial chunks.
+  - do not introduce a feature-level design-system barrel on stock routes; keep direct imports so shared initial chunks stay lean.
 - Screener cards use shared tactile card surface defaults (design-system `Card` token path), denser desktop geometry, and a compact monthly change badge for higher information density.
 - Screener preview chart keeps visible X/Y context but uses area + gradient fill and stronger stroke to avoid thin-wire sparklines.
 - Screener card borders use near-hairline contrast (`border-border/20`) so shadow depth carries the card separation without muddy double-border effect.

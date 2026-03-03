@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
-import { AddTransactionDialogStandaloneRoute } from "@/features/transactions";
+import { AddTransactionDialogStandaloneRoute } from "@/features/transactions/components/AddTransactionDialogStandaloneRoute";
 import { getAssetBalancesByPortfolio } from "@/features/transactions/server/get-asset-balances";
 import { resolvePortfolioSelection } from "@/features/transactions/server/resolve-portfolio-selection";
 import { getCashBalancesByPortfolio } from "@/features/transactions/server/get-cash-balances";

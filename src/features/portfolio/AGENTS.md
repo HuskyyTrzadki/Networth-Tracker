@@ -11,10 +11,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/components/PortfolioDashboardSkeleton.tsx`
 - `src/features/portfolio/components/PortfolioSwitcher.tsx`
 - `src/features/portfolio/components/CreatePortfolioDialog.tsx`
+- `src/features/portfolio/components/CreatePortfolioDialogForm.tsx`
 - `src/features/portfolio/components/CreateFirstPortfolioAction.tsx`
 - `src/features/portfolio/components/PortfolioMobileHeaderActions.tsx`
 - `src/features/portfolio/dashboard/PortfolioDashboard.tsx`
+- `src/features/portfolio/dashboard/PortfolioSecondaryWidgets.tsx`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.tsx`
+- `src/features/portfolio/dashboard/components/RenderWhenVisible.tsx`
 - `src/features/portfolio/dashboard/widgets/AllocationHoldingsWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioAllocationsByPortfolioWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeWidget.tsx`
@@ -101,6 +104,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >=7D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
+- Lower-priority dashboard sections (`Alokacja per portfel`, `Największe ruchy`, `Ostatnie transakcje`, `Skrzynka dywidend`) are deferred with `RenderWhenVisible` + `next/dynamic({ ssr: false })`; keep value chart + allocation/currency row in the initial payload.
+- `CreatePortfolioDialog` keeps only trigger/shell state in the initial bundle; form logic (`react-hook-form`, `zod`, schema fields) lives in `CreatePortfolioDialogForm` and is loaded on-demand after opening the dialog.
 - Client dashboard widgets should import market-data DTO types from `@/features/market-data/types` (client-safe surface), not from `@/features/market-data` server barrel.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
 - Dashboard includes widget `Ekspozycja walutowa` z przełącznikiem `Notowania | Gospodarcza`; first `Gospodarcza` run is user-triggered by `Oblicz ekspozycję gospodarczą` with inline analyzer loader.

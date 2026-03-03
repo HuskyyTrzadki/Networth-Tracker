@@ -2,7 +2,7 @@
 
 import { LoaderCircle } from "lucide-react";
 
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
 import { Alert, AlertDescription, AlertTitle } from "@/features/design-system/components/ui/alert";
 import { Button } from "@/features/design-system/components/ui/button";
 import { isSupportedCashCurrency } from "@/features/transactions/lib/system-currencies";

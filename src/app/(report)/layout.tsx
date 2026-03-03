@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import { ReportShell } from "@/features/app-shell";
+import { ReportShell } from "@/features/app-shell/components/ReportShell";
 import { getAuthUser } from "@/features/auth/server/service";
 
 type Props = Readonly<{

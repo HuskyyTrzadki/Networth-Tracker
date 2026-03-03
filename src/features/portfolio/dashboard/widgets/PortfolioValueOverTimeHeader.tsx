@@ -2,7 +2,7 @@
 
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 
-import { StatusStrip } from "@/features/design-system";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   ToggleGroup,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, Loader2, Sparkles } from "lucide-react";
 
-import { ChartCard } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
 import { Button } from "@/features/design-system/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/features/design-system/components/ui/toggle-group";
 import type {

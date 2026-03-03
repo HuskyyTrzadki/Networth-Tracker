@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/features/design-system/components/ui/button";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
 import { DialogClose, DialogDescription, DialogTitle } from "@/features/design-system/components/ui/dialog";
 import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/snapshot-rebuild-events";
 import { Form } from "@/features/design-system/components/ui/form";

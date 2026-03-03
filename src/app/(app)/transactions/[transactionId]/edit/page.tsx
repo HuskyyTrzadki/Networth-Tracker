@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { AddTransactionEditDialogStandaloneRoute } from "@/features/transactions";
+import { AddTransactionEditDialogStandaloneRoute } from "@/features/transactions/components/AddTransactionEditDialogStandaloneRoute";
 import { getTransactionEditDialogData } from "@/features/transactions/server/get-transaction-edit-dialog-data";
 import { createClient } from "@/lib/supabase/server";
 

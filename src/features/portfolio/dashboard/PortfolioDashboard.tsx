@@ -1,6 +1,7 @@
 import { cn } from "@/lib/cn";
 import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
-import { AnimatedReveal, StatusStrip } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Alert } from "@/features/design-system/components/ui/alert";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 
@@ -15,8 +16,7 @@ import { PortfolioDashboardClientWidgets } from "./PortfolioDashboardClientWidge
 import { PortfolioNetValueHero } from "./PortfolioNetValueHero";
 import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
 import type { DividendInboxResult } from "../lib/dividend-inbox";
-import { DividendInboxWidget } from "./widgets/DividendInboxWidget";
-import { PortfolioRecentTransactionsWidget } from "./widgets/PortfolioRecentTransactionsWidget";
+import { PortfolioSecondaryWidgets } from "./PortfolioSecondaryWidgets";
 import { formatDashboardAsOf } from "./dashboard-formatters";
 
 type Props = Readonly<{
@@ -151,11 +151,11 @@ export function PortfolioDashboard({
             benchmarkSeries={benchmarkSeries}
             portfolioAllocationDonutCards={portfolioAllocationDonutCards}
           />
-          <PortfolioRecentTransactionsWidget
+          <PortfolioSecondaryWidgets
             selectedPortfolioId={selectedPortfolioId}
-            items={recentTransactions}
+            recentTransactions={recentTransactions}
+            dividendInbox={dividendInbox}
           />
-          <DividendInboxWidget data={dividendInbox} selectedPortfolioId={selectedPortfolioId} />
         </div>
       </AnimatedReveal>
     </div>

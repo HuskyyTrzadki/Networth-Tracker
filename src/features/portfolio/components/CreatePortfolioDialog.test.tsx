@@ -35,9 +35,9 @@ describe("CreatePortfolioDialog", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Open" }));
-    expect(screen.getAllByText("Nowy portfel")[0]).toBeInTheDocument();
+    expect(await screen.findByText("Nowy portfel")).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText("Nazwa portfela"), "Test");
+    await user.type(await screen.findByLabelText("Nazwa portfela"), "Test");
     await user.click(
       screen.getByRole("button", { name: "Utwórz portfel" })
     );
@@ -67,7 +67,7 @@ describe("CreatePortfolioDialog", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Open" }));
-    await user.type(screen.getByLabelText("Nazwa portfela"), "IKE");
+    await user.type(await screen.findByLabelText("Nazwa portfela"), "IKE");
     await user.click(
       screen.getByRole("switch", { name: "Konto emerytalne IKE lub IKZE" })
     );
@@ -99,7 +99,7 @@ describe("CreatePortfolioDialog", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Open" }));
-    await user.type(screen.getByLabelText("Nazwa portfela"), "Test");
+    await user.type(await screen.findByLabelText("Nazwa portfela"), "Test");
     await user.click(
       screen.getByRole("button", { name: "Utwórz portfel" })
     );

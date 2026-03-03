@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 
-import { ChartCard, StatusStrip } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";

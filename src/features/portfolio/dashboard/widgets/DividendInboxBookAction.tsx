@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { StatusStrip } from "@/features/design-system";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Button } from "@/features/design-system/components/ui/button";
 import type { DividendInboxItem } from "@/features/portfolio/lib/dividend-inbox";
 

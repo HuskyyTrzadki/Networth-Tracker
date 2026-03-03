@@ -51,7 +51,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Demo guests get a reusable `DemoAccountCallout` with one primary exit CTA (`Załóż własny portfel`); it should stay visible in the sidebar footer and again at the bottom of app pages so demo users always have a clear way back to onboarding.
 - That demo CTA should reset the anonymous demo session into a fresh non-demo guest session before going to `/onboarding`; it must not be a plain link, otherwise demo and real portfolios get mixed in one account.
 - The bottom-page `DemoAccountCallout` is intentionally hidden on `/settings` and `/onboarding` to avoid repeating the same demo guidance on pages that already explain the next step.
-- Report/public shell consumers should avoid importing the broad `app-shell` barrel when they only need a small client-safe primitive like `ReportShellMenuTrigger`; use direct component imports to avoid pulling unrelated server-only exports into report bundles.
+- Feature barrel `src/features/app-shell/index.ts` was removed; report/public shell consumers should use direct component imports (for example `ReportShellMenuTrigger`) to avoid pulling unrelated modules into shared chunks.
 - Portfolio rows now accept `isDemo` from server portfolio summaries; demo portfolios render a prominent `DEMO` badge directly in the desktop sidebar row.
 - Shell-owned page chrome should avoid duplicate context labels; prefer a single page title plus one short scope/status cue instead of stacked eyebrow + title + subtitle variants.
 

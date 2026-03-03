@@ -1,4 +1,4 @@
-import { AddTransactionDialogSkeleton } from "@/features/transactions";
+import { AddTransactionDialogSkeleton } from "@/features/transactions/components/AddTransactionDialogSkeleton";
 
 export default function AddTransactionLoading() {
   return (

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { isDemoAccount } from "@/features/auth/server/demo-account";
 import { Button } from "@/features/design-system/components/ui/button";
-import { OnboardingWizard } from "@/features/onboarding";
+import { OnboardingWizard } from "@/features/onboarding/components/OnboardingWizard";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {

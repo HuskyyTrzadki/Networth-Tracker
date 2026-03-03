@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { HomeHero } from "@/features/home";
+import { HomeHero } from "@/features/home/components/HomeHero";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 export const metadata: Metadata = {

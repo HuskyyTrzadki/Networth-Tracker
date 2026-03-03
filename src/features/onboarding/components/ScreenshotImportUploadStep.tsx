@@ -2,7 +2,7 @@
 
 import { LoaderCircle } from "lucide-react";
 
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
 import { Button } from "@/features/design-system/components/ui/button";
 import { cn } from "@/lib/cn";
 

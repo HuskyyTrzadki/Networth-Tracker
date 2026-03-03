@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import type { PolishCpiPoint } from "@/features/market-data/types";
 import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
 import type { PortfolioSummary } from "../server/valuation";
@@ -8,10 +10,24 @@ import type { SnapshotChartRow } from "../server/snapshots/types";
 import { useSnapshotRebuild } from "./hooks/useSnapshotRebuild";
 import { AllocationHoldingsWidget } from "./widgets/AllocationHoldingsWidget";
 import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
-import { PortfolioAllocationsByPortfolioWidget } from "./widgets/PortfolioAllocationsByPortfolioWidget";
 import { CurrencyExposureWidget } from "./widgets/CurrencyExposureWidget";
-import { PortfolioTopMoversWidget } from "./widgets/PortfolioTopMoversWidget";
 import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
+import { RenderWhenVisible } from "./components/RenderWhenVisible";
+
+const PortfolioAllocationsByPortfolioWidget = dynamic(
+  () =>
+    import("./widgets/PortfolioAllocationsByPortfolioWidget").then(
+      (module) => module.PortfolioAllocationsByPortfolioWidget
+    ),
+  { ssr: false }
+);
+const PortfolioTopMoversWidget = dynamic(
+  () =>
+    import("./widgets/PortfolioTopMoversWidget").then(
+      (module) => module.PortfolioTopMoversWidget
+    ),
+  { ssr: false }
+);
 
 type Props = Readonly<{
   selectedPortfolioId: string | null;
@@ -26,6 +42,22 @@ type Props = Readonly<{
   benchmarkSeries: DashboardBenchmarkSeries;
   portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
 }>;
+
+function DeferredWidgetSkeleton({
+  title,
+}: Readonly<{
+  title: string;
+}>) {
+  return (
+    <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-48 animate-pulse rounded bg-muted/50" />
+        <div className="h-20 animate-pulse rounded-md border border-dashed border-border/70 bg-background/65" />
+      </div>
+    </section>
+  );
+}
 
 export function PortfolioDashboardClientWidgets({
   selectedPortfolioId,
@@ -62,9 +94,19 @@ export function PortfolioDashboardClientWidgets({
         />
       </div>
       {!selectedPortfolioId ? (
-        <PortfolioAllocationsByPortfolioWidget items={portfolioAllocationDonutCards} />
+        <RenderWhenVisible
+          fallback={<DeferredWidgetSkeleton title="Alokacja per portfel" />}
+          rootMargin="280px 0px"
+        >
+          <PortfolioAllocationsByPortfolioWidget items={portfolioAllocationDonutCards} />
+        </RenderWhenVisible>
       ) : null}
-      <PortfolioTopMoversWidget summary={summary} />
+      <RenderWhenVisible
+        fallback={<DeferredWidgetSkeleton title="Największe ruchy" />}
+        rootMargin="300px 0px"
+      >
+        <PortfolioTopMoversWidget summary={summary} />
+      </RenderWhenVisible>
     </div>
   );
 }

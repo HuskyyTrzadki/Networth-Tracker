@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 
-import { getPublicStockSummaryCached } from "@/features/stocks";
+import { getPublicStockSummaryCached } from "@/features/stocks/server/get-public-stock-summary-cached";
 import { StockMetricsGrid } from "@/features/stocks/components/StockMetricsGrid";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { getStockValuationHistory } from "@/features/stocks/server/get-stock-valuation-history";

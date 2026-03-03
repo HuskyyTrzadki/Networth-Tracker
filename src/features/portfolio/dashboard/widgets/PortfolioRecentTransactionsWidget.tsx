@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 
-import { ChartCard, StatusStrip } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Button } from "@/features/design-system/components/ui/button";
-import { TransactionsTable } from "@/features/transactions";
+import { TransactionsTable } from "@/features/transactions/components/TransactionsTable";
 import type { TransactionListItem } from "@/features/transactions/server/list-transactions";
 
 type Props = Readonly<{

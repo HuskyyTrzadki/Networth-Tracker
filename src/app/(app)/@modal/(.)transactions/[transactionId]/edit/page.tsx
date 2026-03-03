@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import { AddTransactionEditDialogRoute } from "@/features/transactions";
+import { AddTransactionEditDialogRoute } from "@/features/transactions/components/AddTransactionEditDialogRoute";
 import { getTransactionEditDialogData } from "@/features/transactions/server/get-transaction-edit-dialog-data";
 import { createClient } from "@/lib/supabase/server";
 

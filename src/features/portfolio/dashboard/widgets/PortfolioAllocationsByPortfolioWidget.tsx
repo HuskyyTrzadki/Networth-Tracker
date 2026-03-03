@@ -1,6 +1,8 @@
 "use client";
 
-import { ChartCard, InfoHint, StatusStrip } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
+import { InfoHint } from "@/features/design-system/components/InfoHint";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 
 import type { PortfolioAllocationDonutCard } from "../../server/get-portfolio-allocation-donut-cards";
 

@@ -3,7 +3,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { getAuthUser } from "@/features/auth/server/service";
 import { isDemoAccount } from "@/features/auth/server/demo-account";
-import { AnimatedReveal } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
 import {
   Alert,
   AlertDescription,

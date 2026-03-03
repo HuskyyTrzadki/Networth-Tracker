@@ -1,4 +1,5 @@
-import { ChartCard, StatusStrip } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import type { DividendInboxItem, DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";

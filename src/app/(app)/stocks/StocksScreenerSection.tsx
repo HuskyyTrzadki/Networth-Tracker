@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import { getStocksScreenerCards } from "@/features/stocks";
+import { getStocksScreenerCards } from "@/features/stocks/server/get-stocks-screener-cards";
 import { StocksScreenerInteractive } from "@/features/stocks/components/StocksScreenerInteractive";
 import { listStockWatchlist } from "@/features/stocks/server/stock-watchlist";
 import { createClient } from "@/lib/supabase/server";

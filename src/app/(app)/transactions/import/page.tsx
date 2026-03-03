@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { ImportCsvDialogStandaloneRoute } from "@/features/transactions";
+import { ImportCsvDialogStandaloneRoute } from "@/features/transactions/components/ImportCsvDialogStandaloneRoute";
 export const metadata: Metadata = {
   title: "Importuj CSV",
 };

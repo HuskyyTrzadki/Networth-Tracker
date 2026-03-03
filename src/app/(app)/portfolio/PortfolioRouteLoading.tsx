@@ -1,4 +1,4 @@
-import { PortfolioDashboardSkeleton } from "@/features/portfolio";
+import { PortfolioDashboardSkeleton } from "@/features/portfolio/components/PortfolioDashboardSkeleton";
 import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { cn } from "@/lib/cn";
 

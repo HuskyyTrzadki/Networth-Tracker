@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { DemoPortfolioBadge } from "../components/DemoPortfolioBadge";
-import { InfoHint } from "@/features/design-system";
+import { InfoHint } from "@/features/design-system/components/InfoHint";
 import {
   formatCurrencyString,
   getCurrencyFormatter,

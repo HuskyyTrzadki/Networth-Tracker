@@ -3,13 +3,12 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { AnimatedReveal, StatusStrip } from "@/features/design-system";
+import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
+import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
-import {
-  DemoPortfolioBadge,
-  PortfolioDashboardSkeleton,
-  PortfolioMobileHeaderActions,
-} from "@/features/portfolio";
+import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
+import { PortfolioDashboardSkeleton } from "@/features/portfolio/components/PortfolioDashboardSkeleton";
+import { PortfolioMobileHeaderActions } from "@/features/portfolio/components/PortfolioMobileHeaderActions";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 import PortfolioDashboardSection from "./PortfolioDashboardSection";

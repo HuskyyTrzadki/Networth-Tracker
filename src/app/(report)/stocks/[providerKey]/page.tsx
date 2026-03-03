@@ -3,7 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 
-import { getPublicStockSummaryCached } from "@/features/stocks";
+import { getPublicStockSummaryCached } from "@/features/stocks/server/get-public-stock-summary-cached";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { isStockWatchlistFavorite } from "@/features/stocks/server/stock-watchlist";
 import { createClient } from "@/lib/supabase/server";

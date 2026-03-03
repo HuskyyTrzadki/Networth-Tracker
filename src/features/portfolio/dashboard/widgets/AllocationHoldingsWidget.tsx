@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { ChartCard } from "@/features/design-system";
+import { ChartCard } from "@/features/design-system/components/ChartCard";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Dialog,

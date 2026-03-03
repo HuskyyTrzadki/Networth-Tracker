@@ -3,11 +3,9 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import { getGuestUpgradeNudgeState } from "@/features/auth/server/guest-upgrade-nudges";
-import {
-  AppShell,
-  DemoAccountCallout,
-  DemoAccountPageFooter,
-} from "@/features/app-shell";
+import { AppShell } from "@/features/app-shell/components/AppShell";
+import { DemoAccountCallout } from "@/features/app-shell/components/DemoAccountCallout";
+import { DemoAccountPageFooter } from "@/features/app-shell/components/DemoAccountPageFooter";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 type Props = Readonly<{
