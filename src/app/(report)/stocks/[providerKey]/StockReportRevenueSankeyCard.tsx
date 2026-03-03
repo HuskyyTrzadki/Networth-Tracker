@@ -1,12 +1,20 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
-import type { EChartsOption } from "echarts";
+import {
+  sankey as createSankey,
+  sankeyJustify,
+  sankeyLinkHorizontal,
+  type SankeyGraph,
+  type SankeyLinkLayout,
+  type SankeyNodeLayout,
+} from "d3-sankey";
 
 import {
   buildRevenueSankeyModel,
   type CostSlice,
   type RevenueSegment,
+  type SankeyLink,
+  type SankeyNode,
 } from "./stock-report-revenue-sankey-helpers";
 import StockReportInfoHint from "./StockReportInfoHint";
 
@@ -17,189 +25,107 @@ type Props = Readonly<{
   netProfitDescription?: string;
 }>;
 
-type SankeyNodePattern = "solid" | "hatch" | "dots" | "cross";
-
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 1,
 });
 const NET_PROFIT_COLOR = "#4f7a63";
+const CHART_WIDTH = 960;
+const CHART_HEIGHT = 336;
+const CHART_MARGIN = {
+  top: 18,
+  right: 30,
+  bottom: 18,
+  left: 26,
+} as const;
 
-type SankeyLineType = "solid" | "dashed" | "dotted";
-
-const toLinkStyleType = (
-  style: "solid" | "dashed" | "dotted"
-): SankeyLineType => {
-  if (style === "dashed") return "dashed";
-  if (style === "dotted") return "dotted";
-  return "solid";
-};
-
-const toDecal = (pattern: SankeyNodePattern) => {
-  if (pattern === "hatch") {
-    return { symbol: "rect", dashArrayX: [2, 2], dashArrayY: [6, 0], rotation: -0.7 };
-  }
-  if (pattern === "dots") {
-    return { symbol: "circle", dashArrayX: [1, 3], dashArrayY: [2, 2] };
-  }
-  if (pattern === "cross") {
-    return { symbol: "rect", dashArrayX: [2, 2], dashArrayY: [2, 2] };
-  }
-  return undefined;
-};
-
-const buildOption = (
-  model: ReturnType<typeof buildRevenueSankeyModel>
-): EChartsOption => {
-  const nodeById = new Map(model.nodes.map((node) => [node.id, node]));
-  const toLabelPosition = (stage: (typeof model.nodes)[number]["stage"]) => {
-    if (stage === "source") return "right";
-    if (stage === "collector") return "top";
-    return "left";
-  };
-  const toLabelAlign = (stage: (typeof model.nodes)[number]["stage"]) => {
-    if (stage === "source") return "left";
-    if (stage === "collector") return "center";
-    return "right";
-  };
-  const nodes = model.nodes.map((node) => ({
-    name: node.id,
-    value: node.valuePercent,
-    depth: node.depth,
-    itemStyle: {
-      color: node.color,
-      borderColor: "#6b645a",
-      borderWidth: 1,
-      borderType: "dashed" as const,
-      decal: toDecal(node.pattern),
-    },
-    label: {
-      color: "#2f2c27",
-      fontFamily: "var(--font-mono)",
-      fontSize: 12,
-      position: toLabelPosition(node.stage),
-      align: toLabelAlign(node.stage),
-      distance: node.stage === "collector" ? 6 : 10,
-      width: node.stage === "source" ? 170 : 252,
-      overflow: "truncate" as const,
-      formatter: `${node.label} ${percentFormatter.format(node.valuePercent)}%`,
-    },
-  }));
-  const links: Array<{
+type SankeyChartNode = SankeyNode;
+type SankeyChartLink = Readonly<
+  SankeyLink & {
     source: string;
     target: string;
     value: number;
-    lineStyle: {
-      color: string;
-      type: SankeyLineType;
-      opacity: number;
-      curveness: number;
-    };
-  }> = model.links.map((link) => {
-    const sourceNode = nodeById.get(link.sourceId);
-    const targetNode = nodeById.get(link.targetId);
-    const color =
-      targetNode?.stage === "profit"
-        ? NET_PROFIT_COLOR
-        : sourceNode?.stage === "source"
-          ? sourceNode.color
-          : (targetNode?.color ?? "#867f74");
-    const opacity =
-      targetNode?.stage === "profit" ? 0.58 : sourceNode?.stage === "source" ? 0.38 : 0.33;
+  }
+>;
 
-    return {
+const sanitizeId = (value: string) => value.toLowerCase().replace(/[^a-z0-9-_]/g, "-");
+
+const getNodePatternId = (nodeId: string) => `sankey-node-pattern-${sanitizeId(nodeId)}`;
+
+const getLinkDasharray = (style: SankeyLink["style"]) => {
+  if (style === "dashed") return "5 4";
+  if (style === "dotted") return "2 4";
+  return undefined;
+};
+
+const getLinkColor = (
+  link: SankeyLinkLayout<SankeyChartNode, SankeyChartLink>
+) => {
+  if (link.target.stage === "profit") {
+    return NET_PROFIT_COLOR;
+  }
+  if (link.source.stage === "source") {
+    return link.source.color;
+  }
+  return link.target.color;
+};
+
+const getLinkOpacity = (
+  link: SankeyLinkLayout<SankeyChartNode, SankeyChartLink>
+) => {
+  if (link.target.stage === "profit") return 0.58;
+  if (link.source.stage === "source") return 0.38;
+  return 0.33;
+};
+
+const formatNodeLabel = (node: SankeyNodeLayout<SankeyChartNode>) =>
+  `${node.label} ${percentFormatter.format(node.valuePercent)}%`;
+
+const buildSankeyGraph = (
+  model: ReturnType<typeof buildRevenueSankeyModel>
+): SankeyGraph<SankeyChartNode, SankeyChartLink> => {
+  const layout = createSankey<SankeyChartNode, SankeyChartLink>()
+    .nodeId((node) => node.id)
+    .nodeAlign(sankeyJustify)
+    .nodeWidth(24)
+    .nodePadding(16)
+    .iterations(32)
+    .extent([
+      [CHART_MARGIN.left, CHART_MARGIN.top],
+      [CHART_WIDTH - CHART_MARGIN.right, CHART_HEIGHT - CHART_MARGIN.bottom],
+    ]);
+
+  return layout({
+    nodes: model.nodes.map((node) => ({ ...node })),
+    links: model.links.map((link) => ({
+      ...link,
       source: link.sourceId,
       target: link.targetId,
-      value: Number(link.valuePercent.toFixed(3)),
-      lineStyle: {
-        color,
-        type: toLinkStyleType(link.style),
-        opacity,
-        curveness: 0.48,
-      },
-    };
+      value: Math.max(link.valuePercent, 0.001),
+    })),
   });
+};
+
+const getNodeTextPosition = (node: SankeyNodeLayout<SankeyChartNode>) => {
+  if (node.stage === "collector") {
+    return {
+      x: (node.x0 + node.x1) / 2,
+      y: node.y0 - 8,
+      anchor: "middle" as const,
+    };
+  }
+
+  if (node.stage === "source") {
+    return {
+      x: node.x1 + 8,
+      y: (node.y0 + node.y1) / 2,
+      anchor: "start" as const,
+    };
+  }
 
   return {
-    animationDuration: 260,
-    animationDurationUpdate: 220,
-    tooltip: {
-      trigger: "item",
-      backgroundColor: "#f8f2e5",
-      borderColor: "#5e584f",
-      borderWidth: 1,
-      textStyle: {
-        color: "#393939",
-        fontFamily: "var(--font-mono)",
-        fontSize: 11,
-      },
-      formatter: (params: {
-        dataType?: string;
-        data?: { source?: string; target?: string; value?: number };
-        name?: string;
-        value?: number;
-      }) => {
-        if (params.dataType === "edge") {
-          const source = params.data?.source ?? "-";
-          const target = params.data?.target ?? "-";
-          const value = params.data?.value ?? 0;
-          const sourceLabel = nodeById.get(source)?.label ?? source;
-          const targetLabel = nodeById.get(target)?.label ?? target;
-          const targetDescription = nodeById.get(target)?.description;
-          const description = targetDescription
-            ? `<br/><span style="color:#6b645a;">ⓘ ${targetDescription}</span>`
-            : "";
-
-          return `${sourceLabel} -> ${targetLabel}<br/>${percentFormatter.format(value)}%${description}`;
-        }
-
-        const node = nodeById.get(params.name ?? "");
-        const label = node?.label ?? params.name ?? "-";
-        const value = typeof params.value === "number" ? params.value : 0;
-        const description = node?.description
-          ? `<br/><span style="color:#6b645a;">ⓘ ${node.description}</span>`
-          : "";
-
-        return `${label}<br/>${percentFormatter.format(value)}%${description}`;
-      },
-    } as EChartsOption["tooltip"],
-    series: [
-      {
-        type: "sankey",
-        left: 26,
-        right: 30,
-        top: 18,
-        bottom: 18,
-        draggable: false,
-        nodeAlign: "justify",
-        nodeGap: 16,
-        nodeWidth: 24,
-        layoutIterations: 0,
-        emphasis: {
-          focus: "adjacency",
-          lineStyle: {
-            opacity: 0.74,
-            width: 1.35,
-          },
-        },
-        blur: {
-          lineStyle: {
-            opacity: 0.09,
-          },
-        },
-        levels: [
-          { depth: 0, lineStyle: { color: "source", opacity: 0.24 } },
-          { depth: 1, lineStyle: { color: "#8a8377", opacity: 0.26 } },
-          { depth: 2, lineStyle: { color: "source", opacity: 0.44 } },
-        ],
-        lineStyle: {
-          color: "#8a8377",
-          curveness: 0.48,
-          opacity: 0.3,
-        },
-        data: nodes,
-        links,
-      },
-    ] as EChartsOption["series"],
+    x: node.x0 - 8,
+    y: (node.y0 + node.y1) / 2,
+    anchor: "end" as const,
   };
 };
 
@@ -215,7 +141,8 @@ export function StockReportRevenueSankeyCard({
     netMarginPercent,
     netProfitDescription,
   });
-  const option = buildOption(model);
+  const graph = buildSankeyGraph(model);
+  const createPath = sankeyLinkHorizontal<SankeyChartNode, SankeyChartLink>();
 
   return (
     <article className="border-t border-dashed border-black/15 pt-3">
@@ -241,13 +168,130 @@ export function StockReportRevenueSankeyCard({
       </div>
 
       <div className="mt-3 h-[336px] overflow-hidden bg-white/70 p-2">
-        <ReactECharts
-          option={option}
-          notMerge
-          lazyUpdate
-          style={{ height: "100%", width: "100%" }}
-          opts={{ renderer: "svg" }}
-        />
+        <svg
+          viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+          className="h-full w-full"
+          aria-label="Wykres przeplywu przychodow Sankey"
+          role="img"
+        >
+          <defs>
+            {graph.nodes.map((node) => {
+              if (node.pattern === "solid") {
+                return null;
+              }
+
+              const patternId = getNodePatternId(node.id);
+
+              if (node.pattern === "hatch") {
+                return (
+                  <pattern
+                    key={patternId}
+                    id={patternId}
+                    patternUnits="userSpaceOnUse"
+                    width={8}
+                    height={8}
+                  >
+                    <rect width={8} height={8} fill={node.color} />
+                    <path d="M0 8 L8 0" stroke="#6b645a" strokeWidth={1} />
+                  </pattern>
+                );
+              }
+
+              if (node.pattern === "dots") {
+                return (
+                  <pattern
+                    key={patternId}
+                    id={patternId}
+                    patternUnits="userSpaceOnUse"
+                    width={8}
+                    height={8}
+                  >
+                    <rect width={8} height={8} fill={node.color} />
+                    <circle cx={2} cy={2} r={1.1} fill="#6b645a" />
+                    <circle cx={6} cy={6} r={1.1} fill="#6b645a" />
+                  </pattern>
+                );
+              }
+
+              return (
+                <pattern
+                  key={patternId}
+                  id={patternId}
+                  patternUnits="userSpaceOnUse"
+                  width={8}
+                  height={8}
+                >
+                  <rect width={8} height={8} fill={node.color} />
+                  <path d="M0 0 L8 8 M8 0 L0 8" stroke="#6b645a" strokeWidth={1} />
+                </pattern>
+              );
+            })}
+          </defs>
+
+          <g fill="none">
+            {graph.links.map((link) => {
+              const path = createPath(link);
+              const sourceLabel = link.source.label;
+              const targetLabel = link.target.label;
+              const description = link.target.description;
+
+              return (
+                <path
+                  key={link.id}
+                  d={path}
+                  stroke={getLinkColor(link)}
+                  strokeOpacity={getLinkOpacity(link)}
+                  strokeWidth={Math.max(1, link.width)}
+                  strokeDasharray={getLinkDasharray(link.style)}
+                >
+                  <title>{`${sourceLabel} -> ${targetLabel}: ${percentFormatter.format(link.valuePercent)}%${description ? ` | ${description}` : ""}`}</title>
+                </path>
+              );
+            })}
+          </g>
+
+          <g>
+            {graph.nodes.map((node) => {
+              const patternId = getNodePatternId(node.id);
+              const textPosition = getNodeTextPosition(node);
+              const fill =
+                node.pattern === "solid"
+                  ? node.color
+                  : `url(#${patternId})`;
+
+              return (
+                <g key={node.id}>
+                  <rect
+                    x={node.x0}
+                    y={node.y0}
+                    width={Math.max(1, node.x1 - node.x0)}
+                    height={Math.max(1, node.y1 - node.y0)}
+                    fill={fill}
+                    stroke="#6b645a"
+                    strokeWidth={1}
+                    rx={2}
+                    ry={2}
+                  >
+                    <title>{`${node.label}: ${percentFormatter.format(node.valuePercent)}%${node.description ? ` | ${node.description}` : ""}`}</title>
+                  </rect>
+                  <text
+                    x={textPosition.x}
+                    y={textPosition.y}
+                    textAnchor={textPosition.anchor}
+                    dominantBaseline={node.stage === "collector" ? "auto" : "middle"}
+                    fill="#2f2c27"
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                    }}
+                  >
+                    {formatNodeLabel(node)}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        </svg>
       </div>
     </article>
   );

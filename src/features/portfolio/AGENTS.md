@@ -101,6 +101,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >=7D.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
+- Client dashboard widgets should import market-data DTO types from `@/features/market-data/types` (client-safe surface), not from `@/features/market-data` server barrel.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
 - Dashboard includes widget `Ekspozycja walutowa` z przełącznikiem `Notowania | Gospodarcza`; first `Gospodarcza` run is user-triggered by `Oblicz ekspozycję gospodarczą` with inline analyzer loader.
 - Endpoint `/api/portfolio/currency-exposure/economic` caches only per-asset AI currency splits (fingerprint by instrument set), then recomputes final portfolio currency weights from current `valueBase` on every request.

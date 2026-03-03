@@ -1,6 +1,9 @@
 "use client";
 
-import type { StockValuationMetric, StockValuationRangeContext } from "@/features/stocks";
+import type {
+  StockValuationMetric,
+  StockValuationRangeContext,
+} from "@/features/stocks/types";
 import { cn } from "@/lib/cn";
 
 type GaugeTone = Readonly<{

@@ -2,7 +2,7 @@ import type {
   StockChartOverlay,
   StockChartRange,
   StockChartResponse,
-} from "@/features/stocks";
+} from "@/features/stocks/types";
 
 export async function getStockChart(
   providerKey: string,

@@ -6,7 +6,7 @@ import { WalletMinimal } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildLogoDevTickerProxyUrl } from "@/features/common/lib/logo-dev";
-import type { CurrencyCode } from "@/features/market-data";
+import type { CurrencyCode } from "@/features/market-data/types";
 import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
 
 import type { AllocationAssetRow, AllocationCategoryRow } from "./allocation-view-model";

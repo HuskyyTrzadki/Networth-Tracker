@@ -1,4 +1,4 @@
-import type { StockTradeMarker } from "@/features/stocks";
+import type { StockTradeMarker } from "@/features/stocks/types";
 
 type TradeMarkersPayload = Readonly<{
   markers?: readonly StockTradeMarker[];

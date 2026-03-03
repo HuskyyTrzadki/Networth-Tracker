@@ -31,6 +31,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - Server-only: no client components here.
+- Client-safe type surface lives in `src/features/market-data/types.ts`; client code must import market-data DTO types from this file (not from `src/features/market-data/index.ts`, which is server-oriented).
 - Provider-specific shapes stay in provider files.
 - Cache tables are global (no `user_id`); writes use service role, reads use RLS.
 - Quote cache stores normalized daily quote deltas (`dayChange`, `dayChangePercent`) for portfolio daily-movers UI.

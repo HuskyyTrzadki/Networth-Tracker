@@ -4,11 +4,11 @@ import { AlertTriangle, ArrowDownRight, ArrowUpRight, Check } from "lucide-react
 import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
 import StockChartSection from "./StockChartSection";
 import StockReportCollapsible from "./StockReportCollapsible";
-import StockReportConceptSections from "./StockReportConceptSections";
+import StockReportConceptSectionsLazy from "./StockReportConceptSectionsLazy";
 import StockReportFiveYearTrendAnalysisSection from "./StockReportFiveYearTrendAnalysisSection";
 import StockReportLeadershipSection from "./StockReportLeadershipSection";
 import StockMetricsSection from "./StockMetricsSection";
-import StockReportRevenueMixSection from "./StockReportRevenueMixSection";
+import StockReportRevenueMixSectionLazy from "./StockReportRevenueMixSectionLazy";
 import {
   EditorsNote,
   InvestorTakeaway,
@@ -318,7 +318,7 @@ function AdvancedSection() {
           </section>
           <EarningsSummarySection />
           <StockReportFiveYearTrendAnalysisSection />
-          <StockReportConceptSections />
+          <StockReportConceptSectionsLazy />
           <DeepDivesSection />
         </StockReportCollapsible>
       </ReportCard>
@@ -358,7 +358,7 @@ export default function StockReportMainContent({
       </section>
 
       <section id="sekcja-jak-zarabia">
-        <StockReportRevenueMixSection />
+        <StockReportRevenueMixSectionLazy />
       </section>
       <AdvancedSection />
     </section>

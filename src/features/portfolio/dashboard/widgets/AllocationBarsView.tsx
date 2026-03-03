@@ -7,7 +7,7 @@ import {
 import { cn } from "@/lib/cn";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 
-import type { CurrencyCode } from "@/features/market-data";
+import type { CurrencyCode } from "@/features/market-data/types";
 
 import type { AllocationAssetRow } from "./allocation-view-model";
 

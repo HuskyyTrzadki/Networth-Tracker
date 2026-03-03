@@ -1,3 +1,4 @@
+import "server-only";
 import YahooFinance from "yahoo-finance2";
 
 // Shared Yahoo client to keep provider config consistent across features.

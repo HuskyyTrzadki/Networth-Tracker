@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { getCurrencyFormatter } from "@/lib/format-currency";
 import { cn } from "@/lib/cn";
 
-import type { PolishCpiPoint } from "@/features/market-data";
+import type { PolishCpiPoint } from "@/features/market-data/types";
 import type { LiveTotals } from "../../server/get-portfolio-live-totals";
 import type { SnapshotCurrency } from "../../lib/supported-currencies";
 import type { SnapshotScope, SnapshotChartRow } from "../../server/snapshots/types";

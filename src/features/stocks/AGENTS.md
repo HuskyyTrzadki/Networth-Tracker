@@ -115,7 +115,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),
   - free-cash-flow explainer section.
 - "Jak firma zarabia" now has two visuals for revenue understanding:
-  - default `Sankey` flow rendered with `echarts-for-react` in clean left-to-right topology (`segmenty biznesowe` -> `Przychody razem` -> `COGS / OPEX / Podatki / Zysk netto`) with ordered right-side waterfall and bottom-line emphasis,
+  - default `Sankey` flow rendered via `d3-sankey` + React SVG in clean left-to-right topology (`segmenty biznesowe` -> `Przychody razem` -> `COGS / OPEX / Podatki / Zysk netto`) with ordered right-side waterfall and bottom-line emphasis,
   - fallback `Kołowe` view (existing product/geo donuts).
 - Sankey uses one central revenue aggregator to avoid "spaghetti" crossings; costs follow investor-first waterfall order (`COGS`, `OPEX` as `R&D+SG&A`, `Podatki`) and net profit is rendered as the final terminal stage.
 - In Sankey mode, geography is shown as a separate circular card under the flow (`Geografia przychodow`) so business-source mix and regional exposure are not conflated.
@@ -129,6 +129,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Stock chart/report modules are split into focused helpers (formatters, view-model mapping, hover card rendering, and revenue-mix section helpers/cards) to keep single-file complexity under repo limits.
 - Revenue-mix donut charts in report (`stock-report-revenue-mix-cards.tsx`) now render inline slice labels with percentages (small-slice cutoff) directly on the chart, not only in the adjacent legend list.
 - Chart-heavy UI consumers use `next/dynamic` at whole-component boundaries (`StockChartPlot`, screener preview mini-chart, report insights widgets, revenue-mix donut cards) with `ssr: false`; avoid dynamic-wrapping Recharts primitives directly.
+- Report route now defers non-critical chart modules by visibility/interaction:
+  - `StockReportRevenueMixSectionLazy` uses viewport gating + dynamic import so revenue-mix charts are not part of initial `/stocks/[providerKey]` route chunk,
+  - `StockReportConceptSectionsLazy` keeps concept sparkline bundle out of initial chunk and loads after advanced section expansion + visibility.
+- Import boundary is strict:
+  - `src/features/stocks/index.ts` exports server-facing services and should be consumed by server files/routes only,
+  - client files must import stock DTO constants/types from `src/features/stocks/types.ts` instead of the server barrel.
 - Screener cards use shared tactile card surface defaults (design-system `Card` token path), denser desktop geometry, and a compact monthly change badge for higher information density.
 - Screener preview chart keeps visible X/Y context but uses area + gradient fill and stronger stroke to avoid thin-wire sparklines.
 - Screener card borders use near-hairline contrast (`border-border/20`) so shadow depth carries the card separation without muddy double-border effect.

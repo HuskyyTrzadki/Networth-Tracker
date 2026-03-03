@@ -8,7 +8,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/features/design-system/components/ui/toggle-group";
-import type { StockScreenerCard } from "@/features/stocks";
+import type { StockScreenerCard } from "@/features/stocks/types";
 import { removeStockWatchlistAction } from "@/features/stocks/server/watchlist-actions";
 import { STOCK_SCREENER_PREVIEW_RANGES, type StockScreenerPreviewRange } from "@/features/stocks/server/types";
 

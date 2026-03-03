@@ -140,6 +140,12 @@ When shipping feature/architecture changes:
   - `POST /api/stocks/watchlist`,
   - `DELETE /api/stocks/watchlist/[providerKey]`,
   - status check `GET /api/stocks/watchlist?providerKey=...`.
+- Stocks feature import boundary:
+  - `src/features/stocks/index.ts` is server-oriented (server actions/services),
+  - client components/hooks must consume stock DTO types/constants from `src/features/stocks/types.ts` (never from the server barrel) to prevent server dependency leakage into client bundles.
+- Market-data import boundary:
+  - `src/features/market-data/index.ts` is server-oriented (cache/services),
+  - client components/hooks must consume market-data DTO types from `src/features/market-data/types.ts` instead of the server barrel.
 - Watchlist add is fail-safe: backend mutation layer (server action + shared service) does synchronous market-data warmup (`instruments` upsert + quote + daily cache fetch) and rolls back watchlist row on warmup failure, so `/stocks` avoids empty cards for user-pinned tickers.
 - Stock report watchlist toggle (`StockFavoriteToggleButton`) receives initial favorite state from server render and uses optimistic Server Action updates (no client fetch/sync effect on mount).
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.

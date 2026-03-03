@@ -9,7 +9,7 @@ import { Button } from "@/features/design-system/components/ui/button";
 import { cardVariants } from "@/features/design-system/components/ui/card";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
-import type { StockScreenerCard } from "@/features/stocks";
+import type { StockScreenerCard } from "@/features/stocks/types";
 import type { StockScreenerPreviewRange } from "@/features/stocks/server/types";
 import { cn } from "@/lib/cn";
 import { splitCurrencyLabel } from "@/lib/format-currency";

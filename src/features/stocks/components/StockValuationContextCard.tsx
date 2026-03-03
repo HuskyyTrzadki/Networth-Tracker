@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
-import type { StockValuationRangeContext, StockValuationSummary } from "@/features/stocks";
+import type {
+  StockValuationRangeContext,
+  StockValuationSummary,
+} from "@/features/stocks/types";
 import { InfoHint } from "@/features/design-system";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/features/design-system/components/ui/toggle-group";

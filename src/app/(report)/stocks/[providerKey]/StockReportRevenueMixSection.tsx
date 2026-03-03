@@ -7,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { Button } from "@/features/design-system/components/ui/button";
 
-import { StockReportRevenueSankeyCard } from "./StockReportRevenueSankeyCard";
 import { InvestorTakeaway, ReportCard, SectionHeader } from "./ReportPrimitives";
 import {
   QUARTER_LABELS,
@@ -50,6 +49,22 @@ const DonutCard = dynamic(
     loading: () => (
       <div
         className="h-[360px] w-full animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
+
+const StockReportRevenueSankeyCard = dynamic(
+  () =>
+    import("./StockReportRevenueSankeyCard").then(
+      (module) => module.StockReportRevenueSankeyCard
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[336px] w-full animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]"
         aria-hidden="true"
       />
     ),

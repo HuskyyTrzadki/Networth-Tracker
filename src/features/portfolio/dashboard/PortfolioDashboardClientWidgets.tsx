@@ -1,6 +1,6 @@
 "use client";
 
-import type { PolishCpiPoint } from "@/features/market-data";
+import type { PolishCpiPoint } from "@/features/market-data/types";
 import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
 import type { PortfolioSummary } from "../server/valuation";
 import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";

@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runTradingViewRevenueGeoBackfillCron } from "@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron";
 
-export const runtime = "nodejs";
-
 const DEFAULT_LIMIT = 25;
 const DEFAULT_STALE_DAYS = 90;
 const DEFAULT_DELAY_MS = 2_000;
