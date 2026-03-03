@@ -5,9 +5,7 @@ import type {
 import { InfoHint } from "@/features/design-system";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 
-const ratioFormatter = new Intl.NumberFormat("pl-PL", {
-  maximumFractionDigits: 2,
-});
+import { StockValuationContextCard } from "./StockValuationContextCard";
 
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
   style: "percent",
@@ -21,11 +19,6 @@ const metricCurrencyFormatter = (currency: string) =>
     notation: "compact",
     maximumFractionDigits: 2,
   });
-
-const formatRatio = (value: number | null) =>
-  typeof value === "number" && Number.isFinite(value)
-    ? ratioFormatter.format(value)
-    : null;
 
 const formatPercent = (value: number | null) =>
   typeof value === "number" && Number.isFinite(value)
@@ -48,18 +41,6 @@ const formatDate = (value: string | null) => {
   }).format(date);
 };
 
-const clamp = (value: number) => Math.min(1, Math.max(0, value));
-
-const interpretationCopy: Readonly<
-  Record<StockValuationRangeContext["interpretation"], string>
-> = {
-  HISTORY_LOW: "Historycznie niska wycena",
-  HISTORY_MID: "Blisko historycznej normy",
-  HISTORY_HIGH: "Historycznie wysoka wycena",
-  INSUFFICIENT_HISTORY: "Za malo danych historycznych",
-  NO_DATA: "Brak danych historycznych",
-};
-
 function MetricRow({
   label,
   value,
@@ -75,108 +56,17 @@ function MetricRow({
   );
 }
 
-function ValuationRangeBar({
-  context,
-}: Readonly<{
-  context: StockValuationRangeContext;
-}>) {
-  const hasBoundaries =
-    typeof context.min === "number" &&
-    typeof context.max === "number" &&
-    Number.isFinite(context.min) &&
-    Number.isFinite(context.max);
-  const hasMarker = hasBoundaries && typeof context.current === "number";
-  const hasMedian = hasBoundaries && typeof context.median === "number";
-  const denominator =
-    hasBoundaries && context.max !== context.min ? context.max - context.min : 1;
-  const currentRatio =
-    hasMarker && context.min !== null && context.max !== null
-      ? clamp((context.current - context.min) / denominator)
-      : 0.5;
-  const medianRatio =
-    hasMedian && context.min !== null && context.max !== null
-      ? clamp((context.median - context.min) / denominator)
-      : 0.5;
-  const coverageText =
-    context.coverageStart && context.coverageEnd
-      ? `${formatDate(context.coverageStart)} - ${formatDate(context.coverageEnd)}`
-      : "Brak zakresu";
-
-  return (
-    <article className="space-y-2 border-b border-dashed border-black/15 pb-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold tracking-tight">PE (TTM)</h3>
-        <span className="font-mono text-sm font-semibold tabular-nums">
-          {formatRatio(context.current) ?? "—"}
-        </span>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {interpretationCopy[context.interpretation]}
-      </p>
-
-      <div className="mt-3">
-        <div
-          className="relative h-7 overflow-hidden border border-dashed border-black/15 bg-card"
-          style={{
-            backgroundImage:
-              "linear-gradient(90deg, rgb(73 132 95 / 0.24) 0%, rgb(125 119 107 / 0.14) 50%, rgb(168 86 86 / 0.24) 100%), repeating-linear-gradient(90deg, transparent 0 14px, rgb(57 57 57 / 0.06) 14px 15px)",
-          }}
-        >
-          {hasMedian ? (
-            <span
-              className="absolute inset-y-0 w-px bg-foreground/45"
-              style={{ left: `${medianRatio * 100}%` }}
-              aria-hidden
-            />
-          ) : null}
-          {hasMarker ? (
-            <span
-              className="absolute inset-y-0.5 w-[2px] rounded-full bg-foreground"
-              style={{ left: `${currentRatio * 100}%` }}
-              aria-hidden
-            />
-          ) : null}
-        </div>
-        <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span className="font-mono tabular-nums">
-            Min {formatRatio(context.min) ?? "—"}
-          </span>
-          <span className="font-mono tabular-nums">
-            Srednia {formatRatio(context.median) ?? "—"}
-          </span>
-          <span className="font-mono tabular-nums">
-            Max {formatRatio(context.max) ?? "—"}
-          </span>
-        </div>
-        <div className="mt-1 flex items-center justify-between text-[10px]">
-          <span className="font-medium text-[#4a7f5e]">Niska wycena</span>
-          <span className="font-medium text-[#9a5757]">Wysoka wycena</span>
-        </div>
-      </div>
-
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        Zakres: <span className="font-mono tabular-nums">{coverageText}</span>
-        {context.isTruncated ? " (skrocony zakres)" : ""}
-      </p>
-    </article>
-  );
-}
-
 export function StockMetricsGrid({
   summary,
   currency,
-  peContext,
+  valuationContexts,
 }: Readonly<{
   summary: StockValuationSummary;
   currency: string;
-  peContext: StockValuationRangeContext;
+  valuationContexts: Readonly<
+    Record<"peTtm" | "priceToSales" | "priceToBook", StockValuationRangeContext>
+  >;
 }>) {
-  const valuationRows = [
-    { label: "Cena do sprzedazy (P/S)", value: formatRatio(summary.priceToSales) },
-    { label: "EV do EBITDA", value: formatRatio(summary.evToEbitda) },
-    { label: "Cena do wartosci ksiegowej (P/B)", value: formatRatio(summary.priceToBook) },
-  ].filter((row): row is { label: string; value: string } => row.value !== null);
-
   const fundamentalRows = [
     { label: "Kapitalizacja rynkowa", value: formatMoney(summary.marketCap, currency) },
     { label: "Marza zysku", value: formatPercent(summary.profitMargin) },
@@ -198,31 +88,13 @@ export function StockMetricsGrid({
       <h2 className="font-serif text-2xl font-bold tracking-tight">Wycena i fundamenty</h2>
       <Card className="border-black/5 bg-white">
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-            <div className="space-y-2.5">
-              <p className="text-sm text-muted-foreground">
-                Dzisiejszy odczyt na tle ostatnich 5 lat.
-              </p>
-              <ValuationRangeBar context={peContext} />
-              <div className="border-t border-dashed border-black/15 pt-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  Reszta mnoznikow
-                </p>
-                <div className="mt-2">
-                  {valuationRows.length > 0 ? (
-                    valuationRows.map((metric) => (
-                      <MetricRow key={metric.label} label={metric.label} value={metric.value} />
-                    ))
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Brak danych dla dodatkowych mnoznikow.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+          <div className="space-y-4">
+            <StockValuationContextCard
+              summary={summary}
+              valuationContexts={valuationContexts}
+            />
 
-            <div className="border-t border-dashed border-black/15 pt-2">
+            <div className="border-t border-dashed border-black/15 pt-4">
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 <span>Fundamenty</span>
                 <InfoHint

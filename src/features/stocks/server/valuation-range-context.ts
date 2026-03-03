@@ -1,4 +1,9 @@
-import type { StockChartResponse, StockValuationRangeContext } from "./types";
+import type {
+  StockChartResponse,
+  StockValuationHistoryPoint,
+  StockValuationMetric,
+  StockValuationRangeContext,
+} from "./types";
 
 const MIN_POINTS_FOR_CONTEXT = 8;
 
@@ -31,16 +36,29 @@ const resolveInterpretation = (
   return "HISTORY_MID";
 };
 
-export const buildPeValuationRangeContext = ({
-  summaryPeTtm,
-  chart,
+const getHistoryPointValue = (
+  point: StockValuationHistoryPoint,
+  metric: StockValuationMetric
+) => {
+  if (metric === "peTtm") return point.peTtm;
+  if (metric === "priceToSales") return point.priceToSales;
+  return point.priceToBook;
+};
+
+export const buildStockValuationRangeContext = ({
+  metric,
+  current,
+  historyPoints,
+  resolvedRange,
 }: Readonly<{
-  summaryPeTtm: number | null;
-  chart: StockChartResponse;
+  metric: StockValuationMetric;
+  current: number | null;
+  historyPoints: readonly StockValuationHistoryPoint[];
+  resolvedRange: string;
 }>): StockValuationRangeContext => {
-  const pePoints = chart.points
+  const metricPoints = historyPoints
     .map((point) => ({
-      value: point.pe,
+      value: getHistoryPointValue(point, metric),
       date: toDateOnly(point.t),
     }))
     .filter(
@@ -48,10 +66,10 @@ export const buildPeValuationRangeContext = ({
         typeof point.value === "number" && Number.isFinite(point.value)
     );
 
-  if (pePoints.length === 0) {
+  if (metricPoints.length === 0) {
     return {
-      metric: "peTtm",
-      current: summaryPeTtm,
+      metric,
+      current,
       min: null,
       max: null,
       median: null,
@@ -59,17 +77,17 @@ export const buildPeValuationRangeContext = ({
       pointsCount: 0,
       coverageStart: null,
       coverageEnd: null,
-      isTruncated: chart.resolvedRange !== "5Y",
+      isTruncated: resolvedRange !== "5Y",
       interpretation: "NO_DATA",
     };
   }
 
-  const sortedValues = pePoints
+  const sortedValues = metricPoints
     .map((point) => point.value)
     .sort((a, b) => a - b);
   const min = sortedValues[0] ?? null;
   const max = sortedValues[sortedValues.length - 1] ?? null;
-  const safeCurrent = typeof summaryPeTtm === "number" ? summaryPeTtm : null;
+  const safeCurrent = typeof current === "number" ? current : null;
   const percentile =
     safeCurrent === null || min === null || max === null
       ? null
@@ -77,14 +95,14 @@ export const buildPeValuationRangeContext = ({
         ? 0.5
         : clamp((safeCurrent - min) / (max - min), 0, 1);
 
-  const validDates = pePoints
+  const validDates = metricPoints
     .map((point) => point.date)
     .filter((value): value is string => value !== null)
     .sort();
 
   return {
-    metric: "peTtm",
-    current: summaryPeTtm,
+    metric,
+    current,
     min,
     max,
     median: median(sortedValues),
@@ -92,8 +110,26 @@ export const buildPeValuationRangeContext = ({
     pointsCount: sortedValues.length,
     coverageStart: validDates[0] ?? null,
     coverageEnd: validDates[validDates.length - 1] ?? null,
-    isTruncated: chart.resolvedRange !== "5Y",
+    isTruncated: resolvedRange !== "5Y",
     interpretation: resolveInterpretation(percentile, sortedValues.length),
   };
 };
 
+export const buildPeValuationRangeContext = ({
+  summaryPeTtm,
+  chart,
+}: Readonly<{
+  summaryPeTtm: number | null;
+  chart: StockChartResponse;
+}>): StockValuationRangeContext =>
+  buildStockValuationRangeContext({
+    metric: "peTtm",
+    current: summaryPeTtm,
+    resolvedRange: chart.resolvedRange,
+    historyPoints: chart.points.map((point) => ({
+      t: point.t,
+      peTtm: point.pe,
+      priceToSales: null,
+      priceToBook: null,
+    })),
+  });

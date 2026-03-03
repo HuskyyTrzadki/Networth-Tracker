@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { buildPeValuationRangeContext } from "./valuation-range-context";
+import {
+  buildPeValuationRangeContext,
+  buildStockValuationRangeContext,
+} from "./valuation-range-context";
 
 describe("buildPeValuationRangeContext", () => {
   it("builds context from 5Y PE data and classifies low percentile", () => {
@@ -151,5 +154,69 @@ describe("buildPeValuationRangeContext", () => {
     expect(context.min).toBeNull();
     expect(context.max).toBeNull();
   });
-});
 
+  it("builds context for P/S history using the generic builder", () => {
+    const context = buildStockValuationRangeContext({
+      metric: "priceToSales",
+      current: 3.5,
+      resolvedRange: "5Y",
+      historyPoints: [
+        {
+          t: "2021-01-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 2,
+          priceToBook: null,
+        },
+        {
+          t: "2022-01-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 2.4,
+          priceToBook: null,
+        },
+        {
+          t: "2023-01-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 2.8,
+          priceToBook: null,
+        },
+        {
+          t: "2023-06-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 3.1,
+          priceToBook: null,
+        },
+        {
+          t: "2024-01-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 3.4,
+          priceToBook: null,
+        },
+        {
+          t: "2024-06-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 3.6,
+          priceToBook: null,
+        },
+        {
+          t: "2025-01-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 3.8,
+          priceToBook: null,
+        },
+        {
+          t: "2025-06-01T00:00:00.000Z",
+          peTtm: null,
+          priceToSales: 4.2,
+          priceToBook: null,
+        },
+      ],
+    });
+
+    expect(context.metric).toBe("priceToSales");
+    expect(context.min).toBe(2);
+    expect(context.max).toBe(4.2);
+    expect(context.pointsCount).toBe(8);
+    expect(context.percentile).toBeCloseTo(0.68, 2);
+    expect(context.interpretation).toBe("HISTORY_MID");
+  });
+});

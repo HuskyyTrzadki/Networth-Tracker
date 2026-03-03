@@ -4,7 +4,9 @@ import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { yahooFinance } from "@/lib/yahoo-finance-client";
 
 import {
+  buildAnnualPointInTimeSeries,
   buildTtmFromQuarterly,
+  getFundamentalMetricDefinition,
   mergeSeriesWithPriority,
   parseFundamentalRows,
   unwrapYahooRows,
@@ -19,8 +21,10 @@ type SupabaseServerClient = ReturnType<typeof createClient>;
 
 const PROVIDER = "yahoo";
 const DEFAULT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const INITIAL_LOOKBACK_DAYS = 420;
-const ANNUAL_LOOKBACK_DAYS = 4 * 366;
+const FLOW_INITIAL_LOOKBACK_DAYS = 420;
+const FLOW_ANNUAL_LOOKBACK_DAYS = 4 * 366;
+const POINT_IN_TIME_LOOKBACK_DAYS = 140;
+const POINT_IN_TIME_ANNUAL_LOOKBACK_DAYS = 420;
 const RECENT_BACKFILL_DAYS = 190;
 const RECENT_ANNUAL_BACKFILL_DAYS = 2 * 366;
 
@@ -56,11 +60,20 @@ const normalizeCacheRows = (
   rows.map((row) => ({
     periodEndDate: row.period_end_date,
     value: toFiniteNumber(row.value),
-    periodType: row.period_type === "TTM_PROXY_ANNUAL" ? "TTM_PROXY_ANNUAL" : "TTM",
+    periodType:
+      row.period_type === "TTM_PROXY_ANNUAL"
+        ? "TTM_PROXY_ANNUAL"
+        : row.period_type === "POINT_IN_TIME"
+          ? "POINT_IN_TIME"
+          : row.period_type === "POINT_IN_TIME_ANNUAL"
+            ? "POINT_IN_TIME_ANNUAL"
+            : "TTM",
     source:
       row.source === "quarterly_rollup" ||
       row.source === "annual_proxy" ||
-      row.source === "trailing"
+      row.source === "trailing" ||
+      row.source === "quarterly_balance_sheet" ||
+      row.source === "annual_balance_sheet"
         ? row.source
         : "trailing",
   }));
@@ -151,12 +164,25 @@ type FetchWindow = Readonly<{
 const resolveFetchWindow = (
   cachedRows: readonly CacheRow[],
   periodStartDate: string,
-  hasRequestedCoverage: boolean
+  hasRequestedCoverage: boolean,
+  metric: FundamentalSeriesMetric
 ): FetchWindow => {
+  const definition = getFundamentalMetricDefinition(metric);
+
   if (!hasRequestedCoverage || cachedRows.length === 0) {
     return {
-      fundamentalsFromDate: subtractDays(periodStartDate, INITIAL_LOOKBACK_DAYS),
-      annualFromDate: subtractDays(periodStartDate, ANNUAL_LOOKBACK_DAYS),
+      fundamentalsFromDate: subtractDays(
+        periodStartDate,
+        definition.mode === "flow"
+          ? FLOW_INITIAL_LOOKBACK_DAYS
+          : POINT_IN_TIME_LOOKBACK_DAYS
+      ),
+      annualFromDate: subtractDays(
+        periodStartDate,
+        definition.mode === "flow"
+          ? FLOW_ANNUAL_LOOKBACK_DAYS
+          : POINT_IN_TIME_ANNUAL_LOOKBACK_DAYS
+      ),
     };
   }
 
@@ -189,67 +215,109 @@ export async function getFundamentalTimeSeriesCached(
   const fetchWindow = resolveFetchWindow(
     cachedRows,
     periodStartDate,
-    hasRequestedCoverage
+    hasRequestedCoverage,
+    metric
   );
+  const definition = getFundamentalMetricDefinition(metric);
 
   try {
-    // Fetch trailing TTM snapshots first because this is the highest-fidelity source.
-    const trailingRaw = await yahooFinance.fundamentalsTimeSeries(
-      providerKey,
-      {
-        period1: fetchWindow.fundamentalsFromDate,
-        type: "trailing",
-        module: "financials",
-      },
-      { validateResult: false }
-    );
-    const trailingEvents = parseFundamentalRows(unwrapYahooRows(trailingRaw), {
-      metric,
-      source: "trailing",
-      outputPeriodType: "TTM",
-    });
+    let fetchedMerged: FundamentalSeriesEvent[];
 
-    // Quarterly points let us rebuild TTM when trailing snapshots are sparse.
-    const quarterlyRaw = await yahooFinance.fundamentalsTimeSeries(
-      providerKey,
-      {
-        period1: fetchWindow.fundamentalsFromDate,
-        type: "quarterly",
-        module: "financials",
-      },
-      { validateResult: false }
-    );
-    const quarterlyEvents = parseFundamentalRows(unwrapYahooRows(quarterlyRaw), {
-      metric,
-      source: "quarterly_rollup",
-      outputPeriodType: "TTM",
-      expectedPeriodType: "3M",
-    });
-    const quarterlyTtmEvents = buildTtmFromQuarterly(quarterlyEvents);
+    if (definition.mode === "flow") {
+      const trailingRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.fundamentalsFromDate,
+          type: "trailing",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      const trailingEvents = parseFundamentalRows(unwrapYahooRows(trailingRaw), {
+        metric,
+        source: "trailing",
+        outputPeriodType: "TTM",
+      });
 
-    // Annual proxy gives older context when TTM sources are unavailable.
-    const annualRaw = await yahooFinance.fundamentalsTimeSeries(
-      providerKey,
-      {
-        period1: fetchWindow.annualFromDate,
-        type: "annual",
-        module: "financials",
-      },
-      { validateResult: false }
-    );
-    const annualProxyEvents = parseFundamentalRows(unwrapYahooRows(annualRaw), {
-      metric,
-      source: "annual_proxy",
-      outputPeriodType: "TTM_PROXY_ANNUAL",
-      expectedPeriodType: "12M",
-      skipFutureDates: true,
-    });
+      const quarterlyRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.fundamentalsFromDate,
+          type: "quarterly",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      const quarterlyEvents = parseFundamentalRows(unwrapYahooRows(quarterlyRaw), {
+        metric,
+        source: "quarterly_rollup",
+        outputPeriodType: "TTM",
+        expectedPeriodType: "3M",
+      });
+      const quarterlyTtmEvents = buildTtmFromQuarterly(quarterlyEvents);
 
-    const fetchedMerged = mergeSeriesWithPriority([
-      trailingEvents,
-      quarterlyTtmEvents,
-      annualProxyEvents,
-    ]);
+      const annualRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.annualFromDate,
+          type: "annual",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      const annualProxyEvents = parseFundamentalRows(unwrapYahooRows(annualRaw), {
+        metric,
+        source: "annual_proxy",
+        outputPeriodType: "TTM_PROXY_ANNUAL",
+        expectedPeriodType: "12M",
+        skipFutureDates: true,
+      });
+
+      fetchedMerged = mergeSeriesWithPriority([
+        trailingEvents,
+        quarterlyTtmEvents,
+        annualProxyEvents,
+      ]);
+    } else {
+      const quarterlyRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.fundamentalsFromDate,
+          type: "quarterly",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      const quarterlyEvents = parseFundamentalRows(unwrapYahooRows(quarterlyRaw), {
+        metric,
+        source: "quarterly_balance_sheet",
+        outputPeriodType: "POINT_IN_TIME",
+        expectedPeriodType: "3M",
+      });
+
+      const annualRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.annualFromDate,
+          type: "annual",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      const annualEvents = parseFundamentalRows(unwrapYahooRows(annualRaw), {
+        metric,
+        source: "annual_balance_sheet",
+        outputPeriodType: "POINT_IN_TIME_ANNUAL",
+        expectedPeriodType: "12M",
+        skipFutureDates: true,
+      });
+
+      fetchedMerged = mergeSeriesWithPriority([
+        quarterlyEvents,
+        buildAnnualPointInTimeSeries(annualEvents),
+      ]);
+    }
+
     const merged = mergeCachedAndFetched(normalizeCacheRows(cachedRows), fetchedMerged);
     const fetchedAt = new Date().toISOString();
 

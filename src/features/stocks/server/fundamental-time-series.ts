@@ -14,6 +14,12 @@ type YahooFinancialSeriesRow = Readonly<{
 }> &
   Readonly<Record<string, unknown>>;
 
+export type FundamentalMetricDefinition = Readonly<{
+  metric: FundamentalSeriesMetric;
+  module: "financials" | "balance-sheet";
+  mode: "flow" | "point_in_time";
+}>;
+
 const pickByFields = (
   row: YahooFinancialSeriesRow,
   fields: readonly string[]
@@ -49,18 +55,58 @@ const extractMetricValue = (
     );
   }
 
+  if (metric === "revenue_ttm") {
+    return (
+      pickByFields(row, [
+        "totalRevenue",
+        "operatingRevenue",
+        "trailingTotalRevenue",
+        "trailingOperatingRevenue",
+        "quarterlyTotalRevenue",
+        "quarterlyOperatingRevenue",
+        "annualTotalRevenue",
+        "annualOperatingRevenue",
+      ]) ?? pickByKeyword(row, "revenue")
+    );
+  }
+
+  if (metric === "shares_outstanding") {
+    return pickByFields(row, [
+      "ordinarySharesNumber",
+      "shareIssued",
+      "sharesOutstanding",
+      "basicAverageShares",
+      "dilutedAverageShares",
+    ]);
+  }
+
   return (
     pickByFields(row, [
-      "totalRevenue",
-      "operatingRevenue",
-      "trailingTotalRevenue",
-      "trailingOperatingRevenue",
-      "quarterlyTotalRevenue",
-      "quarterlyOperatingRevenue",
-      "annualTotalRevenue",
-      "annualOperatingRevenue",
-    ]) ?? pickByKeyword(row, "revenue")
+      "commonStockEquity",
+      "stockholdersEquity",
+      "totalEquityGrossMinorityInterest",
+      "tangibleBookValue",
+      "commonStock",
+    ]) ?? pickByKeyword(row, "equity")
   );
+};
+
+export const getFundamentalMetricDefinition = (
+  metric: FundamentalSeriesMetric
+): FundamentalMetricDefinition => {
+  if (metric === "eps_ttm" || metric === "revenue_ttm") {
+    return {
+      metric,
+      module: "financials",
+      mode: "flow",
+    };
+  }
+
+  return {
+    metric,
+    module: "balance-sheet",
+    mode: "point_in_time",
+  };
 };
 
 const createEvent = (
@@ -176,6 +222,18 @@ export const buildAnnualProxySeries = (
     )
   );
 
+export const buildAnnualPointInTimeSeries = (
+  rows: readonly FundamentalSeriesEvent[]
+): FundamentalSeriesEvent[] =>
+  rows.map((row) =>
+    createEvent(
+      row.periodEndDate,
+      row.value,
+      "POINT_IN_TIME_ANNUAL",
+      "annual_balance_sheet"
+    )
+  );
+
 export const mergeSeriesWithPriority = (
   sources: readonly (readonly FundamentalSeriesEvent[])[]
 ): FundamentalSeriesEvent[] => {
@@ -196,5 +254,7 @@ export const __test__ = {
   parseFundamentalRows,
   buildTtmFromQuarterly,
   buildAnnualProxySeries,
+  buildAnnualPointInTimeSeries,
+  getFundamentalMetricDefinition,
   mergeSeriesWithPriority,
 };

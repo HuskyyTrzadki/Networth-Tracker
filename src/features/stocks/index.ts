@@ -16,6 +16,8 @@ export type {
   StockTradeMarkerPortfolioSummary,
   StockTradeMarkerTrade,
   StockTradeMarker,
+  StockValuationHistoryPoint,
+  StockValuationMetric,
   StockValuationRangeContext,
   StockValuationSummary,
 } from "./server/types";

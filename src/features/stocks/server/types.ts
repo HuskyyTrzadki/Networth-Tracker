@@ -58,8 +58,10 @@ export type StockValuationSummary = Readonly<{
   fetchedAt: string | null;
 }>;
 
+export type StockValuationMetric = "peTtm" | "priceToSales" | "priceToBook";
+
 export type StockValuationRangeContext = Readonly<{
-  metric: "peTtm";
+  metric: StockValuationMetric;
   current: number | null;
   min: number | null;
   max: number | null;
@@ -77,19 +79,36 @@ export type StockValuationRangeContext = Readonly<{
     | "NO_DATA";
 }>;
 
+export type StockValuationHistoryPoint = Readonly<{
+  t: string;
+  peTtm: number | null;
+  priceToSales: number | null;
+  priceToBook: number | null;
+}>;
+
 export type EpsTtmEvent = Readonly<{
   periodEndDate: string;
   epsTtm: number | null;
 }>;
 
-export type FundamentalSeriesMetric = "eps_ttm" | "revenue_ttm";
+export type FundamentalSeriesMetric =
+  | "eps_ttm"
+  | "revenue_ttm"
+  | "shares_outstanding"
+  | "book_value";
 
-export type FundamentalSeriesPeriodType = "TTM" | "TTM_PROXY_ANNUAL";
+export type FundamentalSeriesPeriodType =
+  | "TTM"
+  | "TTM_PROXY_ANNUAL"
+  | "POINT_IN_TIME"
+  | "POINT_IN_TIME_ANNUAL";
 
 export type FundamentalSeriesSource =
   | "trailing"
   | "quarterly_rollup"
-  | "annual_proxy";
+  | "annual_proxy"
+  | "quarterly_balance_sheet"
+  | "annual_balance_sheet";
 
 export type FundamentalSeriesEvent = Readonly<{
   periodEndDate: string;

@@ -34,6 +34,12 @@
 - Timeframe selection is a primary control and stays visible.
 - Hide disabled or not-ready secondary controls.
 - Keep chart controls simpler than the data they reveal.
+- In `Wycena i fundamenty`, show only one historical valuation context at a time (`P/E`, `P/S`, or `P/B`) and let the switcher control that focus.
+- Historical valuation context should be derived from real inputs only:
+  - `P/E` from price + EPS TTM,
+  - `P/S` from price + revenue TTM + shares outstanding,
+  - `P/B` from price + book value + shares outstanding.
+- If a valuation metric lacks trustworthy history for a ticker, do not fake min/max/percentile context.
 
 ## Visual Rules
 - Warm paper background and ink-first contrast stay mandatory.

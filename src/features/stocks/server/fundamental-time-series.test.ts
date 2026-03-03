@@ -53,6 +53,48 @@ describe("fundamental-time-series helpers", () => {
     ]);
   });
 
+  it("parses shares outstanding from balance-sheet rows", () => {
+    const rows = __test__.parseFundamentalRows(
+      [{ date: "2025-03-31", periodType: "3M", ordinarySharesNumber: 15.2 }],
+      {
+        metric: "shares_outstanding",
+        source: "quarterly_balance_sheet",
+        outputPeriodType: "POINT_IN_TIME",
+        expectedPeriodType: "3M",
+      }
+    );
+
+    expect(rows).toEqual([
+      {
+        periodEndDate: "2025-03-31",
+        value: 15.2,
+        periodType: "POINT_IN_TIME",
+        source: "quarterly_balance_sheet",
+      },
+    ]);
+  });
+
+  it("parses book value from balance-sheet rows", () => {
+    const rows = __test__.parseFundamentalRows(
+      [{ date: "2025-03-31", periodType: "12M", commonStockEquity: 420 }],
+      {
+        metric: "book_value",
+        source: "annual_balance_sheet",
+        outputPeriodType: "POINT_IN_TIME_ANNUAL",
+        expectedPeriodType: "12M",
+      }
+    );
+
+    expect(rows).toEqual([
+      {
+        periodEndDate: "2025-03-31",
+        value: 420,
+        periodType: "POINT_IN_TIME_ANNUAL",
+        source: "annual_balance_sheet",
+      },
+    ]);
+  });
+
   it("builds TTM from 4 quarterly points", () => {
     const ttm = __test__.buildTtmFromQuarterly([
       {
@@ -131,5 +173,18 @@ describe("fundamental-time-series helpers", () => {
         source: "trailing",
       },
     ]);
+  });
+
+  it("resolves metric definitions for flow and point-in-time metrics", () => {
+    expect(__test__.getFundamentalMetricDefinition("revenue_ttm")).toEqual({
+      metric: "revenue_ttm",
+      module: "financials",
+      mode: "flow",
+    });
+    expect(__test__.getFundamentalMetricDefinition("book_value")).toEqual({
+      metric: "book_value",
+      module: "balance-sheet",
+      mode: "point_in_time",
+    });
   });
 });

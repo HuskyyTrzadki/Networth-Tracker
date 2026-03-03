@@ -177,9 +177,16 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Desktop micro-pass for `/stocks/[providerKey]` refined chart controls and typography: grouped range/mode/overlay controls into clearer desktop panels, reduced chart-axis typographic noise, and tightened heading/row scale in valuation/sidebar blocks.
 - Desktop report typography pass further aligned long-form sections (`StockReportMainContent`, `StockReportRevenueMixSection`, `StockReportFiveYearTrendAnalysisSection`, `StockReportConceptSections`): section titles normalized to a calmer scale, uppercase helper labels softened, and key financial values switched to `font-mono tabular-nums` for faster scan/comparison.
 - Desktop follow-up pass on `InsightsWidgetsSection` aligned widget-card and modal rhythm with the report system: flatter modal chrome (`rounded-sm`), calmer micro-typography/tracking, denser card spacing on large screens, and reduced chart axis noise in both compact and expanded widget charts.
-- `StockMetricsSection` now reads summary + cached 5Y PE overlay context and renders contextual valuation instead of only raw rows:
-  - PE shown on a range bar with min/max/median markers and percentile-based wording (`history low/mid/high`),
+- `StockMetricsSection` now reads summary + cached 5Y valuation history and renders contextual valuation instead of only raw rows:
+  - the active metric (`P/E`, `P/S`, or `P/B`) is shown on a range bar with min/max/median markers,
   - additional multiples and fundamentals moved into calmer supporting lists.
+- Valuation context card now uses a segmented switcher (`P/E`, `P/S`, `P/B`) with one active historical view at a time:
+  - `P/E`, `P/S`, and `P/B` should all show real 5Y min/median/max context when the required historical inputs are available,
+  - `P/S` is derived from historical `revenue_ttm` + `shares_outstanding`,
+  - `P/B` is derived from historical `book_value` (equity) + `shares_outstanding`,
+  - if any metric lacks trustworthy historical inputs for a ticker, it must fall back honestly instead of faking percentile/range history,
+  - the active metric should also stay highlighted in the supporting multiples list so beginners can map the big widget back to the raw numbers quickly,
+  - current value should stay tied to the gauge marker itself; avoid duplicate summary cards like separate `Aktualnie`, `Percentyl`, or `Biezacy odczyt` blocks above the range bar.
 - `StockMetricsGrid` keeps freshness metadata out of the raw fundamentals rows; `Stan na ...` is exposed through a compact `InfoHint` beside the `Fundamenty` heading instead.
 - Report concept section `Ten rok vs ostatni rok` now includes per-metric sparklines for trend context next to point-in-time YoY numbers.
 - Report concept section `Ten rok vs ostatni rok` uses ledger separators (`border-dotted`) between rows to stay consistent with transaction-table rhythm.
