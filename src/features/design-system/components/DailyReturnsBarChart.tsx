@@ -5,13 +5,13 @@ import {
   BarChart,
   ReferenceLine,
   ResponsiveContainer,
+  Tooltip as ChartTooltip,
   XAxis,
   YAxis,
   Cell,
 } from "@/lib/recharts-dynamic";
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";

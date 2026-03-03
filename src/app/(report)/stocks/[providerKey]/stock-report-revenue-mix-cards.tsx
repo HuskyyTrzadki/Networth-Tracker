@@ -1,13 +1,18 @@
 "use client";
 
 import { ArrowDown } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "@/lib/recharts-dynamic";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as ChartTooltip,
+} from "@/lib/recharts-dynamic";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";

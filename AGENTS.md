@@ -44,7 +44,7 @@ Out of scope:
 - Route handlers must be thin: validate input -> service call -> response.
 - Validate external provider interfaces against official docs before changing integrations.
 - URL query state in client components should use `nuqs` parser maps (avoid manual `URLSearchParams` mutation); use non-shallow updates when server data depends on search params.
-- Shared chart rendering should go through `src/components/ui/chart.tsx` (`ui/chart`) and preserve Modern Ledger standards: mono/tabular tooltip+legend typography, muted finance palette, subtle dashed grids.
+- Shared chart rendering should go through `src/components/ui/chart.tsx` (`ui/chart`) for container/content styling (`ChartContainer`, `ChartTooltipContent`, `ChartLegendContent`), while runtime chart primitives (`Tooltip`, `Legend`, etc.) should be imported from `src/lib/recharts-dynamic.tsx` to keep non-chart chunks lean.
 
 ## Supabase usage
 - Env vars in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`, optional `LOGO_DEV_PUBLISHABLE_KEY` (recommended, server-held `pk_` token for `/api/public/image?ticker=...` fallback), legacy `LOGO_DEV_SECRET_KEY` still read for backward compatibility
@@ -146,6 +146,9 @@ When shipping feature/architecture changes:
 - Market-data import boundary:
   - `src/features/market-data/index.ts` is server-oriented (cache/services),
   - client components/hooks must consume market-data DTO types from `src/features/market-data/types.ts` instead of the server barrel.
+- Design-system performance boundary:
+  - avoid broad barrel imports from `src/features/design-system/index.ts` in performance-sensitive routes when only single primitives are needed,
+  - prefer direct component-path imports (for example `components/InfoHint`, `components/Sparkline`) to prevent avoidable shared-chunk inflation.
 - Watchlist add is fail-safe: backend mutation layer (server action + shared service) does synchronous market-data warmup (`instruments` upsert + quote + daily cache fetch) and rolls back watchlist row on warmup failure, so `/stocks` avoids empty cards for user-pinned tickers.
 - Stock report watchlist toggle (`StockFavoriteToggleButton`) receives initial favorite state from server render and uses optimistic Server Action updates (no client fetch/sync effect on mount).
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.

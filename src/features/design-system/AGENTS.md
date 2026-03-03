@@ -26,8 +26,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - If this folder grows too large, consider moving shared UI to `src/shared/ui/*`.
 - Recharts components (donut/area/bar/line) are client-side due to browser rendering.
 - Shared Recharts bridge (`src/lib/recharts-dynamic.tsx`) must re-export native `recharts` components from a client-only module; avoid wrapping chart primitives in per-component `next/dynamic` loaders because it can break chart child parsing and render empty canvases.
-- Shared chart wrapper lives in `src/components/ui/chart.tsx` and is re-exported via `src/features/design-system/components/ui/chart.tsx`; chart UIs should use `ChartContainer`/`ChartTooltip`/`ChartLegend` APIs instead of ad-hoc tooltip/legend styling.
+- Shared chart wrapper lives in `src/components/ui/chart.tsx` and is re-exported via `src/features/design-system/components/ui/chart.tsx`; use `ChartContainer`/`ChartTooltipContent`/`ChartLegendContent` for shared styling, and import runtime chart primitives (`Tooltip`, `Legend`, etc.) from `src/lib/recharts-dynamic.tsx` to avoid pulling `recharts` into non-chart chunks.
 - `ChartTooltipContent` and `ChartLegendContent` enforce Modern Ledger styling: `font-mono` + `tabular-nums`, muted semantic palette, and dashed-border popover chrome.
+- In performance-sensitive routes, avoid broad imports from `src/features/design-system/index.ts` when only one primitive is needed; prefer direct component-path imports to keep shared chunks lean.
 - Portfolio comparison chart (value vs zainwestowany kapitał) lives in `components/PortfolioComparisonChart.tsx`.
 - Daily returns bar chart (legacy/storybook) lives in `components/DailyReturnsBarChart.tsx`.
 - Daily returns line chart (dashboard) lives in `components/DailyReturnsLineChart.tsx`.

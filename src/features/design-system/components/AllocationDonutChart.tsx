@@ -1,10 +1,15 @@
 "use client";
 
 import { useId } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "@/lib/recharts-dynamic";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as ChartTooltip,
+} from "@/lib/recharts-dynamic";
 import {
   ChartContainer,
-  ChartTooltip,
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";
 

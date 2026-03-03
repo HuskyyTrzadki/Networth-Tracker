@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { Sparkline } from "@/features/design-system";
+import { Sparkline } from "@/features/design-system/components/Sparkline";
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip";

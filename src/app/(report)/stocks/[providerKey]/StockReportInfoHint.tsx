@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/features/design-system";
+import { InfoHint } from "@/features/design-system/components/InfoHint";
 
 export default function StockReportInfoHint({
   text,

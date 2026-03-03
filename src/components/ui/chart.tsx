@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import * as RechartsPrimitive from "recharts";
 import type { LegendProps, TooltipProps } from "recharts";
 
 import { cn } from "@/lib/cn";
@@ -77,9 +76,6 @@ export const ChartContainer = React.forwardRef<
   );
 });
 ChartContainer.displayName = "ChartContainer";
-
-export const ChartTooltip = RechartsPrimitive.Tooltip;
-export const ChartLegend = RechartsPrimitive.Legend;
 
 type PayloadLike = Readonly<{
   color?: string;

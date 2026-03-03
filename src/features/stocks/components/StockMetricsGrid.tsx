@@ -2,7 +2,7 @@ import type {
   StockValuationRangeContext,
   StockValuationSummary,
 } from "@/features/stocks/types";
-import { InfoHint } from "@/features/design-system";
+import { InfoHint } from "@/features/design-system/components/InfoHint";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 
 import { StockValuationContextCard } from "./StockValuationContextCard";

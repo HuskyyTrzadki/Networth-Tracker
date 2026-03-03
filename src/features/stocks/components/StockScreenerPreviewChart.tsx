@@ -9,12 +9,12 @@ import {
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
+  Tooltip as ChartTooltip,
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";

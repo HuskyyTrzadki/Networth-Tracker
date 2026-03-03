@@ -7,6 +7,7 @@ import {
   ComposedChart,
   Line,
   ResponsiveContainer,
+  Tooltip as ChartTooltip,
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
@@ -20,7 +21,6 @@ import {
 } from "@/features/design-system/components/ui/dialog";
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";

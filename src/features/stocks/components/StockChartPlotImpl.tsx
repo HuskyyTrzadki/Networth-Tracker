@@ -8,13 +8,13 @@ import {
   ComposedChart,
   Line,
   ResponsiveContainer,
+  Tooltip as ChartTooltip,
   XAxis,
   YAxis,
 } from "@/lib/recharts-dynamic";
 import { LoaderCircle } from "lucide-react";
 import {
   ChartContainer,
-  ChartTooltip,
   type ChartConfig,
 } from "@/features/design-system/components/ui/chart";
 
