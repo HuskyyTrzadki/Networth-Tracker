@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { DashboardEmptyState } from "@/features/portfolio";
+import { DashboardEmptyState } from "@/features/portfolio/components/DashboardEmptyState";
 
 const meta: Meta<typeof DashboardEmptyState> = {
   title: "Portfolio/DashboardEmptyState",

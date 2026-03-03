@@ -1,5 +1,5 @@
 import { StartRealPortfolioButton } from "@/features/auth/ui/StartRealPortfolioButton";
-import { DemoPortfolioBadge } from "@/features/portfolio";
+import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
 import { cn } from "@/lib/cn";
 
 type Props = Readonly<{

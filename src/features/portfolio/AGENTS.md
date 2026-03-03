@@ -15,7 +15,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/components/CreateFirstPortfolioAction.tsx`
 - `src/features/portfolio/components/PortfolioMobileHeaderActions.tsx`
 - `src/features/portfolio/dashboard/PortfolioDashboard.tsx`
-- `src/features/portfolio/dashboard/PortfolioSecondaryWidgets.tsx`
+- `src/features/portfolio/dashboard/PortfolioRecentTransactionsDeferredWidget.tsx`
+- `src/features/portfolio/dashboard/PortfolioDividendInboxDeferredWidget.tsx`
+- `src/features/portfolio/dashboard/PortfolioAllocationsByPortfolioDeferredWidget.tsx`
 - `src/features/portfolio/dashboard/PortfolioNetValueHero.tsx`
 - `src/features/portfolio/dashboard/components/RenderWhenVisible.tsx`
 - `src/features/portfolio/dashboard/widgets/AllocationHoldingsWidget.tsx`
@@ -105,6 +107,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Tryby wykresu wartości/performance współdzielą layout widgetu (`portfolio-value-over-time-chart-layout.ts`): wspólna wysokość wykresu, wspólny empty-state i wspólne minimalne `min-height` karty.
 - Ciężkie komponenty wykresów (`PortfolioComparisonChart`, `DailyReturnsLineChart`) są ładowane przez `next/dynamic` na poziomie całego komponentu (ssr: false) w widgetach portfolio, aby zmniejszyć koszt startowy bez łamania parsera dzieci Recharts.
 - Lower-priority dashboard sections (`Alokacja per portfel`, `Największe ruchy`, `Ostatnie transakcje`, `Skrzynka dywidend`) are deferred with `RenderWhenVisible` + `next/dynamic({ ssr: false })`; keep value chart + allocation/currency row in the initial payload.
+- For deferred dashboard widgets, always pair viewport fallback (`RenderWhenVisible`) with dynamic `loading` fallback (`next/dynamic`) using the same skeleton shape, so entering viewport never shows empty gaps while JS chunks download.
+- `/portfolio` server reads are split into dedicated private-cache loaders: core dashboard payload (summary/snapshots/live totals) streams first, while deferred widget data (recent transactions, dividend inbox, allocation-per-portfolio) resolves under separate Suspense boundaries.
 - `CreatePortfolioDialog` keeps only trigger/shell state in the initial bundle; form logic (`react-hook-form`, `zod`, schema fields) lives in `CreatePortfolioDialogForm` and is loaded on-demand after opening the dialog.
 - Client dashboard widgets should import market-data DTO types from `@/features/market-data/types` (client-safe surface), not from `@/features/market-data` server barrel.
 - Dashboard ma jeden wspólny widget `Alokacja i pozycje` z przełącznikiem `Mapa/Słupki/Tabela` (domyślnie `Mapa`), zamiast osobnych kart.
@@ -164,7 +168,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Net-value hero shows dzienna zmiana wartości (suma `todayChangeBase` z wyceny) obok kwoty głównej, z zielonym/czerwonym kolorem dla dodatnich/ujemnych zmian.
 - Dashboard shows a dedicated partial-valuation warning banner when quotes/FX are missing, with explicit counts (`missingQuotes`, `missingFx`).
 - Dashboard health state is centralized in one top-level `Health` strip (partial/completeness + delayed quotes + shared `Stan na` context); widget-level status badges should stay only for widget-specific states such as delayed movers, rebuild failures, or truncated `ALL` history.
-- Dashboard page and key sections now use subtle reveal animations (`AnimatedReveal`) and warmer card styling (`ChartCard surface="subtle"`) for polished entry and better hierarchy.
+- Dashboard page and key sections use the shared `AnimatedReveal` wrapper for consistent structure while keeping route-level surfaces free of heavyweight runtime animation deps.
 - Net value hero and allocation/holdings widget use stronger typographic rhythm (monospace net value, cleaner heading/label contrast, calmer warning tones) without changing valuation logic.
 - Net-value hero no longer renders a standalone `Stan na` card; freshness lives behind a compact `InfoHint` next to `Wartość netto` to reduce cognitive load.
 - `Największe ruchy` rows are actionable cards linking to `/stocks/[providerKey]`, so dashboard exploration reuses the stock report route instead of read-only summary pills.
@@ -230,7 +234,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Allocation views keep a fixed desktop workspace (`h-[420px]`, `lg:h-[500px]`) with internal scroll to handle long holdings lists without layout jumps.
 - Currency units in hero + allocation numeric labels are visually subordinated (smaller/muted unit token) so users scan core numeric values first.
 - Hero eyebrow (`Wartość netto`) now follows strict ledger hierarchy (`text-xs uppercase tracked muted`), with the primary amount carrying dominant visual weight.
-- Net-value hero value now animates with a rapid count-up (`0 -> target`, ~0.6s) plus subtle fade-in-up (`10px`) on mount, with reduced-motion fallback.
+- Net-value hero value now animates with a rapid count-up (`0 -> target`, ~0.6s) on mount.
 - Value and performance chart surfaces now run through a shared chart engine (`UnifiedPortfolioTrendChart`) to keep line weight, gradients, tooltip chrome, and axis behavior aligned between modes; performance primary area flips to loss tone when latest cumulative return is negative.
 - Portfolio widget chart height is parent-driven (`SHARED_PORTFOLIO_CHART_HEIGHT` wrappers in mode content), while chart primitives render at `h-full` for consistent sizing behavior across modes.
 - `/portfolio` route shell and unauth fallback now follow the same ledger card language as transactions (framed hero strip, compact metadata chips, dashed separators, rounded action controls).

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/features/design-system/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/features/design-system/components/ui/tabs";
-import { CreatePortfolioDialog } from "@/features/portfolio";
+import { CreatePortfolioDialog } from "@/features/portfolio/components/CreatePortfolioDialog";
 import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
 
 import type { FormValues } from "../AddTransactionDialogContent";

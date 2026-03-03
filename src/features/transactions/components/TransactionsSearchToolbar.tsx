@@ -18,7 +18,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/features/design-system/components/ui/toggle-group";
-import { PortfolioSwitcher } from "@/features/portfolio";
+import { PortfolioSwitcher } from "@/features/portfolio/components/PortfolioSwitcher";
 import { cn } from "@/lib/cn";
 
 import type { TransactionSide, TransactionsSort } from "../server/filters";

@@ -9,6 +9,7 @@ import StockReportFiveYearTrendAnalysisSection from "./StockReportFiveYearTrendA
 import StockReportLeadershipSection from "./StockReportLeadershipSection";
 import StockMetricsSection from "./StockMetricsSection";
 import StockReportRevenueMixSectionLazy from "./StockReportRevenueMixSectionLazy";
+import RenderOnVisible from "./RenderOnVisible";
 import {
   EditorsNote,
   InvestorTakeaway,
@@ -32,6 +33,15 @@ type MainContentProps = Readonly<{
   providerKey: string;
   metricCurrency: string;
 }>;
+
+function StockMetricsSectionSkeleton() {
+  return (
+    <div
+      className="h-[380px] animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]"
+      aria-hidden="true"
+    />
+  );
+}
 
 function SummaryStartSection() {
   return (
@@ -348,13 +358,11 @@ export default function StockReportMainContent({
         id="sekcja-fundamenty"
         className="border-b border-dashed border-black/15 pb-6"
       >
-        <Suspense
-          fallback={
-            <div className="h-[380px] animate-pulse rounded-md border border-black/5 bg-white/85 shadow-[var(--surface-shadow)]" />
-          }
-        >
-          <StockMetricsSection providerKey={providerKey} metricCurrency={metricCurrency} />
-        </Suspense>
+        <RenderOnVisible rootMargin="220px 0px" fallback={<StockMetricsSectionSkeleton />}>
+          <Suspense fallback={<StockMetricsSectionSkeleton />}>
+            <StockMetricsSection providerKey={providerKey} metricCurrency={metricCurrency} />
+          </Suspense>
+        </RenderOnVisible>
       </section>
 
       <section id="sekcja-jak-zarabia">

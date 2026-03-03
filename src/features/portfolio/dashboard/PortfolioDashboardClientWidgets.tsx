@@ -9,24 +9,19 @@ import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../server/snapshots/types";
 import { useSnapshotRebuild } from "./hooks/useSnapshotRebuild";
 import { AllocationHoldingsWidget } from "./widgets/AllocationHoldingsWidget";
-import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
 import { CurrencyExposureWidget } from "./widgets/CurrencyExposureWidget";
 import { PortfolioValueOverTimeWidget } from "./widgets/PortfolioValueOverTimeWidget";
 import { RenderWhenVisible } from "./components/RenderWhenVisible";
 
-const PortfolioAllocationsByPortfolioWidget = dynamic(
-  () =>
-    import("./widgets/PortfolioAllocationsByPortfolioWidget").then(
-      (module) => module.PortfolioAllocationsByPortfolioWidget
-    ),
-  { ssr: false }
-);
 const PortfolioTopMoversWidget = dynamic(
   () =>
     import("./widgets/PortfolioTopMoversWidget").then(
       (module) => module.PortfolioTopMoversWidget
     ),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <DeferredWidgetSkeleton title="Największe ruchy" />,
+  }
 );
 
 type Props = Readonly<{
@@ -40,7 +35,6 @@ type Props = Readonly<{
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
-  portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
 }>;
 
 function DeferredWidgetSkeleton({
@@ -66,7 +60,6 @@ export function PortfolioDashboardClientWidgets({
   liveTotals,
   polishCpiSeries,
   benchmarkSeries,
-  portfolioAllocationDonutCards,
 }: Props) {
   const scope = selectedPortfolioId ? "PORTFOLIO" : "ALL";
   const rebuild = useSnapshotRebuild(scope, selectedPortfolioId, true);
@@ -93,14 +86,6 @@ export function PortfolioDashboardClientWidgets({
           summary={summary}
         />
       </div>
-      {!selectedPortfolioId ? (
-        <RenderWhenVisible
-          fallback={<DeferredWidgetSkeleton title="Alokacja per portfel" />}
-          rootMargin="280px 0px"
-        >
-          <PortfolioAllocationsByPortfolioWidget items={portfolioAllocationDonutCards} />
-        </RenderWhenVisible>
-      ) : null}
       <RenderWhenVisible
         fallback={<DeferredWidgetSkeleton title="Największe ruchy" />}
         rootMargin="300px 0px"

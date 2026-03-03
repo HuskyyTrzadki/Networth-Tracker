@@ -44,7 +44,7 @@ Out of scope:
 - Route handlers must be thin: validate input -> service call -> response.
 - Validate external provider interfaces against official docs before changing integrations.
 - URL query state in client components should use `nuqs` parser maps (avoid manual `URLSearchParams` mutation); use non-shallow updates when server data depends on search params.
-- Viewport-gated client rendering should prefer `useInView` (from `framer-motion`) over hand-rolled `IntersectionObserver` + `useEffect` boilerplate.
+- Viewport-gated client rendering should use `useInViewVisibility` (`src/features/common/hooks/use-in-view-visibility.ts`) to keep observer behavior consistent and avoid route-wide motion runtime dependencies.
 - Shared chart rendering should go through `src/components/ui/chart.tsx` (`ui/chart`) for container/content styling (`ChartContainer`, `ChartTooltipContent`, `ChartLegendContent`), while runtime chart primitives (`Tooltip`, `Legend`, etc.) should be imported from `src/lib/recharts-dynamic.tsx` to keep non-chart chunks lean.
 
 ## Supabase usage
@@ -150,6 +150,8 @@ When shipping feature/architecture changes:
 - Design-system performance boundary:
   - `src/features/design-system/index.ts` was removed; import design-system modules via direct component paths (for example `components/InfoHint`, `components/Sparkline`).
   - `src/features/transactions/index.ts` was removed; import transaction modules via direct component/server paths.
+- Portfolio feature boundary:
+  - `src/features/portfolio/index.ts` was removed; import portfolio modules via direct file paths.
 - App route import boundary:
   - in `src/app/*`, do not import feature barrels (`@/features/app-shell`, `@/features/auth`, `@/features/home`, `@/features/onboarding`, `@/features/portfolio`, `@/features/stocks`);
   - use direct file paths so route dependency graphs stay explicit and bundle regressions are easier to catch.
@@ -163,6 +165,7 @@ When shipping feature/architecture changes:
 - Portfolio model includes `is_tax_advantaged` (IKE/IKZE) used by dividend smart-default hints.
 - Dividend booking is user-confirmed (`/api/dividends/book`) with idempotency key `dividend_event_key`; Yahoo is discovery-only (`/api/dividends/inbox`).
 - Portfolio create + dividend booking flows have Server Action mutation boundaries (`createPortfolioAction`, `bookDividendAction`) with cache revalidation; client dialogs no longer post directly to route handlers.
+- `/portfolio` data fetching is split: first render resolves summary/snapshots/live totals, while lower-priority widgets (`Alokacja per portfel`, `Ostatnie transakcje`, `Skrzynka dywidend`) stream through separate Suspense boundaries with dedicated private cache loaders.
 - Dashboard includes `Ekspozycja walutowa` widget with `Notowania | Gospodarcza` toggle; `Gospodarcza` is user-triggered via `/api/portfolio/currency-exposure/economic` and uses deterministic AI config (`temperature: 0`).
 - Economic exposure cache uses instrument-set fingerprint only (sorted `instrumentId`s + scope/model/prompt version), then reweights cached per-asset splits with fresh `valueBase` on each request.
 - TradingView revenue geography must stay asynchronous-only: refresh via daily/backfill batch (`/api/cron/tradingview-revenue-geo/run` or CLI batch), never via request-path scraping. If geo cache is missing for Yahoo equities, economic exposure should return a graceful pending state rather than block, scrape, or fake readiness.

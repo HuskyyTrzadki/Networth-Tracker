@@ -22,6 +22,11 @@ const eslintConfig = defineConfig([
               message:
                 "Import transactions modules by direct file path (for predictable bundles).",
             },
+            {
+              name: "@/features/portfolio",
+              message:
+                "Import portfolio modules by direct file path (for predictable bundles).",
+            },
           ],
         },
       ],
@@ -61,6 +66,48 @@ const eslintConfig = defineConfig([
               name: "@/features/stocks",
               message:
                 "In src/app, import stocks modules by direct file path.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/features/{app-shell,auth,home,onboarding,portfolio,stocks,transactions}/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/features/app-shell",
+              message:
+                "In feature code, import app-shell modules by direct file path.",
+            },
+            {
+              name: "@/features/auth",
+              message: "In feature code, import auth modules by direct file path.",
+            },
+            {
+              name: "@/features/home",
+              message: "In feature code, import home modules by direct file path.",
+            },
+            {
+              name: "@/features/onboarding",
+              message:
+                "In feature code, import onboarding modules by direct file path.",
+            },
+            {
+              name: "@/features/portfolio",
+              message:
+                "In feature code, import portfolio modules by direct file path.",
+            },
+            {
+              name: "@/features/stocks",
+              message:
+                "In feature code, import stocks modules by direct file path.",
             },
           ],
         },

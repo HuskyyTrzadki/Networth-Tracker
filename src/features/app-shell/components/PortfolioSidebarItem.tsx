@@ -6,7 +6,7 @@ import { type MouseEvent, useState, useTransition } from "react";
 
 import { deletePortfolioAction } from "@/features/portfolio/server/delete-portfolio-action";
 import { Button } from "@/features/design-system/components/ui/button";
-import { DemoPortfolioBadge } from "@/features/portfolio";
+import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
 import {
   Dialog,
   DialogContent,

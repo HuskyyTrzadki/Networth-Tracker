@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { DemoPortfolioBadge } from "../components/DemoPortfolioBadge";
 import { InfoHint } from "@/features/design-system/components/InfoHint";
 import {
@@ -29,7 +28,6 @@ export function PortfolioNetValueHero({
   dailyChangeBase,
   asOf,
 }: Props) {
-  const prefersReducedMotion = useReducedMotion() ?? false;
   const formatter = getCurrencyFormatter(baseCurrency);
   const formattedTotalValue =
     formatter && totalValueBase
@@ -87,7 +85,7 @@ export function PortfolioNetValueHero({
         : "text-muted-foreground";
 
   useEffect(() => {
-    if (prefersReducedMotion || targetAmount === null || !Number.isFinite(targetAmount)) {
+    if (targetAmount === null || !Number.isFinite(targetAmount)) {
       return;
     }
 
@@ -114,11 +112,11 @@ export function PortfolioNetValueHero({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [prefersReducedMotion, targetAmount]);
+  }, [targetAmount]);
 
   const animatedTotalLabel = useMemo(() => {
     const resolvedAmount =
-      prefersReducedMotion || targetAmount === null || !Number.isFinite(targetAmount)
+      targetAmount === null || !Number.isFinite(targetAmount)
         ? targetAmount
         : animatedAmount;
 
@@ -135,7 +133,6 @@ export function PortfolioNetValueHero({
     animatedAmount,
     baseCurrency,
     formatter,
-    prefersReducedMotion,
     targetAmount,
     totalValueLabel,
   ]);
@@ -167,31 +164,24 @@ export function PortfolioNetValueHero({
           />
         </div>
       </div>
-      <LazyMotion features={domAnimation}>
-        <div className="mb-4 mt-1 flex flex-wrap items-end gap-3">
-          <m.div
-            className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-          >
-            <span>{totalValueAmount}</span>
-            {totalValueCurrency ? (
-              <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
-                {totalValueCurrency}
-              </span>
-            ) : null}
-          </m.div>
-          <div className="mb-1 inline-flex items-baseline gap-2 rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-              Dzisiaj
-            </p>
-            <p className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
-              {dailyChangeCombined ?? "—"}
-            </p>
-          </div>
+      <div className="mb-4 mt-1 flex flex-wrap items-end gap-3">
+        <div className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl">
+          <span>{totalValueAmount}</span>
+          {totalValueCurrency ? (
+            <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
+              {totalValueCurrency}
+            </span>
+          ) : null}
         </div>
-      </LazyMotion>
+        <div className="mb-1 inline-flex items-baseline gap-2 rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+            Dzisiaj
+          </p>
+          <p className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
+            {dailyChangeCombined ?? "—"}
+          </p>
+        </div>
+      </div>
     </section>
   );
 }

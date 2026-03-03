@@ -10,13 +10,9 @@ import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
 import type { PortfolioSummary } from "../server/valuation";
 import type { LiveTotalsResult } from "../server/get-portfolio-live-totals";
 import type { SnapshotChartRow } from "../server/snapshots/types";
-import type { TransactionListItem } from "@/features/transactions/server/list-transactions";
 import { PortfolioSwitcher } from "../components/PortfolioSwitcher";
 import { PortfolioDashboardClientWidgets } from "./PortfolioDashboardClientWidgets";
 import { PortfolioNetValueHero } from "./PortfolioNetValueHero";
-import type { PortfolioAllocationDonutCard } from "../server/get-portfolio-allocation-donut-cards";
-import type { DividendInboxResult } from "../lib/dividend-inbox";
-import { PortfolioSecondaryWidgets } from "./PortfolioSecondaryWidgets";
 import { formatDashboardAsOf } from "./dashboard-formatters";
 
 type Props = Readonly<{
@@ -36,9 +32,8 @@ type Props = Readonly<{
   liveTotals: LiveTotalsResult;
   polishCpiSeries: readonly PolishCpiPoint[];
   benchmarkSeries: DashboardBenchmarkSeries;
-  recentTransactions: readonly TransactionListItem[];
-  portfolioAllocationDonutCards: readonly PortfolioAllocationDonutCard[];
-  dividendInbox: DividendInboxResult;
+  allocationsByPortfolioWidget?: React.ReactNode;
+  secondaryWidgets?: React.ReactNode;
   className?: string;
 }>;
 
@@ -66,9 +61,8 @@ export function PortfolioDashboard({
   liveTotals,
   polishCpiSeries,
   benchmarkSeries,
-  recentTransactions,
-  portfolioAllocationDonutCards,
-  dividendInbox,
+  allocationsByPortfolioWidget,
+  secondaryWidgets,
   className,
 }: Props) {
   const selectedPortfolioName = selectedPortfolioId
@@ -149,13 +143,9 @@ export function PortfolioDashboard({
             liveTotals={liveTotals}
             polishCpiSeries={polishCpiSeries}
             benchmarkSeries={benchmarkSeries}
-            portfolioAllocationDonutCards={portfolioAllocationDonutCards}
           />
-          <PortfolioSecondaryWidgets
-            selectedPortfolioId={selectedPortfolioId}
-            recentTransactions={recentTransactions}
-            dividendInbox={dividendInbox}
-          />
+          {allocationsByPortfolioWidget}
+          {secondaryWidgets}
         </div>
       </AnimatedReveal>
     </div>

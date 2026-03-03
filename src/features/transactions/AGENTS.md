@@ -77,6 +77,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Boundaries
 - UI should not depend on provider-specific market data shapes.
 - Feature barrel `src/features/transactions/index.ts` was removed; import transaction modules via direct component/server paths.
+- Transactions UI must import portfolio UI by direct component path (for example `@/features/portfolio/components/PortfolioSwitcher`, `.../CreatePortfolioDialog`) and not through `@/features/portfolio` barrel.
 - Server logic lives under `src/features/transactions/server/*` and is called by API routes and transaction server actions (`transaction-actions.ts`).
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
 - Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
@@ -127,7 +128,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions table visually separates cash settlement legs from primary asset action rows inside each `group_id`, but renders as one continuous ledger list (no per-group rounded boxes/cards).
 - Ledger row separator style is baked into the transactions row component (`TransactionsLedgerRow` in `TransactionsTable.tsx`) using subtle dashed top borders for scanability.
 - Grouping avoids accent borders/boxes; hierarchy is communicated via child-row indentation + muted text on cash legs, with dashed separators only at group boundaries.
-- Transactions page sections now use subtle reveal animations (`AnimatedReveal`) for smoother perceived navigation/loading.
+- Transactions page sections use shared `AnimatedReveal` wrappers while avoiding heavyweight runtime animation dependencies.
 - Transactions toolbar, table chrome, and add-transaction dialog were visually refreshed (warmer surfaces, clearer micro-typography, calmer badges, consistent button/control sizing) without changing transaction behavior.
 - Transactions microcopy was tightened across page header, filter toolbar, empty states, and add/edit modal descriptions; keep labels/status messages short and action-first.
 - Transactions route header should use `Transakcje` as the only page title; avoid additional journal/ledger labels that restate the same view.

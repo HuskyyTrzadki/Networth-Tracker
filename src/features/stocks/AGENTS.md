@@ -127,11 +127,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Report page uses placeholder illustrations from `picsum.photos` until final generated engravings are delivered.
 - UI consumes normalized DTOs only; no Yahoo-specific payload shapes in components.
 - Stock chart/report modules are split into focused helpers (formatters, view-model mapping, hover card rendering, and revenue-mix section helpers/cards) to keep single-file complexity under repo limits.
-- Revenue-mix donut charts in report (`stock-report-revenue-mix-cards.tsx`) now render inline slice labels with percentages (small-slice cutoff) directly on the chart, not only in the adjacent legend list.
+- Revenue-mix donut charts in report (`stock-report-revenue-mix-cards.tsx`) use legend-first reading (no external slice labels on arcs) to avoid clipping and keep percentages stable in the legend + tooltip.
 - Chart-heavy UI consumers use `next/dynamic` at whole-component boundaries (`StockChartPlot`, screener preview mini-chart, report insights widgets, revenue-mix donut cards) with `ssr: false`; avoid dynamic-wrapping Recharts primitives directly.
 - Report route now defers non-critical chart modules by visibility/interaction:
   - `StockReportRevenueMixSectionLazy` uses viewport gating + dynamic import so revenue-mix charts are not part of initial `/stocks/[providerKey]` route chunk,
   - `StockReportConceptSectionsLazy` keeps concept sparkline bundle out of initial chunk and loads after advanced section expansion + visibility.
+- `Wycena i fundamenty` section is viewport-gated in the report stream (`RenderOnVisible` + Suspense skeleton), so below-fold entry has explicit pending feedback instead of instant pop-in.
+- Deferred report chunks must keep skeleton continuity: when using `RenderOnVisible` + `next/dynamic({ ssr: false })`, provide both viewport fallback and dynamic `loading` fallback with matching geometry to avoid blank flashes.
 - Import boundary is strict:
   - feature barrel `src/features/stocks/index.ts` was removed; use direct server/client-safe file imports,
   - client files must import stock DTO constants/types from `src/features/stocks/types.ts` instead of server service files.

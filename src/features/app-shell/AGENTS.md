@@ -52,6 +52,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - That demo CTA should reset the anonymous demo session into a fresh non-demo guest session before going to `/onboarding`; it must not be a plain link, otherwise demo and real portfolios get mixed in one account.
 - The bottom-page `DemoAccountCallout` is intentionally hidden on `/settings` and `/onboarding` to avoid repeating the same demo guidance on pages that already explain the next step.
 - Feature barrel `src/features/app-shell/index.ts` was removed; report/public shell consumers should use direct component imports (for example `ReportShellMenuTrigger`) to avoid pulling unrelated modules into shared chunks.
+- App shell components must import portfolio UI directly (for example `@/features/portfolio/components/CreatePortfolioDialog`, `.../DemoPortfolioBadge`) and never via `@/features/portfolio` barrel.
 - Portfolio rows now accept `isDemo` from server portfolio summaries; demo portfolios render a prominent `DEMO` badge directly in the desktop sidebar row.
 - Shell-owned page chrome should avoid duplicate context labels; prefer a single page title plus one short scope/status cue instead of stacked eyebrow + title + subtitle variants.
 

@@ -1,19 +1,15 @@
 "use client";
 
-import { useInView } from "framer-motion";
-import { useRef } from "react";
-
-type InViewOptions = NonNullable<Parameters<typeof useInView>[1]>;
-type InViewMargin = InViewOptions["margin"];
+import { useInViewVisibility } from "@/features/common/hooks/use-in-view-visibility";
 
 type Props = Readonly<{
   children: React.ReactNode;
   fallback: React.ReactNode;
-  rootMargin?: InViewMargin;
+  rootMargin?: string;
   className?: string;
 }>;
 
-const DEFAULT_ROOT_MARGIN: InViewMargin = "220px 0px";
+const DEFAULT_ROOT_MARGIN = "220px 0px";
 
 export function RenderWhenVisible({
   children,
@@ -21,16 +17,14 @@ export function RenderWhenVisible({
   rootMargin = DEFAULT_ROOT_MARGIN,
   className,
 }: Props) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const isVisible = useInView(containerRef, {
+  const { ref: containerRef, isInView } = useInViewVisibility<HTMLDivElement>({
+    rootMargin,
     once: true,
-    margin: rootMargin,
-    amount: 0.01,
   });
 
   return (
     <div className={className} ref={containerRef}>
-      {isVisible ? children : fallback}
+      {isInView ? children : fallback}
     </div>
   );
 }

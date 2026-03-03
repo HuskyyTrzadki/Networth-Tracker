@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type MouseEvent, useState } from "react";
 
-import { CreatePortfolioDialog } from "@/features/portfolio";
-import { DemoPortfolioBadge } from "@/features/portfolio";
+import { CreatePortfolioDialog } from "@/features/portfolio/components/CreatePortfolioDialog";
+import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   Sidebar,

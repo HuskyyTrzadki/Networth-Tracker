@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -174,24 +173,19 @@ export function DividendBookingDialog({
           </Button>
         </DialogFooter>
 
-        <AnimatePresence>
-          {isCelebrating ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              className={cn(
-                "pointer-events-none absolute inset-0 grid place-items-center rounded-lg",
-                "bg-muted/38 backdrop-blur-[1px]"
-              )}
-            >
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/75 bg-background/92 px-4 py-2 text-sm font-medium text-[color:var(--profit)] shadow-sm">
-                <Sparkles className="size-4" aria-hidden />
-                Zaksięgowano
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {isCelebrating ? (
+          <div
+            className={cn(
+              "pointer-events-none absolute inset-0 grid place-items-center rounded-lg",
+              "animate-in fade-in-0 zoom-in-95 bg-muted/38 backdrop-blur-[1px]"
+            )}
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/75 bg-background/92 px-4 py-2 text-sm font-medium text-[color:var(--profit)] shadow-sm">
+              <Sparkles className="size-4" aria-hidden />
+              Zaksięgowano
+            </div>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
