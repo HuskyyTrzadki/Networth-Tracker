@@ -37,9 +37,50 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
+const APP_NAME = "Portfolio Tracker";
+const APP_DESCRIPTION = "Śledź portfel z opóźnionymi notowaniami i przeliczeniem walut.";
+
+const getMetadataBase = () => {
+  const value = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return new URL(value);
+  } catch {
+    return undefined;
+  }
+};
+
 export const metadata: Metadata = {
-  title: "Portfolio Tracker",
-  description: "Śledź portfel z opóźnionymi notowaniami i przeliczeniem walut.",
+  metadataBase: getMetadataBase(),
+  title: {
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
+  },
+  description: APP_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "pl_PL",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    siteName: APP_NAME,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: APP_NAME,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function RootLayout({ children }: Props) {

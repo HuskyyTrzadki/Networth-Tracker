@@ -1,21 +1,13 @@
 "use client";
 
+import { Suspense, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
 
 import { AddTransactionDialog } from "./AddTransactionDialog";
 import type { FormValues } from "./AddTransactionDialogContent";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
 
-export function AddTransactionDialogRoute({
-  portfolios,
-  cashBalancesByPortfolio,
-  assetBalancesByPortfolio,
-  initialPortfolioId,
-  forcedPortfolioId,
-  initialValues,
-  initialInstrument,
-}: Readonly<{
+type Props = Readonly<{
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
@@ -23,7 +15,17 @@ export function AddTransactionDialogRoute({
   forcedPortfolioId: string | null;
   initialValues?: Partial<FormValues>;
   initialInstrument?: InstrumentSearchResult;
-}>) {
+}>;
+
+function AddTransactionDialogRouteInner({
+  portfolios,
+  cashBalancesByPortfolio,
+  assetBalancesByPortfolio,
+  initialPortfolioId,
+  forcedPortfolioId,
+  initialValues,
+  initialInstrument,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,5 +66,13 @@ export function AddTransactionDialogRoute({
         if (!nextOpen) router.back();
       }}
     />
+  );
+}
+
+export function AddTransactionDialogRoute(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <AddTransactionDialogRouteInner {...props} />
+    </Suspense>
   );
 }
