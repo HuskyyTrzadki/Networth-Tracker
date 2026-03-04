@@ -110,7 +110,7 @@ export type Database = {
           {
             foreignKeyName: "demo_bundle_instance_portfolios_portfolio_id_fkey"
             columns: ["portfolio_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "portfolios"
             referencedColumns: ["id"]
           },
@@ -176,89 +176,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "demo_bundle_portfolios_bundle_id_fkey"
-            columns: ["bundle_id"]
-            isOneToOne: false
-            referencedRelation: "demo_bundles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      demo_bundle_transactions: {
-        Row: {
-          asset_source: string
-          bundle_id: string
-          cash_currency: string | null
-          cashflow_type: string | null
-          consume_cash: boolean
-          created_at: string
-          custom_annual_rate_pct: number | null
-          custom_currency: string | null
-          custom_kind: string | null
-          custom_name: string | null
-          custom_valuation_kind: string | null
-          fee: number
-          id: string
-          notes: string | null
-          portfolio_template_key: string
-          price: number
-          provider: string | null
-          provider_key: string | null
-          quantity: number
-          side: Database["public"]["Enums"]["transaction_side"]
-          sort_order: number
-          trade_date: string
-        }
-        Insert: {
-          asset_source: string
-          bundle_id: string
-          cash_currency?: string | null
-          cashflow_type?: string | null
-          consume_cash?: boolean
-          created_at?: string
-          custom_annual_rate_pct?: number | null
-          custom_currency?: string | null
-          custom_kind?: string | null
-          custom_name?: string | null
-          custom_valuation_kind?: string | null
-          fee?: number
-          id?: string
-          notes?: string | null
-          portfolio_template_key: string
-          price: number
-          provider?: string | null
-          provider_key?: string | null
-          quantity: number
-          side: Database["public"]["Enums"]["transaction_side"]
-          sort_order: number
-          trade_date: string
-        }
-        Update: {
-          asset_source?: string
-          bundle_id?: string
-          cash_currency?: string | null
-          cashflow_type?: string | null
-          consume_cash?: boolean
-          created_at?: string
-          custom_annual_rate_pct?: number | null
-          custom_currency?: string | null
-          custom_kind?: string | null
-          custom_name?: string | null
-          custom_valuation_kind?: string | null
-          fee?: number
-          id?: string
-          notes?: string | null
-          portfolio_template_key?: string
-          price?: number
-          provider?: string | null
-          provider_key?: string | null
-          quantity?: number
-          side?: Database["public"]["Enums"]["transaction_side"]
-          sort_order?: number
-          trade_date?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "demo_bundle_transactions_bundle_id_fkey"
             columns: ["bundle_id"]
             isOneToOne: false
             referencedRelation: "demo_bundles"
@@ -357,6 +274,89 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "demo_bundle_snapshot_cache_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "demo_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_bundle_transactions: {
+        Row: {
+          asset_source: string
+          bundle_id: string
+          cash_currency: string | null
+          cashflow_type: Database["public"]["Enums"]["cashflow_type"] | null
+          consume_cash: boolean
+          created_at: string
+          custom_annual_rate_pct: number | null
+          custom_currency: string | null
+          custom_kind: string | null
+          custom_name: string | null
+          custom_valuation_kind: string | null
+          fee: number
+          id: string
+          notes: string | null
+          portfolio_template_key: string
+          price: number
+          provider: string | null
+          provider_key: string | null
+          quantity: number
+          side: Database["public"]["Enums"]["transaction_side"]
+          sort_order: number
+          trade_date: string
+        }
+        Insert: {
+          asset_source: string
+          bundle_id: string
+          cash_currency?: string | null
+          cashflow_type?: Database["public"]["Enums"]["cashflow_type"] | null
+          consume_cash?: boolean
+          created_at?: string
+          custom_annual_rate_pct?: number | null
+          custom_currency?: string | null
+          custom_kind?: string | null
+          custom_name?: string | null
+          custom_valuation_kind?: string | null
+          fee?: number
+          id?: string
+          notes?: string | null
+          portfolio_template_key: string
+          price: number
+          provider?: string | null
+          provider_key?: string | null
+          quantity: number
+          side: Database["public"]["Enums"]["transaction_side"]
+          sort_order: number
+          trade_date: string
+        }
+        Update: {
+          asset_source?: string
+          bundle_id?: string
+          cash_currency?: string | null
+          cashflow_type?: Database["public"]["Enums"]["cashflow_type"] | null
+          consume_cash?: boolean
+          created_at?: string
+          custom_annual_rate_pct?: number | null
+          custom_currency?: string | null
+          custom_kind?: string | null
+          custom_name?: string | null
+          custom_valuation_kind?: string | null
+          fee?: number
+          id?: string
+          notes?: string | null
+          portfolio_template_key?: string
+          price?: number
+          provider?: string | null
+          provider_key?: string | null
+          quantity?: number
+          side?: Database["public"]["Enums"]["transaction_side"]
+          sort_order?: number
+          trade_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_bundle_transactions_bundle_id_fkey"
             columns: ["bundle_id"]
             isOneToOne: false
             referencedRelation: "demo_bundles"
@@ -1346,16 +1346,12 @@ export type Database = {
         }[]
       }
       list_tradingview_revenue_geo_backfill_candidates: {
-        Args: {
-          p_limit?: number
-          p_provider?: string
-          p_stale_before?: string
-        }
+        Args: { p_limit?: number; p_provider?: string; p_stale_before?: string }
         Returns: {
-          cache_fetched_at: string | null
-          exchange: string | null
+          cache_fetched_at: string
+          exchange: string
           instrument_type: Database["public"]["Enums"]["instrument_type"]
-          name: string | null
+          name: string
           provider: string
           provider_key: string
           symbol: string
