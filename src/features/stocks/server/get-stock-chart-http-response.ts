@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
 import { getStockChartResponse } from "./get-stock-chart-response";
 import { parseStockChartQuery } from "./parse-stock-chart-query";
 import type { StockChartRange } from "./types";
@@ -60,13 +61,22 @@ export async function getStockChartHttpResponse({
 }: GetStockChartHttpResponseArgs) {
   const providerKey = rawProviderKey.trim();
   if (!providerKey) {
-    return NextResponse.json({ message: "Missing providerKey." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "PROVIDER_KEY_REQUIRED",
+      message: "Missing providerKey.",
+    });
   }
 
   const url = new URL(request.url);
   const query = parseStockChartQuery(url.searchParams);
   if (!query.ok) {
-    return NextResponse.json({ message: query.message }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_QUERY",
+      message: query.message,
+      request,
+    });
   }
 
   try {
@@ -88,13 +98,13 @@ export async function getStockChartHttpResponse({
       ),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json(
-      { message },
-      {
-        status: 500,
-        headers: { "Cache-Control": PRIVATE_CACHE_CONTROL },
-      }
-    );
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "STOCK_CHART_RESPONSE_FAILED",
+      headers: {
+        "Cache-Control": PRIVATE_CACHE_CONTROL,
+      },
+    });
   }
 }

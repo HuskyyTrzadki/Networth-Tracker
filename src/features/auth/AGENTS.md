@@ -10,6 +10,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Main entrypoints
 - Server: `src/features/auth/server/service.ts`
 - Server: `src/features/auth/server/request-origin.ts`
+- Client: `src/features/auth/client/auth-api.ts`
 - Profiles: `src/features/auth/server/profiles.ts`
 - UI: `src/features/auth/ui/AuthSettingsSection.tsx`
 - UI: `src/features/auth/ui/AuthLoginPanel.tsx`
@@ -39,6 +40,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Avoid exporting server-only auth UI through broad feature barrels when client/report code only needs one safe button; prefer direct imports for mixed server/client auth surfaces.
 - Signed-in Google CTA semantics were corrected: no more "Kontynuuj z Google" when already logged in; signed-in users can only see Google linking action when not linked.
 - Auth callback and signup confirmation redirects now resolve origin via forwarded headers (`x-forwarded-host/proto`) to avoid accidental localhost redirects behind proxies.
+- Auth API routes (`/api/auth/*`) now return RFC7807-lite error payloads via shared helper (`src/lib/http/api-error.ts`), so clients can rely on machine-readable `error.code` + `requestId`.
+- Auth UI email/sign-out mutations now go through one shared client (`src/features/auth/client/auth-api.ts`) that maps errors through `toClientError` and exposes consistent user-facing messages.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.
 - Auth surfaces were visually normalized to shared UI rhythm (button heights, section radii, status panel shape) while preserving existing auth flow behavior and copy.
 - Auth settings and login wrappers now use the shared tactile `Card` primitive (`bg-white`, subtle shadow token, light border) instead of one-off container styling.

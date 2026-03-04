@@ -1,3 +1,5 @@
+import { toClientError } from "@/lib/http/client-error";
+
 export type FxPreviewResponse = Readonly<{
   fromCurrency: string;
   toCurrency: string;
@@ -16,22 +18,15 @@ export async function getFxPreview(input: Readonly<{
     body: JSON.stringify(input),
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | FxPreviewResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się pobrać kursu FX.";
-    throw new Error(message);
+    throw toClientError(data, "Nie udało się pobrać kursu FX.", response.status);
   }
 
-  if (!data || !("rate" in data)) {
+  if (!data || typeof data !== "object" || !("rate" in data)) {
     throw new Error("Brak odpowiedzi z kursem FX.");
   }
 
-  return data;
+  return data as FxPreviewResponse;
 }

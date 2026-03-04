@@ -4,6 +4,7 @@ import type {
   InstrumentSearchResult,
 } from "../lib/instrument-search";
 import type { InstrumentType } from "../lib/instrument-search";
+import { toClientError } from "@/lib/http/client-error";
 
 export type InstrumentSearchClientOptions = Readonly<{
   mode?: InstrumentSearchMode;
@@ -38,22 +39,24 @@ export const searchInstruments: InstrumentSearchClient = async (
     { signal }
   );
 
-  const data = (await response.json().catch(() => null)) as
-    | InstrumentSearchResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się pobrać instrumentów.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się pobrać instrumentów.",
+      response.status
+    );
   }
 
-  if (!data || !("results" in data)) {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !("results" in data) ||
+    !Array.isArray((data as { results?: unknown }).results)
+  ) {
     throw new Error("Brak danych z wyszukiwarki instrumentów.");
   }
 
-  return data.results;
+  return (data as InstrumentSearchResponse).results;
 };

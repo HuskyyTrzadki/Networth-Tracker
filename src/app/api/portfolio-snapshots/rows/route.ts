@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
+import { getAuthenticatedSupabase } from "@/lib/http/route-handler";
 import {
   loadFullSnapshotRows,
   parseSnapshotRowsQuery,
@@ -9,21 +9,21 @@ import {
 
 export async function GET(request: Request) {
   // Route handler: return snapshot chart rows for authenticated user, used by lazy ALL history fetch.
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data, error } = await supabase.auth.getUser();
-
-  if (error || !data.user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
   }
+  const supabase = authResult.supabase;
 
   const url = new URL(request.url);
   const parsedQuery = parseSnapshotRowsQuery(url.searchParams);
   if (!parsedQuery.ok) {
-    return NextResponse.json(
-      { message: parsedQuery.message },
-      { status: parsedQuery.status }
-    );
+    return apiError({
+      status: parsedQuery.status,
+      code: "VALIDATION_ERROR",
+      message: parsedQuery.message,
+      request,
+    });
   }
 
   try {
@@ -46,9 +46,11 @@ export async function GET(request: Request) {
       },
     });
   } catch (loadError) {
-    const message =
-      loadError instanceof Error ? loadError.message : "Failed to load snapshot rows.";
-
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error: loadError,
+      request,
+      fallbackCode: "SNAPSHOT_ROWS_LOAD_FAILED",
+      fallbackMessage: "Failed to load snapshot rows.",
+    });
   }
 }

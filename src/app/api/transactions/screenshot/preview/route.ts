@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 import { previewScreenshotHoldingsValueUsd } from "@/features/onboarding/server/screenshot-preview-service";
 import {
@@ -24,10 +24,7 @@ export async function POST(request: Request) {
 
   const parsed = screenshotPreviewSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   const payload: ScreenshotPreviewPayload = parsed.data;
@@ -39,7 +36,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "SCREENSHOT_PREVIEW_FAILED",
+    });
   }
 }

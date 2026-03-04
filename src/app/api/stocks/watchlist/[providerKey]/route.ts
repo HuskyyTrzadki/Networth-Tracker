@@ -2,7 +2,8 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { removeStockFromWatchlist } from "@/features/stocks/server/stock-watchlist";
-import { getAuthenticatedSupabase, toErrorMessage } from "@/lib/http/route-handler";
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
+import { getAuthenticatedSupabase } from "@/lib/http/route-handler";
 
 type Params = Promise<{
   providerKey: string;
@@ -28,10 +29,11 @@ export async function DELETE(
   const params = await context.params;
   const providerKey = decodeProviderKey(params.providerKey);
   if (!providerKey) {
-    return NextResponse.json(
-      { message: "Parametr providerKey jest wymagany." },
-      { status: 400 }
-    );
+    return apiError({
+      status: 400,
+      code: "PROVIDER_KEY_REQUIRED",
+      message: "Parametr providerKey jest wymagany.",
+    });
   }
 
   try {
@@ -39,7 +41,9 @@ export async function DELETE(
     revalidatePath("/stocks");
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      fallbackCode: "WATCHLIST_REMOVE_FAILED",
+    });
   }
 }

@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getDividendInbox } from "@/features/portfolio/server/dividends/get-dividend-inbox";
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 
 const toPositiveIntOrDefault = (value: string | null, fallback: number) => {
@@ -25,7 +25,12 @@ export async function GET(request: Request) {
   if (portfolioId) {
     const parsedPortfolioId = z.string().uuid().safeParse(portfolioId);
     if (!parsedPortfolioId.success) {
-      return NextResponse.json({ message: "Invalid portfolioId." }, { status: 400 });
+      return apiError({
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Invalid portfolioId.",
+        request,
+      });
     }
   }
   const windowPastDays = toPositiveIntOrDefault(
@@ -53,9 +58,10 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    return NextResponse.json(
-      { message: toErrorMessage(error) },
-      { status: 400 }
-    );
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "DIVIDEND_INBOX_FAILED",
+    });
   }
 }

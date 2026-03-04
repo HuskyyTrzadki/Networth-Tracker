@@ -7,6 +7,11 @@ import {
   isSupportedCashCurrency,
   type CashCurrency,
 } from "@/features/transactions/lib/system-currencies";
+import {
+  badRequestError,
+  internalServerError,
+  unprocessableEntityError,
+} from "@/lib/http/app-error";
 
 import type { CreateTransactionRequest } from "./schema";
 import { buildSettlementLegs, type SettlementFx } from "./settlement";
@@ -84,7 +89,9 @@ export const normalizeInstrument = (
   const providerKey = normalizeOptionalText(instrument.providerKey);
 
   if (!providerKey) {
-    throw new Error("Instrument wymaga provider_key.");
+    throw badRequestError("Instrument wymaga provider_key.", {
+      code: "TRANSACTION_PROVIDER_KEY_REQUIRED",
+    });
   }
 
   const instrumentType = instrument.instrumentType ?? null;
@@ -167,7 +174,10 @@ export const upsertInstrumentAndGetId = async (
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? fallbackErrorMessage);
+    throw internalServerError(fallbackErrorMessage, {
+      code: "INSTRUMENT_UPSERT_FAILED",
+      cause: error,
+    });
   }
 
   return data.id;
@@ -222,8 +232,9 @@ const resolveSettlementFxMeta = async (input: Readonly<{
   );
 
   if (!resolvedFx) {
-    throw new Error(
-      `Brak kursu FX (${input.assetCurrency}/${input.cashCurrency}) na dzień ${input.tradeDate}.`
+    throw unprocessableEntityError(
+      `Brak kursu FX (${input.assetCurrency}/${input.cashCurrency}) na dzień ${input.tradeDate}.`,
+      { code: "TRANSACTION_FX_RATE_MISSING" }
     );
   }
 
@@ -251,7 +262,9 @@ export const buildSettlementContext = async (input: Readonly<{
 
   const requestedCashCurrencyInput = normalizeCurrency(input.request.cashCurrency ?? "");
   if (!isSupportedCashCurrency(requestedCashCurrencyInput)) {
-    throw new Error("Nieobsługiwana waluta gotówki.");
+    throw unprocessableEntityError("Nieobsługiwana waluta gotówki.", {
+      code: "TRANSACTION_CASH_CURRENCY_UNSUPPORTED",
+    });
   }
   const requestedCashCurrency: CashCurrency = requestedCashCurrencyInput;
 

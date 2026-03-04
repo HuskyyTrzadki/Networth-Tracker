@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runTradingViewRevenueGeoBackfillCron } from "@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron";
+import { apiMethodNotAllowed, apiUnauthorized } from "@/lib/http/api-error";
 
 const DEFAULT_LIMIT = 25;
 const DEFAULT_STALE_DAYS = 90;
@@ -32,7 +33,7 @@ const parseFiniteNumber = (value: string | null, fallback: number) => {
 
 const runCron = async (request: Request) => {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+    return apiUnauthorized({ request, message: "Unauthorized." });
   }
 
   const url = new URL(request.url);
@@ -56,7 +57,7 @@ const runCron = async (request: Request) => {
 };
 
 export async function GET(request: Request) {
-  return runCron(request);
+  return apiMethodNotAllowed("POST", { request });
 }
 
 export async function POST(request: Request) {

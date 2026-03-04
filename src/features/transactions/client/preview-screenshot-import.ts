@@ -1,4 +1,5 @@
 import type { ScreenshotPreviewPayload } from "../lib/screenshot-preview-schema";
+import { toClientError } from "@/lib/http/client-error";
 
 export type ScreenshotPreviewResponse = Readonly<{
   totalUsd: string | null;
@@ -23,22 +24,19 @@ export async function previewScreenshotImportHoldings(
     signal,
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | ScreenshotPreviewResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się policzyć sumy w USD.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się policzyć sumy w USD.",
+      response.status
+    );
   }
 
-  if (!data || !("totalUsd" in data)) {
+  if (!data || typeof data !== "object" || !("totalUsd" in data)) {
     throw new Error("Brak danych do podglądu w USD.");
   }
 
-  return data;
+  return data as ScreenshotPreviewResponse;
 }

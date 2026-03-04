@@ -1,6 +1,7 @@
 import { touchProfileLastActive } from "@/features/auth/server/profiles";
 import { getBucketDate } from "@/features/portfolio/server/snapshots/bucket-date";
 import { markSnapshotRebuildDirty } from "@/features/portfolio/server/snapshots/rebuild-state";
+import { internalServerError } from "@/lib/http/app-error";
 import { DEFAULT_CUSTOM_ASSET_TYPE, isCustomAssetType, type CustomAssetType } from "../lib/custom-asset-types";
 import { instrumentTypes, type InstrumentType } from "../lib/instrument-search";
 import { parseDecimalInput } from "../lib/parse-decimal";
@@ -139,7 +140,9 @@ const buildFullUpdateRequest = (
   }
 
   if (!instrument) {
-    throw new Error("Brak instrumentu dla lega ASSET.");
+    throw internalServerError("Brak instrumentu dla lega ASSET.", {
+      code: "TRANSACTION_ASSET_LEG_MISSING",
+    });
   }
 
   return {
@@ -184,12 +187,17 @@ const replaceTransactionGroup = async (input: Readonly<{
   );
 
   if (error) {
-    throw new Error(error.message);
+    throw internalServerError("Failed to replace transaction group.", {
+      code: "TRANSACTION_REPLACE_GROUP_FAILED",
+      cause: error,
+    });
   }
 
   const row = (data as ReplaceTransactionGroupRpcRow[] | null)?.[0] ?? null;
   if (!row) {
-    throw new Error("Brak odpowiedzi po podmianie grupy transakcji.");
+    throw internalServerError("Brak odpowiedzi po podmianie grupy transakcji.", {
+      code: "TRANSACTION_REPLACE_GROUP_EMPTY_RESULT",
+    });
   }
 
   return row;

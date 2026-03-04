@@ -1,4 +1,5 @@
 import type { ScreenshotHoldingDraft } from "../lib/screenshot-holdings";
+import { toClientError } from "@/lib/http/client-error";
 
 export type ParseScreenshotsResponse = Readonly<{
   holdings: ScreenshotHoldingDraft[];
@@ -15,16 +16,17 @@ export async function parseScreenshots(
     body: formData,
   });
 
-  const payload = (await response.json().catch(() => null)) as
-    | ParseScreenshotsResponse
-    | { message?: string };
+  const payload = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message = payload && "message" in payload ? payload.message : null;
-    throw new Error(message || "Nie udało się przetworzyć zrzutów.");
+    throw toClientError(
+      payload,
+      "Nie udało się przetworzyć zrzutów.",
+      response.status
+    );
   }
 
-  if (!payload || !("holdings" in payload)) {
+  if (!payload || typeof payload !== "object" || !("holdings" in payload)) {
     throw new Error("Nieprawidłowa odpowiedź serwera.");
   }
 

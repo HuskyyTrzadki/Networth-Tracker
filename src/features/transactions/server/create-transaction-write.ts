@@ -1,6 +1,7 @@
 import { touchProfileLastActive } from "@/features/auth/server/profiles";
 import { getBucketDate } from "@/features/portfolio/server/snapshots/bucket-date";
 import { markSnapshotRebuildDirty } from "@/features/portfolio/server/snapshots/rebuild-state";
+import { internalServerError } from "@/lib/http/app-error";
 
 type SupabaseServerClient = import("./create-transaction-context").SupabaseServerClient;
 type TransactionRow = import("./create-transaction-context").TransactionRow;
@@ -56,7 +57,9 @@ const markSnapshotDirtyAfterTransaction = async (
 const findAssetLegRow = (rows: readonly InsertedTransactionRow[]) => {
   const assetRow = rows.find((row) => row.leg_key === "ASSET");
   if (!assetRow) {
-    throw new Error("Brak głównego lega transakcji po zapisie.");
+    throw internalServerError("Brak głównego lega transakcji po zapisie.", {
+      code: "TRANSACTION_ASSET_LEG_MISSING",
+    });
   }
 
   return {
@@ -80,7 +83,10 @@ const findExistingAssetLegForDuplicate = async (input: Readonly<{
     .maybeSingle();
 
   if (error || !data) {
-    throw new Error(error?.message ?? "Missing transaction after duplicate insert.");
+    throw internalServerError("Missing transaction after duplicate insert.", {
+      code: "TRANSACTION_DUPLICATE_LOOKUP_FAILED",
+      cause: error,
+    });
   }
 
   return data;
@@ -106,7 +112,10 @@ export const insertTransactionRows = async (input: Readonly<{
   }
 
   if (error.code !== "23505") {
-    throw new Error(error.message);
+    throw internalServerError("Failed to insert transaction rows.", {
+      code: "TRANSACTION_INSERT_FAILED",
+      cause: error,
+    });
   }
 
   return {

@@ -3,6 +3,7 @@ import type {
   StockChartRange,
   StockChartResponse,
 } from "@/features/stocks/types";
+import { toClientError } from "@/lib/http/client-error";
 
 export async function getStockChart(
   providerKey: string,
@@ -23,22 +24,15 @@ export async function getStockChart(
     }
   );
 
-  const data = (await response.json().catch(() => null)) as
-    | StockChartResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się pobrać wykresu.";
-    throw new Error(message);
+    throw toClientError(data, "Nie udało się pobrać wykresu.", response.status);
   }
 
-  if (!data || !("points" in data)) {
+  if (!data || typeof data !== "object" || !("points" in data)) {
     throw new Error("Brak danych wykresu.");
   }
 
-  return data;
+  return data as StockChartResponse;
 }

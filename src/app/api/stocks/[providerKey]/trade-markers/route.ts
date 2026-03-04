@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { listStockTradeMarkers } from "@/features/stocks/server/list-stock-trade-markers";
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 
 const decodeProviderKey = (rawProviderKey: string): string | null => {
@@ -27,14 +27,20 @@ export async function GET(
   const { providerKey: rawProviderKey } = await context.params;
   const providerKey = decodeProviderKey(rawProviderKey);
   if (!providerKey) {
-    return NextResponse.json({ message: "Invalid providerKey." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "VALIDATION_ERROR",
+      message: "Invalid providerKey.",
+    });
   }
 
   try {
     const markers = await listStockTradeMarkers(authResult.supabase, providerKey);
     return NextResponse.json({ markers }, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 500 });
+    return apiFromUnknownError({
+      error,
+      fallbackCode: "TRADE_MARKERS_LOAD_FAILED",
+    });
   }
 }

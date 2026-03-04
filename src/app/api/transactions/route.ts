@@ -3,10 +3,10 @@ import { revalidateTransactionViews } from "@/features/transactions/server/reval
 
 import { createTransaction } from "@/features/transactions/server/create-transaction";
 import { createTransactionRequestSchema } from "@/features/transactions/server/schema";
+import { apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -27,10 +27,7 @@ export async function POST(request: Request) {
 
   const parsed = createTransactionRequestSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   try {
@@ -44,9 +41,12 @@ export async function POST(request: Request) {
     // Invalidate read models touched by a new transaction.
     revalidateTransactionViews(parsed.data.portfolioId, { includeStocks: true });
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "TRANSACTION_CREATE_FAILED",
+    });
   }
 }

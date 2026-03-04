@@ -1,8 +1,8 @@
 import type { StockTradeMarker } from "@/features/stocks/types";
+import { toClientError } from "@/lib/http/client-error";
 
 type TradeMarkersPayload = Readonly<{
   markers?: readonly StockTradeMarker[];
-  message?: string;
 }>;
 
 export async function getStockTradeMarkers(
@@ -20,8 +20,11 @@ export async function getStockTradeMarkers(
   }
 
   if (!response.ok) {
-    const message = payload?.message ?? "Nie udało się pobrać znacznikow transakcji.";
-    throw new Error(message);
+    throw toClientError(
+      payload,
+      "Nie udało się pobrać znacznikow transakcji.",
+      response.status
+    );
   }
 
   if (!payload?.markers) {

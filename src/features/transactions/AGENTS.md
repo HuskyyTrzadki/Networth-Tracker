@@ -81,6 +81,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Server logic lives under `src/features/transactions/server/*` and is called by API routes and transaction server actions (`transaction-actions.ts`).
   - Instrument search is served via `src/app/api/instruments/search/route.ts` and normalizes provider data before returning.
 - Transactions and portfolios route handlers now share auth/body/error boilerplate via `src/lib/http/route-handler.ts` so handlers stay thin and consistent.
+- Transactions API routes should return RFC7807-lite errors through `src/lib/http/api-error.ts` and use typed domain errors from `src/lib/http/app-error.ts` (no status inference from message text).
 - Transactions filters/pagination sync with URL via `nuqs` parser state (`transactions-query-state.ts`) instead of manual `URLSearchParams` mutation.
 - `transactions.dividend_event_key` is reserved for dividend booking idempotency (unique per user+portfolio+event for `cashflow_type=DIVIDEND`, `leg_role=ASSET`).
 - Global instruments cache stores optional logo URL in `public.instruments.logo_url` for UI branding.

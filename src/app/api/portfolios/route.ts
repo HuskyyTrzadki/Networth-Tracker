@@ -4,10 +4,10 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { createPortfolioStrict } from "@/features/portfolio/server/create-portfolio";
 import { listPortfolios } from "@/features/portfolio/server/list-portfolios";
 import { createPortfolioSchema } from "@/features/portfolio/lib/create-portfolio-schema";
+import { apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 
 export async function GET() {
@@ -32,8 +32,10 @@ export async function GET() {
       }
     );
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      fallbackCode: "PORTFOLIO_LIST_FAILED",
+    });
   }
 }
 
@@ -59,10 +61,7 @@ export async function POST(request: Request) {
       : parsedBody.body;
   const parsed = createPortfolioSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   try {
@@ -81,7 +80,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "PORTFOLIO_CREATE_FAILED",
+    });
   }
 }

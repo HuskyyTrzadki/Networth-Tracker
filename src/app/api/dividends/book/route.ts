@@ -6,9 +6,13 @@ import {
   DividendAlreadyBookedError,
 } from "@/features/portfolio/server/dividends/book-dividend";
 import {
+  apiError,
+  apiFromUnknownError,
+  apiValidationError,
+} from "@/lib/http/api-error";
+import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateTransactionViews } from "@/features/transactions/server/revalidate-transaction-views";
@@ -36,10 +40,7 @@ export async function POST(request: Request) {
 
   const parsed = bookDividendSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   try {
@@ -61,8 +62,17 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     if (error instanceof DividendAlreadyBookedError) {
-      return NextResponse.json({ message: error.message }, { status: 409 });
+      return apiError({
+        status: 409,
+        code: "DIVIDEND_ALREADY_BOOKED",
+        message: error.message,
+        request,
+      });
     }
-    return NextResponse.json({ message: toErrorMessage(error) }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "DIVIDEND_BOOK_FAILED",
+    });
   }
 }

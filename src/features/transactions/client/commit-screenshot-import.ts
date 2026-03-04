@@ -1,4 +1,5 @@
 import type { ScreenshotImportCommitPayload } from "@/features/onboarding/lib/screenshot-import-schema";
+import { getApiErrorDetails, toClientError } from "@/lib/http/client-error";
 
 import type { ScreenshotPortfolioImportPayload } from "../lib/screenshot-import-schema";
 
@@ -25,26 +26,37 @@ export async function commitScreenshotImport(
     body: JSON.stringify(payload),
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | CommitScreenshotImportResponse
-    | { message?: string; missingTickers?: string[] }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się zapisać importu.";
-    const error = new Error(message) as Error & { missingTickers?: string[] };
-    if (data && "missingTickers" in data) {
-      error.missingTickers = data.missingTickers;
+    const error = toClientError(
+      data,
+      "Nie udało się zapisać importu.",
+      response.status
+    ) as Error & { missingTickers?: string[] };
+    const details = getApiErrorDetails(data);
+    if (
+      details &&
+      typeof details === "object" &&
+      "missingTickers" in details &&
+      Array.isArray((details as { missingTickers?: unknown }).missingTickers)
+    ) {
+      error.missingTickers = (details as { missingTickers: string[] }).missingTickers;
+    } else if (
+      data &&
+      typeof data === "object" &&
+      "missingTickers" in data &&
+      Array.isArray((data as { missingTickers?: unknown }).missingTickers)
+    ) {
+      // Backward compatibility for any legacy payloads still returning top-level field.
+      error.missingTickers = (data as { missingTickers: string[] }).missingTickers;
     }
     throw error;
   }
 
-  if (!data || !("portfolioId" in data)) {
+  if (!data || typeof data !== "object" || !("portfolioId" in data)) {
     throw new Error("Brak odpowiedzi po zapisie importu.");
   }
 
-  return data;
+  return data as CommitScreenshotImportResponse;
 }

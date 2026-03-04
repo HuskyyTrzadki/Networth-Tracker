@@ -87,6 +87,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Stock report sidebar includes the same watchlist toggle (`Star`) so users can add/remove directly from `/stocks/[providerKey]`.
 - Valuation summary service is fail-soft: when Yahoo summary fetch fails and no DB cache row exists, it returns an empty normalized summary (null metrics) instead of throwing, to avoid crashing report prefetch/render.
 - Public market-data chart API (`/api/public/stocks/[providerKey]/chart`) is cookie-less and edge-cacheable with range-based `Cache-Control`.
+- Public stock endpoints (`/api/public/stocks/[providerKey]/chart`, watchlist helpers) should use shared HTTP error contract (`src/lib/http/api-error.ts`) and shared rate limiting (`src/lib/http/rate-limit.ts`) for abuse control.
 - Private chart API (`/api/stocks/[providerKey]/chart`) and trade-markers API (`/api/stocks/[providerKey]/trade-markers`) use shared route auth helper (`src/lib/http/route-handler.ts`) and delegate to feature/server services.
 - Report page stays public/cache-first; personalized trade markers are fetched client-side from the authenticated trade-markers API so stock content still paints instantly for anonymous users.
 - Report chart also receives initial trade markers from server render when the user is authenticated, so stock report pages do not rely on a client refetch to show existing BUY/SELL markers on first paint.

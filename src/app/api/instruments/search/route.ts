@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import type {
@@ -7,7 +6,9 @@ import type {
 } from "@/features/transactions/lib/instrument-search";
 import { instrumentTypes } from "@/features/transactions/lib/instrument-search";
 import { searchInstruments, MIN_QUERY_LENGTH } from "@/features/transactions/server/search-instruments";
-import { createClient } from "@/lib/supabase/server";
+import { apiFromUnknownError } from "@/lib/http/api-error";
+import { getAuthenticatedSupabase } from "@/lib/http/route-handler";
+import { withRateLimit } from "@/lib/http/rate-limit";
 
 const DEFAULT_LOCAL_LIMIT = 3;
 const DEFAULT_AUTO_LIMIT = 3;
@@ -37,14 +38,18 @@ const parseTypes = (raw: string | null): InstrumentType[] | null => {
 
 export async function GET(request: Request) {
   // Route handler: validate input, call the feature service, return JSON.
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+  const rateLimit = withRateLimit(request, {
+    id: "api:instruments-search",
+    limit: 120,
+    windowMs: 60_000,
+  });
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
 
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
-
-  if (authError || !user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
   const url = new URL(request.url);
@@ -64,20 +69,27 @@ export async function GET(request: Request) {
   const types = parseTypes(url.searchParams.get("types"));
 
   if (query.length < MIN_QUERY_LENGTH) {
-    return NextResponse.json({ query, results: [] }, { status: 200 });
+    return NextResponse.json(
+      { query, results: [] },
+      { status: 200, headers: rateLimit.headers }
+    );
   }
 
   try {
-    const results = await searchInstruments(supabase, {
+    const results = await searchInstruments(authResult.supabase, {
       query,
       mode,
       limit,
       timeoutMs,
       types: types ?? undefined,
     });
-    return NextResponse.json(results, { status: 200 });
+    return NextResponse.json(results, { status: 200, headers: rateLimit.headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      headers: rateLimit.headers,
+      fallbackCode: "INSTRUMENT_SEARCH_FAILED",
+    });
   }
 }

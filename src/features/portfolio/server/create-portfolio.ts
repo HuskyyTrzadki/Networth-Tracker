@@ -1,6 +1,7 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 
 import type { createClient } from "@/lib/supabase/server";
+import { conflictError, internalServerError } from "@/lib/http/app-error";
 
 import type { CreatePortfolioInput } from "../lib/create-portfolio-schema";
 
@@ -33,6 +34,20 @@ const getErrorMessage = (error: PostgrestError | null) => {
   return "Nie udało się utworzyć portfela.";
 };
 
+const toCreatePortfolioError = (error: PostgrestError | null) => {
+  if (error?.code === "23505") {
+    return conflictError("Masz już portfel o takiej nazwie.", {
+      code: "PORTFOLIO_NAME_CONFLICT",
+      cause: error,
+    });
+  }
+
+  return internalServerError(getErrorMessage(error), {
+    code: "PORTFOLIO_CREATE_FAILED",
+    cause: error,
+  });
+};
+
 export async function createPortfolioStrict(
   supabase: SupabaseServerClient,
   userId: string,
@@ -51,7 +66,7 @@ export async function createPortfolioStrict(
     .single();
 
   if (error || !data) {
-    throw new Error(getErrorMessage(error));
+    throw toCreatePortfolioError(error);
   }
 
   const row = data as PortfolioRow;

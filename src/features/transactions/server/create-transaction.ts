@@ -17,6 +17,7 @@ import {
   shouldMarkSnapshotHistoryDirty,
 } from "./create-transaction-write";
 import type { CustomAssetType } from "../lib/custom-asset-types";
+import { badRequestError, internalServerError } from "@/lib/http/app-error";
 
 type CreateTransactionResult = Readonly<{
   transactionId: string;
@@ -37,7 +38,9 @@ const createCustomInstrumentAndGetId = async (input: Readonly<{
 }>) => {
   const instrument = input.request.customInstrument;
   if (!instrument) {
-    throw new Error("Missing customInstrument payload.");
+    throw badRequestError("Missing customInstrument payload.", {
+      code: "TRANSACTION_MISSING_CUSTOM_INSTRUMENT",
+    });
   }
 
   const payload = {
@@ -61,7 +64,10 @@ const createCustomInstrumentAndGetId = async (input: Readonly<{
   }
 
   if (insertError?.code !== "23505") {
-    throw new Error(insertError?.message ?? "Custom instrument save failed.");
+    throw internalServerError("Custom instrument save failed.", {
+      code: "CUSTOM_INSTRUMENT_SAVE_FAILED",
+      cause: insertError,
+    });
   }
 
   const { data: existing, error: existingError } = await input.supabaseUser
@@ -71,7 +77,10 @@ const createCustomInstrumentAndGetId = async (input: Readonly<{
     .maybeSingle();
 
   if (existingError || !existing) {
-    throw new Error(existingError?.message ?? "Custom instrument idempotency read failed.");
+    throw internalServerError("Custom instrument idempotency read failed.", {
+      code: "CUSTOM_INSTRUMENT_IDEMPOTENCY_READ_FAILED",
+      cause: existingError,
+    });
   }
 
   return existing.id;
@@ -84,7 +93,9 @@ export async function createTransaction(
   input: CreateTransactionRequest
 ): Promise<CreateTransactionResult> {
   if (!input.instrument && !input.customInstrument) {
-    throw new Error("Missing instrument payload.");
+    throw badRequestError("Missing instrument payload.", {
+      code: "TRANSACTION_MISSING_INSTRUMENT",
+    });
   }
 
   // Normalize and cache the instrument globally for stable identity.
@@ -98,7 +109,9 @@ export async function createTransaction(
   const normalizedInstrument = input.instrument ? normalizeInstrument(input.instrument) : null;
 
   if (normalizedInstrument?.isCashInstrument && !cashflowType) {
-    throw new Error("Transakcja gotówkowa wymaga typu przepływu.");
+    throw badRequestError("Transakcja gotówkowa wymaga typu przepływu.", {
+      code: "TRANSACTION_MISSING_CASHFLOW_TYPE",
+    });
   }
 
   const isCashInstrument = normalizedInstrument?.isCashInstrument ?? false;

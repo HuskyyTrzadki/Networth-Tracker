@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { internalServerError, notFoundError } from "@/lib/http/app-error";
+
 type SupabaseServerClient = SupabaseClient;
 
 type InstrumentJoinRow = Readonly<{
@@ -142,7 +144,10 @@ const resolveGroupId = async (
     .maybeSingle();
 
   if (byTransactionIdError) {
-    throw new Error(byTransactionIdError.message);
+    throw internalServerError("Failed to resolve transaction group.", {
+      code: "TRANSACTION_GROUP_LOOKUP_FAILED",
+      cause: byTransactionIdError,
+    });
   }
 
   if (byTransactionId?.group_id) {
@@ -158,7 +163,10 @@ const resolveGroupId = async (
     .maybeSingle();
 
   if (byGroupIdError) {
-    throw new Error(byGroupIdError.message);
+    throw internalServerError("Failed to resolve transaction group.", {
+      code: "TRANSACTION_GROUP_LOOKUP_FAILED",
+      cause: byGroupIdError,
+    });
   }
 
   return byGroupId?.group_id ?? null;
@@ -171,7 +179,9 @@ export async function getTransactionGroupByTransactionId(
 ): Promise<TransactionGroupResult> {
   const resolvedGroupId = await resolveGroupId(supabase, userId, transactionId);
   if (!resolvedGroupId) {
-    throw new Error("Transakcja nie istnieje albo nie masz do niej dostępu.");
+    throw notFoundError("Transakcja nie istnieje albo nie masz do niej dostępu.", {
+      code: "TRANSACTION_NOT_FOUND",
+    });
   }
 
   const { data: rows, error } = await supabase
@@ -183,7 +193,10 @@ export async function getTransactionGroupByTransactionId(
     .order("leg_key", { ascending: true });
 
   if (error) {
-    throw new Error(error.message);
+    throw internalServerError("Failed to load transaction group rows.", {
+      code: "TRANSACTION_GROUP_ROWS_FETCH_FAILED",
+      cause: error,
+    });
   }
 
   const normalized = ((rows ?? []) as TransactionGroupLegRow[]).map(
@@ -191,12 +204,16 @@ export async function getTransactionGroupByTransactionId(
   );
 
   if (normalized.length === 0) {
-    throw new Error("Transakcja nie istnieje albo nie masz do niej dostępu.");
+    throw notFoundError("Transakcja nie istnieje albo nie masz do niej dostępu.", {
+      code: "TRANSACTION_NOT_FOUND",
+    });
   }
 
   const assetLeg = normalized.find((row) => row.legKey === "ASSET");
   if (!assetLeg) {
-    throw new Error("Brak lega ASSET w grupie transakcji.");
+    throw internalServerError("Brak lega ASSET w grupie transakcji.", {
+      code: "TRANSACTION_ASSET_LEG_MISSING",
+    });
   }
 
   return {

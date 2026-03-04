@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runPortfolioSnapshotsCron } from "@/features/portfolio/server/snapshots/run-portfolio-snapshots-cron";
+import { apiMethodNotAllowed, apiUnauthorized } from "@/lib/http/api-error";
 
 const DEFAULT_LIMIT = 100;
 const DEFAULT_TIME_BUDGET_MS = 20_000;
@@ -31,7 +32,7 @@ const isAuthorized = (request: Request) => {
 
 const runCron = async (request: Request) => {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+    return apiUnauthorized({ request, message: "Unauthorized." });
   }
 
   // Cron endpoint: executed with service role. It is safe to run only for
@@ -67,5 +68,5 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  return runCron(request);
+  return apiMethodNotAllowed("POST", { request });
 }

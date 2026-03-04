@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
 
+import { apiError, apiUnauthorized } from "@/lib/http/api-error";
 import { createClient } from "@/lib/supabase/server";
 
 type AuthenticatedResult = Readonly<
@@ -43,7 +44,7 @@ export async function getAuthenticatedSupabase(
     const message = options.unauthorizedMessage ?? "Unauthorized";
     return {
       ok: false,
-      response: NextResponse.json({ message }, { status: 401 }),
+      response: apiUnauthorized({ message }),
     };
   }
 
@@ -57,7 +58,12 @@ export async function parseJsonBody(request: Request): Promise<ParsedJsonResult>
   } catch {
     return {
       ok: false,
-      response: NextResponse.json({ message: "Invalid JSON payload." }, { status: 400 }),
+      response: apiError({
+        status: 400,
+        code: "INVALID_JSON",
+        message: "Invalid JSON payload.",
+        request,
+      }),
     };
   }
 }

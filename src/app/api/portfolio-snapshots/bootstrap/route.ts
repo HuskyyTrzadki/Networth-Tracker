@@ -6,10 +6,10 @@ import {
   parseScope,
 } from "@/features/portfolio/server/snapshots/rebuild-route-service";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 
 const asRecord = (value: unknown): Record<string, unknown> =>
@@ -33,7 +33,12 @@ export async function POST(request: Request) {
 
   const scope = parseScope(payload.scope);
   if (!scope) {
-    return NextResponse.json({ message: "Invalid scope." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_SCOPE",
+      message: "Invalid scope.",
+      request,
+    });
   }
   const portfolioId = parsePortfolioId(payload.portfolioId);
 
@@ -53,7 +58,10 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "SNAPSHOT_BOOTSTRAP_FAILED",
+    });
   }
 }

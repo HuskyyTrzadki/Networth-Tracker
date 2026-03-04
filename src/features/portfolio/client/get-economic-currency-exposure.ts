@@ -2,6 +2,7 @@ import type {
   EconomicCurrencyExposureApiPayload,
   EconomicCurrencyExposureApiResponse,
 } from "../lib/currency-exposure";
+import { toClientError } from "@/lib/http/client-error";
 
 export async function getEconomicCurrencyExposure(
   payload: EconomicCurrencyExposureApiPayload,
@@ -17,20 +18,22 @@ export async function getEconomicCurrencyExposure(
     signal,
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | EconomicCurrencyExposureApiResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się obliczyć ekspozycji gospodarczej.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się obliczyć ekspozycji gospodarczej.",
+      response.status
+    );
   }
 
-  if (!data || !("modelMode" in data) || data.modelMode !== "ECONOMIC") {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !("modelMode" in data) ||
+    (data as { modelMode?: unknown }).modelMode !== "ECONOMIC"
+  ) {
     throw new Error("Brak odpowiedzi dla ekspozycji gospodarczej.");
   }
 
@@ -44,13 +47,13 @@ export async function getEconomicCurrencyExposure(
     console.info("[currency-exposure][economic] client_response", {
       traceId,
       durationMs: Math.round(performance.now() - requestStartedAt),
-      status: data.status,
-      fromCache: data.meta.fromCache,
-      model: data.meta.model,
-      promptVersion: data.meta.promptVersion,
-      chart: data.chart,
+      status: (data as EconomicCurrencyExposureApiResponse).status,
+      fromCache: (data as EconomicCurrencyExposureApiResponse).meta.fromCache,
+      model: (data as EconomicCurrencyExposureApiResponse).meta.model,
+      promptVersion: (data as EconomicCurrencyExposureApiResponse).meta.promptVersion,
+      chart: (data as EconomicCurrencyExposureApiResponse).chart,
     });
   }
 
-  return data;
+  return data as EconomicCurrencyExposureApiResponse;
 }

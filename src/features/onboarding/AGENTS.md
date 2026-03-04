@@ -34,6 +34,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - if cache is empty, the first clone still returns after current snapshot bootstrap and warms the shared cache in best effort, so onboarding does not block on a long rebuild.
 - The same wizard can run in dialog mode for an existing portfolio; in that mode the portfolio step is skipped and commits target the selected portfolio instead of creating a new one.
 - Import does not store screenshot files after extraction.
+- Onboarding screenshot-related APIs now return RFC7807-lite errors (`error.code`, `error.details`, `requestId`) via shared HTTP helper, and import failures expose `missingTickers` inside `error.details`.
 - Review step auto-matches tickers using instrument search and shows a USD total preview based on cached Yahoo quotes + FX.
 - Onboarding now starts with one unified step: create the user's own portfolio inline on the page before showing any method choice.
 - Only after portfolio creation should the choice screen appear with the two equal-height cards (`Wgraj zrzuty` vs `Dodaj transakcję`).

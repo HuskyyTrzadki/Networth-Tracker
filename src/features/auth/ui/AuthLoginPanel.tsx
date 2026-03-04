@@ -4,6 +4,11 @@ import { useReducer } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import {
+  readAuthErrorMessage,
+  signInWithEmail,
+  signUpWithEmail,
+} from "@/features/auth/client/auth-api";
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
@@ -93,51 +98,51 @@ export function AuthLoginPanel() {
     dispatch({ type: "set_notice", payload: null });
     const action = mode === "signin" ? "signin" : "signup";
     dispatch({ type: "set_pending_action", payload: action });
-    const endpoint =
-      mode === "signin" ? "/api/auth/signin/email" : "/api/auth/signup/email";
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    }).catch(() => null);
+    try {
+      if (mode === "signin") {
+        await signInWithEmail({ email, password });
+      } else {
+        const result = await signUpWithEmail({ email, password });
+        if (result.hasSession) {
+          router.push("/onboarding");
+          dispatch({ type: "set_pending_action", payload: null });
+          return;
+        }
 
-    if (!response?.ok) {
+        dispatch({
+          type: "set_notice",
+          payload: {
+            kind: "success",
+            message: "Sprawdz skrzynke e-mail, aby potwierdzic konto.",
+          },
+        });
+        dispatch({ type: "set_pending_action", payload: null });
+        return;
+      }
+    } catch (error) {
+      const message = readAuthErrorMessage(
+        error,
+        mode === "signin"
+          ? "Nie udalo sie zalogowac. Sprawdz dane."
+          : "Nie udalo sie utworzyc konta. Sprawdz dane."
+      );
       dispatch({
         type: "set_notice",
         payload: {
           kind: "error",
-          message:
-            mode === "signin"
-              ? "Nie udalo sie zalogowac. Sprawdz dane."
-              : "Nie udalo sie utworzyc konta. Sprawdz dane.",
+          message,
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
       return;
     }
 
-    const payload = await response.json().catch(() => null);
     if (mode === "signin") {
       router.push("/portfolio");
       router.refresh();
       dispatch({ type: "set_pending_action", payload: null });
       return;
     }
-
-    if (payload?.hasSession) {
-      router.push("/onboarding");
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
-
-    dispatch({
-      type: "set_notice",
-      payload: {
-        kind: "success",
-        message: "Sprawdz skrzynke e-mail, aby potwierdzic konto.",
-      },
-    });
-    dispatch({ type: "set_pending_action", payload: null });
   };
 
   return (

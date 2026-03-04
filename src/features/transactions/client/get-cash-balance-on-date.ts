@@ -1,3 +1,5 @@
+import { toClientError } from "@/lib/http/client-error";
+
 export type CashBalanceOnDateResponse = Readonly<{
   portfolioId: string;
   cashCurrency: string;
@@ -16,22 +18,23 @@ export async function getCashBalanceOnDate(input: Readonly<{
     body: JSON.stringify(input),
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | CashBalanceOnDateResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się pobrać salda gotówki na wybraną datę.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się pobrać salda gotówki na wybraną datę.",
+      response.status
+    );
   }
 
-  if (!data || !("availableCashOnDate" in data)) {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !("availableCashOnDate" in data)
+  ) {
     throw new Error("Brak odpowiedzi z saldem gotówki.");
   }
 
-  return data;
+  return data as CashBalanceOnDateResponse;
 }

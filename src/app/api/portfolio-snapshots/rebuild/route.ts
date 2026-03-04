@@ -17,9 +17,13 @@ import {
 } from "@/features/portfolio/server/snapshots/rebuild-route-service";
 import { runSnapshotRebuild } from "@/features/portfolio/server/snapshots/run-snapshot-rebuild";
 import {
+  apiError,
+  apiFromUnknownError,
+  apiValidationError,
+} from "@/lib/http/api-error";
+import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -60,7 +64,11 @@ export async function GET(request: Request) {
   const portfolioId = parsePortfolioId(url.searchParams.get("portfolioId"));
 
   if (!scope) {
-    return NextResponse.json({ message: "Invalid scope." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_SCOPE",
+      message: "Invalid scope.",
+    });
   }
 
   const access = await ensureScopeAccess(
@@ -71,7 +79,11 @@ export async function GET(request: Request) {
   );
 
   if (!access.ok) {
-    return NextResponse.json({ message: access.message }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_SCOPE_ACCESS",
+      message: access.message,
+    });
   }
 
   const state = await getSnapshotRebuildState(
@@ -121,7 +133,7 @@ export async function POST(request: Request) {
 
   const parsedPayload = rebuildRequestSchema.safeParse(parsedBody.body ?? {});
   if (!parsedPayload.success) {
-    return NextResponse.json({ message: "Invalid input." }, { status: 400 });
+    return apiValidationError(parsedPayload.error.issues, { request });
   }
   const payload = parsedPayload.data;
 
@@ -129,7 +141,11 @@ export async function POST(request: Request) {
   const portfolioId = parsePortfolioId(payload?.portfolioId);
 
   if (!scope) {
-    return NextResponse.json({ message: "Invalid scope." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_SCOPE",
+      message: "Invalid scope.",
+    });
   }
 
   const access = await ensureScopeAccess(
@@ -140,7 +156,11 @@ export async function POST(request: Request) {
   );
 
   if (!access.ok) {
-    return NextResponse.json({ message: access.message }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_SCOPE_ACCESS",
+      message: access.message,
+    });
   }
 
   try {
@@ -190,13 +210,17 @@ export async function POST(request: Request) {
       { status: 200, headers: withRebuildPollingHeaders(responsePayload) }
     );
   } catch (runError) {
-    const message = toErrorMessage(runError);
+    const message = runError instanceof Error ? runError.message : "Unknown error";
     logRebuildEvent("post-error", {
       userId: user.id,
       scope,
       portfolioId: access.portfolioId,
       error: message,
     });
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error: runError,
+      request,
+      fallbackCode: "SNAPSHOT_REBUILD_RUN_FAILED",
+    });
   }
 }

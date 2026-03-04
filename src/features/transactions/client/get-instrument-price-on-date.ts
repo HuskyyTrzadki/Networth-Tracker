@@ -1,3 +1,5 @@
+import { toClientError } from "@/lib/http/client-error";
+
 export type InstrumentPriceOnDateResponse = Readonly<{
   selectedDate: string;
   marketDate: string | null;
@@ -26,22 +28,23 @@ export async function getInstrumentPriceOnDate(input: {
 
   const response = await fetch(`/api/instruments/price-on-date?${params.toString()}`);
 
-  const data = (await response.json().catch(() => null)) as
-    | InstrumentPriceOnDateResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się pobrać ceny historycznej.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się pobrać ceny historycznej.",
+      response.status
+    );
   }
 
-  if (!data || !("selectedDate" in data)) {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !("selectedDate" in data)
+  ) {
     throw new Error("Brak danych ceny historycznej.");
   }
 
-  return data;
+  return data as InstrumentPriceOnDateResponse;
 }

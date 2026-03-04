@@ -1,4 +1,5 @@
 import type { DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
+import { toClientError } from "@/lib/http/client-error";
 
 export type BookDividendPayload = Readonly<{
   portfolioId: string;
@@ -24,24 +25,21 @@ export async function getDividendInbox(
   const response = await fetch(`/api/dividends/inbox?${query.toString()}`, {
     signal,
   });
-  const data = (await response.json().catch(() => null)) as
-    | DividendInboxResult
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się pobrać skrzynki dywidend.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się pobrać skrzynki dywidend.",
+      response.status
+    );
   }
 
-  if (!data || !("scope" in data)) {
+  if (!data || typeof data !== "object" || !("scope" in data)) {
     throw new Error("Brak odpowiedzi dla skrzynki dywidend.");
   }
 
-  return data;
+  return data as DividendInboxResult;
 }
 
 export async function bookDividend(
@@ -53,23 +51,19 @@ export async function bookDividend(
     body: JSON.stringify(payload),
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | Readonly<{ transactionId: string }>
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się zaksięgować dywidendy.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się zaksięgować dywidendy.",
+      response.status
+    );
   }
 
-  if (!data || !("transactionId" in data)) {
+  if (!data || typeof data !== "object" || !("transactionId" in data)) {
     throw new Error("Brak odpowiedzi po księgowaniu dywidendy.");
   }
 
-  return data;
+  return data as Readonly<{ transactionId: string }>;
 }
-

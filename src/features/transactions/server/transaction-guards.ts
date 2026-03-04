@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { addDecimals, decimalZero, negateDecimal, parseDecimalString } from "@/lib/decimal";
+import {
+  internalServerError,
+  unprocessableEntityError,
+} from "@/lib/http/app-error";
 
 import type { SettlementLegPlan } from "./settlement";
 import type { TransactionIntent } from "./transaction-intent";
@@ -85,7 +89,9 @@ const computeCashDelta = (legs: readonly SettlementLegPlan[]) =>
 const assertInstrumentQuantityParsable = (quantity: string, label: string) => {
   const parsed = parseDecimalString(quantity);
   if (!parsed) {
-    throw new Error(`Nieprawidłowa ilość dla pola: ${label}.`);
+    throw unprocessableEntityError(`Nieprawidłowa ilość dla pola: ${label}.`, {
+      code: "TRANSACTION_INVALID_QUANTITY",
+    });
   }
   return parsed;
 };
@@ -150,7 +156,10 @@ const fetchHoldingsSnapshot = async (input: Readonly<{
   );
 
   if (error) {
-    throw new Error(error.message);
+    throw internalServerError("Failed to load holdings snapshot.", {
+      code: "TRANSACTION_HOLDINGS_FETCH_FAILED",
+      cause: error,
+    });
   }
 
   const rows = (data ?? []) as HoldingsAsOfRow[];
@@ -176,12 +185,13 @@ export async function validateTransactionGuards(
       "available_asset"
     );
     if (available.lt(requestedAssetQuantity)) {
-      throw new Error(
+      throw unprocessableEntityError(
         buildOversellError({
           requested: requestedAssetQuantity.toString(),
           available: available.toString(),
           tradeDate: input.tradeDate,
-        })
+        }),
+        { code: "TRANSACTION_OVERSELL" }
       );
     }
   }
@@ -192,13 +202,14 @@ export async function validateTransactionGuards(
       "available_cash"
     );
     if (availableCash.lt(requestedAssetQuantity)) {
-      throw new Error(
+      throw unprocessableEntityError(
         buildDepositWithdrawalError({
           currency: input.cashCurrency ?? "",
           available: availableCash.toString(),
           requested: requestedAssetQuantity.toString(),
           tradeDate: input.tradeDate,
-        })
+        }),
+        { code: "TRANSACTION_INSUFFICIENT_CASH" }
       );
     }
   }
@@ -206,7 +217,9 @@ export async function validateTransactionGuards(
   if (input.consumeCash) {
     const cashCurrency = input.cashCurrency?.toUpperCase();
     if (!cashCurrency) {
-      throw new Error("Wybierz walutę gotówki.");
+      throw unprocessableEntityError("Wybierz walutę gotówki.", {
+        code: "TRANSACTION_MISSING_CASH_CURRENCY",
+      });
     }
 
     const availableCash = assertInstrumentQuantityParsable(
@@ -217,14 +230,15 @@ export async function validateTransactionGuards(
     const remainingCash = addDecimals(availableCash, netCashDelta);
 
     if (remainingCash.lt(0)) {
-      throw new Error(
+      throw unprocessableEntityError(
         buildInsufficientCashError({
           currency: cashCurrency,
           available: availableCash.toString(),
           required: negateDecimal(netCashDelta).toString(),
           remaining: remainingCash.toString(),
           tradeDate: input.tradeDate,
-        })
+        }),
+        { code: "TRANSACTION_INSUFFICIENT_CASH" }
       );
     }
   }

@@ -144,6 +144,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio route loaders (`/portfolio` and `/portfolio/<id>`) gate heavy skeleton rendering behind a short client delay (~150ms) via `DelayedPortfolioRouteLoading` to avoid flash/flicker on fast cached transitions.
 - Onboarding route (`/onboarding`) now offers a screenshot import path that creates a new portfolio via a dedicated wizard and bootstraps transactions dated today, then navigates to canonical `/portfolio/<id>`.
 - Portfolio create flows (`sidebar`, `mobile header`, transactions modal, onboarding) use server action `create-portfolio-action` (`create + revalidatePath`) and only navigate client-side after success.
+- `create-portfolio` server helper uses typed `AppError` mapping (`PORTFOLIO_NAME_CONFLICT` -> `409`, other failures -> internal) so route handlers can return stable machine-readable errors.
 - Portfolio create/edit model includes tax profile flag `is_tax_advantaged` (UI label: `Konto emerytalne (IKE/IKZE)`), used by dividend smart-default hints.
 - Portfolio delete flow (desktop sidebar 3-dot menu) uses server action `delete-portfolio-action` (`delete + revalidate`) and removes the portfolio plus its transactions.
 - Dividend inbox is split by scope: `/portfolio/<id>` is actionable (`Zaksięguj`), while aggregate `/portfolio` is awareness-only (upcoming list without booking action).

@@ -1,4 +1,5 @@
 import type { CreatePortfolioInput } from "../lib/create-portfolio-schema";
+import { toClientError } from "@/lib/http/client-error";
 
 export type CreatePortfolioResponse = Readonly<{
   id: string;
@@ -16,22 +17,19 @@ export async function createPortfolio(
     body: JSON.stringify(payload),
   });
 
-  const data = (await response.json().catch(() => null)) as
-    | CreatePortfolioResponse
-    | { message?: string }
-    | null;
+  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message =
-      data && "message" in data && data.message
-        ? data.message
-        : "Nie udało się utworzyć portfela.";
-    throw new Error(message);
+    throw toClientError(
+      data,
+      "Nie udało się utworzyć portfela.",
+      response.status
+    );
   }
 
-  if (!data || !("id" in data)) {
+  if (!data || typeof data !== "object" || !("id" in data)) {
     throw new Error("Brak odpowiedzi po utworzeniu portfela.");
   }
 
-  return data;
+  return data as CreatePortfolioResponse;
 }

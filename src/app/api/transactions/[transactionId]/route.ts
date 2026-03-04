@@ -4,11 +4,11 @@ import { revalidateTransactionViews } from "@/features/transactions/server/reval
 import { deleteTransactionGroupByTransactionId } from "@/features/transactions/server/delete-transaction-group";
 import { updateTransactionById } from "@/features/transactions/server/update-transaction";
 import { updateTransactionRequestSchema } from "@/features/transactions/server/schema";
+import { apiError, apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 
 type Props = Readonly<{
@@ -35,7 +35,11 @@ export async function DELETE(_request: Request, { params }: Props) {
 
   const normalizedId = await resolveTransactionId(params);
   if (!normalizedId) {
-    return NextResponse.json({ message: "Brak identyfikatora transakcji." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "TRANSACTION_ID_REQUIRED",
+      message: "Brak identyfikatora transakcji.",
+    });
   }
 
   try {
@@ -50,10 +54,10 @@ export async function DELETE(_request: Request, { params }: Props) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    const status =
-      message.includes("nie istnieje") || message.includes("dostępu") ? 404 : 400;
-    return NextResponse.json({ message }, { status });
+    return apiFromUnknownError({
+      error,
+      fallbackCode: "TRANSACTION_DELETE_FAILED",
+    });
   }
 }
 
@@ -65,7 +69,11 @@ export async function PUT(request: Request, { params }: Props) {
 
   const normalizedId = await resolveTransactionId(params);
   if (!normalizedId) {
-    return NextResponse.json({ message: "Brak identyfikatora transakcji." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "TRANSACTION_ID_REQUIRED",
+      message: "Brak identyfikatora transakcji.",
+    });
   }
 
   const parsedBody = await parseJsonBody(request);
@@ -75,10 +83,7 @@ export async function PUT(request: Request, { params }: Props) {
 
   const parsed = updateTransactionRequestSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   try {
@@ -93,9 +98,10 @@ export async function PUT(request: Request, { params }: Props) {
     revalidateTransactionViews(result.portfolioId, { includeStocks: true });
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    const status =
-      message.includes("nie istnieje") || message.includes("dostępu") ? 404 : 400;
-    return NextResponse.json({ message }, { status });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "TRANSACTION_UPDATE_FAILED",
+    });
   }
 }

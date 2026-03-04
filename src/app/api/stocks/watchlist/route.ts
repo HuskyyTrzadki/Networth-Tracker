@@ -7,9 +7,13 @@ import {
 } from "@/features/stocks/server/stock-watchlist";
 import { stockWatchlistUpsertSchema } from "@/features/stocks/server/stock-watchlist-schema";
 import {
+  apiError,
+  apiFromUnknownError,
+  apiValidationError,
+} from "@/lib/http/api-error";
+import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 
 export async function GET(request: Request) {
@@ -21,10 +25,11 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const providerKey = searchParams.get("providerKey")?.trim() ?? "";
   if (!providerKey) {
-    return NextResponse.json(
-      { message: "Parametr providerKey jest wymagany." },
-      { status: 400 }
-    );
+    return apiError({
+      status: 400,
+      code: "PROVIDER_KEY_REQUIRED",
+      message: "Parametr providerKey jest wymagany.",
+    });
   }
 
   try {
@@ -34,8 +39,11 @@ export async function GET(request: Request) {
     );
     return NextResponse.json({ isFavorite }, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "WATCHLIST_STATUS_FAILED",
+    });
   }
 }
 
@@ -53,10 +61,7 @@ export async function POST(request: Request) {
 
   const parsed = stockWatchlistUpsertSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   try {
@@ -69,7 +74,10 @@ export async function POST(request: Request) {
     revalidatePath("/stocks");
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "WATCHLIST_ADD_FAILED",
+    });
   }
 }

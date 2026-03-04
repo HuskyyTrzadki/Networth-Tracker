@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { BENCHMARK_IDS } from "@/features/portfolio/dashboard/lib/benchmark-config";
 import { getDashboardBenchmarkSeries } from "@/features/portfolio/server/get-dashboard-benchmark-series";
+import { apiError, apiValidationError } from "@/lib/http/api-error";
 import { createClient } from "@/lib/supabase/server";
 
 const requestSchema = z.object({
@@ -16,7 +17,10 @@ export async function POST(request: Request) {
     const json = await request.json();
     const parsed = requestSchema.safeParse(json);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Nieprawidłowe dane wejściowe." }, { status: 400 });
+      return apiValidationError(parsed.error.issues, {
+        request,
+        message: "Nieprawidłowe dane wejściowe.",
+      });
     }
 
     const benchmarkIdRaw = parsed.data.benchmarkId;
@@ -37,9 +41,11 @@ export async function POST(request: Request) {
       points: series[benchmarkIdRaw],
     });
   } catch {
-    return NextResponse.json(
-      { error: "Nie udało się pobrać benchmarków." },
-      { status: 500 }
-    );
+    return apiError({
+      status: 500,
+      code: "BENCHMARK_SERIES_FAILED",
+      message: "Nie udało się pobrać benchmarków.",
+      request,
+    });
   }
 }

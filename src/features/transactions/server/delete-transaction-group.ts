@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getBucketDate } from "@/features/portfolio/server/snapshots/bucket-date";
 import { markSnapshotRebuildDirty } from "@/features/portfolio/server/snapshots/rebuild-state";
+import { internalServerError, notFoundError } from "@/lib/http/app-error";
 
 type SupabaseServerClient = SupabaseClient;
 
@@ -61,11 +62,16 @@ export async function deleteTransactionGroupByTransactionId(
     .maybeSingle();
 
   if (transactionError) {
-    throw new Error(transactionError.message);
+    throw internalServerError("Failed to load transaction group.", {
+      code: "TRANSACTION_GROUP_LOOKUP_FAILED",
+      cause: transactionError,
+    });
   }
 
   if (!transactionRow) {
-    throw new Error("Transakcja nie istnieje albo nie masz do niej dostępu.");
+    throw notFoundError("Transakcja nie istnieje albo nie masz do niej dostępu.", {
+      code: "TRANSACTION_NOT_FOUND",
+    });
   }
 
   const identity = transactionRow as TransactionIdentityRow;
@@ -77,7 +83,10 @@ export async function deleteTransactionGroupByTransactionId(
     .eq("group_id", identity.group_id);
 
   if (deleteError) {
-    throw new Error(deleteError.message);
+    throw internalServerError("Failed to delete transaction group.", {
+      code: "TRANSACTION_DELETE_FAILED",
+      cause: deleteError,
+    });
   }
 
   await markSnapshotDirtyAfterDelete(

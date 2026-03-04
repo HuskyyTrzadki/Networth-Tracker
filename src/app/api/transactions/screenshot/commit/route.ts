@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidateTransactionViews } from "@/features/transactions/server/revalidate-transaction-views";
 
+import { apiError, apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
 import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { importScreenshotHoldings } from "@/features/onboarding/server/screenshot-import-service";
@@ -28,10 +28,7 @@ export async function POST(request: Request) {
 
   const parsed = screenshotPortfolioImportSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   const supabase = authResult.supabase;
@@ -47,10 +44,12 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (portfolioError || !portfolio) {
-    return NextResponse.json(
-      { message: "Nie znaleźliśmy wskazanego portfela." },
-      { status: 404 }
-    );
+    return apiError({
+      status: 404,
+      code: "PORTFOLIO_NOT_FOUND",
+      message: "Nie znaleźliśmy wskazanego portfela.",
+      request,
+    });
   }
 
   try {
@@ -64,13 +63,15 @@ export async function POST(request: Request) {
     });
 
     if (!result.ok) {
-      return NextResponse.json(
-        {
-          message: result.message,
+      return apiError({
+        status: 400,
+        code: "SCREENSHOT_IMPORT_FAILED",
+        message: result.message,
+        details: {
           missingTickers: result.missingTickers,
         },
-        { status: 400 }
-      );
+        request,
+      });
     }
 
     revalidateTransactionViews(payload.portfolioId, { includeStocks: true });
@@ -83,7 +84,10 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "SCREENSHOT_COMMIT_FAILED",
+    });
   }
 }

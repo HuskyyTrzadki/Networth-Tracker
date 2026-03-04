@@ -1,9 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getFxRatesCached } from "@/features/market-data";
-import { createClient } from "@/lib/supabase/server";
+import { apiError, apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
+import { getAuthenticatedSupabase, parseJsonBody } from "@/lib/http/route-handler";
 
 const requestSchema = z.object({
   fromCurrency: z.string().trim().length(3),
@@ -11,25 +11,19 @@ const requestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data, error } = await supabase.auth.getUser();
-  const user = data?.user ?? null;
-
-  if (error || !user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ message: "Invalid JSON payload." }, { status: 400 });
+  const parsedBody = await parseJsonBody(request);
+  if (!parsedBody.ok) {
+    return parsedBody.response;
   }
 
-  const parsed = requestSchema.safeParse(body);
+  const parsed = requestSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json({ message: "Invalid input." }, { status: 400 });
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   const fromCurrency = parsed.data.fromCurrency.toUpperCase();
@@ -50,16 +44,18 @@ export async function POST(request: Request) {
 
   try {
     // Cache-first FX lookup; source is the same as transaction settlement logic.
-    const fxByPair = await getFxRatesCached(supabase, [
+    const fxByPair = await getFxRatesCached(authResult.supabase, [
       { from: fromCurrency, to: toCurrency },
     ]);
     const fx = fxByPair.get(`${fromCurrency}:${toCurrency}`) ?? null;
 
     if (!fx) {
-      return NextResponse.json(
-        { message: "Brak kursu FX dla wybranej pary walut." },
-        { status: 404 }
-      );
+      return apiError({
+        status: 404,
+        code: "FX_RATE_NOT_FOUND",
+        message: "Brak kursu FX dla wybranej pary walut.",
+        request,
+      });
     }
 
     return NextResponse.json(
@@ -73,10 +69,11 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (routeError) {
-    const message =
-      routeError instanceof Error
-        ? routeError.message
-        : "Nie udało się pobrać kursu FX.";
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error: routeError,
+      request,
+      fallbackCode: "FX_PREVIEW_FAILED",
+      fallbackMessage: "Nie udało się pobrać kursu FX.",
+    });
   }
 }

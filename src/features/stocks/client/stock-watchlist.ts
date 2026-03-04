@@ -1,10 +1,4 @@
-const toErrorMessage = (fallback: string, data: unknown) => {
-  if (data && typeof data === "object" && "message" in data) {
-    const message = (data as { message?: unknown }).message;
-    if (typeof message === "string" && message.length > 0) return message;
-  }
-  return fallback;
-};
+import { toClientError } from "@/lib/http/client-error";
 
 export async function getStockWatchlistStatus(
   providerKey: string
@@ -18,7 +12,11 @@ export async function getStockWatchlistStatus(
   }
   const data = (await response.json().catch(() => null)) as unknown;
   if (!response.ok) {
-    throw new Error(toErrorMessage("Nie udało się pobrać statusu ulubionych.", data));
+    throw toClientError(
+      data,
+      "Nie udało się pobrać statusu ulubionych.",
+      response.status
+    );
   }
   if (
     !data ||

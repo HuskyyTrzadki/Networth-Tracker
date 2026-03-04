@@ -3,9 +3,13 @@ import { revalidateTransactionViews } from "@/features/transactions/server/reval
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  apiError,
+  apiFromUnknownError,
+  apiValidationError,
+} from "@/lib/http/api-error";
+import {
   getAuthenticatedSupabase,
   parseJsonBody,
-  toErrorMessage,
 } from "@/lib/http/route-handler";
 import { createPortfolioStrict } from "@/features/portfolio/server/create-portfolio";
 import { bootstrapPortfolioSnapshot } from "@/features/portfolio/server/snapshots/bootstrap-portfolio-snapshot";
@@ -30,10 +34,7 @@ export async function POST(request: Request) {
 
   const parsed = screenshotImportCommitSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Invalid input.", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   const supabase = authResult.supabase;
@@ -56,13 +57,15 @@ export async function POST(request: Request) {
     });
 
     if (!importResult.ok) {
-      return NextResponse.json(
-        {
-          message: importResult.message,
+      return apiError({
+        status: 400,
+        code: "SCREENSHOT_IMPORT_FAILED",
+        message: importResult.message,
+        details: {
           missingTickers: importResult.missingTickers,
         },
-        { status: 400 }
-      );
+        request,
+      });
     }
 
     await Promise.all([
@@ -92,7 +95,10 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "SCREENSHOT_COMMIT_FAILED",
+    });
   }
 }

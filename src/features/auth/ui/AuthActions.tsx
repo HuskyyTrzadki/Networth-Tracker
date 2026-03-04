@@ -4,6 +4,13 @@ import { useReducer } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import {
+  readAuthErrorMessage,
+  signInWithEmail,
+  signOutSession,
+  signUpWithEmail,
+  upgradeWithEmail,
+} from "@/features/auth/client/auth-api";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/client";
 import { AuthEmailTabs } from "./AuthEmailTabs";
@@ -141,19 +148,18 @@ export function AuthActions({
   const submitEmailUpgrade = async () => {
     dispatch({ type: "set_notice", payload: null });
     dispatch({ type: "set_pending_action", payload: "upgrade" });
-    const response = await fetch("/api/auth/upgrade/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: upgradeEmail, password: upgradePassword }),
-    }).catch(() => null);
-
-    if (!response?.ok) {
+    try {
+      await upgradeWithEmail({ email: upgradeEmail, password: upgradePassword });
+    } catch (error) {
+      const message = readAuthErrorMessage(
+        error,
+        "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie."
+      );
       dispatch({
         type: "set_notice",
         payload: {
           kind: "error",
-          message:
-            "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie.",
+          message,
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -175,15 +181,18 @@ export function AuthActions({
   const startSignOut = async () => {
     dispatch({ type: "set_notice", payload: null });
     dispatch({ type: "set_pending_action", payload: "signout" });
-    const response = await fetch("/api/auth/signout", { method: "POST" }).catch(
-      () => null
-    );
-    if (!response?.ok) {
+    try {
+      await signOutSession();
+    } catch (error) {
+      const message = readAuthErrorMessage(
+        error,
+        "Coś poszło nie tak. Spróbuj ponownie."
+      );
       dispatch({
         type: "set_notice",
         payload: {
           kind: "error",
-          message: "Coś poszło nie tak. Spróbuj ponownie.",
+          message,
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -196,18 +205,18 @@ export function AuthActions({
   const submitEmailSignIn = async () => {
     dispatch({ type: "set_notice", payload: null });
     dispatch({ type: "set_pending_action", payload: "signin" });
-    const response = await fetch("/api/auth/signin/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: signInEmail, password: signInPassword }),
-    }).catch(() => null);
-
-    if (!response?.ok) {
+    try {
+      await signInWithEmail({ email: signInEmail, password: signInPassword });
+    } catch (error) {
+      const message = readAuthErrorMessage(
+        error,
+        "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie."
+      );
       dispatch({
         type: "set_notice",
         payload: {
           kind: "error",
-          message: "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.",
+          message,
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
@@ -228,28 +237,30 @@ export function AuthActions({
   const submitEmailSignUp = async () => {
     dispatch({ type: "set_notice", payload: null });
     dispatch({ type: "set_pending_action", payload: "signup" });
-    const response = await fetch("/api/auth/signup/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: signUpEmail, password: signUpPassword }),
-    }).catch(() => null);
-
-    if (!response?.ok) {
+    let hasSession = false;
+    try {
+      const result = await signUpWithEmail({
+        email: signUpEmail,
+        password: signUpPassword,
+      });
+      hasSession = result.hasSession;
+    } catch (error) {
+      const message = readAuthErrorMessage(
+        error,
+        "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie."
+      );
       dispatch({
         type: "set_notice",
         payload: {
           kind: "error",
-          message:
-            "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie.",
+          message,
         },
       });
       dispatch({ type: "set_pending_action", payload: null });
       return;
     }
 
-    const payload = await response.json().catch(() => null);
-
-    if (payload?.hasSession) {
+    if (hasSession) {
       dispatch({
         type: "set_notice",
         payload: {

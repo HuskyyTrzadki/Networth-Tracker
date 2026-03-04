@@ -5,6 +5,7 @@ import {
   negateDecimal,
   parseDecimalString,
 } from "@/lib/decimal";
+import { unprocessableEntityError } from "@/lib/http/app-error";
 
 import type { CashflowType } from "../lib/cashflow-types";
 import type { TransactionType } from "../lib/add-transaction-form-schema";
@@ -41,7 +42,9 @@ const buildSignedDelta = (input: SettlementInput) => {
   const fee = parseDecimalString(input.fee) ?? decimalZero();
 
   if (!quantity || !price) {
-    throw new Error("Nieprawidłowe wartości ilości lub ceny.");
+    throw unprocessableEntityError("Nieprawidłowe wartości ilości lub ceny.", {
+      code: "TRANSACTION_INVALID_SETTLEMENT_INPUT",
+    });
   }
 
   const gross = multiplyDecimals(quantity, price);
@@ -90,12 +93,16 @@ export const buildSettlementLegs = (input: SettlementInput): SettlementLegPlan[]
     }
   } else {
     if (!input.fx) {
-      throw new Error("Brak kursu FX do rozliczenia gotówki.");
+      throw unprocessableEntityError("Brak kursu FX do rozliczenia gotówki.", {
+        code: "TRANSACTION_FX_RATE_MISSING",
+      });
     }
 
     const fxRate = parseDecimalString(input.fx.rate);
     if (!fxRate) {
-      throw new Error("Nieprawidłowy kurs FX do rozliczenia gotówki.");
+      throw unprocessableEntityError("Nieprawidłowy kurs FX do rozliczenia gotówki.", {
+        code: "TRANSACTION_FX_RATE_INVALID",
+      });
     }
 
     const deltaCashCurrency = multiplyDecimals(deltaAssetCurrency, fxRate);

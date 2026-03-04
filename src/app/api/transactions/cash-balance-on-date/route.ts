@@ -1,9 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { apiError, apiFromUnknownError, apiValidationError } from "@/lib/http/api-error";
+import { getAuthenticatedSupabase, parseJsonBody } from "@/lib/http/route-handler";
 
 const requestSchema = z.object({
   portfolioId: z.string().uuid(),
@@ -21,25 +21,21 @@ const normalizeNumeric = (value: string | number) =>
   typeof value === "number" ? value.toString() : value;
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data, error } = await supabase.auth.getUser();
-  const user = data?.user ?? null;
+  const authResult = await getAuthenticatedSupabase();
+  if (!authResult.ok) {
+    return authResult.response;
+  }
+  const supabase = authResult.supabase;
+  const user = authResult.user;
 
-  if (error || !user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const parsedBody = await parseJsonBody(request);
+  if (!parsedBody.ok) {
+    return parsedBody.response;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ message: "Invalid JSON payload." }, { status: 400 });
-  }
-
-  const parsed = requestSchema.safeParse(body);
+  const parsed = requestSchema.safeParse(parsedBody.body);
   if (!parsed.success) {
-    return NextResponse.json({ message: "Invalid input." }, { status: 400 });
+    return apiValidationError(parsed.error.issues, { request });
   }
 
   const portfolioId = parsed.data.portfolioId;
@@ -54,7 +50,12 @@ export async function POST(request: Request) {
     .single();
 
   if (portfolioError || !portfolio) {
-    return NextResponse.json({ message: "Portfolio not found." }, { status: 404 });
+    return apiError({
+      status: 404,
+      code: "PORTFOLIO_NOT_FOUND",
+      message: "Portfolio not found.",
+      request,
+    });
   }
 
   try {
@@ -93,10 +94,11 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (routeError) {
-    const message =
-      routeError instanceof Error
-        ? routeError.message
-        : "Nie udało się pobrać salda gotówki na wybraną datę.";
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error: routeError,
+      request,
+      fallbackCode: "CASH_BALANCE_ON_DATE_FAILED",
+      fallbackMessage: "Nie udało się pobrać salda gotówki na wybraną datę.",
+    });
   }
 }

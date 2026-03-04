@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runTradingViewRevenueGeoBackfillCron } from "@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron";
 
-import { GET } from "./route";
+import { GET, POST } from "./route";
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
@@ -13,22 +13,34 @@ vi.mock("@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron
   runTradingViewRevenueGeoBackfillCron: vi.fn(),
 }));
 
-describe("GET /api/cron/tradingview-revenue-geo/run", () => {
+describe("/api/cron/tradingview-revenue-geo/run", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.CRON_SECRET = "secret";
   });
 
-  it("rejects unauthorized requests", async () => {
+  it("returns 405 for GET", async () => {
     const response = await GET(
       new Request("http://localhost/api/cron/tradingview-revenue-geo/run")
+    );
+
+    expect(response.status).toBe(405);
+    expect(response.headers.get("Allow")).toBe("POST");
+    expect(vi.mocked(createAdminClient)).not.toHaveBeenCalled();
+  });
+
+  it("rejects unauthorized POST requests", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/cron/tradingview-revenue-geo/run", {
+        method: "POST",
+      })
     );
 
     expect(response.status).toBe(401);
     expect(vi.mocked(createAdminClient)).not.toHaveBeenCalled();
   });
 
-  it("accepts vercel cron header", async () => {
+  it("accepts vercel cron header for POST", async () => {
     vi.mocked(createAdminClient).mockReturnValue({} as never);
     vi.mocked(runTradingViewRevenueGeoBackfillCron).mockResolvedValueOnce({
       processed: 0,
@@ -42,8 +54,9 @@ describe("GET /api/cron/tradingview-revenue-geo/run", () => {
       totalCandidatesBeforeRun: 0,
     });
 
-    const response = await GET(
+    const response = await POST(
       new Request("http://localhost/api/cron/tradingview-revenue-geo/run?limit=10", {
+        method: "POST",
         headers: {
           "x-vercel-cron": "1",
         },
@@ -58,7 +71,7 @@ describe("GET /api/cron/tradingview-revenue-geo/run", () => {
     );
   });
 
-  it("accepts bearer auth for manual runs", async () => {
+  it("accepts bearer auth for manual POST runs", async () => {
     vi.mocked(createAdminClient).mockReturnValue({} as never);
     vi.mocked(runTradingViewRevenueGeoBackfillCron).mockResolvedValueOnce({
       processed: 1,
@@ -72,10 +85,11 @@ describe("GET /api/cron/tradingview-revenue-geo/run", () => {
       totalCandidatesBeforeRun: 5,
     });
 
-    const response = await GET(
+    const response = await POST(
       new Request(
         "http://localhost/api/cron/tradingview-revenue-geo/run?staleDays=30&delayMs=500&timeBudgetMs=1000",
         {
+          method: "POST",
           headers: {
             authorization: "Bearer secret",
           },

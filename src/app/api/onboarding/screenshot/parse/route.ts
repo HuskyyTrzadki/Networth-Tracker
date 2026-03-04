@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getAuthenticatedSupabase, toErrorMessage } from "@/lib/http/route-handler";
+import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
+import { getAuthenticatedSupabase } from "@/lib/http/route-handler";
 import { extractHoldingsFromScreenshots } from "@/features/onboarding/server/extract-holdings-from-screenshots";
 
 const MAX_FILES = 6;
@@ -19,40 +20,50 @@ export async function POST(request: Request) {
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json(
-      { message: "Nie udało się odczytać przesłanych plików." },
-      { status: 400 }
-    );
+    return apiError({
+      status: 400,
+      code: "INVALID_FORM_DATA",
+      message: "Nie udało się odczytać przesłanych plików.",
+      request,
+    });
   }
 
   const files = Array.from(formData.values()).filter(isImageFile);
   if (files.length === 0) {
-    return NextResponse.json(
-      { message: "Dodaj przynajmniej jeden zrzut ekranu." },
-      { status: 400 }
-    );
+    return apiError({
+      status: 400,
+      code: "VALIDATION_ERROR",
+      message: "Dodaj przynajmniej jeden zrzut ekranu.",
+      request,
+    });
   }
 
   if (files.length > MAX_FILES) {
-    return NextResponse.json(
-      { message: `Dodaj maksymalnie ${MAX_FILES} zrzutów.` },
-      { status: 400 }
-    );
+    return apiError({
+      status: 400,
+      code: "VALIDATION_ERROR",
+      message: `Dodaj maksymalnie ${MAX_FILES} zrzutów.`,
+      request,
+    });
   }
 
   for (const file of files) {
     if (!file.type.startsWith("image/")) {
-      return NextResponse.json(
-        { message: "Obsługujemy tylko pliki graficzne." },
-        { status: 400 }
-      );
+      return apiError({
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Obsługujemy tylko pliki graficzne.",
+        request,
+      });
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      return NextResponse.json(
-        { message: "Jeden z plików jest za duży (limit 6 MB)." },
-        { status: 400 }
-      );
+      return apiError({
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Jeden z plików jest za duży (limit 6 MB).",
+        request,
+      });
     }
   }
 
@@ -70,7 +81,10 @@ export async function POST(request: Request) {
     const holdings = await extractHoldingsFromScreenshots(images);
     return NextResponse.json({ holdings }, { status: 200 });
   } catch (error) {
-    const message = toErrorMessage(error);
-    return NextResponse.json({ message }, { status: 400 });
+    return apiFromUnknownError({
+      error,
+      request,
+      fallbackCode: "SCREENSHOT_PARSE_FAILED",
+    });
   }
 }

@@ -1,8 +1,8 @@
 import { isIP } from "node:net";
 
-import { NextResponse } from "next/server";
-
 import { buildLogoDevTickerRemoteUrls } from "@/features/common/lib/logo-dev";
+import { apiError } from "@/lib/http/api-error";
+import { withRateLimit } from "@/lib/http/rate-limit";
 
 const ONE_DAY_SECONDS = 60 * 60 * 24;
 const LOGO_CACHE_FRESH_SECONDS = ONE_DAY_SECONDS * 7;
@@ -54,6 +54,15 @@ const parseRemoteImageUrl = (value: string | null) => {
 };
 
 export async function GET(request: Request) {
+  const rateLimit = withRateLimit(request, {
+    id: "api:public-image",
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
+
   const requestUrl = new URL(request.url);
   const explicitRemoteUrl = parseRemoteImageUrl(requestUrl.searchParams.get("url"));
   const logoDevToken =
@@ -84,7 +93,13 @@ export async function GET(request: Request) {
   }
 
   if (candidates.length === 0) {
-    return NextResponse.json({ message: "Invalid image URL." }, { status: 400 });
+    return apiError({
+      status: 400,
+      code: "INVALID_IMAGE_URL",
+      message: "Invalid image URL.",
+      request,
+      headers: rateLimit.headers,
+    });
   }
 
   for (const candidate of candidates) {
@@ -116,9 +131,16 @@ export async function GET(request: Request) {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": `public, max-age=0, s-maxage=${candidate.freshSeconds}, stale-while-revalidate=${candidate.staleSeconds}`,
+        ...rateLimit.headers,
       },
     });
   }
 
-  return NextResponse.json({ message: "Image not found." }, { status: 404 });
+  return apiError({
+    status: 404,
+    code: "IMAGE_NOT_FOUND",
+    message: "Image not found.",
+    request,
+    headers: rateLimit.headers,
+  });
 }
