@@ -81,9 +81,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `StockSearchBar` applies optimistic favorite toggle + optimistic card skeleton via callbacks,
   - server actions (`watchlist-actions.ts`) are the mutation boundary and call `revalidatePath("/stocks")`.
 - Stock report star toggle (`StockFavoriteToggleButton`) now follows the same pattern:
-  - initial `isFavorite` is passed from server render (`StockDetailsPage`),
+  - initial `isFavorite` is resolved in a dedicated server Suspense slot (`StockFavoriteToggleSlot`) instead of the report page root, so `/stocks/[providerKey]` can stream public content first,
+  - favorite-state loader uses private cache (`"use cache: private"` + `cacheLife("minutes")` + `stocks:watchlist` tag),
   - client component uses `useOptimistic` + `startTransition`,
   - no mount-time client fetch/sync `useEffect`.
+- Stock report sidebar favorite control should render via fixed-size skeleton fallback while the personalized slot resolves, to avoid layout shift and wrong-state flashes.
 - Optimistic cards use `isHydrating=true` to render an inline skeleton until server-pushed revalidated payload replaces them.
 - Watchlist add flow is fail-safe: after `stock_watchlist` insert, backend immediately upserts global `instruments` row and warms quote + daily caches for that `providerKey`; if warmup fails, the watchlist insert is rolled back to avoid empty screener cards.
 - Stock report sidebar includes the same watchlist toggle (`Star`) so users can add/remove directly from `/stocks/[providerKey]`.

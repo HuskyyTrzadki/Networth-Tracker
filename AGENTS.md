@@ -165,7 +165,7 @@ When shipping feature/architecture changes:
   - in `src/app/*`, do not import feature barrels (`@/features/app-shell`, `@/features/auth`, `@/features/home`, `@/features/onboarding`, `@/features/portfolio`, `@/features/stocks`);
   - use direct file paths so route dependency graphs stay explicit and bundle regressions are easier to catch.
 - Watchlist add is fail-safe: backend mutation layer (server action + shared service) does synchronous market-data warmup (`instruments` upsert + quote + daily cache fetch) and rolls back watchlist row on warmup failure, so `/stocks` avoids empty cards for user-pinned tickers.
-- Stock report watchlist toggle (`StockFavoriteToggleButton`) receives initial favorite state from server render and uses optimistic Server Action updates (no client fetch/sync effect on mount).
+- Stock report watchlist toggle (`StockFavoriteToggleButton`) resolves initial favorite state in a dedicated server Suspense hole (`StockFavoriteToggleSlot`) with private cache tagging, so `/stocks/[providerKey]` streams public report content before personalized star state.
 - Portfolio chart initial payload is bounded (faster first render); full ALL history is lazy-loaded via authenticated `/api/portfolio-snapshots/rows`.
 - Snapshot rebuild pipeline is chunked/adaptive and drives in-widget rebuild progress UI.
 - Onboarding CTA `Otwórz portfel demonstracyjny` now clones a backend-seeded demo bundle into the current guest/authenticated user instead of using a shared demo login.

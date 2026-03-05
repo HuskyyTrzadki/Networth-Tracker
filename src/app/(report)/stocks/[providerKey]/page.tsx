@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
+import { Suspense } from "react";
 
 import { getPublicStockSummaryCached } from "@/features/stocks/server/get-public-stock-summary-cached";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
-import { isStockWatchlistFavorite } from "@/features/stocks/server/stock-watchlist";
-import { createClient } from "@/lib/supabase/server";
 
 import StockReportMainContent from "./StockReportMainContent";
+import StockFavoriteToggleSlot from "./StockFavoriteToggleSlot";
+import { StockFavoriteToggleSkeleton } from "./StockFavoriteToggleSkeleton";
 import StockReportSidebar from "./StockReportSidebar";
 
 type Params = Promise<{
@@ -122,25 +122,6 @@ const getPublicInstrumentCached =
     return (data as InstrumentRow | null) ?? null;
   };
 
-const getInitialFavoriteState = async (providerKey: string): Promise<boolean> => {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data, error } = await supabase.auth.getUser();
-  const user = data.user ?? null;
-
-  if (error || !user) {
-    return false;
-  }
-
-  try {
-    return await isStockWatchlistFavorite(supabase, providerKey);
-  } catch {
-    return false;
-  }
-};
-
-
-
 export async function generateMetadata({
   params,
 }: Readonly<{
@@ -180,10 +161,9 @@ export default async function StockDetailsPage({
     notFound();
   }
 
-  const [stock, summary, initialIsFavorite] = await Promise.all([
+  const [stock, summary] = await Promise.all([
     getPublicInstrumentCached(providerKey),
     getPublicStockSummaryCached(providerKey),
-    getInitialFavoriteState(providerKey),
   ]);
 
   const symbol = stock?.symbol ?? providerKey;
@@ -197,11 +177,20 @@ export default async function StockDetailsPage({
       style={{ overflowAnchor: "none" }}
     >
       <StockReportSidebar
-        providerKey={providerKey}
         symbol={symbol}
         name={name}
         logoUrl={logoUrl}
-        initialIsFavorite={initialIsFavorite}
+        favoriteControl={
+          <Suspense fallback={<StockFavoriteToggleSkeleton />}>
+            <StockFavoriteToggleSlot
+              providerKey={providerKey}
+              symbol={symbol}
+              name={name}
+              currency={metricCurrency}
+              logoUrl={logoUrl}
+            />
+          </Suspense>
+        }
         exchange={stock?.exchange ?? "-"}
         region={stock?.region ?? "-"}
         metricCurrency={metricCurrency}

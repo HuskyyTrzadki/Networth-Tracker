@@ -4,18 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 
 import { ReportShellMenuTrigger } from "@/features/app-shell/components/ReportShell";
-import { StockFavoriteToggleButton } from "@/features/stocks/components/StockFavoriteToggleButton";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { cn } from "@/lib/cn";
 
 import { FactRow } from "./ReportRows";
 
 type SidebarProps = Readonly<{
-  providerKey: string;
   symbol: string;
   name: string;
   logoUrl: string | null;
-  initialIsFavorite: boolean;
+  favoriteControl: React.ReactNode;
   exchange: string;
   region: string;
   metricCurrency: string;
@@ -34,11 +32,10 @@ const SECTION_LINKS = [
 ] as const;
 
 export default function StockReportSidebar({
-  providerKey,
   symbol,
   name,
   logoUrl,
-  initialIsFavorite,
+  favoriteControl,
   exchange,
   region,
   metricCurrency,
@@ -140,14 +137,7 @@ export default function StockReportSidebar({
                 <p className="truncate text-sm text-muted-foreground">{name}</p>
               </div>
             </div>
-            <StockFavoriteToggleButton
-              initialIsFavorite={initialIsFavorite}
-              providerKey={providerKey}
-              symbol={symbol}
-              name={name}
-              currency={metricCurrency}
-              logoUrl={logoUrl}
-            />
+            {favoriteControl}
           </div>
 
           <div className="mt-4">
