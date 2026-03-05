@@ -17,6 +17,7 @@ import {
   type SankeyNode,
 } from "./stock-report-revenue-sankey-helpers";
 import StockReportInfoHint from "./StockReportInfoHint";
+import { RevenueChartEmptyState } from "./stock-report-revenue-empty-state";
 
 type Props = Readonly<{
   revenueSegments: readonly RevenueSegment[];
@@ -159,8 +160,8 @@ export function StockReportRevenueSankeyCard({
             <p className="mt-1 text-xs text-muted-foreground">{emptyState}</p>
           </div>
         </div>
-        <div className="mt-3 flex h-[336px] items-center justify-center border-y border-dashed border-black/15 bg-white/70 p-4 text-sm text-muted-foreground">
-          {emptyState}
+        <div className="mt-3 h-[336px]">
+          <RevenueChartEmptyState message={emptyState} variant="wide" />
         </div>
       </article>
     );

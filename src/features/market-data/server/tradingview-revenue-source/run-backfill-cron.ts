@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/database.types";
 
-import { runTradingViewRevenueBreakdownBackfillCron } from "../tradingview-revenue-breakdown/run-backfill-cron";
+import { runTradingViewRevenueBreakdownCron } from "../tradingview-revenue-breakdown/run-backfill-cron";
 import {
   countTradingViewRevenueSourceBackfillCandidates,
   listTradingViewRevenueSourceBackfillCandidates,
@@ -22,7 +22,7 @@ type Input = Readonly<{
 
 const DEFAULT_PROVIDER = "yahoo";
 
-export async function runTradingViewRevenueSourceBackfillCron({
+export async function runTradingViewRevenueSourceCron({
   supabase,
   limit,
   staleDays,
@@ -31,7 +31,7 @@ export async function runTradingViewRevenueSourceBackfillCron({
   provider = DEFAULT_PROVIDER,
   localeSubdomain = "www",
 }: Input) {
-  return runTradingViewRevenueBreakdownBackfillCron({
+  return runTradingViewRevenueBreakdownCron({
     supabase,
     kind: "source",
     limit,

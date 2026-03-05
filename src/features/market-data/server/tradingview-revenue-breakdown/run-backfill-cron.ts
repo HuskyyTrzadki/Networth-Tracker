@@ -77,7 +77,7 @@ async function loadBatchModule(): Promise<BatchModule> {
   )) as BatchModule;
 }
 
-export async function runTradingViewRevenueBreakdownBackfillCron({
+export async function runTradingViewRevenueBreakdownCron({
   supabase,
   kind,
   limit,

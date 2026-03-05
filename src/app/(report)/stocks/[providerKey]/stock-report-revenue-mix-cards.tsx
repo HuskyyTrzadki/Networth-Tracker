@@ -18,6 +18,7 @@ import {
 } from "@/features/design-system/components/ui/chart";
 
 import StockReportInfoHint from "./StockReportInfoHint";
+import { RevenueChartEmptyState } from "./stock-report-revenue-empty-state";
 import {
   HOW_THEY_MAKE_MONEY,
   type HowTheyMakeMoneyMode,
@@ -111,14 +112,10 @@ function MarginDrop({
 
 export function DonutCard({
   title,
-  subtitle,
-  note,
   slices,
   emptyState = "Brak danych do wykresu",
 }: Readonly<{
   title: string;
-  subtitle: string;
-  note?: string;
   slices: readonly Slice[];
   emptyState?: string;
 }>) {
@@ -135,12 +132,6 @@ export function DonutCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="text-base font-semibold tracking-tight">{title}</h4>
-          <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
-          {note ? (
-            <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted-foreground">
-              {note}
-            </p>
-          ) : null}
         </div>
       </div>
 
@@ -177,28 +168,57 @@ export function DonutCard({
               </ResponsiveContainer>
             </ChartContainer>
           ) : (
-            <div className="flex h-full items-center justify-center border-y border-dashed border-black/15 bg-card/35 text-sm text-muted-foreground">
-              {emptyState}
-            </div>
+            <RevenueChartEmptyState message={emptyState} />
           )}
         </div>
 
         <div className="space-y-2 text-sm">
-          {slices.map((slice) => (
-            <div
-              key={slice.key}
-              className="flex items-center justify-between border-b border-dashed border-black/15 pb-2 last:border-b-0 last:pb-0"
-            >
-              <div className="inline-flex items-center gap-2 text-muted-foreground">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
-                <span className="text-foreground/85">{slice.label}</span>
-                <StockReportInfoHint text={slice.help} ariaLabel={`Wyjasnienie: ${slice.label}`} />
-              </div>
-              <span className="font-mono text-sm font-bold tabular-nums">
-                {slice.value.toFixed(1)}%
-              </span>
-            </div>
-          ))}
+          {slices.length
+            ? slices.map((slice) => (
+                <div
+                  key={slice.key}
+                  className="flex items-center justify-between border-b border-dashed border-black/15 pb-2 last:border-b-0 last:pb-0"
+                >
+                  <div className="inline-flex items-center gap-2 text-muted-foreground">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: slice.color }}
+                    />
+                    <span className="text-foreground/85">{slice.label}</span>
+                    <StockReportInfoHint
+                      text={slice.help}
+                      ariaLabel={`Wyjasnienie: ${slice.label}`}
+                    />
+                  </div>
+                  <span className="font-mono text-sm font-bold tabular-nums">
+                    {slice.value.toFixed(1)}%
+                  </span>
+                </div>
+              ))
+            : [0, 1, 2, 3].map((index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b border-dashed border-black/10 pb-2 last:border-b-0 last:pb-0"
+                >
+                  <div className="inline-flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+                    <div
+                      className="h-2.5 bg-black/[0.06]"
+                      style={{
+                        width:
+                          index === 0
+                            ? "7rem"
+                            : index === 1
+                              ? "6rem"
+                              : index === 2
+                                ? "5rem"
+                                : "4rem",
+                      }}
+                    />
+                  </div>
+                  <div className="h-2.5 w-10 bg-black/[0.06]" />
+                </div>
+              ))}
         </div>
       </div>
     </article>

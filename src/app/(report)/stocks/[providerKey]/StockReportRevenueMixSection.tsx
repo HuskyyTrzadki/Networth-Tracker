@@ -91,14 +91,6 @@ export default function StockReportRevenueMixSection({
   const [profitMode, setProfitMode] = useState<HowTheyMakeMoneyMode>("lastQuarter");
   const sourceSlices = mode === "now" ? sourceViewModel.nowSlices : [];
   const geoSlices = mode === "now" ? geoViewModel.nowSlices : [];
-  const sourceSubtitle =
-    mode === "now"
-      ? sourceViewModel.nowSubtitle
-      : "Historyczny podzial segmentow jeszcze niedostepny";
-  const geoSubtitle =
-    mode === "now"
-      ? geoViewModel.nowSubtitle
-      : "Historyczny podzial geograficzny jeszcze niedostepny";
   const sourceEmptyState =
     mode === "now"
       ? sourceViewModel.nowEmptyState
@@ -241,15 +233,11 @@ export default function StockReportRevenueMixSection({
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               <DonutCard
                 title={sourceViewModel.title}
-                subtitle={sourceSubtitle}
-                note={sourceViewModel.note}
                 slices={sourceSlices}
                 emptyState={sourceEmptyState}
               />
               <DonutCard
                 title={geoViewModel.title}
-                subtitle={geoSubtitle}
-                note={geoViewModel.note}
                 slices={geoSlices}
                 emptyState={geoEmptyState}
               />

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { runTradingViewRevenueSourceBackfillCron } from "@/features/market-data/server/tradingview-revenue-source/run-backfill-cron";
+import { runTradingViewRevenueSourceCron } from "@/features/market-data/server/tradingview-revenue-source/run-backfill-cron";
 
 import { GET, POST } from "./route";
 
@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 vi.mock("@/features/market-data/server/tradingview-revenue-source/run-backfill-cron", () => ({
-  runTradingViewRevenueSourceBackfillCron: vi.fn(),
+  runTradingViewRevenueSourceCron: vi.fn(),
 }));
 
 describe("/api/cron/tradingview-revenue-source/run", () => {
@@ -42,7 +42,7 @@ describe("/api/cron/tradingview-revenue-source/run", () => {
 
   it("accepts vercel cron header for POST", async () => {
     vi.mocked(createAdminClient).mockReturnValue({} as never);
-    vi.mocked(runTradingViewRevenueSourceBackfillCron).mockResolvedValueOnce({
+    vi.mocked(runTradingViewRevenueSourceCron).mockResolvedValueOnce({
       processed: 0,
       successes: 0,
       failures: 0,
@@ -64,7 +64,7 @@ describe("/api/cron/tradingview-revenue-source/run", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(vi.mocked(runTradingViewRevenueSourceBackfillCron)).toHaveBeenCalledWith(
+    expect(vi.mocked(runTradingViewRevenueSourceCron)).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 10,
       })
@@ -73,7 +73,7 @@ describe("/api/cron/tradingview-revenue-source/run", () => {
 
   it("accepts bearer auth for manual POST runs", async () => {
     vi.mocked(createAdminClient).mockReturnValue({} as never);
-    vi.mocked(runTradingViewRevenueSourceBackfillCron).mockResolvedValueOnce({
+    vi.mocked(runTradingViewRevenueSourceCron).mockResolvedValueOnce({
       processed: 1,
       successes: 1,
       failures: 0,
@@ -98,7 +98,7 @@ describe("/api/cron/tradingview-revenue-source/run", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(vi.mocked(runTradingViewRevenueSourceBackfillCron)).toHaveBeenCalledWith(
+    expect(vi.mocked(runTradingViewRevenueSourceCron)).toHaveBeenCalledWith(
       expect.objectContaining({
         staleDays: 30,
         delayMs: 500,

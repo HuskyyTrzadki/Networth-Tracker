@@ -8,19 +8,6 @@ const SOURCE_HELP =
   "TradingView raportuje przychody wedlug zrodel lub segmentow z ostatniego dostepnego okresu; nie zawsze sa to doslowne produkty ani identyczne kategorie jak w raporcie spolki.";
 const MAX_VISIBLE_SOURCES = 5;
 
-const formatFetchedAt = (value: string) => {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("pl-PL", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(parsed);
-};
-
 const groupEntries = (entries: NonNullable<InstrumentRevenueSourceBreakdown>["entries"]) => {
   const visibleEntries = entries.slice(0, MAX_VISIBLE_SOURCES);
   const hiddenEntries = entries.slice(MAX_VISIBLE_SOURCES);
@@ -37,8 +24,6 @@ export function buildRevenueSourceCardViewModel(
   if (!breakdown) {
     return {
       title: "Przychody wedlug segmentow",
-      nowSubtitle: "TradingView · ostatni dostepny okres",
-      note: SOURCE_HELP,
       nowSlices: [],
       nowEmptyState: "Dane o segmentach przychodow sa w trakcie opracowywania.",
       historyEmptyState:
@@ -47,14 +32,9 @@ export function buildRevenueSourceCardViewModel(
   }
 
   const groupedEntries = groupEntries(breakdown.entries);
-  const subtitleDate = formatFetchedAt(breakdown.fetchedAt);
 
   return {
     title: "Przychody wedlug segmentow",
-    nowSubtitle: subtitleDate
-      ? `TradingView · stan na ${subtitleDate}`
-      : "TradingView · ostatni dostepny okres",
-    note: SOURCE_HELP,
     nowSlices: toPercentSlices(
       groupedEntries.map((entry, index) => ({
         label: entry.label,

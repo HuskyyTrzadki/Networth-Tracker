@@ -38,6 +38,5 @@ describe("buildRevenueGeoCardViewModel", () => {
       "Pozostale",
     ]);
     expect(total).toBeCloseTo(100, 5);
-    expect(viewModel.nowSubtitle).toContain("TradingView");
   });
 });

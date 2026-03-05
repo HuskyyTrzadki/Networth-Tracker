@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { runTradingViewRevenueGeoBackfillCron } from "@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron";
+import { runTradingViewRevenueGeoCron } from "@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron";
 
 import { GET, POST } from "./route";
 
@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 vi.mock("@/features/market-data/server/tradingview-revenue-geo/run-backfill-cron", () => ({
-  runTradingViewRevenueGeoBackfillCron: vi.fn(),
+  runTradingViewRevenueGeoCron: vi.fn(),
 }));
 
 describe("/api/cron/tradingview-revenue-geo/run", () => {
@@ -42,7 +42,7 @@ describe("/api/cron/tradingview-revenue-geo/run", () => {
 
   it("accepts vercel cron header for POST", async () => {
     vi.mocked(createAdminClient).mockReturnValue({} as never);
-    vi.mocked(runTradingViewRevenueGeoBackfillCron).mockResolvedValueOnce({
+    vi.mocked(runTradingViewRevenueGeoCron).mockResolvedValueOnce({
       processed: 0,
       successes: 0,
       failures: 0,
@@ -64,7 +64,7 @@ describe("/api/cron/tradingview-revenue-geo/run", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(vi.mocked(runTradingViewRevenueGeoBackfillCron)).toHaveBeenCalledWith(
+    expect(vi.mocked(runTradingViewRevenueGeoCron)).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 10,
       })
@@ -73,7 +73,7 @@ describe("/api/cron/tradingview-revenue-geo/run", () => {
 
   it("accepts bearer auth for manual POST runs", async () => {
     vi.mocked(createAdminClient).mockReturnValue({} as never);
-    vi.mocked(runTradingViewRevenueGeoBackfillCron).mockResolvedValueOnce({
+    vi.mocked(runTradingViewRevenueGeoCron).mockResolvedValueOnce({
       processed: 1,
       successes: 1,
       failures: 0,
@@ -98,7 +98,7 @@ describe("/api/cron/tradingview-revenue-geo/run", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(vi.mocked(runTradingViewRevenueGeoBackfillCron)).toHaveBeenCalledWith(
+    expect(vi.mocked(runTradingViewRevenueGeoCron)).toHaveBeenCalledWith(
       expect.objectContaining({
         staleDays: 30,
         delayMs: 500,

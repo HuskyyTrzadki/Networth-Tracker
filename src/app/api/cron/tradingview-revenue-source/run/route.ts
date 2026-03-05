@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { runTradingViewRevenueSourceBackfillCron } from "@/features/market-data/server/tradingview-revenue-source/run-backfill-cron";
+import { runTradingViewRevenueSourceCron } from "@/features/market-data/server/tradingview-revenue-source/run-backfill-cron";
 import { apiMethodNotAllowed, apiUnauthorized } from "@/lib/http/api-error";
 
 const DEFAULT_LIMIT = 25;
@@ -38,7 +38,7 @@ const runCron = async (request: Request) => {
 
   const url = new URL(request.url);
   const supabase = createAdminClient();
-  const result = await runTradingViewRevenueSourceBackfillCron({
+  const result = await runTradingViewRevenueSourceCron({
     supabase,
     limit: parseFiniteNumber(url.searchParams.get("limit"), DEFAULT_LIMIT),
     staleDays: parseFiniteNumber(

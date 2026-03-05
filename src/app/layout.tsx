@@ -95,6 +95,24 @@ export default function RootLayout({ children }: Props) {
       suppressHydrationWarning
       className={`${ibmPlexMono.variable} ${newsreader.variable} ${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+            data-options={JSON.stringify(
+              { activationKey: "c", activationMode: "hold", keyHoldDuration: 150, allowActivationInsideInput: true, maxContextLines: 3 }
+            )}
+          />
+        )}
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/@react-grab/mcp/dist/client.global.js"
+            strategy="lazyOnload"
+          />
+        )}
+      </head>
       <body className="antialiased">
         <Script id="theme-preference-init" strategy="beforeInteractive">
           {`(() => {
