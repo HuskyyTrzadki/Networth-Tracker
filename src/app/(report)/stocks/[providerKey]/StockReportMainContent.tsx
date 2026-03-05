@@ -8,7 +8,7 @@ import StockReportConceptSectionsLazy from "./StockReportConceptSectionsLazy";
 import StockReportFiveYearTrendAnalysisSection from "./StockReportFiveYearTrendAnalysisSection";
 import StockReportLeadershipSection from "./StockReportLeadershipSection";
 import StockMetricsSection from "./StockMetricsSection";
-import StockReportRevenueMixSectionLazy from "./StockReportRevenueMixSectionLazy";
+import StockReportRevenueMixSectionSlot from "./StockReportRevenueMixSectionSlot";
 import RenderOnVisible from "./RenderOnVisible";
 import {
   EditorsNote,
@@ -366,7 +366,7 @@ export default function StockReportMainContent({
       </section>
 
       <section id="sekcja-jak-zarabia">
-        <StockReportRevenueMixSectionLazy />
+        <StockReportRevenueMixSectionSlot providerKey={providerKey} />
       </section>
       <AdvancedSection />
     </section>

@@ -1,18 +1,4 @@
-export type TrendDirection = "up" | "down" | "flat";
-
-export type RevenueCell = Readonly<{
-  value: string;
-  trend?: TrendDirection;
-}>;
-
-export type RevenueRow = Readonly<{
-  name: string;
-  iconLabel: string;
-  q1: RevenueCell;
-  q2: RevenueCell;
-  q3: RevenueCell;
-  q4: RevenueCell;
-}>;
+import type { RevenueRow } from "./stock-report-revenue-mix-helpers";
 
 export type EarningsCallBlock = Readonly<{
   title: string;

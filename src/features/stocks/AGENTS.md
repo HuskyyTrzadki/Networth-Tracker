@@ -113,8 +113,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - small quarter-based charts (FCF, cash/debt, dividends, shares outstanding, expenses, valuation),
   - centered modal drill-down per widget with larger chart and explanatory copy,
   - v1 data source is intentionally hardcoded and shared across all tickers.
-- Report content sections (`What They Own & Owe`, `Revenue by Products`, `Revenue by Geography`, `Earnings Call Summary`, peers, and deep dives) are currently hardcoded mock content pending provider wiring.
-- TradingView geography ingestion groundwork exists in market-data (`instrument_revenue_geo_breakdown_cache` + batch Playwright script), but report geo widgets are still fed by static mock data until dedicated read wiring is added.
+- Report content sections (`What They Own & Owe`, `Revenue by Products`, `Earnings Call Summary`, peers, and deep dives) are currently hardcoded mock content pending provider wiring.
+- `Jak firma zarabia` now reads the geography donut from cached TradingView geography data for the latest available period via `get-public-stock-revenue-geo-cached.ts`; the widget keeps the user-facing title `Przychody wedlug regionu`, groups the long tail into `Pozostale` for readability, and must stay fail-soft when cache rows are missing.
+- Geography history in the report is intentionally honest: until cache ingestion also persists trustworthy period labels/order for country rows, quarterly/annual geography controls should render an explicit unavailable state instead of inferring or faking historical slices.
 - Report content includes additional hardcoded concept blocks with quarter/year toggles:
   - revenue allocation ("Gdzie trafia kazda zlotowka przychodu"),
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),

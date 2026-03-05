@@ -78,6 +78,9 @@ After larger changes run:
 UI-only change exception (styling/layout/copy-only, no business logic/API/data-contract changes):
 - Required: `npm run typecheck` and `npm run lint`
 - Optional: `npm run test` (skip by default unless the UI change touches fragile flows/components)
+- For small scoped UI/copy follow-ups, prefer targeted verification over full-suite reruns; reserve full `typecheck`/`test`/`lint` sweeps for larger, riskier, or cross-feature changes.
+- Do not use manual `next-devtools.browser_eval` visual QA by default; ask the user to verify UI unless browser automation is explicitly requested or needed to diagnose a runtime issue.
+- Do not spend time on routine `git diff` / `git status` summaries unless the workspace state matters to the task or the user asks for it.
 
 ## Package manager
 Use the package manager implied by the existing lockfile. Do not switch.
@@ -178,6 +181,7 @@ When shipping feature/architecture changes:
 - Dashboard includes `Ekspozycja walutowa` widget with `Notowania | Gospodarcza` toggle; `Gospodarcza` is user-triggered via `/api/portfolio/currency-exposure/economic` and uses deterministic AI config (`temperature: 0`).
 - Economic exposure cache uses instrument-set fingerprint only (sorted `instrumentId`s + scope/model/prompt version), then reweights cached per-asset splits with fresh `valueBase` on each request.
 - TradingView revenue geography must stay asynchronous-only: refresh via daily/backfill batch (`/api/cron/tradingview-revenue-geo/run` or CLI batch), never via request-path scraping. If geo cache is missing for Yahoo equities, economic exposure should return a graceful pending state rather than block, scrape, or fake readiness.
+- Public stock reports now read the latest cached TradingView revenue geography directly from `instrument_revenue_geo_breakdown_cache`, presenting top countries plus `Pozostale`; do not fake quarterly/annual geography in the report until cache ingestion also stores trustworthy period labels/order for historical country rows.
 
 
 ## Quality bar

@@ -112,11 +112,15 @@ function MarginDrop({
 export function DonutCard({
   title,
   subtitle,
+  note,
   slices,
+  emptyState = "Brak danych do wykresu",
 }: Readonly<{
   title: string;
   subtitle: string;
+  note?: string;
   slices: readonly Slice[];
+  emptyState?: string;
 }>) {
   const chartConfig = slices.reduce<ChartConfig>((acc, slice) => {
     acc[slice.key] = {
@@ -132,6 +136,11 @@ export function DonutCard({
         <div className="min-w-0">
           <h4 className="text-base font-semibold tracking-tight">{title}</h4>
           <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+          {note ? (
+            <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted-foreground">
+              {note}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -169,7 +178,7 @@ export function DonutCard({
             </ChartContainer>
           ) : (
             <div className="flex h-full items-center justify-center border-y border-dashed border-black/15 bg-card/35 text-sm text-muted-foreground">
-              Brak danych do wykresu
+              {emptyState}
             </div>
           )}
         </div>

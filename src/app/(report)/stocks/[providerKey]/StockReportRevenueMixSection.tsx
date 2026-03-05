@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/features/design-system/components/ui/button";
 
 import { InvestorTakeaway, ReportCard, SectionHeader } from "./ReportPrimitives";
+import type { RevenueGeoCardViewModel } from "./stock-report-revenue-geo-view-model";
 import {
   QUARTER_LABELS,
   getQuarterCell,
@@ -18,7 +19,6 @@ import {
 } from "./stock-report-revenue-mix-helpers";
 import {
   HOW_THEY_MAKE_MONEY,
-  REVENUE_BY_GEO,
   REVENUE_BY_PRODUCTS,
   type HowTheyMakeMoneyMode,
 } from "./stock-report-static-data";
@@ -71,13 +71,6 @@ const StockReportRevenueSankeyCard = dynamic(
   }
 );
 
-const GEO_COLOR_BY_ICON: Readonly<Record<string, string>> = {
-  NA: "#4f5f75",
-  EU: "#6c785e",
-  APAC: "#7d6b5c",
-  ROW: "#756a7f",
-};
-
 const COST_LABEL_BY_KEY: Readonly<Record<string, string>> = {
   COGS: "Koszt sprzedanych produktow i uslug",
   OPEX: "Koszty operacyjne (R&D + SG&A)",
@@ -88,7 +81,11 @@ const percentFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 1,
 });
 
-export default function StockReportRevenueMixSection() {
+type Props = Readonly<{
+  geoViewModel: RevenueGeoCardViewModel;
+}>;
+
+export default function StockReportRevenueMixSection({ geoViewModel }: Props) {
   const [mode, setMode] = useState<MixMode>("now");
   const [quarter, setQuarter] = useState<QuarterKey>("q4");
   const [profitMode, setProfitMode] = useState<HowTheyMakeMoneyMode>("lastQuarter");
@@ -115,26 +112,15 @@ export default function StockReportRevenueMixSection() {
   });
 
   const productsSlices = toPercentSlices(productEntries);
-
-  const geoEntries = REVENUE_BY_GEO.map((row) => {
-    const cell = mode === "annual" ? null : getQuarterCell(row, mode === "now" ? "q4" : quarter);
-    const quarterlyValue = cell ? parseCompactMoney(cell.value) : null;
-    const annual =
-      (parseCompactMoney(row.q1.value) ?? 0) +
-      (parseCompactMoney(row.q2.value) ?? 0) +
-      (parseCompactMoney(row.q3.value) ?? 0) +
-      (parseCompactMoney(row.q4.value) ?? 0);
-
-    return {
-      id: row.iconLabel,
-      label: row.name,
-      value: mode === "annual" ? annual : quarterlyValue ?? 0,
-      color: GEO_COLOR_BY_ICON[row.iconLabel] ?? "#6f6a63",
-      help: "Przychody raportowane w podziale geograficznym; nie zawsze pokrywaja sie 1:1 z miejscem klienta (zalezy od polityki raportowania).",
-    };
-  });
-
-  const geoSlices = toPercentSlices(geoEntries);
+  const geoSlices = mode === "now" ? geoViewModel.nowSlices : [];
+  const geoSubtitle =
+    mode === "now"
+      ? geoViewModel.nowSubtitle
+      : "Historyczny podzial geograficzny jeszcze niedostepny";
+  const geoEmptyState =
+    mode === "now"
+      ? geoViewModel.nowEmptyState
+      : geoViewModel.historyEmptyState;
 
   const periodLabel =
     mode === "annual"
@@ -274,9 +260,11 @@ export default function StockReportRevenueMixSection() {
                 slices={productsSlices}
               />
               <DonutCard
-                title="Przychody wedlug regionu"
-                subtitle="Udzial regionow w przychodach"
+                title={geoViewModel.title}
+                subtitle={geoSubtitle}
+                note={geoViewModel.note}
                 slices={geoSlices}
+                emptyState={geoEmptyState}
               />
             </div>
           </div>

@@ -12,6 +12,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Daily instrument prices cache: `src/features/market-data/server/get-instrument-daily-prices-cached.ts`
 - Daily FX rates cache: `src/features/market-data/server/get-fx-daily-rates-cached.ts`
 - Dividend signals cache: `src/features/market-data/server/get-instrument-dividend-signals-cached.ts`
+- Revenue geography read helper: `src/features/market-data/server/get-instrument-revenue-geo-breakdown.ts`
 - Polish CPI cache: `src/features/market-data/server/get-polish-cpi-series-cached.ts`
 - Shared types: `src/features/market-data/lib/instrument-types.ts`
 - TradingView revenue-geo provider helpers:
@@ -50,6 +51,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Do not add synchronous/on-demand TradingView scraping to request paths. Missing geo coverage must degrade gracefully in UI/backend until the next async backfill run.
 - TradingView symbol mapping uses instrument exchanges (`NASDAQ`, `NYSE`, `WSE`) with `WSE` translated to TradingView venue code `GPW` and `.WA` suffix trimmed from Yahoo provider keys.
 - TradingView geography values are parsed from hydrated DOM rows (`By country` / `Według kraju`) and normalized to numeric latest + history payloads per country.
+- Public stock reports now consume the cached geography through `get-instrument-revenue-geo-breakdown.ts`; report UI should use the latest country mix only until period labels/order are persisted reliably enough for historical chart modes.
 
 ## Tests
 - `src/features/market-data/server/get-instrument-quotes-cached.test.ts`

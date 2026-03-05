@@ -1,7 +1,19 @@
-import { REVENUE_BY_GEO, REVENUE_BY_PRODUCTS } from "./stock-report-static-data";
-
 export type MixMode = "now" | "quarterly" | "annual";
 export type QuarterKey = "q1" | "q2" | "q3" | "q4";
+
+export type RevenueCell = Readonly<{
+  value: string;
+  trend?: "up" | "down" | "flat";
+}>;
+
+export type RevenueRow = Readonly<{
+  name: string;
+  iconLabel: string;
+  q1: RevenueCell;
+  q2: RevenueCell;
+  q3: RevenueCell;
+  q4: RevenueCell;
+}>;
 
 export type Slice = Readonly<{
   key: string;
@@ -22,7 +34,7 @@ export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
 export const parseCompactMoney = (raw: string) => {
-  // Expected: "$41.9B" / "$0.41B" etc. This is demo data in report static module.
+  // Expected: "$41.9B" / "$0.41B" etc. Used by the report's demo revenue datasets.
   const normalized = raw.trim().replace("$", "");
   const match = normalized.match(/^([0-9]+(?:\.[0-9]+)?)([KMBT])$/i);
   if (!match) return null;
@@ -58,7 +70,7 @@ export const toPercentSlices = (
 };
 
 export const getQuarterCell = (
-  row: (typeof REVENUE_BY_PRODUCTS)[number] | (typeof REVENUE_BY_GEO)[number],
+  row: RevenueRow,
   quarter: QuarterKey
 ) => {
   if (quarter === "q1") return row.q1;

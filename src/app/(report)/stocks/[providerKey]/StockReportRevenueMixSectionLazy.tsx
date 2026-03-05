@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 import RenderOnVisible from "./RenderOnVisible";
+import type { RevenueGeoCardViewModel } from "./stock-report-revenue-geo-view-model";
 
 function RevenueMixSectionSkeleton() {
   return (
@@ -31,13 +32,17 @@ const StockReportRevenueMixSection = dynamic(
   }
 );
 
-export default function StockReportRevenueMixSectionLazy() {
+type Props = Readonly<{
+  geoViewModel: RevenueGeoCardViewModel;
+}>;
+
+export default function StockReportRevenueMixSectionLazy({ geoViewModel }: Props) {
   return (
     <RenderOnVisible
       rootMargin="360px 0px"
       fallback={<RevenueMixSectionSkeleton />}
     >
-      <StockReportRevenueMixSection />
+      <StockReportRevenueMixSection geoViewModel={geoViewModel} />
     </RenderOnVisible>
   );
 }
