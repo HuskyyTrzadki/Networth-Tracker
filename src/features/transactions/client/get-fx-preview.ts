@@ -1,4 +1,4 @@
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 export type FxPreviewResponse = Readonly<{
   fromCurrency: string;
@@ -12,21 +12,15 @@ export async function getFxPreview(input: Readonly<{
   fromCurrency: string;
   toCurrency: string;
 }>): Promise<FxPreviewResponse> {
-  const response = await fetch("/api/transactions/fx-preview", {
+  const { payload } = await requestJson("/api/transactions/fx-preview", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    json: input,
+    fallbackMessage: "Nie udało się pobrać kursu FX.",
   });
 
-  const data = (await response.json().catch(() => null)) as unknown;
-
-  if (!response.ok) {
-    throw toClientError(data, "Nie udało się pobrać kursu FX.", response.status);
-  }
-
-  if (!data || typeof data !== "object" || !("rate" in data)) {
+  if (!payload || typeof payload !== "object" || !("rate" in payload)) {
     throw new Error("Brak odpowiedzi z kursem FX.");
   }
 
-  return data as FxPreviewResponse;
+  return payload as FxPreviewResponse;
 }

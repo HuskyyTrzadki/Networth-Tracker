@@ -1,5 +1,6 @@
 import type { ScreenshotImportCommitPayload } from "@/features/onboarding/lib/screenshot-import-schema";
 import { getApiErrorDetails, toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 import type { ScreenshotPortfolioImportPayload } from "../lib/screenshot-import-schema";
 
@@ -20,21 +21,20 @@ export async function commitScreenshotImport(
       ? "/api/transactions/screenshot/commit"
       : "/api/onboarding/screenshot/commit";
 
-  const response = await fetch(endpoint, {
+  const { response, payload: responsePayload } = await requestJson(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    json: payload,
+    fallbackMessage: "Nie udało się zapisać importu.",
+    throwOnError: false,
   });
-
-  const data = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
     const error = toClientError(
-      data,
+      responsePayload,
       "Nie udało się zapisać importu.",
       response.status
     ) as Error & { missingTickers?: string[] };
-    const details = getApiErrorDetails(data);
+    const details = getApiErrorDetails(responsePayload);
     if (
       details &&
       typeof details === "object" &&
@@ -43,20 +43,24 @@ export async function commitScreenshotImport(
     ) {
       error.missingTickers = (details as { missingTickers: string[] }).missingTickers;
     } else if (
-      data &&
-      typeof data === "object" &&
-      "missingTickers" in data &&
-      Array.isArray((data as { missingTickers?: unknown }).missingTickers)
+      responsePayload &&
+      typeof responsePayload === "object" &&
+      "missingTickers" in responsePayload &&
+      Array.isArray((responsePayload as { missingTickers?: unknown }).missingTickers)
     ) {
       // Backward compatibility for any legacy payloads still returning top-level field.
-      error.missingTickers = (data as { missingTickers: string[] }).missingTickers;
+      error.missingTickers = (responsePayload as { missingTickers: string[] }).missingTickers;
     }
     throw error;
   }
 
-  if (!data || typeof data !== "object" || !("portfolioId" in data)) {
+  if (
+    !responsePayload ||
+    typeof responsePayload !== "object" ||
+    !("portfolioId" in responsePayload)
+  ) {
     throw new Error("Brak odpowiedzi po zapisie importu.");
   }
 
-  return data as CommitScreenshotImportResponse;
+  return responsePayload as CommitScreenshotImportResponse;
 }

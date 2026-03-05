@@ -49,7 +49,7 @@ type CustomInstrumentKindRow = Readonly<{
   kind: string | null;
 }>;
 
-export async function getPortfolioAssetHoldings(
+export async function getPortfolioHoldings(
   supabase: SupabaseServerClient,
   portfolioId: string | null
 ): Promise<readonly PortfolioHolding[]> {
@@ -127,6 +127,3 @@ export async function getPortfolioAssetHoldings(
 
   return [...quotedHoldings, ...customHoldings];
 }
-
-// Backward-compatible alias; this helper already returns all asset classes.
-export const getPortfolioHoldings = getPortfolioAssetHoldings;

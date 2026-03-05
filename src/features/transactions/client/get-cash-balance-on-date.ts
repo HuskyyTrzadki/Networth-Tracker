@@ -1,4 +1,4 @@
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 export type CashBalanceOnDateResponse = Readonly<{
   portfolioId: string;
@@ -12,29 +12,19 @@ export async function getCashBalanceOnDate(input: Readonly<{
   cashCurrency: string;
   tradeDate: string;
 }>): Promise<CashBalanceOnDateResponse> {
-  const response = await fetch("/api/transactions/cash-balance-on-date", {
+  const { payload } = await requestJson("/api/transactions/cash-balance-on-date", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    json: input,
+    fallbackMessage: "Nie udało się pobrać salda gotówki na wybraną datę.",
   });
 
-  const data = (await response.json().catch(() => null)) as unknown;
-
-  if (!response.ok) {
-    throw toClientError(
-      data,
-      "Nie udało się pobrać salda gotówki na wybraną datę.",
-      response.status
-    );
-  }
-
   if (
-    !data ||
-    typeof data !== "object" ||
-    !("availableCashOnDate" in data)
+    !payload ||
+    typeof payload !== "object" ||
+    !("availableCashOnDate" in payload)
   ) {
     throw new Error("Brak odpowiedzi z saldem gotówki.");
   }
 
-  return data as CashBalanceOnDateResponse;
+  return payload as CashBalanceOnDateResponse;
 }

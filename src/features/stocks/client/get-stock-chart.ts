@@ -3,7 +3,7 @@ import type {
   StockChartRange,
   StockChartResponse,
 } from "@/features/stocks/types";
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 export async function getStockChart(
   providerKey: string,
@@ -16,23 +16,18 @@ export async function getStockChart(
     params.set("overlays", overlays.join(","));
   }
 
-  const response = await fetch(
+  const { payload } = await requestJson(
     `/api/public/stocks/${encodeURIComponent(providerKey)}/chart?${params.toString()}`,
     {
       signal,
       credentials: "omit",
+      fallbackMessage: "Nie udało się pobrać wykresu.",
     }
   );
 
-  const data = (await response.json().catch(() => null)) as unknown;
-
-  if (!response.ok) {
-    throw toClientError(data, "Nie udało się pobrać wykresu.", response.status);
-  }
-
-  if (!data || typeof data !== "object" || !("points" in data)) {
+  if (!payload || typeof payload !== "object" || !("points" in payload)) {
     throw new Error("Brak danych wykresu.");
   }
 
-  return data as StockChartResponse;
+  return payload as StockChartResponse;
 }

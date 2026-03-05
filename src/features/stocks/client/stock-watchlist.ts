@@ -1,30 +1,26 @@
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 export async function getStockWatchlistStatus(
   providerKey: string
 ): Promise<Readonly<{ isFavorite: boolean }>> {
-  const response = await fetch(
+  const { response, payload } = await requestJson(
     `/api/stocks/watchlist?providerKey=${encodeURIComponent(providerKey)}`,
-    { method: "GET" }
+    {
+      method: "GET",
+      fallbackMessage: "Nie udało się pobrać statusu ulubionych.",
+      allowStatuses: [401],
+    }
   );
   if (response.status === 401) {
     return { isFavorite: false };
   }
-  const data = (await response.json().catch(() => null)) as unknown;
-  if (!response.ok) {
-    throw toClientError(
-      data,
-      "Nie udało się pobrać statusu ulubionych.",
-      response.status
-    );
-  }
   if (
-    !data ||
-    typeof data !== "object" ||
-    !("isFavorite" in data) ||
-    typeof (data as { isFavorite?: unknown }).isFavorite !== "boolean"
+    !payload ||
+    typeof payload !== "object" ||
+    !("isFavorite" in payload) ||
+    typeof (payload as { isFavorite?: unknown }).isFavorite !== "boolean"
   ) {
     throw new Error("Nieprawidłowa odpowiedź serwera.");
   }
-  return data as { isFavorite: boolean };
+  return payload as { isFavorite: boolean };
 }

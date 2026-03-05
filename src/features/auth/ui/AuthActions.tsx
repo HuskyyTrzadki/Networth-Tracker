@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
@@ -15,7 +15,8 @@ import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/client";
 import { AuthEmailTabs } from "./AuthEmailTabs";
 import { AuthGuestUpgradeForm } from "./AuthGuestUpgradeForm";
-import { runAuthAction } from "./auth-action-runner";
+import { buildAuthCallbackRedirectTo } from "./auth-oauth-redirect";
+import { useAuthActionState } from "./use-auth-action-state";
 
 type Mode = "signedOut" | "guest" | "signedIn";
 
@@ -26,75 +27,7 @@ type Props = Readonly<{
   primaryGoogleActionLabel: string | null;
 }>;
 
-type NoticeKind = "error" | "success";
-
-type Notice = Readonly<{
-  kind: NoticeKind;
-  message: string;
-}>;
-
-type PendingAction = "signin" | "signup" | "upgrade" | "google" | "signout" | null;
-
-type State = Readonly<{
-  notice: Notice | null;
-  upgradeEmail: string;
-  upgradePassword: string;
-  signInEmail: string;
-  signInPassword: string;
-  signUpEmail: string;
-  signUpPassword: string;
-  pendingAction: PendingAction;
-}>;
-
-type Action =
-  | { type: "set_notice"; payload: Notice | null }
-  | { type: "set_upgrade_email"; payload: string }
-  | { type: "set_upgrade_password"; payload: string }
-  | { type: "set_signin_email"; payload: string }
-  | { type: "set_signin_password"; payload: string }
-  | { type: "set_signup_email"; payload: string }
-  | { type: "set_signup_password"; payload: string }
-  | { type: "set_pending_action"; payload: PendingAction };
-
-const initialState: State = {
-  notice: null,
-  upgradeEmail: "",
-  upgradePassword: "",
-  signInEmail: "",
-  signInPassword: "",
-  signUpEmail: "",
-  signUpPassword: "",
-  pendingAction: null,
-};
-
-const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "set_notice":
-      return { ...state, notice: action.payload };
-    case "set_upgrade_email":
-      return { ...state, upgradeEmail: action.payload };
-    case "set_upgrade_password":
-      return { ...state, upgradePassword: action.payload };
-    case "set_signin_email":
-      return { ...state, signInEmail: action.payload };
-    case "set_signin_password":
-      return { ...state, signInPassword: action.payload };
-    case "set_signup_email":
-      return { ...state, signUpEmail: action.payload };
-    case "set_signup_password":
-      return { ...state, signUpPassword: action.payload };
-    case "set_pending_action":
-      return { ...state, pendingAction: action.payload };
-    default:
-      return state;
-  }
-};
-
-const buildRedirectTo = (nextPath: string) => {
-  const url = new URL("/api/auth/callback", window.location.origin);
-  url.searchParams.set("next", nextPath);
-  return url.toString();
-};
+type PendingAction = "signin" | "signup" | "upgrade" | "google" | "signout";
 
 export function AuthActions({
   mode,
@@ -104,42 +37,20 @@ export function AuthActions({
 }: Props) {
   const router = useRouter();
   const supabase = createClient();
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const {
-    notice,
-    upgradeEmail,
-    upgradePassword,
-    signInEmail,
-    signInPassword,
-    signUpEmail,
-    signUpPassword,
-    pendingAction,
-  } = state;
-
-  const setNotice = (payload: Notice | null) =>
-    dispatch({ type: "set_notice", payload });
-  const setPendingAction = (payload: PendingAction) =>
-    dispatch({ type: "set_pending_action", payload });
-  const clearNotice = () => setNotice(null);
-  const setErrorNotice = (message: string) =>
-    setNotice({
-      kind: "error",
-      message,
-    });
-  const setSuccessNotice = (message: string) =>
-    setNotice({
-      kind: "success",
-      message,
-    });
+  const [upgradeEmail, setUpgradeEmail] = useState("");
+  const [upgradePassword, setUpgradePassword] = useState("");
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const { notice, pendingAction, runWithPending, setErrorNotice, setSuccessNotice } =
+    useAuthActionState<PendingAction>();
 
   const startGoogleAuth = async () => {
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction("google");
-      },
+    await runWithPending({
+      pendingAction: "google",
       run: async () => {
-        const redirectTo = buildRedirectTo(nextPath);
+        const redirectTo = buildAuthCallbackRedirectTo(nextPath);
         const result =
           mode === "signedOut"
             ? await supabase.auth.signInWithOAuth({
@@ -159,16 +70,12 @@ export function AuthActions({
         setErrorNotice(
           "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie."
         ),
-      after: () => setPendingAction(null),
     });
   };
 
   const submitEmailUpgrade = async () => {
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction("upgrade");
-      },
+    await runWithPending({
+      pendingAction: "upgrade",
       run: () => upgradeWithEmail({ email: upgradeEmail, password: upgradePassword }),
       onSuccess: () => {
         setSuccessNotice(
@@ -183,32 +90,24 @@ export function AuthActions({
             "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie."
           )
         ),
-      after: () => setPendingAction(null),
     });
   };
 
   const startSignOut = async () => {
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction("signout");
-      },
+    await runWithPending({
+      pendingAction: "signout",
       run: signOutSession,
       onSuccess: () => {
         router.refresh();
       },
       onError: (error) =>
         setErrorNotice(readAuthErrorMessage(error, "Coś poszło nie tak. Spróbuj ponownie.")),
-      after: () => setPendingAction(null),
     });
   };
 
   const submitEmailSignIn = async () => {
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction("signin");
-      },
+    await runWithPending({
+      pendingAction: "signin",
       run: () => signInWithEmail({ email: signInEmail, password: signInPassword }),
       onSuccess: () => {
         setSuccessNotice("Zalogowano.");
@@ -221,16 +120,12 @@ export function AuthActions({
             "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie."
           )
         ),
-      after: () => setPendingAction(null),
     });
   };
 
   const submitEmailSignUp = async () => {
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction("signup");
-      },
+    await runWithPending({
+      pendingAction: "signup",
       run: () =>
         signUpWithEmail({
           email: signUpEmail,
@@ -251,7 +146,6 @@ export function AuthActions({
             "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie."
           )
         ),
-      after: () => setPendingAction(null),
     });
   };
 
@@ -326,18 +220,10 @@ export function AuthActions({
           signUpEmail={signUpEmail}
           signUpPassword={signUpPassword}
           pendingAction={pendingAction}
-          onSignInEmailChange={(value) =>
-            dispatch({ type: "set_signin_email", payload: value })
-          }
-          onSignInPasswordChange={(value) =>
-            dispatch({ type: "set_signin_password", payload: value })
-          }
-          onSignUpEmailChange={(value) =>
-            dispatch({ type: "set_signup_email", payload: value })
-          }
-          onSignUpPasswordChange={(value) =>
-            dispatch({ type: "set_signup_password", payload: value })
-          }
+          onSignInEmailChange={setSignInEmail}
+          onSignInPasswordChange={setSignInPassword}
+          onSignUpEmailChange={setSignUpEmail}
+          onSignUpPasswordChange={setSignUpPassword}
           onSignInSubmit={submitEmailSignIn}
           onSignUpSubmit={submitEmailSignUp}
         />
@@ -348,12 +234,8 @@ export function AuthActions({
           email={upgradeEmail}
           password={upgradePassword}
           pendingAction={pendingAction}
-          onEmailChange={(value) =>
-            dispatch({ type: "set_upgrade_email", payload: value })
-          }
-          onPasswordChange={(value) =>
-            dispatch({ type: "set_upgrade_password", payload: value })
-          }
+          onEmailChange={setUpgradeEmail}
+          onPasswordChange={setUpgradePassword}
           onSubmit={submitEmailUpgrade}
         />
       ) : null}

@@ -45,6 +45,7 @@ Out of scope:
 - Route handlers must return RFC7807-lite errors via shared HTTP helpers (`src/lib/http/api-error.ts`) using `{ error: { code, message, requestId, details? }, message }`; keep `message` alias for backward compatibility.
 - Domain/business failures should throw typed `AppError` (`src/lib/http/app-error.ts`) instead of relying on message-text status mapping.
 - Public/heavy endpoints must use shared rate limiting (`src/lib/http/rate-limit.ts`) and return `429` with `Retry-After`.
+- Client-side API modules should use shared `requestJson` from `src/lib/http/client-request.ts` for fetch + JSON parsing + RFC7807-lite error mapping (including explicit `allowStatuses` for non-fatal statuses like `401`).
 - Validate external provider interfaces against official docs before changing integrations.
 - URL query state in client components should use `nuqs` parser maps (avoid manual `URLSearchParams` mutation); use non-shallow updates when server data depends on search params.
 - Viewport-gated client rendering should use `useInViewVisibility` (`src/features/common/hooks/use-in-view-visibility.ts`) to keep observer behavior consistent and avoid route-wide motion runtime dependencies.

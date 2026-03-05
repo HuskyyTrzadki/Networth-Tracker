@@ -1,4 +1,4 @@
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 type EmailCredentials = Readonly<{
   email: string;
@@ -24,22 +24,11 @@ const postAuth = async (
   fallbackMessage: string,
   body?: unknown
 ) => {
-  const response = await fetch(endpoint, {
+  const { payload } = await requestJson(endpoint, {
     method: "POST",
-    headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  }).catch(() => null);
-
-  if (!response) {
-    throw toClientError(null, fallbackMessage);
-  }
-
-  const payload = (await response.json().catch(() => null)) as unknown;
-
-  if (!response.ok) {
-    throw toClientError(payload, fallbackMessage, response.status);
-  }
-
+    json: body,
+    fallbackMessage,
+  });
   return payload;
 };
 

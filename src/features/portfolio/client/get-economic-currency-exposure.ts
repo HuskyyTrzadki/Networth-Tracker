@@ -2,37 +2,28 @@ import type {
   EconomicCurrencyExposureApiPayload,
   EconomicCurrencyExposureApiResponse,
 } from "../lib/currency-exposure";
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 export async function getEconomicCurrencyExposure(
-  payload: EconomicCurrencyExposureApiPayload,
+  requestPayload: EconomicCurrencyExposureApiPayload,
   signal?: AbortSignal
 ): Promise<EconomicCurrencyExposureApiResponse> {
   const requestStartedAt = performance.now();
-  const response = await fetch("/api/portfolio/currency-exposure/economic", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-    signal,
-  });
-
-  const data = (await response.json().catch(() => null)) as unknown;
-
-  if (!response.ok) {
-    throw toClientError(
-      data,
-      "Nie udało się obliczyć ekspozycji gospodarczej.",
-      response.status
-    );
-  }
+  const { response, payload: responsePayload } = await requestJson(
+    "/api/portfolio/currency-exposure/economic",
+    {
+      method: "POST",
+      json: requestPayload,
+      signal,
+      fallbackMessage: "Nie udało się obliczyć ekspozycji gospodarczej.",
+    }
+  );
 
   if (
-    !data ||
-    typeof data !== "object" ||
-    !("modelMode" in data) ||
-    (data as { modelMode?: unknown }).modelMode !== "ECONOMIC"
+    !responsePayload ||
+    typeof responsePayload !== "object" ||
+    !("modelMode" in responsePayload) ||
+    (responsePayload as { modelMode?: unknown }).modelMode !== "ECONOMIC"
   ) {
     throw new Error("Brak odpowiedzi dla ekspozycji gospodarczej.");
   }
@@ -47,13 +38,13 @@ export async function getEconomicCurrencyExposure(
     console.info("[currency-exposure][economic] client_response", {
       traceId,
       durationMs: Math.round(performance.now() - requestStartedAt),
-      status: (data as EconomicCurrencyExposureApiResponse).status,
-      fromCache: (data as EconomicCurrencyExposureApiResponse).meta.fromCache,
-      model: (data as EconomicCurrencyExposureApiResponse).meta.model,
-      promptVersion: (data as EconomicCurrencyExposureApiResponse).meta.promptVersion,
-      chart: (data as EconomicCurrencyExposureApiResponse).chart,
+      status: (responsePayload as EconomicCurrencyExposureApiResponse).status,
+      fromCache: (responsePayload as EconomicCurrencyExposureApiResponse).meta.fromCache,
+      model: (responsePayload as EconomicCurrencyExposureApiResponse).meta.model,
+      promptVersion: (responsePayload as EconomicCurrencyExposureApiResponse).meta.promptVersion,
+      chart: (responsePayload as EconomicCurrencyExposureApiResponse).chart,
     });
   }
 
-  return data as EconomicCurrencyExposureApiResponse;
+  return responsePayload as EconomicCurrencyExposureApiResponse;
 }

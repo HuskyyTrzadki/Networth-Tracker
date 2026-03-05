@@ -1,5 +1,5 @@
 import type { DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
-import { toClientError } from "@/lib/http/client-error";
+import { requestJson } from "@/lib/http/client-request";
 
 export type BookDividendPayload = Readonly<{
   portfolioId: string;
@@ -22,48 +22,34 @@ export async function getDividendInbox(
   query.set("windowPastDays", "60");
   query.set("windowFutureDays", "60");
 
-  const response = await fetch(`/api/dividends/inbox?${query.toString()}`, {
+  const { payload } = await requestJson(`/api/dividends/inbox?${query.toString()}`, {
     signal,
+    fallbackMessage: "Nie udało się pobrać skrzynki dywidend.",
   });
-  const data = (await response.json().catch(() => null)) as unknown;
 
-  if (!response.ok) {
-    throw toClientError(
-      data,
-      "Nie udało się pobrać skrzynki dywidend.",
-      response.status
-    );
-  }
-
-  if (!data || typeof data !== "object" || !("scope" in data)) {
+  if (!payload || typeof payload !== "object" || !("scope" in payload)) {
     throw new Error("Brak odpowiedzi dla skrzynki dywidend.");
   }
 
-  return data as DividendInboxResult;
+  return payload as DividendInboxResult;
 }
 
 export async function bookDividend(
   payload: BookDividendPayload
 ): Promise<Readonly<{ transactionId: string }>> {
-  const response = await fetch("/api/dividends/book", {
+  const { payload: responsePayload } = await requestJson("/api/dividends/book", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    json: payload,
+    fallbackMessage: "Nie udało się zaksięgować dywidendy.",
   });
 
-  const data = (await response.json().catch(() => null)) as unknown;
-
-  if (!response.ok) {
-    throw toClientError(
-      data,
-      "Nie udało się zaksięgować dywidendy.",
-      response.status
-    );
-  }
-
-  if (!data || typeof data !== "object" || !("transactionId" in data)) {
+  if (
+    !responsePayload ||
+    typeof responsePayload !== "object" ||
+    !("transactionId" in responsePayload)
+  ) {
     throw new Error("Brak odpowiedzi po księgowaniu dywidendy.");
   }
 
-  return data as Readonly<{ transactionId: string }>;
+  return responsePayload as Readonly<{ transactionId: string }>;
 }

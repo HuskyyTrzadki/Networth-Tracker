@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -14,109 +14,41 @@ import { Input } from "@/features/design-system/components/ui/input";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/client";
-import { runAuthAction } from "./auth-action-runner";
+import { buildAuthCallbackRedirectTo } from "./auth-oauth-redirect";
+import { useAuthActionState } from "./use-auth-action-state";
 
 type Mode = "signin" | "signup";
-type PendingAction = "google" | "signin" | "signup" | null;
-
-type Notice = Readonly<{
-  kind: "error" | "success";
-  message: string;
-}>;
-
-type State = Readonly<{
-  mode: Mode;
-  email: string;
-  password: string;
-  pendingAction: PendingAction;
-  notice: Notice | null;
-}>;
-
-type Action =
-  | { type: "set_mode"; payload: Mode }
-  | { type: "set_email"; payload: string }
-  | { type: "set_password"; payload: string }
-  | { type: "set_pending_action"; payload: PendingAction }
-  | { type: "set_notice"; payload: Notice | null };
-
-const initialState: State = {
-  mode: "signin",
-  email: "",
-  password: "",
-  pendingAction: null,
-  notice: null,
-};
-
-const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "set_mode":
-      return { ...state, mode: action.payload };
-    case "set_email":
-      return { ...state, email: action.payload };
-    case "set_password":
-      return { ...state, password: action.payload };
-    case "set_pending_action":
-      return { ...state, pendingAction: action.payload };
-    case "set_notice":
-      return { ...state, notice: action.payload };
-    default:
-      return state;
-  }
-};
-
-const buildRedirectTo = () => {
-  const url = new URL("/api/auth/callback", window.location.origin);
-  url.searchParams.set("next", "/portfolio");
-  return url.toString();
-};
+type PendingAction = "google" | "signin" | "signup";
 
 export function AuthLoginPanel() {
   const router = useRouter();
   const supabase = createClient();
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { mode, email, password, pendingAction, notice } = state;
-  const setNotice = (payload: Notice | null) => dispatch({ type: "set_notice", payload });
-  const setPendingAction = (payload: PendingAction) =>
-    dispatch({ type: "set_pending_action", payload });
-  const clearNotice = () => setNotice(null);
-  const setErrorNotice = (message: string) =>
-    setNotice({
-      kind: "error",
-      message,
-    });
-  const setSuccessNotice = (message: string) =>
-    setNotice({
-      kind: "success",
-      message,
-    });
+  const [mode, setMode] = useState<Mode>("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { notice, pendingAction, runWithPending, setErrorNotice, setSuccessNotice } =
+    useAuthActionState<PendingAction>();
 
   const onGoogleSignIn = async () => {
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction("google");
-      },
+    await runWithPending({
+      pendingAction: "google",
       run: async () => {
         const result = await supabase.auth.signInWithOAuth({
           provider: "google",
-          options: { redirectTo: buildRedirectTo() },
+          options: { redirectTo: buildAuthCallbackRedirectTo("/portfolio") },
         });
         if (result.error) {
           throw result.error;
         }
       },
       onError: () => setErrorNotice("Nie udalo sie uruchomic logowania Google."),
-      after: () => setPendingAction(null),
     });
   };
 
   const onSubmit = async () => {
     const action = mode === "signin" ? "signin" : "signup";
-    await runAuthAction({
-      before: () => {
-        clearNotice();
-        setPendingAction(action);
-      },
+    await runWithPending({
+      pendingAction: action,
       run: async () => {
         if (mode === "signin") {
           await signInWithEmail({ email, password });
@@ -149,7 +81,6 @@ export function AuthLoginPanel() {
         );
         setErrorNotice(message);
       },
-      after: () => setPendingAction(null),
     });
   };
 
@@ -184,7 +115,7 @@ export function AuthLoginPanel() {
           <div className="inline-flex items-center gap-5">
             <button
               type="button"
-              onClick={() => dispatch({ type: "set_mode", payload: "signin" })}
+              onClick={() => setMode("signin")}
               className={cn(
                 "border-b border-transparent pb-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground/80 transition-colors",
                 mode === "signin"
@@ -196,7 +127,7 @@ export function AuthLoginPanel() {
             </button>
             <button
               type="button"
-              onClick={() => dispatch({ type: "set_mode", payload: "signup" })}
+              onClick={() => setMode("signup")}
               className={cn(
                 "border-b border-transparent pb-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground/80 transition-colors",
                 mode === "signup"
@@ -218,9 +149,7 @@ export function AuthLoginPanel() {
                 type="email"
                 autoComplete="email"
                 value={email}
-                onChange={(event) =>
-                  dispatch({ type: "set_email", payload: event.target.value })
-                }
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
               />
             </label>
@@ -233,9 +162,7 @@ export function AuthLoginPanel() {
                 type="password"
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
                 value={password}
-                onChange={(event) =>
-                  dispatch({ type: "set_password", payload: event.target.value })
-                }
+                onChange={(event) => setPassword(event.target.value)}
                 placeholder="Minimum 8 znakow"
               />
             </label>
