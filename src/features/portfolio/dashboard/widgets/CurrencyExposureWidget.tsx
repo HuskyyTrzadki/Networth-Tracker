@@ -10,14 +10,17 @@ import type {
   CurrencyExposureChartRow,
   CurrencyExposureDetailsRow,
   CurrencyExposureMode,
-  EconomicCurrencyExposureApiResponse,
 } from "@/features/portfolio/lib/currency-exposure";
-import { getEconomicCurrencyExposure } from "@/features/portfolio/client/get-economic-currency-exposure";
 import { cn } from "@/lib/cn";
 import { formatCurrencyString, getCurrencyFormatter } from "@/lib/format-currency";
 
 import type { PortfolioSummary } from "../../server/valuation";
 import { buildInvestorCurrencyExposure } from "./currency-exposure-view-model";
+import {
+  buildCurrencyExposureWidgetViewState,
+  parseCurrencyExposureMode,
+} from "./currency-exposure-widget-view-state";
+import { useEconomicCurrencyExposure } from "./use-economic-currency-exposure";
 
 type Props = Readonly<{
   summary: PortfolioSummary;
@@ -74,37 +77,6 @@ const findDetailsForCurrency = (
   details: readonly CurrencyExposureDetailsRow[],
   currencyCode: string
 ) => details.find((row) => row.currencyCode === currencyCode)?.drivers ?? [];
-
-const buildExposureDeltaChips = (
-  currentRows: readonly CurrencyExposureChartRow[],
-  comparisonRows: readonly CurrencyExposureChartRow[]
-) => {
-  const comparisonShareByCurrency = new Map(
-    comparisonRows.map((row) => [row.currencyCode, row.sharePct] as const)
-  );
-  const currentShareByCurrency = new Map(
-    currentRows.map((row) => [row.currencyCode, row.sharePct] as const)
-  );
-  const currencyCodes = new Set([
-    ...currentRows.map((row) => row.currencyCode),
-    ...comparisonRows.map((row) => row.currencyCode),
-  ]);
-
-  return Array.from(currencyCodes)
-    .map((currencyCode) => {
-      const currentShare = currentShareByCurrency.get(currencyCode) ?? 0;
-      const comparisonShare = comparisonShareByCurrency.get(currencyCode) ?? 0;
-      const delta = currentShare - comparisonShare;
-
-      return {
-        currencyCode,
-        delta,
-      };
-    })
-    .filter((row) => Math.abs(row.delta) >= 0.1)
-    .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))
-    .slice(0, 4);
-};
 
 function ExposureBars({
   rows,
@@ -214,67 +186,19 @@ function ExposureBars({
 export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) {
   const investorData = buildInvestorCurrencyExposure(summary);
   const [mode, setMode] = useState<CurrencyExposureMode>("NOTOWANIA");
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [economicResponse, setEconomicResponse] =
-    useState<EconomicCurrencyExposureApiResponse | null>(null);
-  const economicReadyResponse =
-    economicResponse?.status === "READY" ? economicResponse : null;
-  const isPendingSourceData = economicResponse?.status === "PENDING_SOURCE_DATA";
-
-  const activeChart = mode === "GOSPODARCZA" ? economicReadyResponse?.chart ?? [] : investorData.chart;
-  const activeDetails =
-    mode === "GOSPODARCZA" ? economicReadyResponse?.details ?? [] : investorData.details;
-  const comparisonChart =
-    mode === "GOSPODARCZA" ? investorData.chart : economicReadyResponse?.chart ?? [];
-  const deltaChips = economicReadyResponse
-    ? buildExposureDeltaChips(activeChart, comparisonChart)
-    : [];
-  const deltaReferenceLabel = mode === "GOSPODARCZA" ? "vs Notowania" : "vs Gospodarcza";
-
-  const calculateEconomicExposure = async () => {
-    if (isLoading || economicResponse) return;
-
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const response = await getEconomicCurrencyExposure({
-        portfolioId: selectedPortfolioId,
-      });
-      setEconomicResponse(response);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Nie udało się policzyć ekspozycji."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const retryEconomicExposure = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const response = await getEconomicCurrencyExposure({
-        portfolioId: selectedPortfolioId,
-      });
-      setEconomicResponse(response);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Nie udało się policzyć ekspozycji."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { isLoading, errorMessage, economicResponse, loadEconomicExposure } =
+    useEconomicCurrencyExposure({ selectedPortfolioId });
+  const {
+    activeChart,
+    activeDetails,
+    deltaChips,
+    deltaReferenceLabel,
+    isPendingSourceData,
+  } = buildCurrencyExposureWidgetViewState({
+    mode,
+    investorData,
+    economicResponse,
+  });
 
   return (
     <ChartCard
@@ -288,11 +212,14 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
             type="single"
             value={mode}
             onValueChange={(value) => {
-              if (value === "NOTOWANIA" || value === "GOSPODARCZA") {
-                setMode(value);
-                if (value === "GOSPODARCZA") {
-                  void calculateEconomicExposure();
-                }
+              const parsedMode = parseCurrencyExposureMode(value);
+              if (!parsedMode) {
+                return;
+              }
+
+              setMode(parsedMode);
+              if (parsedMode === "GOSPODARCZA") {
+                void loadEconomicExposure({ allowCachedResponse: true });
               }
             }}
           >
@@ -349,7 +276,7 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
               <Button
                 className="mt-2 h-8 rounded-full"
                 onClick={() => {
-                  void retryEconomicExposure();
+                  void loadEconomicExposure({ allowCachedResponse: false });
                 }}
                 size="sm"
                 type="button"

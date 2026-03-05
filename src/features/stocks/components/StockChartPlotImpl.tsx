@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   Area,
@@ -15,26 +15,26 @@ import {
 import { LoaderCircle } from "lucide-react";
 import {
   ChartContainer,
-  type ChartConfig,
 } from "@/features/design-system/components/ui/chart";
+import { useElementWidth } from "@/features/common/hooks/use-element-width";
+import { usePrefersReducedMotion } from "@/features/common/hooks/use-prefers-reduced-motion";
 
 import type {
   StockChartOverlay,
   StockChartResponse,
 } from "../server/types";
 import {
-  OVERLAY_LINE_COLORS,
   formatXAxisTick,
-  toOverlayLineDataKey,
   type StockChartMode,
 } from "./stock-chart-card-helpers";
 import type { StockChartEventMarker } from "./stock-chart-event-markers";
 import type { VisibleTradeMarker } from "./stock-chart-card-view-model";
 import { renderStockChartPlotMarkerLayers } from "./StockChartPlotMarkerLayers";
-import { buildNarrativeLabelLayout } from "./stock-chart-narrative-label-layout";
-import { buildPositionedTradeMarkers } from "./stock-chart-trade-marker-layout";
 import {
-  buildStockChartEventMarkerPoints,
+  buildStockChartPlotViewState,
+  resolveStockChartPlotAnimationState,
+} from "./stock-chart-plot-view-state";
+import {
   StockChartHoverEventCard,
   StockChartTooltipPanel,
   type StockChartHoverMarker,
@@ -122,107 +122,45 @@ export default function StockChartPlotImpl({
   isLoading,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [chartWidth, setChartWidth] = useState(0);
+  const chartWidth = useElementWidth(containerRef);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [hoveredMarker, setHoveredMarker] = useState<StockChartHoverMarker | null>(null);
   const [hoveredMarkerCoordinates, setHoveredMarkerCoordinates] = useState<{
     x: number;
     y: number;
   } | null>(null);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
-
-    update();
-    mediaQuery.addEventListener("change", update);
-
-    return () => {
-      mediaQuery.removeEventListener("change", update);
-    };
-  }, []);
-
-  useEffect(() => {
-    const element = containerRef.current;
-    if (!element) {
-      return;
-    }
-
-    const updateWidth = () => {
-      setChartWidth(element.clientWidth);
-    };
-
-    updateWidth();
-
-    const observer = new ResizeObserver(() => {
-      updateWidth();
-    });
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const animationDisabled = prefersReducedMotion || isLoading;
-  const chartAnimationDuration = animationDisabled ? 0 : 180;
-  const overlayAnimationDuration = animationDisabled ? 0 : 160;
-  const areaAnimationDuration = animationDisabled ? 0 : 160;
-  const hasEnabledOverlays = normalizedOverlays.some(
-    (overlay) => chart?.hasOverlayData[overlay] === true
+  const animationState = resolveStockChartPlotAnimationState(
+    isLoading,
+    prefersReducedMotion
   );
-  const areaFillColor =
-    priceTrendDirection === "up"
-      ? hasEnabledOverlays
-        ? "rgba(95, 174, 112, 0.28)"
-        : "rgba(95, 174, 112, 0.42)"
-      : priceTrendDirection === "down"
-        ? hasEnabledOverlays
-          ? "rgba(208, 116, 109, 0.26)"
-          : "rgba(208, 116, 109, 0.38)"
-        : hasEnabledOverlays
-          ? "rgba(138, 138, 138, 0.18)"
-          : "rgba(138, 138, 138, 0.28)";
-  const areaBaseValue = priceAxisDomainForChart?.[0] ?? 0;
-  const eventMarkerPoints = buildStockChartEventMarkerPoints(
-    chartData,
-    eventMarkers,
-    priceAxisDomainForChart
-  );
-  const truncateNarrativeLabel = (label: string) =>
-    label.length > 26 ? `${label.slice(0, 26)}...` : label;
-  const narrativeLabelLayout = buildNarrativeLabelLayout(
+  const {
+    areaBaseValue,
+    areaFillColor,
+    chartConfig,
+    chartCurrency,
     eventMarkerPoints,
-    truncateNarrativeLabel
-  );
-  const overlayAxisLabelValue = overlayAxisLabel ?? undefined;
-  const chartCurrency = chart?.currency ?? "USD";
-  const hoveredMarkerId = hoveredMarker?.id ?? null;
-  const positionedTradeMarkers = buildPositionedTradeMarkers({
-    markers: visibleTradeMarkers,
+    hasEnabledOverlays,
+    mutableChartData,
+    narrativeLabelLayout,
+    overlayAxisLabelValue,
+    overlayLines,
+    positionedTradeMarkers,
+  } = buildStockChartPlotViewState({
+    chart,
     chartData,
-    priceAxisDomain: priceAxisDomainForChart,
-    plotWidth: Math.max(chartWidth - 96, 0),
+    normalizedOverlays,
+    mode,
+    priceTrendDirection,
+    priceLineColor,
+    priceAxisDomainForChart,
+    overlayAxisLabel,
+    visibleTradeMarkers,
+    eventMarkers,
+    chartWidth,
   });
-  const mutableChartData = [...chartData];
-  const chartConfig = normalizedOverlays.reduce<ChartConfig>(
-    (acc, overlay) => {
-      acc[overlay] = {
-        label: overlay,
-        color: OVERLAY_LINE_COLORS[overlay],
-      };
-      return acc;
-    },
-    {
-      price: {
-        label: "Cena",
-        color: priceLineColor,
-      },
-    }
-  );
+
+  const hoveredMarkerId = hoveredMarker?.id ?? null;
 
   const handleMarkerHover = (
     marker: StockChartHoverMarker | null,
@@ -321,8 +259,8 @@ export default function StockChartPlotImpl({
                 baseValue={areaBaseValue}
                 fill={areaFillColor}
                 fillOpacity={1}
-                isAnimationActive={!animationDisabled}
-                animationDuration={areaAnimationDuration}
+                isAnimationActive={!animationState.isDisabled}
+                animationDuration={animationState.areaDuration}
                 animationEasing="ease-out"
               />
               <Line
@@ -338,34 +276,28 @@ export default function StockChartPlotImpl({
                 dot={false}
                 activeDot={false}
                 connectNulls={false}
-                isAnimationActive={!animationDisabled}
-                animationDuration={chartAnimationDuration}
+                isAnimationActive={!animationState.isDisabled}
+                animationDuration={animationState.chartDuration}
                 animationEasing="ease-out"
                 name="price"
               />
-              {normalizedOverlays.map((overlay) => {
-                const lineDataKey = toOverlayLineDataKey(overlay, mode);
-                const hasData = chart.hasOverlayData[overlay];
-                if (!hasData) return null;
-
-                return (
-                  <Line
-                    key={overlay}
-                    yAxisId={mode === "trend" ? "overlay" : "price"}
-                    dataKey={lineDataKey}
-                    type={overlay === "epsTtm" ? "stepAfter" : "linear"}
-                    stroke={OVERLAY_LINE_COLORS[overlay]}
-                    strokeWidth={2.8}
-                    strokeOpacity={0.97}
-                    dot={false}
-                    connectNulls={false}
-                    isAnimationActive={!animationDisabled}
-                    animationDuration={overlayAnimationDuration}
-                    animationEasing="ease-out"
-                    name={lineDataKey}
-                  />
-                );
-              })}
+              {overlayLines.map((overlayLine) => (
+                <Line
+                  key={overlayLine.overlay}
+                  yAxisId={overlayLine.yAxisId}
+                  dataKey={overlayLine.lineDataKey}
+                  type={overlayLine.type}
+                  stroke={overlayLine.color}
+                  strokeWidth={2.8}
+                  strokeOpacity={0.97}
+                  dot={false}
+                  connectNulls={false}
+                  isAnimationActive={!animationState.isDisabled}
+                  animationDuration={animationState.overlayDuration}
+                  animationEasing="ease-out"
+                  name={overlayLine.lineDataKey}
+                />
+              ))}
               {renderStockChartPlotMarkerLayers({
                 eventMarkerPoints,
                 positionedTradeMarkers,

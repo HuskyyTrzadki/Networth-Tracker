@@ -32,6 +32,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/CurrencyExposureWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/currency-exposure-view-model.ts`
+- `src/features/portfolio/dashboard/widgets/currency-exposure-widget-view-state.ts`
+- `src/features/portfolio/dashboard/widgets/use-economic-currency-exposure.ts`
 - `src/features/portfolio/dashboard/widgets/DividendInboxWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/DividendInboxBookAction.tsx`
 - `src/features/portfolio/dashboard/widgets/DividendBookingDialog.tsx`
@@ -183,6 +185,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Net-value hero no longer renders a standalone `Stan na` card; freshness lives behind a compact `InfoHint` next to `Wartość netto` to reduce cognitive load.
 - `Największe ruchy` rows are actionable cards linking to `/stocks/[providerKey]`, so dashboard exploration reuses the stock report route instead of read-only summary pills.
 - Currency exposure mode switch (`Notowania` vs `Gospodarcza`) shows compact delta chips (`pp`) against the alternate model once economic exposure is available, so mode changes communicate immediate value.
+- Currency exposure widget state derivation and mode parsing live in `currency-exposure-widget-view-state.ts` (parser + view-state builder) so `CurrencyExposureWidget.tsx` stays render/orchestration-focused.
+- Economic exposure request lifecycle (loading/error/cached-first fetch) is isolated in `use-economic-currency-exposure.ts`; widget triggers it with `allowCachedResponse` depending on first open vs retry.
 - Recent transactions empty state includes a direct `Dodaj transakcję` CTA (scoped to the selected portfolio when present), not just passive copy.
 - Past-dated transactions mark a dirty range and trigger chunked snapshot rebuild (`portfolio_snapshot_rebuild_state`) so history/performance can be recomputed from the affected date.
 - Transaction edit flow marks dirty range from the earlier of old/new trade date (`min(old_trade_date, new_trade_date)`), so moved transactions correctly remove historical impact before re-applying.

@@ -10,19 +10,19 @@ import { dispatchSnapshotRebuildTriggeredEvent } from "@/features/portfolio/lib/
 import { Form } from "@/features/design-system/components/ui/form";
 import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
 import { createAddTransactionFormSchema, type AssetMode, type TransactionType } from "../lib/add-transaction-form-schema";
-import { DEFAULT_CUSTOM_ASSET_TYPE, type CustomAssetType } from "../lib/custom-asset-types";
+import type { CustomAssetType } from "../lib/custom-asset-types";
 import type { CashflowTypeUi } from "../lib/cashflow-types";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
-import {
-  createTransactionAction,
-  deleteTransactionAction,
-  updateTransactionAction,
-} from "../server/transaction-actions";
 import type { InstrumentSearchClient } from "../client/search-instruments";
-import { buildSubmitPayloadFields, triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
+import { triggerSnapshotRebuild } from "./add-transaction/submit-helpers";
 import type { AssetTab } from "./add-transaction/constants";
 import { AddTransactionDialogFooter } from "./add-transaction/AddTransactionDialogFooter";
 import { AddTransactionDialogFields } from "./add-transaction/AddTransactionDialogFields";
+import { buildTransactionSubmitIntent } from "./add-transaction/submit-intent";
+import {
+  executeTransactionSubmitIntent,
+  undoCreatedTransaction,
+} from "./add-transaction/submit-actions";
 import {
   buildAddTransactionDefaultValues,
   resolveDialogInitialTab,
@@ -159,100 +159,40 @@ export function AddTransactionDialogContent({
   };
 
   const submitTransaction = form.handleSubmit(async (values) => {
-    if (!isCustomTab && !selectedInstrument) {
-      form.setError("assetId", { message: "Wybierz instrument." });
+    const buildResult = buildTransactionSubmitIntent({
+      mode,
+      editTransactionId,
+      values,
+      isCashTab,
+      isCustomTab,
+      selectedInstrument,
+      forcedPortfolioId,
+    });
+
+    if (!buildResult.ok) {
+      form.setError(buildResult.field, { message: buildResult.message });
       return;
     }
 
     setIsSubmitting(true);
     form.clearErrors("root");
-    const resolvedPortfolioId = forcedPortfolioId ?? values.portfolioId;
-    const payloadFields = buildSubmitPayloadFields(values, isCashTab);
-    if (isEditMode) {
-      if (!editTransactionId) {
-        form.setError("root", { message: "Brak identyfikatora transakcji do edycji." });
-        setIsSubmitting(false);
-        return;
-      }
 
-      const updated = await updateTransactionAction(editTransactionId, {
-        type: values.type,
-        date: values.date,
-        quantity: values.quantity,
-        ...payloadFields,
-        notes: values.notes,
-        customAnnualRatePct: isCustomTab
-          ? (values.customAnnualRatePct ?? "")
-          : undefined,
-      }).catch((error: unknown) => {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Nie udało się zaktualizować transakcji.";
-        form.setError("root", { message });
-        return null;
-      });
+    const result = await executeTransactionSubmitIntent(buildResult.intent);
+    if (!result.ok) {
+      form.setError("root", { message: result.message });
+      setIsSubmitting(false);
+      return;
+    }
 
-      if (!updated) {
-        setIsSubmitting(false);
-        return;
-      }
+    triggerRebuildSignals(result.portfolioId);
 
-      triggerRebuildSignals(updated.portfolioId);
+    if (result.kind === "edit") {
       dispatchAppToast({
         title: "Transakcja zaktualizowana.",
         description: "Zmiany zostały zapisane.",
         tone: "success",
       });
     } else {
-      const createResult = await createTransactionAction({
-        type: values.type,
-        date: values.date,
-        quantity: values.quantity,
-        ...payloadFields,
-        notes: values.notes,
-        portfolioId: resolvedPortfolioId,
-        clientRequestId: crypto.randomUUID(),
-        customAnnualRatePct: isCustomTab
-          ? (values.customAnnualRatePct ?? "")
-          : undefined,
-        ...(isCustomTab
-          ? {
-              customInstrument: {
-                name: values.customName ?? "",
-                currency: values.customCurrency ?? "",
-                notes: values.notes,
-                kind: values.customAssetType ?? DEFAULT_CUSTOM_ASSET_TYPE,
-                valuationKind: "COMPOUND_ANNUAL_RATE" as const,
-                annualRatePct: values.customAnnualRatePct ?? "0",
-              },
-            }
-          : {
-              instrument: {
-                provider: selectedInstrument!.provider,
-                providerKey: selectedInstrument!.providerKey,
-                symbol: selectedInstrument!.symbol,
-                name: selectedInstrument!.name,
-                currency: selectedInstrument!.currency,
-                instrumentType: selectedInstrument!.instrumentType ?? undefined,
-                exchange: selectedInstrument!.exchange ?? undefined,
-                region: selectedInstrument!.region ?? undefined,
-                logoUrl: selectedInstrument!.logoUrl ?? undefined,
-              },
-            }),
-      }).catch((error: unknown) => {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Nie udało się zapisać transakcji.";
-        form.setError("root", { message });
-        return null;
-      });
-      if (!createResult) {
-        setIsSubmitting(false);
-        return;
-      }
-      triggerRebuildSignals(resolvedPortfolioId);
       dispatchAppToast({
         title: "Transakcja zapisana.",
         description: "Możesz cofnąć zmianę przez 10 sekund.",
@@ -261,34 +201,29 @@ export function AddTransactionDialogContent({
         action: {
           label: "Cofnij",
           onClick: async () => {
-            try {
-              const undoResult = await deleteTransactionAction(
-                createResult.transactionId
-              );
-              triggerRebuildSignals(undoResult.portfolioId);
-              dispatchAppToast({
-                title: "Cofnięto transakcję.",
-                description: "Zmiana została anulowana.",
-                tone: "success",
-              });
-            } catch (undoError) {
-              const message =
-                undoError instanceof Error
-                  ? undoError.message
-                  : "Nie udało się cofnąć transakcji.";
+            const undoResult = await undoCreatedTransaction(result.transactionId);
+            if (!undoResult.ok) {
               dispatchAppToast({
                 title: "Nie udało się cofnąć transakcji.",
-                description: message,
+                description: undoResult.message,
                 tone: "destructive",
               });
+              return;
             }
+
+            triggerRebuildSignals(undoResult.portfolioId);
+            dispatchAppToast({
+              title: "Cofnięto transakcję.",
+              description: "Zmiana została anulowana.",
+              tone: "success",
+            });
           },
         },
       });
 
       if (submitIntent === "addAnother") {
         onSubmitSuccess?.();
-        resetCreateForm(resolvedPortfolioId);
+        resetCreateForm(result.portfolioId);
         setIsSubmitting(false);
         return;
       }
