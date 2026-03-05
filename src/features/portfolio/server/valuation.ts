@@ -4,6 +4,14 @@ import type { CurrencyCode, FxRate, InstrumentQuote, InstrumentType } from "@/fe
 import type { CustomAssetType } from "@/features/transactions/lib/custom-asset-types";
 import type { PortfolioHolding } from "./get-portfolio-holdings";
 import { toBaseHoldingDayChangeOrNull } from "./to-base-holding-day-change";
+import {
+  minIso,
+  toBasePriceOrNull,
+  toHoldingBase,
+  toMissingFxHolding,
+  toMissingQuoteHolding,
+  toValuedHolding,
+} from "./valuation-helpers";
 
 export type ValuedHolding = Readonly<{
   instrumentId: string;
@@ -44,11 +52,6 @@ type ValuationInput = Readonly<{
   averageBuyPriceByInstrument?: ReadonlyMap<string, string>;
 }>;
 
-const minIso = (values: string[]) =>
-  values.length === 0
-    ? null
-    : values.reduce((min, value) => (value < min ? value : min));
-
 export function buildPortfolioSummary({
   baseCurrency,
   holdings,
@@ -66,172 +69,63 @@ export function buildPortfolioSummary({
     holdings.map((holding) => [holding.instrumentId, holding.customAssetType ?? null] as const)
   );
 
+  const registerValuedAmount = (valueBase: ReturnType<typeof decimalZero>, timestamps: string[]) => {
+    totalValue = addDecimals(totalValue, valueBase);
+    hasValued = true;
+    if (timestamps.length > 0) {
+      usedTimestamps.push(...timestamps);
+    }
+  };
+
   const valuedHoldings: ValuedHolding[] = holdings.map((holding) => {
+    const holdingBase = toHoldingBase(holding);
+
     if (holding.instrumentType === "CURRENCY") {
       const quantityDecimal = parseDecimalString(holding.quantity);
       if (!quantityDecimal) {
         missingQuotes += 1;
-        return {
-          instrumentId: holding.instrumentId,
-          provider: holding.provider,
-          providerKey: holding.providerKey,
-          symbol: holding.symbol,
-          name: holding.name,
-          exchange: holding.exchange,
-          currency: holding.currency,
-          logoUrl: holding.logoUrl,
-          instrumentType: holding.instrumentType,
-          quantity: holding.quantity,
-          averageBuyPriceBase: null,
-          price: null,
-          valueBase: null,
-          weight: null,
-          missingReason: "MISSING_QUOTE",
-        };
+        return toMissingQuoteHolding(holdingBase);
       }
 
       if (holding.currency === baseCurrency) {
-        const valueBase = quantityDecimal;
-        totalValue = addDecimals(totalValue, valueBase);
-        hasValued = true;
-
-        return {
-          instrumentId: holding.instrumentId,
-          provider: holding.provider,
-          providerKey: holding.providerKey,
-          symbol: holding.symbol,
-          name: holding.name,
-          exchange: holding.exchange,
-          currency: holding.currency,
-          logoUrl: holding.logoUrl,
-          instrumentType: holding.instrumentType,
-          quantity: holding.quantity,
-          averageBuyPriceBase: null,
+        registerValuedAmount(quantityDecimal, []);
+        return toValuedHolding(holdingBase, {
           price: "1",
-          valueBase: valueBase.toString(),
-          weight: null,
-          missingReason: null,
-        };
+          valueBase: quantityDecimal.toString(),
+        });
       }
 
-      const fxKey = `${holding.currency}:${baseCurrency}`;
-      const fx = fxByPair.get(fxKey) ?? null;
-
+      const fx = fxByPair.get(`${holding.currency}:${baseCurrency}`) ?? null;
       if (!fx) {
         missingFx += 1;
-        return {
-          instrumentId: holding.instrumentId,
-          provider: holding.provider,
-          providerKey: holding.providerKey,
-          symbol: holding.symbol,
-          name: holding.name,
-          exchange: holding.exchange,
-          currency: holding.currency,
-          logoUrl: holding.logoUrl,
-          instrumentType: holding.instrumentType,
-          quantity: holding.quantity,
-          averageBuyPriceBase: null,
-          price: "1",
-          valueBase: null,
-          weight: null,
-          missingReason: "MISSING_FX",
-        };
+        return toMissingFxHolding(holdingBase, { price: "1" });
       }
 
       const fxDecimal = parseDecimalString(fx.rate);
       if (!fxDecimal) {
         missingFx += 1;
-        return {
-          instrumentId: holding.instrumentId,
-          provider: holding.provider,
-          symbol: holding.symbol,
-          name: holding.name,
-          exchange: holding.exchange,
-          currency: holding.currency,
-          logoUrl: holding.logoUrl,
-          instrumentType: holding.instrumentType,
-          quantity: holding.quantity,
-          averageBuyPriceBase: null,
-          price: "1",
-          valueBase: null,
-          weight: null,
-          missingReason: "MISSING_FX",
-        };
+        return toMissingFxHolding(holdingBase, { price: "1" });
       }
 
       const valueBase = multiplyDecimals(quantityDecimal, fxDecimal);
-      totalValue = addDecimals(totalValue, valueBase);
-      hasValued = true;
-      usedTimestamps.push(fx.asOf);
-
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        providerKey: holding.providerKey,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
-        averageBuyPriceBase: null,
+      registerValuedAmount(valueBase, [fx.asOf]);
+      return toValuedHolding(holdingBase, {
         price: "1",
         valueBase: valueBase.toString(),
-        weight: null,
-        missingReason: null,
-      };
+      });
     }
 
     const quote = quotesByInstrument.get(holding.instrumentId) ?? null;
-    const averageBuyPrice = averageBuyPriceByInstrument.get(holding.instrumentId);
     const averageBuyPriceBase = toBasePriceOrNull({
-      price: averageBuyPrice,
+      price: averageBuyPriceByInstrument.get(holding.instrumentId),
       fromCurrency: holding.currency,
       baseCurrency,
       fxByPair,
     });
 
-    if (!quote) {
+    if (!quote || quote.currency !== holding.currency) {
       missingQuotes += 1;
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        providerKey: holding.providerKey,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
-        averageBuyPriceBase,
-        price: null,
-        valueBase: null,
-        weight: null,
-        missingReason: "MISSING_QUOTE",
-      };
-    }
-
-    if (quote.currency !== holding.currency) {
-      missingQuotes += 1;
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        providerKey: holding.providerKey,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
-        averageBuyPriceBase,
-        price: null,
-        valueBase: null,
-        weight: null,
-        missingReason: "MISSING_QUOTE",
-      };
+      return toMissingQuoteHolding(holdingBase, averageBuyPriceBase);
     }
 
     // Backend note: daily move comes from quote delta and is converted to
@@ -244,8 +138,7 @@ export function buildPortfolioSummary({
       fxByPair,
     });
     const todayChangePercent =
-      typeof quote.dayChangePercent === "number" &&
-      Number.isFinite(quote.dayChangePercent)
+      typeof quote.dayChangePercent === "number" && Number.isFinite(quote.dayChangePercent)
         ? quote.dayChangePercent
         : null;
 
@@ -253,140 +146,70 @@ export function buildPortfolioSummary({
     const quantityDecimal = parseDecimalString(holding.quantity);
     if (!priceDecimal || !quantityDecimal) {
       missingQuotes += 1;
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        providerKey: holding.providerKey,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
-        averageBuyPriceBase,
-        price: null,
-        valueBase: null,
-        weight: null,
-        missingReason: "MISSING_QUOTE",
-      };
+      return toMissingQuoteHolding(holdingBase, averageBuyPriceBase);
     }
 
+    const quoteValue = multiplyDecimals(quantityDecimal, priceDecimal);
     if (holding.currency === baseCurrency) {
-      const valueBase = multiplyDecimals(quantityDecimal, priceDecimal);
-      totalValue = addDecimals(totalValue, valueBase);
-      hasValued = true;
-      usedTimestamps.push(quote.asOf);
-
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
+      registerValuedAmount(quoteValue, [quote.asOf]);
+      return toValuedHolding(holdingBase, {
         averageBuyPriceBase,
         price: quote.price,
-        valueBase: valueBase.toString(),
-        weight: null,
+        valueBase: quoteValue.toString(),
         todayChangeBase,
         todayChangePercent,
-        missingReason: null,
-      };
+      });
     }
 
-    const fxKey = `${holding.currency}:${baseCurrency}`;
-    const fx = fxByPair.get(fxKey) ?? null;
-
+    const fx = fxByPair.get(`${holding.currency}:${baseCurrency}`) ?? null;
     if (!fx) {
       missingFx += 1;
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
+      return toMissingFxHolding(holdingBase, {
         averageBuyPriceBase,
         price: quote.price,
-        valueBase: null,
-        weight: null,
-        missingReason: "MISSING_FX",
-      };
+        todayChangeBase,
+        todayChangePercent,
+      });
     }
 
     const fxDecimal = parseDecimalString(fx.rate);
     if (!fxDecimal) {
       missingFx += 1;
-      return {
-        instrumentId: holding.instrumentId,
-        provider: holding.provider,
-        symbol: holding.symbol,
-        name: holding.name,
-        exchange: holding.exchange,
-        currency: holding.currency,
-        logoUrl: holding.logoUrl,
-        instrumentType: holding.instrumentType,
-        quantity: holding.quantity,
+      return toMissingFxHolding(holdingBase, {
         averageBuyPriceBase,
         price: quote.price,
-        valueBase: null,
-        weight: null,
-        missingReason: "MISSING_FX",
-      };
+        todayChangeBase,
+        todayChangePercent,
+      });
     }
 
-    const valueBase = multiplyDecimals(
-      multiplyDecimals(quantityDecimal, priceDecimal),
-      fxDecimal
-    );
-    totalValue = addDecimals(totalValue, valueBase);
-    hasValued = true;
-    usedTimestamps.push(quote.asOf, fx.asOf);
+    const valueBase = multiplyDecimals(quoteValue, fxDecimal);
+    registerValuedAmount(valueBase, [quote.asOf, fx.asOf]);
 
-    return {
-      instrumentId: holding.instrumentId,
-      provider: holding.provider,
-      providerKey: holding.providerKey,
-      symbol: holding.symbol,
-      name: holding.name,
-      exchange: holding.exchange,
-      currency: holding.currency,
-      logoUrl: holding.logoUrl,
-      instrumentType: holding.instrumentType,
-      quantity: holding.quantity,
+    return toValuedHolding(holdingBase, {
       averageBuyPriceBase,
       price: quote.price,
       valueBase: valueBase.toString(),
-      weight: null,
       todayChangeBase,
       todayChangePercent,
-      missingReason: null,
-    };
+    });
   });
 
   const totalValueBase = hasValued ? totalValue.toString() : null;
-  const totalDecimal =
-    hasValued && totalValue.toString() !== "0" ? totalValue : null;
+  const totalDecimal = hasValued && totalValue.toString() !== "0" ? totalValue : null;
 
   const holdingsWithWeights = valuedHoldings.map((holding) => {
     const customAssetType = customAssetTypeByInstrumentId.get(holding.instrumentId) ?? null;
     if (!holding.valueBase || !totalDecimal) {
       return { ...holding, customAssetType };
     }
+
     const valueDecimal = parseDecimalString(holding.valueBase);
     if (!valueDecimal) return { ...holding, customAssetType };
+
     const weight = Number(valueDecimal.div(totalDecimal).toString());
     return { ...holding, weight, customAssetType };
   });
-
-  const asOf = minIso(usedTimestamps);
 
   return {
     baseCurrency,
@@ -394,33 +217,7 @@ export function buildPortfolioSummary({
     isPartial: missingQuotes > 0 || missingFx > 0,
     missingQuotes,
     missingFx,
-    asOf,
+    asOf: minIso(usedTimestamps),
     holdings: holdingsWithWeights,
   };
-}
-
-type ToBasePriceInput = Readonly<{
-  price: string | undefined;
-  fromCurrency: CurrencyCode;
-  baseCurrency: CurrencyCode;
-  fxByPair: ReadonlyMap<string, FxRate | null>;
-}>;
-
-function toBasePriceOrNull(input: ToBasePriceInput): string | null {
-  if (!input.price) return null;
-
-  const priceDecimal = parseDecimalString(input.price);
-  if (!priceDecimal) return null;
-
-  if (input.fromCurrency === input.baseCurrency) {
-    return priceDecimal.toString();
-  }
-
-  const fx = input.fxByPair.get(`${input.fromCurrency}:${input.baseCurrency}`);
-  if (!fx) return null;
-
-  const fxDecimal = parseDecimalString(fx.rate);
-  if (!fxDecimal) return null;
-
-  return multiplyDecimals(priceDecimal, fxDecimal).toString();
 }

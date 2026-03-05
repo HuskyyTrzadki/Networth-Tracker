@@ -256,4 +256,67 @@ describe("buildPortfolioSummary", () => {
     expect(summary.holdings[0]?.todayChangeBase).toBe("12");
     expect(summary.holdings[0]?.todayChangePercent).toBe(0.015);
   });
+
+  it("computes deterministic portfolio weights for valued holdings", () => {
+    const summary = buildPortfolioSummary({
+      baseCurrency: "PLN",
+      holdings: [
+        {
+          instrumentId: "a",
+          symbol: "AAA",
+          name: "AAA",
+          currency: "PLN",
+          exchange: null,
+          provider: "yahoo",
+          providerKey: "AAA",
+          logoUrl: null,
+          instrumentType: "EQUITY",
+          quantity: "2",
+        },
+        {
+          instrumentId: "b",
+          symbol: "BBB",
+          name: "BBB",
+          currency: "PLN",
+          exchange: null,
+          provider: "yahoo",
+          providerKey: "BBB",
+          logoUrl: null,
+          instrumentType: "EQUITY",
+          quantity: "1",
+        },
+      ],
+      quotesByInstrument: new Map([
+        [
+          "a",
+          {
+            instrumentId: "a",
+            currency: "PLN",
+            price: "50",
+            dayChange: null,
+            dayChangePercent: null,
+            asOf: "2026-01-28T10:00:00.000Z",
+            fetchedAt: "2026-01-28T10:05:00.000Z",
+          },
+        ],
+        [
+          "b",
+          {
+            instrumentId: "b",
+            currency: "PLN",
+            price: "100",
+            dayChange: null,
+            dayChangePercent: null,
+            asOf: "2026-01-28T10:00:00.000Z",
+            fetchedAt: "2026-01-28T10:05:00.000Z",
+          },
+        ],
+      ]),
+      fxByPair: new Map(),
+    });
+
+    expect(summary.totalValueBase).toBe("200");
+    expect(summary.holdings.find((item) => item.instrumentId === "a")?.weight).toBe(0.5);
+    expect(summary.holdings.find((item) => item.instrumentId === "b")?.weight).toBe(0.5);
+  });
 });

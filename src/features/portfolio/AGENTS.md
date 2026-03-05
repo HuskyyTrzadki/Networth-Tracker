@@ -24,7 +24,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/dashboard/widgets/PortfolioAllocationsByPortfolioWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeChart.tsx`
+- `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeChartContent.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioValueOverTimeHeader.tsx`
+- `src/features/portfolio/dashboard/widgets/use-portfolio-value-chart-state.ts`
+- `src/features/portfolio/dashboard/widgets/use-portfolio-chart-data-loading.ts`
 - `src/features/portfolio/dashboard/widgets/PortfolioSnapshotRebuildChartLoader.tsx`
 - `src/features/portfolio/dashboard/widgets/PortfolioTopMoversWidget.tsx`
 - `src/features/portfolio/dashboard/widgets/CurrencyExposureWidget.tsx`
@@ -51,8 +54,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/server/get-portfolio-summary.ts`
 - `src/features/portfolio/server/get-portfolio-allocation-donut-cards.ts`
 - `src/features/portfolio/server/valuation.ts`
+- `src/features/portfolio/server/valuation-helpers.ts`
 - `src/features/portfolio/server/to-base-holding-day-change.ts`
 - `src/features/portfolio/server/get-dashboard-benchmark-series.ts`
+- `src/features/portfolio/server/benchmark-cache-repository.ts`
+- `src/features/portfolio/server/benchmark-fetch-warmup.ts`
+- `src/features/portfolio/server/benchmark-series-builder.ts`
 - `src/features/portfolio/server/benchmark-series-helpers.ts`
 - `src/features/portfolio/server/dividends/get-dividend-inbox.ts`
 - `src/features/portfolio/server/dividends/book-dividend.ts`
@@ -207,6 +214,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Snapshot writes are normalized at persistence boundary: all money fields are rounded to 2 decimals before insert/update into `portfolio_snapshots`.
 - Daily cache preload validates range coverage quality (start/end + max internal gap), so sparse cache fragments trigger provider refetch instead of creating long flat carry-forward segments.
 - Portfolio value/performance chart compute is split into a dedicated view-model builder (`dashboard/lib/portfolio-value-over-time-view-model.ts`) so the widget component stays focused on orchestration and rendering.
+- `PortfolioValueOverTimeChart` orchestration is split into focused units: presentational content (`PortfolioValueOverTimeChartContent`), local UI state persistence (`use-portfolio-value-chart-state`), and async loaders (`use-portfolio-chart-data-loading`).
+- Benchmark history pipeline is split into repository/warmup/builder layers (`benchmark-cache-repository`, `benchmark-fetch-warmup`, `benchmark-series-builder`) while `get-dashboard-benchmark-series.ts` stays the single public entrypoint.
+- Valuation helper branches for missing quote/FX and base-field mapping are centralized in `valuation-helpers.ts` to keep `buildPortfolioSummary` linear and easier to reason about.
 - Portfolio chart remembers selected range in localStorage per scope (`ALL` vs `PORTFOLIO:<id>`) so users keep their preferred timeframe between visits.
 - Portfolio chart hydrates persisted `range` from localStorage in `useEffect` (not during render) to keep SSR/client first paint consistent and avoid hydration mismatch (`YTD` vs stored `7D`).
 - Allocation concentration-warning dismissal reads localStorage via hydration-safe subscription (no render-time `window` branching), preventing SSR/client markup drift in `AllocationHoldingsWidget`.

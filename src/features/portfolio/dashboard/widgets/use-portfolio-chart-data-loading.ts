@@ -1,0 +1,161 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
+import { loadFullSnapshotHistory } from "../lib/load-full-snapshot-history";
+import type { SnapshotScope, SnapshotChartRow } from "../../server/snapshots/types";
+import type {
+  BenchmarkId,
+  DashboardBenchmarkSeries,
+} from "../lib/benchmark-config";
+
+type BootstrapPayload = Readonly<{ scope: SnapshotScope; portfolioId?: string | null }>;
+
+type Input = Readonly<{
+  scope: SnapshotScope;
+  portfolioId: string | null;
+  includesFullHistory: boolean;
+  snapshotRows: readonly SnapshotChartRow[];
+  shouldBootstrap: boolean;
+  bootstrapPending: boolean;
+  isAllHistoryLoading: boolean;
+  loadingBenchmarkIds: readonly BenchmarkId[];
+  loadedBenchmarkDatesById: Record<BenchmarkId, readonly string[]>;
+  benchmarkSeriesOverrides: Partial<DashboardBenchmarkSeries>;
+  setBootstrapPending: (pending: boolean) => void;
+  setBootstrapped: (bootstrapped: boolean) => void;
+  setIsAllHistoryLoading: (isLoading: boolean) => void;
+  setFullHistoryRows: (rows: readonly SnapshotChartRow[] | null) => void;
+  setLoadingBenchmarkIds: (ids: readonly BenchmarkId[]) => void;
+  setLoadedBenchmarkDates: (dates: Record<BenchmarkId, readonly string[]>) => void;
+  setBenchmarkSeriesOverrides: (overrides: Partial<DashboardBenchmarkSeries>) => void;
+}>;
+
+const bootstrapSnapshots = async (payload: BootstrapPayload) => {
+  await fetch("/api/portfolio-snapshots/bootstrap", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+};
+
+export function usePortfolioChartDataLoading({
+  scope,
+  portfolioId,
+  includesFullHistory,
+  snapshotRows,
+  shouldBootstrap,
+  bootstrapPending,
+  isAllHistoryLoading,
+  loadingBenchmarkIds,
+  loadedBenchmarkDatesById,
+  benchmarkSeriesOverrides,
+  setBootstrapPending,
+  setBootstrapped,
+  setIsAllHistoryLoading,
+  setFullHistoryRows,
+  setLoadingBenchmarkIds,
+  setLoadedBenchmarkDates,
+  setBenchmarkSeriesOverrides,
+}: Input) {
+  const router = useRouter();
+
+  const ensureBenchmarkSeriesLoaded = async (
+    benchmarkId: BenchmarkId,
+    requiredDates: readonly string[]
+  ) => {
+    if (requiredDates.length === 0) return;
+
+    const loadedDates = new Set(loadedBenchmarkDatesById[benchmarkId]);
+    const hasAllRequiredDates = requiredDates.every((date) => loadedDates.has(date));
+    if (hasAllRequiredDates) return;
+
+    setLoadingBenchmarkIds(
+      loadingBenchmarkIds.includes(benchmarkId)
+        ? loadingBenchmarkIds
+        : [...loadingBenchmarkIds, benchmarkId]
+    );
+
+    const response = await fetch("/api/benchmarks/series", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        benchmarkId,
+        bucketDates: requiredDates,
+      }),
+    }).catch(() => null);
+
+    if (!response?.ok) {
+      setLoadingBenchmarkIds(loadingBenchmarkIds.filter((id) => id !== benchmarkId));
+      return;
+    }
+
+    const payload = (await response.json()) as {
+      benchmarkId?: BenchmarkId;
+      points?: DashboardBenchmarkSeries["SP500"];
+    };
+
+    if (payload.benchmarkId !== benchmarkId || !payload.points) {
+      setLoadingBenchmarkIds(loadingBenchmarkIds.filter((id) => id !== benchmarkId));
+      return;
+    }
+
+    setBenchmarkSeriesOverrides({
+      ...benchmarkSeriesOverrides,
+      [benchmarkId]: payload.points,
+    });
+    setLoadedBenchmarkDates({
+      ...loadedBenchmarkDatesById,
+      [benchmarkId]: Array.from(
+        new Set([...loadedBenchmarkDatesById[benchmarkId], ...requiredDates])
+      ),
+    });
+    setLoadingBenchmarkIds(loadingBenchmarkIds.filter((id) => id !== benchmarkId));
+  };
+
+  const ensureAllHistoryLoaded = async (): Promise<readonly SnapshotChartRow[] | null> => {
+    if (includesFullHistory || isAllHistoryLoading) {
+      return includesFullHistory ? snapshotRows : null;
+    }
+
+    setIsAllHistoryLoading(true);
+    const payload = await loadFullSnapshotHistory({
+      scope,
+      portfolioId,
+    });
+
+    if (!payload) {
+      setIsAllHistoryLoading(false);
+      return null;
+    }
+
+    if (payload.includesFullHistory) {
+      setFullHistoryRows(payload.rows);
+    }
+
+    setIsAllHistoryLoading(false);
+    return payload.rows;
+  };
+
+  const handleBootstrapRequest = async () => {
+    if (!shouldBootstrap || bootstrapPending) return;
+
+    setBootstrapPending(true);
+    const payload = scope === "PORTFOLIO" ? { scope, portfolioId } : { scope };
+    const success = await bootstrapSnapshots(payload)
+      .then(() => true)
+      .catch(() => false);
+
+    setBootstrapPending(false);
+    if (!success) return;
+
+    setBootstrapped(true);
+    router.refresh();
+  };
+
+  return {
+    ensureBenchmarkSeriesLoaded,
+    ensureAllHistoryLoaded,
+    handleBootstrapRequest,
+  };
+}
