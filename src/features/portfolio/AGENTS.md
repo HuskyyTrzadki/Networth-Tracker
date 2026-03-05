@@ -252,6 +252,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Non-color financial cues were reinforced: top-movers badges include explicit trend tokens (`Wzr.`/`Spad.`), and value/performance period summaries show textual trend state (`Trend: wzrost/spadek/bez zmian`) alongside colored numbers.
 - Dividend booking flow now exposes explicit inline submit states near the action (`księgowanie` / `zaksięgowano` / `błąd`) in addition to dialog/toast feedback.
 - Typography cleanup removed outlier micro sizes in dashboard control/warning surfaces (no `9px/13px` in key value/allocation headers; compact scale stays on 10/11/12/14/16).
+- Portfolio dashboard/controls now expose minimal `data-testid` hooks (`portfolio-net-value`, chart mode/range/currency toggles, performance/value period metrics, snapshot rebuild loader, portfolio switcher select) reserved for deterministic Playwright assertions.
 
 ## Tests
 - `src/features/portfolio/components/DashboardEmptyState.test.tsx`
@@ -284,4 +285,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/portfolio/lib/create-portfolio-schema.test.ts`
 - `src/features/portfolio/lib/portfolio-url.test.ts`
 - `src/features/portfolio/lib/snapshot-rebuild-events.test.ts`
+- `e2e/deterministic/portfolio-math.spec.ts`
+- `e2e/live/live-smoke.spec.ts`
 - TODO: extend snapshot rebuild tests beyond pure merge helpers (session lifecycle + concurrent dirty update integration).

@@ -104,6 +104,7 @@ export function OnboardingPortfolioSetupCard({ onCreated }: Props) {
                       <Input
                         autoComplete="off"
                         placeholder="np. Długoterminowy"
+                        data-testid="onboarding-portfolio-name-input"
                         {...field}
                       />
                     </FormControl>
@@ -172,6 +173,7 @@ export function OnboardingPortfolioSetupCard({ onCreated }: Props) {
                 className="h-11 rounded-md px-5"
                 disabled={!form.formState.isValid || isSubmitting}
                 type="submit"
+                data-testid="onboarding-create-portfolio-submit"
               >
                 Utwórz portfel
               </Button>

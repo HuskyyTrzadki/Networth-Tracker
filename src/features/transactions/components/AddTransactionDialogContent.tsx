@@ -313,6 +313,7 @@ export function AddTransactionDialogContent({
       <AnimatedReveal y={8}>
         <form
           className="flex max-h-[92dvh] flex-col"
+          data-testid="add-transaction-form"
           onSubmit={(event) => {
             if (isScreenshotMode) {
               event.preventDefault();

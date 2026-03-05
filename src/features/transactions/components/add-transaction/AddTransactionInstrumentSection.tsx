@@ -113,7 +113,10 @@ export function AddTransactionInstrumentSection({
       <div className="rounded-md border border-dashed border-border/60 bg-background/60 p-3">
         <Label className={fieldLabelClass}>Rodzaj pozycji</Label>
         <Tabs onValueChange={(next) => onTabChange(next as AssetTab)} value={activeTab}>
-          <TabsList className="mt-2 grid h-10 w-full grid-cols-3 gap-1 rounded-md border border-border/65 bg-background/72 p-1">
+          <TabsList
+            className="mt-2 grid h-10 w-full grid-cols-3 gap-1 rounded-md border border-border/65 bg-background/72 p-1"
+            data-testid="transaction-asset-tabs"
+          >
             {ASSET_TABS.map((tab) => {
               const Icon = tabIcons[tab.value];
               return (
@@ -122,6 +125,7 @@ export function AddTransactionInstrumentSection({
                   value={tab.value}
                   disabled={isEditMode}
                   className="h-8 rounded-sm px-2 text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
+                  data-testid={`transaction-asset-tab-${tab.value.toLowerCase()}`}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Icon className="size-3.5" aria-hidden />
@@ -266,7 +270,10 @@ export function AddTransactionInstrumentSection({
                     onValueChange={onCashCurrencyChange}
                     value={resolvedCashCurrency}
                   >
-                    <SelectTrigger className="h-11 border-input/85 bg-background/92">
+                    <SelectTrigger
+                      className="h-11 border-input/85 bg-background/92"
+                      data-testid="transaction-cash-asset-currency-select"
+                    >
                       <SelectValue placeholder="Wybierz walutę" />
                     </SelectTrigger>
                     <SelectContent>
@@ -317,6 +324,7 @@ export function AddTransactionInstrumentSection({
                     }}
                     searchClient={searchClient}
                     value={selectedInstrument}
+                    triggerTestId="transaction-instrument-combobox"
                   />
                 )}
               </FormControl>

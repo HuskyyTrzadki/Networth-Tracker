@@ -222,6 +222,8 @@ function TransactionsLedgerRow({
         isCashLeg && "text-muted-foreground",
         isNew && "animate-ledger-stamp"
       )}
+      data-testid="transactions-ledger-row"
+      data-row-key={row.rowKey}
     >
       <TableCell
         className={cn(

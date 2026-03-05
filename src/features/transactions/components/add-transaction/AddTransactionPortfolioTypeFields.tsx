@@ -76,7 +76,7 @@ export function AddTransactionPortfolioTypeFields({
               value={field.value}
             >
               <FormControl>
-                <SelectTrigger className="h-10">
+                <SelectTrigger className="h-10" data-testid="transaction-portfolio-select">
                   <SelectValue placeholder="Wybierz portfel" />
                 </SelectTrigger>
               </FormControl>
@@ -150,12 +150,14 @@ export function AddTransactionPortfolioTypeFields({
                     <TabsTrigger
                       className="h-8 w-full rounded-sm text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                       value="BUY"
+                      data-testid="transaction-type-buy"
                     >
                       {isCashTab ? "Wpłata" : "Kupno"}
                     </TabsTrigger>
                     <TabsTrigger
                       className="h-8 w-full rounded-sm text-[12px] data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:ring-0"
                       value="SELL"
+                      data-testid="transaction-type-sell"
                     >
                       {isCashTab ? "Wypłata" : "Sprzedaż"}
                     </TabsTrigger>

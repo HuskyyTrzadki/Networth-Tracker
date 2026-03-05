@@ -39,6 +39,7 @@ type Props = Readonly<{
   listenForFocusShortcut?: boolean;
   renderItemAction?: (option: InstrumentSearchResult) => ReactNode;
   showSelectedIndicator?: boolean;
+  triggerTestId?: string;
 }>;
 
 const MIN_QUERY_LENGTH = 2;
@@ -57,6 +58,7 @@ export function InstrumentCombobox({
   listenForFocusShortcut = false,
   renderItemAction,
   showSelectedIndicator = true,
+  triggerTestId,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -136,6 +138,7 @@ export function InstrumentCombobox({
           )}
           role="combobox"
           variant="outline"
+          data-testid={triggerTestId}
         >
           <span className="flex min-w-0 items-center gap-3">
             {value ? (

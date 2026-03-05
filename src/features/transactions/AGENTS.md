@@ -172,7 +172,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Custom assets no longer fetch external images; `InstrumentLogoImage` renders deterministic icon mapped from `customAssetType` (`Typ aktywa`) before initials avatar fallback.
 - Cash instruments (`instrumentType = CURRENCY` or `provider = system`) render `Wallet` icon in `InstrumentLogoImage` instead of remote logos.
 - Instrument label/icon source is centralized in `lib/instrument-visual.ts` (`resolveInstrumentVisual`) and reused across tables, comboboxes, portfolio widgets, and treemap icon fallbacks.
+- Add-transaction and transaction-ledger critical controls expose minimal `data-testid` hooks for deterministic Playwright flows (modal shell/form, portfolio/type/asset selectors, consume-cash checkbox, submit CTAs, ledger rows).
 
 ## Tests
 - Add tests next to validators and parsers as `*.test.ts`.
 - Current tests include trade date validation in `src/features/transactions/lib/trade-date.test.ts`.
+- Deterministic E2E transaction math coverage lives in `e2e/deterministic/portfolio-math.spec.ts`.

@@ -23,8 +23,11 @@ export type CumulativeReturnPoint = Readonly<{
   isPartial: boolean;
 }>;
 
+const isFiniteNumber = (value: number | null | undefined): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
 const sumFlows = (row: PerformanceInputRow) => {
-  if (row.externalCashflow === null || row.implicitTransfer === null) {
+  if (!isFiniteNumber(row.externalCashflow) || !isFiniteNumber(row.implicitTransfer)) {
     return null;
   }
 
@@ -52,9 +55,9 @@ export const computeDailyReturns = (
 
     const previousTotalValue = lastValuationRow.totalValue;
     if (
-      previousTotalValue === null ||
+      !isFiniteNumber(previousTotalValue) ||
       previousTotalValue === 0 ||
-      current.totalValue === null ||
+      !isFiniteNumber(current.totalValue) ||
       carriedFlow === null
     ) {
       returns.push({
@@ -63,7 +66,7 @@ export const computeDailyReturns = (
         isPartial: false,
       });
 
-      if (current.totalValue !== null) {
+      if (isFiniteNumber(current.totalValue)) {
         lastValuationRow = current;
         carriedFlow = 0;
         carriedPartial = false;
@@ -74,6 +77,19 @@ export const computeDailyReturns = (
     const value =
       (current.totalValue - carriedFlow - previousTotalValue) /
       previousTotalValue;
+    if (!Number.isFinite(value)) {
+      returns.push({
+        bucketDate: current.bucketDate,
+        value: null,
+        isPartial: false,
+      });
+
+      lastValuationRow = current;
+      carriedFlow = 0;
+      carriedPartial = false;
+      continue;
+    }
+
     const isPartial = lastValuationRow.isPartial || carriedPartial;
 
     returns.push({
@@ -97,7 +113,7 @@ export const computePeriodReturn = (
   let cumulativePartial = false;
 
   dailyReturns.forEach((entry) => {
-    if (entry.value === null) {
+    if (!isFiniteNumber(entry.value)) {
       cumulative = null;
       cumulativePartial = false;
       return;
@@ -126,7 +142,7 @@ export const computeCumulativeReturns = (
   let cumulativePartial = false;
 
   return dailyReturns.map((entry) => {
-    if (entry.value === null) {
+    if (!isFiniteNumber(entry.value)) {
       cumulative = null;
       cumulativePartial = false;
       return {

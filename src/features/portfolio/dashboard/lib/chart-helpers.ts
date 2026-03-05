@@ -367,12 +367,14 @@ export const mergeLivePoint = (
 export const formatRangeLabel = (label: string) => label;
 
 export const formatPercent = (value: number) =>
-  new Intl.NumberFormat("pl-PL", {
-    style: "percent",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    signDisplay: "exceptZero",
-  }).format(value);
+  Number.isFinite(value)
+    ? new Intl.NumberFormat("pl-PL", {
+        style: "percent",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        signDisplay: "exceptZero",
+      }).format(value)
+    : "—";
 
 export const formatDayLabel = (label: string) =>
   new Intl.DateTimeFormat("pl-PL", {

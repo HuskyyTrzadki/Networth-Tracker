@@ -45,6 +45,9 @@ type Input = Readonly<{
   selectedComparisons: readonly ComparisonOptionId[];
 }>;
 
+const toFiniteOrNull = (value: number | null | undefined) =>
+  typeof value === "number" && Number.isFinite(value) ? value : null;
+
 export function buildPortfolioValueOverTimeViewModel(input: Input) {
   const {
     rowsWithLiveAnchor,
@@ -116,7 +119,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     rangeMeta.rowsForReturns.map((row) => row.bucketDate)
   );
 
-  const nominalPeriodReturn = computePeriodReturn(dailyReturns).value;
+  const nominalPeriodReturn = toFiniteOrNull(computePeriodReturn(dailyReturns).value);
 
   const inflationByDate = new Map(
     inflationSeries.map((entry) => [entry.label, entry.value] as const)
@@ -134,6 +137,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
   };
 
   const cumulativeChartData = nominalCumulativeSeries
+    .map((entry) => ({ ...entry, value: toFiniteOrNull(entry.value) }))
     .filter((entry): entry is (typeof nominalCumulativeSeries)[number] & { value: number } =>
       entry.value !== null
     )
@@ -141,7 +145,7 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
       const comparisons: Record<string, number | null> = {};
 
       if (selectedComparisons.includes("INFLATION_PL") && currency === "PLN") {
-        comparisons.INFLATION_PL = inflationByDate.get(entry.label) ?? null;
+        comparisons.INFLATION_PL = toFiniteOrNull(inflationByDate.get(entry.label) ?? null);
       }
 
       BENCHMARK_IDS.forEach((benchmarkId) => {
@@ -149,8 +153,9 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
           return;
         }
 
-        comparisons[benchmarkId] =
-          benchmarkSeriesByIdAndDate[benchmarkId].get(entry.label) ?? null;
+        comparisons[benchmarkId] = toFiniteOrNull(
+          benchmarkSeriesByIdAndDate[benchmarkId].get(entry.label) ?? null
+        );
       });
 
       return {
@@ -166,37 +171,38 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
     (entry) => entry.value !== null && entry.isPartial
   );
 
-  const latestPerformanceValue =
-    [...performanceRows].reverse().find((row) => row.totalValue !== null)?.totalValue ??
-    null;
+  const latestPerformanceValue = toFiniteOrNull(
+    [...performanceRows].reverse().find((row) => toFiniteOrNull(row.totalValue) !== null)
+      ?.totalValue ?? null
+  );
 
   const rangeValuedRows = rangeMeta.rows.filter(
     (row) => getTotalValue(row, currency) !== null
   );
   const hasSelectedPeriodComparison = rangeValuedRows.length >= 2;
   const rangeStartValue = rangeValuedRows.length
-    ? getTotalValue(rangeValuedRows[0], currency)
+    ? toFiniteOrNull(getTotalValue(rangeValuedRows[0], currency))
     : null;
   const rangeEndValue = rangeValuedRows.length
-    ? getTotalValue(rangeValuedRows[rangeValuedRows.length - 1], currency)
+    ? toFiniteOrNull(getTotalValue(rangeValuedRows[rangeValuedRows.length - 1], currency))
     : null;
 
   const selectedPeriodAbsoluteChange =
     hasSelectedPeriodComparison &&
     rangeStartValue !== null &&
     rangeEndValue !== null
-      ? rangeEndValue - rangeStartValue
+      ? toFiniteOrNull(rangeEndValue - rangeStartValue)
       : null;
   const selectedPeriodChangePercent =
     hasSelectedPeriodComparison &&
     rangeStartValue !== null &&
     rangeStartValue !== 0 &&
     selectedPeriodAbsoluteChange !== null
-      ? selectedPeriodAbsoluteChange / rangeStartValue
+      ? toFiniteOrNull(selectedPeriodAbsoluteChange / rangeStartValue)
       : null;
   const selectedPeriodPerformanceAbsoluteChange =
     nominalPeriodReturn !== null && latestPerformanceValue !== null
-      ? latestPerformanceValue * nominalPeriodReturn
+      ? toFiniteOrNull(latestPerformanceValue * nominalPeriodReturn)
       : null;
 
   const isRangeDisabled = (option: ChartRange) => {
@@ -219,7 +225,9 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
       canUseLiveEndpoint
     );
     const returns = computeDailyReturns(optionPerformanceRows);
-    const validReturns = returns.filter((entry) => entry.value !== null).length;
+    const validReturns = returns.filter(
+      (entry) => typeof entry.value === "number" && Number.isFinite(entry.value)
+    ).length;
     return validReturns < 1;
   };
 

@@ -71,6 +71,16 @@ describe("computeDailyReturns", () => {
     expect(day.value).toBeNull();
   });
 
+  it("returns null when flow is non-finite", () => {
+    const rows = [
+      row("2026-01-01", 100, 0, 0),
+      row("2026-01-02", 110, Number.NaN, 0),
+    ];
+
+    const [day] = computeDailyReturns(rows);
+    expect(day.value).toBeNull();
+  });
+
   it("carries flows across missing valuation days until next known valuation", () => {
     const rows = [
       row("2026-01-01", 100, 0, 0),
@@ -110,6 +120,14 @@ describe("computePeriodReturn", () => {
     const period = computePeriodReturn(daily);
     expect(period.value).toBeCloseTo((121 - 0 - 110) / 110);
   });
+
+  it("ignores non-finite daily returns", () => {
+    const period = computePeriodReturn([
+      { bucketDate: "2026-01-02", value: Number.NaN, isPartial: false },
+      { bucketDate: "2026-01-03", value: 0.1, isPartial: false },
+    ]);
+    expect(period.value).toBeCloseTo(0.1);
+  });
 });
 
 describe("computeCumulativeReturns", () => {
@@ -132,5 +150,15 @@ describe("computeCumulativeReturns", () => {
     expect(cumulative[1]?.bucketDate).toBe("2026-01-03");
     expect(cumulative[1]?.isPartial).toBe(false);
     expect(cumulative[1]?.value).toBeCloseTo(0.21);
+  });
+
+  it("emits null point for non-finite return values", () => {
+    const cumulative = computeCumulativeReturns([
+      { bucketDate: "2026-01-02", value: Number.NaN, isPartial: false },
+    ]);
+
+    expect(cumulative).toEqual([
+      { bucketDate: "2026-01-02", value: null, isPartial: false },
+    ]);
   });
 });

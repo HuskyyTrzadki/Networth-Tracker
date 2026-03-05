@@ -180,6 +180,7 @@ export function PortfolioPerformanceModeContent({
                   ? "text-[color:var(--loss)]"
                   : "text-foreground"
             )}
+            data-testid="portfolio-performance-period-return"
           >
             {selectedPeriodReturn !== null
               ? formatPercent(selectedPeriodReturn)
@@ -196,6 +197,7 @@ export function PortfolioPerformanceModeContent({
                   ? "text-[color:var(--loss)]"
                   : "text-muted-foreground"
             )}
+            data-testid="portfolio-performance-period-absolute"
           >
             {selectedPeriodPerformanceAbsoluteChange !== null
               ? (

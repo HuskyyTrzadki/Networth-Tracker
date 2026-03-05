@@ -43,3 +43,4 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Choice cards are informational containers, not clickable cards; do not add hover states that imply the whole card is an action when only the contained CTA/button is interactive.
 - Demo CTA under the choice cards should read like an inline text link (`Przygotuj portfel demonstracyjny`) rather than a tertiary button.
 - Demo accounts must not see that inline demo CTA on `/onboarding`; once the user is already inside demo, onboarding should only help them start a real portfolio.
+- Onboarding portfolio setup exposes stable E2E hooks (`onboarding-portfolio-name-input`, `onboarding-create-portfolio-submit`) for guest-start deterministic Playwright flows.

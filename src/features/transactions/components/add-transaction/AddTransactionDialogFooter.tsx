@@ -46,6 +46,7 @@ export function AddTransactionDialogFooter({
               disabled={!isSubmittable || isSubmitting}
               type="submit"
               className="h-10 min-w-32 rounded-full px-6"
+              data-testid="transaction-submit-save"
             >
               {isSubmitting ? (
                 <>
@@ -67,6 +68,7 @@ export function AddTransactionDialogFooter({
               onClick={() => onSubmitIntentChange("close")}
               type="submit"
               className="h-11 w-full rounded-2xl px-6"
+              data-testid="transaction-submit-close"
             >
               {isSubmitting && submitIntent === "close" ? (
                 <>
@@ -83,6 +85,7 @@ export function AddTransactionDialogFooter({
               type="submit"
               variant="outline"
               className="h-11 w-full rounded-2xl px-6"
+              data-testid="transaction-submit-add-another"
             >
               {isSubmitting && submitIntent === "addAnother" ? (
                 <>

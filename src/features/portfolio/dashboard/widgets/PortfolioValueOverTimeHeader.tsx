@@ -88,11 +88,13 @@ export function PortfolioValueOverTimeHeader({
               }
             }}
             className={LEDGER_TOGGLE_GROUP_CLASS}
+            data-testid="portfolio-chart-mode-toggle"
           >
             <ToggleGroupItem
               className="h-8 px-3 font-sans text-[12px]"
               value="PERFORMANCE"
               variant="ledger"
+              data-testid="portfolio-chart-mode-performance"
             >
               Performance
             </ToggleGroupItem>
@@ -100,6 +102,7 @@ export function PortfolioValueOverTimeHeader({
               className="h-8 px-3 font-sans text-[12px]"
               value="VALUE"
               variant="ledger"
+              data-testid="portfolio-chart-mode-value"
             >
               Wartość
             </ToggleGroupItem>
@@ -117,6 +120,7 @@ export function PortfolioValueOverTimeHeader({
               onRangeChange(next);
             }}
             className={LEDGER_TOGGLE_GROUP_CLASS}
+            data-testid="portfolio-chart-range-toggle"
           >
             {rangeOptions.map((option) => (
               <ToggleGroupItem
@@ -125,6 +129,7 @@ export function PortfolioValueOverTimeHeader({
                 value={option.value}
                 disabled={isRangeDisabled(option.value)}
                 variant="ledger"
+                data-testid={`portfolio-chart-range-${option.value.toLowerCase()}`}
               >
                 {formatRangeLabel(option.label)}
               </ToggleGroupItem>
@@ -145,11 +150,13 @@ export function PortfolioValueOverTimeHeader({
               }
             }}
             className={LEDGER_TOGGLE_GROUP_CLASS}
+            data-testid="portfolio-chart-currency-toggle"
           >
             <ToggleGroupItem
               className={LEDGER_TOGGLE_ITEM_CLASS}
               value="PLN"
               variant="ledger"
+              data-testid="portfolio-chart-currency-pln"
             >
               PLN
             </ToggleGroupItem>
@@ -157,6 +164,7 @@ export function PortfolioValueOverTimeHeader({
               className={LEDGER_TOGGLE_ITEM_CLASS}
               value="USD"
               variant="ledger"
+              data-testid="portfolio-chart-currency-usd"
             >
               USD
             </ToggleGroupItem>
@@ -164,6 +172,7 @@ export function PortfolioValueOverTimeHeader({
               className={LEDGER_TOGGLE_ITEM_CLASS}
               value="EUR"
               variant="ledger"
+              data-testid="portfolio-chart-currency-eur"
             >
               EUR
             </ToggleGroupItem>

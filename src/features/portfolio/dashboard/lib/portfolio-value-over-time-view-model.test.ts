@@ -84,4 +84,43 @@ describe("buildPortfolioValueOverTimeViewModel", () => {
     expect(result.selectedPeriodAbsoluteChange).toBe(1100);
     expect(result.selectedPeriodPerformanceAbsoluteChange).toBeCloseTo(210, 8);
   });
+
+  it("drops non-finite performance points instead of surfacing NaN", () => {
+    const result = buildPortfolioValueOverTimeViewModel({
+      rowsWithLiveAnchor: [
+        row({
+          bucketDate: "2026-02-09",
+          totalValuePln: 1000,
+          netExternalCashflowPln: 1000,
+          netImplicitTransferPln: 0,
+        }),
+        row({
+          bucketDate: "2026-02-10",
+          totalValuePln: 1200,
+          netExternalCashflowPln: Number.NaN,
+          netImplicitTransferPln: 0,
+        }),
+      ],
+      range: "ALL",
+      mode: "PERFORMANCE",
+      currency: "PLN",
+      todayBucketDate: "2026-02-10",
+      liveTotals: {
+        totalValue: 1200,
+        isPartial: false,
+        missingQuotes: 0,
+        missingFx: 0,
+        asOf: "2026-02-10T20:00:00.000Z",
+      },
+      canUseLiveEndpoint: false,
+      polishCpiSeries: [],
+      benchmarkSeriesState: emptyDashboardBenchmarkSeries(),
+      selectedComparisons: [],
+    });
+
+    expect(result.nominalPeriodReturn).toBeNull();
+    expect(result.hasPerformanceData).toBe(false);
+    expect(result.cumulativeChartData).toHaveLength(0);
+    expect(result.selectedPeriodPerformanceAbsoluteChange).toBeNull();
+  });
 });

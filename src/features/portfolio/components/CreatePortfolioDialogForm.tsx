@@ -87,7 +87,12 @@ export function CreatePortfolioDialogForm({ onCancel, onCreated, createPortfolio
               <FormItem>
                 <FormLabel>Nazwa portfela</FormLabel>
                 <FormControl>
-                  <Input autoComplete="off" placeholder="np. Długoterminowy" {...field} />
+                  <Input
+                    autoComplete="off"
+                    placeholder="np. Długoterminowy"
+                    data-testid="create-portfolio-name-input"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -102,7 +107,10 @@ export function CreatePortfolioDialogForm({ onCancel, onCreated, createPortfolio
                 <FormLabel>Waluta bazowa</FormLabel>
                 <FormControl>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="inline-flex h-10 justify-between whitespace-nowrap">
+                    <SelectTrigger
+                      className="inline-flex h-10 justify-between whitespace-nowrap"
+                      data-testid="create-portfolio-base-currency-select"
+                    >
                       <SelectValue placeholder="Wybierz walutę" />
                     </SelectTrigger>
                     <SelectContent>
@@ -151,7 +159,11 @@ export function CreatePortfolioDialogForm({ onCancel, onCreated, createPortfolio
           <Button disabled={isSubmitting} onClick={onCancel} type="button" variant="ghost">
             Anuluj
           </Button>
-          <Button disabled={!form.formState.isValid || isSubmitting} type="submit">
+          <Button
+            disabled={!form.formState.isValid || isSubmitting}
+            type="submit"
+            data-testid="create-portfolio-submit"
+          >
             Utwórz portfel
           </Button>
         </footer>

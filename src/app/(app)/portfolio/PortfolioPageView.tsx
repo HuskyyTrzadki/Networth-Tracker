@@ -86,6 +86,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
                     : "/transactions/new"
                 }
                 scroll={false}
+                data-testid="portfolio-add-transaction-cta"
               >
                 Dodaj transakcję
               </Link>

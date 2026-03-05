@@ -64,6 +64,9 @@ Out of scope:
 
 2) E2E (Playwright)
 - Cover core flows: search -> add transaction -> portfolio valuation -> FX conversion
+- Deterministic E2E runs must seed cache fixtures before execution (`npm run e2e:seed`) and assert strict numbers only against seeded data.
+- Use `npm run test:e2e` for required deterministic suite and `npm run test:e2e:smoke-live` for optional live smoke checks.
+- Live smoke assertions must stay non-numeric (no exact price/FX expectations) to avoid external-data flakiness.
 
 After larger changes run:
 - `npm run typecheck`

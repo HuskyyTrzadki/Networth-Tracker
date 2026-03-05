@@ -20,6 +20,7 @@ type DatePickerProps = Readonly<{
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  triggerTestId?: string;
 }>;
 
 const toDayStartTimestamp = (value: Date) =>
@@ -40,6 +41,7 @@ export function DatePicker({
   disabled = false,
   placeholder = "Wybierz datę",
   className,
+  triggerTestId,
 }: DatePickerProps) {
   const selectedDate = parseDateValue(value);
   const minTimestamp = minDate ? toDayStartTimestamp(minDate) : null;
@@ -71,6 +73,7 @@ export function DatePicker({
           disabled={disabled}
           type="button"
           variant="outline"
+          data-testid={triggerTestId}
         >
           <CalendarIcon className="mr-2 size-4" aria-hidden />
           {selectedDate ? format(selectedDate, "dd.MM.yyyy") : placeholder}

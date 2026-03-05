@@ -165,7 +165,10 @@ export function PortfolioNetValueHero({
         </div>
       </div>
       <div className="mb-4 mt-1 flex flex-wrap items-end gap-3">
-        <div className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl">
+        <div
+          className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
+          data-testid="portfolio-net-value"
+        >
           <span>{totalValueAmount}</span>
           {totalValueCurrency ? (
             <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">

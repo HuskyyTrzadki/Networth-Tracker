@@ -100,7 +100,10 @@ function PortfolioSwitcherInner({
           onValueChange={handlePortfolioChange}
           value={currentValue}
         >
-          <SelectTrigger className="inline-flex h-9 min-w-[220px] justify-between whitespace-nowrap bg-background">
+          <SelectTrigger
+            className="inline-flex h-9 min-w-[220px] justify-between whitespace-nowrap bg-background"
+            data-testid="portfolio-switcher-select"
+          >
             <SelectValue placeholder="Wszystkie portfele" />
           </SelectTrigger>
           <SelectContent>

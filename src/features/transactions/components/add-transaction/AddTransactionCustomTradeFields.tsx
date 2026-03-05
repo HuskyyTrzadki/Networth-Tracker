@@ -85,6 +85,7 @@ export function AddTransactionCustomTradeFields({
                 minDate={minTradeDate}
                 onChange={field.onChange}
                 value={field.value}
+                triggerTestId="transaction-custom-date-picker"
               />
             </FormControl>
             <FormMessage />

@@ -80,6 +80,7 @@ export function AddTransactionCashSection({
                 <Checkbox
                   checked={field.value}
                   className="h-5 w-5"
+                  data-testid="transaction-consume-cash-checkbox"
                   onCheckedChange={(checked) => {
                     const isChecked = checked === true;
                     field.onChange(isChecked);
@@ -117,7 +118,7 @@ export function AddTransactionCashSection({
                     value={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-10">
+                      <SelectTrigger className="h-10" data-testid="transaction-cash-currency-select">
                         <SelectValue placeholder="Wybierz walutę" />
                       </SelectTrigger>
                     </FormControl>

@@ -26,12 +26,14 @@ type Props = Readonly<{
 const EMPTY_COMPARISON_LINES: readonly ComparisonLine[] = [];
 
 const formatPercent = (value: number) =>
-  new Intl.NumberFormat("pl-PL", {
-    style: "percent",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    signDisplay: "exceptZero",
-  }).format(value);
+  Number.isFinite(value)
+    ? new Intl.NumberFormat("pl-PL", {
+        style: "percent",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        signDisplay: "exceptZero",
+      }).format(value)
+    : "—";
 
 const formatTooltipDate = (value: string) =>
   new Intl.DateTimeFormat("pl-PL", {
@@ -41,12 +43,14 @@ const formatTooltipDate = (value: string) =>
   }).format(new Date(value));
 
 const formatAxisPercent = (value: number) =>
-  new Intl.NumberFormat("pl-PL", {
-    style: "percent",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-    signDisplay: "exceptZero",
-  }).format(value);
+  Number.isFinite(value)
+    ? new Intl.NumberFormat("pl-PL", {
+        style: "percent",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        signDisplay: "exceptZero",
+      }).format(value)
+    : "—";
 
 const buildYAxisTicks = (domain: readonly [number, number] | null) => {
   if (!domain) return undefined;

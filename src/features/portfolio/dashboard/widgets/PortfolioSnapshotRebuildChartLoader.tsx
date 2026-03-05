@@ -41,6 +41,7 @@ export function PortfolioSnapshotRebuildChartLoader({
         "relative overflow-hidden rounded-lg border border-border/75 bg-card p-5"
       )}
       style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}
+      data-testid="portfolio-snapshot-rebuild-loader"
     >
       <div className="relative flex h-full flex-col">
         <div className="flex items-start justify-between gap-4">

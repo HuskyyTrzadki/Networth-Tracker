@@ -176,6 +176,7 @@ export function PortfolioValueModeContent({
                   ? "text-[color:var(--loss)]"
                   : "text-foreground"
             )}
+            data-testid="portfolio-value-period-absolute"
           >
             {selectedPeriodAbsoluteChange !== null
               ? (
@@ -196,6 +197,7 @@ export function PortfolioValueModeContent({
                   ? "text-[color:var(--loss)]"
                   : "text-muted-foreground"
             )}
+            data-testid="portfolio-value-period-percent"
           >
             {selectedPeriodChangePercent !== null
               ? formatPercent(selectedPeriodChangePercent)
