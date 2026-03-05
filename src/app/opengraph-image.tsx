@@ -52,7 +52,7 @@ export default function OpenGraphImage() {
               letterSpacing: "-0.01em",
             }}
           >
-            Śledź portfel, kontroluj wyniki, porównuj waluty.
+            Sledz portfel, kontroluj wyniki, porownuj waluty.
           </div>
         </div>
       </div>

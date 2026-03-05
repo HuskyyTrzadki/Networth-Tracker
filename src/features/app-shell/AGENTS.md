@@ -59,6 +59,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 ## Boundaries
 - No domain business logic; UI/navigation only.
 - App shell receives data from layouts; no sidebar-specific domain fetches.
+- `/(app)` layout must remain PPR-friendly: avoid top-level `connection()` gating; keep shell render streamable and place personalized/dynamic data reads behind nested Suspense boundaries.
 - Report shell performs UI/menu state handling and sign-out action call; auth-status read is server-owned.
 
 ## Tests

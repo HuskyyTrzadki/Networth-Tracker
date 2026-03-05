@@ -9,6 +9,10 @@ export type SignUpWithEmailResult = Readonly<{
   hasSession: boolean;
 }>;
 
+type OAuthStartResult = Readonly<{
+  redirectUrl: string;
+}>;
+
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : null;
 
@@ -39,6 +43,17 @@ const readSignUpResult = (payload: unknown): SignUpWithEmailResult => {
   }
   return {
     hasSession: payloadRecord.hasSession,
+  };
+};
+
+const readOAuthStartResult = (payload: unknown): OAuthStartResult => {
+  const payloadRecord = asRecord(payload);
+  if (!payloadRecord || typeof payloadRecord.redirectUrl !== "string") {
+    throw new Error("Brak adresu przekierowania OAuth.");
+  }
+
+  return {
+    redirectUrl: payloadRecord.redirectUrl,
   };
 };
 
@@ -74,3 +89,27 @@ export const upgradeWithEmail = async (credentials: EmailCredentials) => {
     credentials
   );
 };
+
+const getGoogleOAuthRedirect = async (
+  endpoint: string,
+  fallbackMessage: string
+): Promise<string> => {
+  const { payload } = await requestJson(endpoint, {
+    fallbackMessage,
+  });
+
+  const result = readOAuthStartResult(payload);
+  return result.redirectUrl;
+};
+
+export const startGoogleSignIn = async (nextPath: string) =>
+  getGoogleOAuthRedirect(
+    `/api/auth/signin/google?next=${encodeURIComponent(nextPath)}`,
+    "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie."
+  );
+
+export const startGoogleLink = async (nextPath: string) =>
+  getGoogleOAuthRedirect(
+    `/api/auth/link/google?next=${encodeURIComponent(nextPath)}`,
+    "Nie udało się rozpocząć łączenia konta Google. Spróbuj ponownie."
+  );

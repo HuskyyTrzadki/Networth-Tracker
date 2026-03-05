@@ -46,14 +46,14 @@ type TradingViewRevenueGeoBatchModule = Readonly<{
 }>;
 
 const DEFAULT_PROVIDER = "yahoo";
-const BATCH_CORE_MODULE_PATH =
-  "../../../../../scripts/lib/tradingview-revenue-geo-batch-core.mjs";
 
 const resolveStaleBeforeIso = (staleDays: number) =>
   new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000).toISOString();
 
 async function loadBatchModule(): Promise<TradingViewRevenueGeoBatchModule> {
-  return (await import(BATCH_CORE_MODULE_PATH)) as TradingViewRevenueGeoBatchModule;
+  return (await import(
+    "../../../../../scripts/lib/tradingview-revenue-geo-batch-core.mjs"
+  )) as TradingViewRevenueGeoBatchModule;
 }
 
 export async function runTradingViewRevenueGeoBackfillCron({

@@ -1,5 +1,5 @@
-import { connection } from "next/server";
 import { cookies } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 
 import { getGuestUpgradeNudgeState } from "@/features/auth/server/guest-upgrade-nudges";
@@ -29,7 +29,6 @@ type AuthenticatedAppShellProps = Readonly<{
 }>;
 
 async function AuthenticatedAppShell({ children }: AuthenticatedAppShellProps) {
-  await connection();
   const [portfolios, guestUpgradeState] = await Promise.all([
     getSidebarPortfoliosCached(),
     getGuestUpgradeNudgeState(await cookies()),
@@ -73,6 +72,7 @@ const getSidebarPortfoliosCached = async () => {
   try {
     return (await getUserPortfoliosPrivateCached()).portfolios;
   } catch (error) {
+    unstable_rethrow(error);
     // Server-side: keep the shell rendering even if data fetch fails.
     console.error("Failed to load portfolios for sidebar", error);
     return [] as readonly {

@@ -3,43 +3,45 @@
 import { useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { readAuthErrorMessage, startGoogleLink } from "@/features/auth/client/auth-api";
 
 type Props = Readonly<{
   nextPath: string;
 }>;
 
-const buildRedirectTo = (nextPath: string) => {
-  const url = new URL("/api/auth/callback", window.location.origin);
-  url.searchParams.set("next", nextPath);
-  return url.toString();
-};
-
 export function GuestUpgradeGoogleButton({ nextPath }: Props) {
-  const supabase = createClient();
   const [pending, setPending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const startGoogleAuth = async () => {
+    setErrorMessage(null);
     setPending(true);
-
-    const { error } = await supabase.auth.linkIdentity({
-      provider: "google",
-      options: { redirectTo: buildRedirectTo(nextPath) },
-    });
-
-    if (error) {
+    try {
+      const redirectUrl = await startGoogleLink(nextPath);
+      window.location.assign(redirectUrl);
+    } catch (error) {
+      setErrorMessage(
+        readAuthErrorMessage(
+          error,
+          "Nie udało się rozpocząć łączenia konta Google. Spróbuj ponownie."
+        )
+      );
       setPending(false);
-      return;
     }
   };
 
   return (
-    <Button
-      className="h-9 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
-      disabled={pending}
-      onClick={startGoogleAuth}
-    >
-      Uaktualnij przez Google
-    </Button>
+    <div className="space-y-2">
+      <Button
+        className="h-9 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
+        disabled={pending}
+        onClick={startGoogleAuth}
+      >
+        Uaktualnij przez Google
+      </Button>
+      {errorMessage ? (
+        <p className="text-xs text-[color:var(--loss)]">{errorMessage}</p>
+      ) : null}
+    </div>
   );
 }

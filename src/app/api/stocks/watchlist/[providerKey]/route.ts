@@ -1,6 +1,10 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
+import {
+  STOCKS_SCREENER_CACHE_TAG,
+  STOCKS_WATCHLIST_CACHE_TAG,
+} from "@/features/stocks/server/cache-tags";
 import { removeStockFromWatchlist } from "@/features/stocks/server/stock-watchlist";
 import { apiError, apiFromUnknownError } from "@/lib/http/api-error";
 import { getAuthenticatedSupabase } from "@/lib/http/route-handler";
@@ -38,6 +42,8 @@ export async function DELETE(
 
   try {
     await removeStockFromWatchlist(authResult.supabase, providerKey);
+    revalidateTag(STOCKS_WATCHLIST_CACHE_TAG, "max");
+    revalidateTag(STOCKS_SCREENER_CACHE_TAG, "max");
     revalidatePath("/stocks");
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {

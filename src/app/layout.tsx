@@ -39,17 +39,22 @@ const newsreader = Newsreader({
 
 const APP_NAME = "Portfolio Tracker";
 const APP_DESCRIPTION = "Śledź portfel z opóźnionymi notowaniami i przeliczeniem walut.";
+const LOCAL_METADATA_BASE = "http://localhost:3000";
 
 const getMetadataBase = () => {
   const value = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (!value) {
-    return undefined;
+  if (value) {
+    try {
+      return new URL(value);
+    } catch {
+      // Fall through to local default.
+    }
   }
 
   try {
-    return new URL(value);
+    return new URL(LOCAL_METADATA_BASE);
   } catch {
-    return undefined;
+    return new URL("http://127.0.0.1:3000");
   }
 };
 

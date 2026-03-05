@@ -66,6 +66,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `/stocks` screener cards now merge two sources:
   - equities currently held in portfolios,
   - user-pinned equities from `stock_watchlist` (RLS-owned).
+- `/stocks` screener section should use private Cache Components loader (`"use cache: private"` + `cacheLife("minutes")`) and tag reads with dedicated stock tags (`stocks:screener`, `stocks:watchlist`) so personalized cards stream fast and revalidate predictably.
+- Watchlist mutations (`watchlist-actions` + watchlist API routes) must `revalidateTag("stocks:screener")` and `revalidateTag("stocks:watchlist")` to keep screener/list stars coherent after add/remove.
 - User-pinned rows that are not currently held show a clickable star action in screener cards for quick removal.
 - `StockSearchBar` on `/stocks` supports dual actions in search results:
   - click row -> navigate to `/stocks/[providerKey]`,

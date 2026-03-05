@@ -8,13 +8,12 @@ import {
   readAuthErrorMessage,
   signInWithEmail,
   signUpWithEmail,
+  startGoogleSignIn,
 } from "@/features/auth/client/auth-api";
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import { cn } from "@/lib/cn";
-import { createClient } from "@/lib/supabase/client";
-import { buildAuthCallbackRedirectTo } from "./auth-oauth-redirect";
 import { useAuthActionState } from "./use-auth-action-state";
 
 type Mode = "signin" | "signup";
@@ -22,7 +21,6 @@ type PendingAction = "google" | "signin" | "signup";
 
 export function AuthLoginPanel() {
   const router = useRouter();
-  const supabase = createClient();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,13 +31,8 @@ export function AuthLoginPanel() {
     await runWithPending({
       pendingAction: "google",
       run: async () => {
-        const result = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo: buildAuthCallbackRedirectTo("/portfolio") },
-        });
-        if (result.error) {
-          throw result.error;
-        }
+        const redirectUrl = await startGoogleSignIn("/portfolio");
+        window.location.assign(redirectUrl);
       },
       onError: () => setErrorNotice("Nie udalo sie uruchomic logowania Google."),
     });

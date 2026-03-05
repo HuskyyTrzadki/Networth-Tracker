@@ -46,7 +46,11 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Auth UI local state is now simplified:
   - shared hook `src/features/auth/ui/use-auth-action-state.ts` owns `notice`, `pendingAction`, and `runWithPending(...)`,
   - both `AuthActions` and `AuthLoginPanel` use plain `useState` for field values/mode instead of reducer action boilerplate.
-- OAuth callback redirect URL builder is shared in `src/features/auth/ui/auth-oauth-redirect.ts` so login/settings auth flows keep one implementation for `/api/auth/callback?next=...`.
+- Google OAuth start now runs server-side via route handlers:
+  - `/api/auth/signin/google` for sign-in,
+  - `/api/auth/link/google` for identity linking,
+  - both return provider redirect URL JSON and keep Supabase OAuth start logic out of client bundles.
+- Client auth UI should call `startGoogleSignIn` / `startGoogleLink` from `src/features/auth/client/auth-api.ts` and navigate with `window.location.assign(redirectUrl)`.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.
 - Auth surfaces were visually normalized to shared UI rhythm (button heights, section radii, status panel shape) while preserving existing auth flow behavior and copy.
 - Auth settings and login wrappers now use the shared tactile `Card` primitive (`bg-white`, subtle shadow token, light border) instead of one-off container styling.

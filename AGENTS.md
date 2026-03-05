@@ -138,6 +138,7 @@ When shipping feature/architecture changes:
   - App shell routes keep sidebar (`/(app)/*`).
   - Report/public shell hosts stock details and login (`/stocks/<providerKey>`, `/login`, `/pricing`).
 - App Router uses Cache Components (`cacheComponents: true`) with Suspense boundaries.
+- App shell PPR rule: do not gate `/(app)` layout with global `connection()` or top-level blocking `cookies()` reads outside Suspense; keep shell streamable and isolate personalized reads inside nested Suspense boundaries/components.
 - Root layout wraps app content in `NuqsAdapter` (`nuqs/adapters/next/app`) so query-state hooks are standardized across features.
 - Private dashboard/shell reads use tagged private cache (`portfolio:all`, `portfolio:<id>`, `transactions:*`).
 - Write APIs invalidate with `revalidateTag`/`revalidatePath`.

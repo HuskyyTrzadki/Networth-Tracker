@@ -1,10 +1,14 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 import {
   addStockToWatchlist,
   isStockWatchlistFavorite,
 } from "@/features/stocks/server/stock-watchlist";
+import {
+  STOCKS_SCREENER_CACHE_TAG,
+  STOCKS_WATCHLIST_CACHE_TAG,
+} from "@/features/stocks/server/cache-tags";
 import { stockWatchlistUpsertSchema } from "@/features/stocks/server/stock-watchlist-schema";
 import {
   apiError,
@@ -71,6 +75,8 @@ export async function POST(request: Request) {
       parsed.data
     );
 
+    revalidateTag(STOCKS_WATCHLIST_CACHE_TAG, "max");
+    revalidateTag(STOCKS_SCREENER_CACHE_TAG, "max");
     revalidatePath("/stocks");
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

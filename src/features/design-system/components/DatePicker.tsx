@@ -1,10 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { format, isValid, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
-import { Calendar } from "@/features/design-system/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -22,6 +23,19 @@ type DatePickerProps = Readonly<{
   className?: string;
   triggerTestId?: string;
 }>;
+
+const Calendar = dynamic(
+  () =>
+    import("@/features/design-system/components/ui/calendar").then((module) => ({
+      default: module.Calendar,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[18rem] w-[17rem] animate-pulse rounded-md border border-dashed border-border/70 bg-muted/25" />
+    ),
+  }
+);
 
 const toDayStartTimestamp = (value: Date) =>
   new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
@@ -43,6 +57,7 @@ export function DatePicker({
   className,
   triggerTestId,
 }: DatePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const selectedDate = parseDateValue(value);
   const minTimestamp = minDate ? toDayStartTimestamp(minDate) : null;
   const maxTimestamp = maxDate ? toDayStartTimestamp(maxDate) : null;
@@ -62,7 +77,7 @@ export function DatePicker({
   };
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           className={cn(
@@ -94,6 +109,7 @@ export function DatePicker({
           onSelect={(nextDate) => {
             if (!nextDate) return;
             onChange(format(nextDate, "yyyy-MM-dd"));
+            setIsOpen(false);
           }}
           selected={selectedDate}
         />

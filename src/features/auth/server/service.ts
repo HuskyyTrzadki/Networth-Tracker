@@ -7,6 +7,28 @@ import { ensureProfileExists, markProfileUpgradedIfNeeded } from "./profiles";
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
+type OAuthStartResult = Readonly<{
+  redirectUrl: string;
+}>;
+
+const readOAuthRedirectUrl = (
+  result:
+    | Awaited<ReturnType<SupabaseServerClient["auth"]["signInWithOAuth"]>>
+    | Awaited<ReturnType<SupabaseServerClient["auth"]["linkIdentity"]>>
+) => {
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+
+  const data = result.data;
+  const redirectUrl =
+    data && typeof data === "object" && "url" in data ? data.url : null;
+  if (typeof redirectUrl !== "string" || redirectUrl.length === 0) {
+    throw new Error("Missing OAuth redirect URL.");
+  }
+
+  return redirectUrl;
+};
 
 export async function signInAnonymously(cookieStore: CookieStore) {
   // Server-side anonymous session creation so cookies are set securely.
@@ -23,6 +45,50 @@ export async function signInAnonymously(cookieStore: CookieStore) {
     userId: user.id,
     isAnonymous: Boolean(user.is_anonymous),
   } as const;
+}
+
+export async function startGoogleSignIn(
+  cookieStore: CookieStore,
+  redirectTo: string
+): Promise<OAuthStartResult> {
+  // Start OAuth flow from the server and return provider redirect URL.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const result = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true,
+    },
+  });
+
+  return {
+    redirectUrl: readOAuthRedirectUrl(result),
+  };
+}
+
+export async function startGoogleIdentityLink(
+  cookieStore: CookieStore,
+  redirectTo: string
+): Promise<OAuthStartResult> {
+  // Link Google identity for an authenticated user and return provider redirect URL.
+  const supabase: SupabaseServerClient = createClient(cookieStore);
+  const { data, error } = await supabase.auth.getUser();
+  const user = data.user ?? null;
+  if (error || !user) {
+    throw new Error("Unauthorized.");
+  }
+
+  const result = await supabase.auth.linkIdentity({
+    provider: "google",
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true,
+    },
+  });
+
+  return {
+    redirectUrl: readOAuthRedirectUrl(result),
+  };
 }
 
 export async function exchangeOAuthCodeForSession(

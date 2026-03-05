@@ -9,13 +9,13 @@ import {
   signInWithEmail,
   signOutSession,
   signUpWithEmail,
+  startGoogleLink,
+  startGoogleSignIn,
   upgradeWithEmail,
 } from "@/features/auth/client/auth-api";
 import { cn } from "@/lib/cn";
-import { createClient } from "@/lib/supabase/client";
 import { AuthEmailTabs } from "./AuthEmailTabs";
 import { AuthGuestUpgradeForm } from "./AuthGuestUpgradeForm";
-import { buildAuthCallbackRedirectTo } from "./auth-oauth-redirect";
 import { useAuthActionState } from "./use-auth-action-state";
 
 type Mode = "signedOut" | "guest" | "signedIn";
@@ -36,7 +36,6 @@ export function AuthActions({
   primaryGoogleActionLabel,
 }: Props) {
   const router = useRouter();
-  const supabase = createClient();
   const [upgradeEmail, setUpgradeEmail] = useState("");
   const [upgradePassword, setUpgradePassword] = useState("");
   const [signInEmail, setSignInEmail] = useState("");
@@ -50,21 +49,11 @@ export function AuthActions({
     await runWithPending({
       pendingAction: "google",
       run: async () => {
-        const redirectTo = buildAuthCallbackRedirectTo(nextPath);
-        const result =
+        const redirectUrl =
           mode === "signedOut"
-            ? await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: { redirectTo },
-              })
-            : await supabase.auth.linkIdentity({
-                provider: "google",
-                options: { redirectTo },
-              });
-
-        if (result.error) {
-          throw result.error;
-        }
+            ? await startGoogleSignIn(nextPath)
+            : await startGoogleLink(nextPath);
+        window.location.assign(redirectUrl);
       },
       onError: () =>
         setErrorNotice(
