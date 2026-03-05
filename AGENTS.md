@@ -60,6 +60,7 @@ Out of scope:
 1) Unit/integration (Vitest + RTL)
 - Co-locate tests as `*.test.ts` / `*.test.tsx`
 - Prefer direct route-handler invocation over spinning servers
+- Vitest must resolve Next.js `server-only` marker imports via the local shim alias (`server-only` -> `src/test/server-only.ts`) to keep server modules testable in jsdom runs.
 - Commands: `npm run test`, `npm run test:watch`
 
 2) E2E (Playwright)

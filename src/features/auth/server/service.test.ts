@@ -16,6 +16,7 @@ import {
   ensureProfileExists,
   markProfileUpgradedIfNeeded,
 } from "./profiles";
+import { recordGuestUpgradeNudgesUpgraded } from "./guest-upgrade-nudge-events";
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
@@ -24,6 +25,10 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("./profiles", () => ({
   ensureProfileExists: vi.fn(),
   markProfileUpgradedIfNeeded: vi.fn(),
+}));
+
+vi.mock("./guest-upgrade-nudge-events", () => ({
+  recordGuestUpgradeNudgesUpgraded: vi.fn(),
 }));
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -66,6 +71,10 @@ describe("auth service", () => {
   it("exchanges OAuth code and marks upgraded when not anonymous", async () => {
     const supabase = {
       auth: {
+        getUser: vi.fn(async () => ({
+          data: { user: { id: "guest-1", is_anonymous: true } },
+          error: null,
+        })),
         exchangeCodeForSession: vi.fn(async () => ({
           data: { user: { id: "u2", is_anonymous: false } },
           error: null,
@@ -80,6 +89,7 @@ describe("auth service", () => {
     expect(result).toEqual({ userId: "u2", isAnonymous: false });
     expect(ensureProfileExists).toHaveBeenCalledWith(supabase, "u2");
     expect(markProfileUpgradedIfNeeded).toHaveBeenCalledWith(supabase, "u2");
+    expect(recordGuestUpgradeNudgesUpgraded).toHaveBeenCalledWith(supabase, "u2");
   });
 
   it("signs out", async () => {
@@ -98,6 +108,10 @@ describe("auth service", () => {
   it("upgrades to email/password and marks upgraded", async () => {
     const supabase = {
       auth: {
+        getUser: vi.fn(async () => ({
+          data: { user: { id: "guest-2", is_anonymous: true } },
+          error: null,
+        })),
         updateUser: vi.fn(async () => ({
           data: { user: { id: "u3", is_anonymous: false } },
           error: null,
@@ -115,6 +129,7 @@ describe("auth service", () => {
     expect(result).toEqual({ userId: "u3" });
     expect(ensureProfileExists).toHaveBeenCalledWith(supabase, "u3");
     expect(markProfileUpgradedIfNeeded).toHaveBeenCalledWith(supabase, "u3");
+    expect(recordGuestUpgradeNudgesUpgraded).toHaveBeenCalledWith(supabase, "u3");
   });
 
   it("signs in with email/password and marks upgraded", async () => {

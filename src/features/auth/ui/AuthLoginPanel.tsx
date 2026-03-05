@@ -14,6 +14,7 @@ import { Input } from "@/features/design-system/components/ui/input";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/client";
+import { runAuthAction } from "./auth-action-runner";
 
 type Mode = "signin" | "signup";
 type PendingAction = "google" | "signin" | "signup" | null;
@@ -74,75 +75,82 @@ export function AuthLoginPanel() {
   const supabase = createClient();
   const [state, dispatch] = useReducer(reducer, initialState);
   const { mode, email, password, pendingAction, notice } = state;
+  const setNotice = (payload: Notice | null) => dispatch({ type: "set_notice", payload });
+  const setPendingAction = (payload: PendingAction) =>
+    dispatch({ type: "set_pending_action", payload });
+  const clearNotice = () => setNotice(null);
+  const setErrorNotice = (message: string) =>
+    setNotice({
+      kind: "error",
+      message,
+    });
+  const setSuccessNotice = (message: string) =>
+    setNotice({
+      kind: "success",
+      message,
+    });
 
   const onGoogleSignIn = async () => {
-    dispatch({ type: "set_notice", payload: null });
-    dispatch({ type: "set_pending_action", payload: "google" });
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: buildRedirectTo() },
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction("google");
+      },
+      run: async () => {
+        const result = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: buildRedirectTo() },
+        });
+        if (result.error) {
+          throw result.error;
+        }
+      },
+      onError: () => setErrorNotice("Nie udalo sie uruchomic logowania Google."),
+      after: () => setPendingAction(null),
     });
-    if (error) {
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message: "Nie udalo sie uruchomic logowania Google.",
-        },
-      });
-    }
-    dispatch({ type: "set_pending_action", payload: null });
   };
 
   const onSubmit = async () => {
-    dispatch({ type: "set_notice", payload: null });
     const action = mode === "signin" ? "signin" : "signup";
-    dispatch({ type: "set_pending_action", payload: action });
-    try {
-      if (mode === "signin") {
-        await signInWithEmail({ email, password });
-      } else {
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction(action);
+      },
+      run: async () => {
+        if (mode === "signin") {
+          await signInWithEmail({ email, password });
+          return { mode: "signin" as const, hasSession: true };
+        }
+
         const result = await signUpWithEmail({ email, password });
-        if (result.hasSession) {
-          router.push("/onboarding");
-          dispatch({ type: "set_pending_action", payload: null });
+        return { mode: "signup" as const, hasSession: result.hasSession };
+      },
+      onSuccess: (result) => {
+        if (result.mode === "signin") {
+          router.push("/portfolio");
+          router.refresh();
           return;
         }
 
-        dispatch({
-          type: "set_notice",
-          payload: {
-            kind: "success",
-            message: "Sprawdz skrzynke e-mail, aby potwierdzic konto.",
-          },
-        });
-        dispatch({ type: "set_pending_action", payload: null });
-        return;
-      }
-    } catch (error) {
-      const message = readAuthErrorMessage(
-        error,
-        mode === "signin"
-          ? "Nie udalo sie zalogowac. Sprawdz dane."
-          : "Nie udalo sie utworzyc konta. Sprawdz dane."
-      );
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message,
-        },
-      });
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
+        if (result.hasSession) {
+          router.push("/onboarding");
+          return;
+        }
 
-    if (mode === "signin") {
-      router.push("/portfolio");
-      router.refresh();
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
+        setSuccessNotice("Sprawdz skrzynke e-mail, aby potwierdzic konto.");
+      },
+      onError: (error) => {
+        const message = readAuthErrorMessage(
+          error,
+          mode === "signin"
+            ? "Nie udalo sie zalogowac. Sprawdz dane."
+            : "Nie udalo sie utworzyc konta. Sprawdz dane."
+        );
+        setErrorNotice(message);
+      },
+      after: () => setPendingAction(null),
+    });
   };
 
   return (

@@ -42,6 +42,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Auth callback and signup confirmation redirects now resolve origin via forwarded headers (`x-forwarded-host/proto`) to avoid accidental localhost redirects behind proxies.
 - Auth API routes (`/api/auth/*`) now return RFC7807-lite error payloads via shared helper (`src/lib/http/api-error.ts`), so clients can rely on machine-readable `error.code` + `requestId`.
 - Auth UI email/sign-out mutations now go through one shared client (`src/features/auth/client/auth-api.ts`) that maps errors through `toClientError` and exposes consistent user-facing messages.
+- Auth UI async mutation flow is normalized via shared helper `src/features/auth/ui/auth-action-runner.ts` (`before -> run -> success/error -> after`), so `AuthActions` and `AuthLoginPanel` avoid duplicated pending/notice try-catch blocks.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.
 - Auth surfaces were visually normalized to shared UI rhythm (button heights, section radii, status panel shape) while preserving existing auth flow behavior and copy.
 - Auth settings and login wrappers now use the shared tactile `Card` primitive (`bg-white`, subtle shadow token, light border) instead of one-off container styling.

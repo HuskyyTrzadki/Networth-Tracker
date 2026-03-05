@@ -4,10 +4,15 @@ import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import type { createClient } from "@/lib/supabase/server";
 import { multiplyDecimals, parseDecimalString, toFixedDecimalString } from "@/lib/decimal";
 import { getInstrumentDividendSignalsCached } from "@/features/market-data";
-import { isSupportedCashCurrency } from "@/features/transactions/lib/system-currencies";
 import type { DividendInboxItem, DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
 
 import { computeDividendSmartDefault, buildDividendEventKey, classifyDividendMarket } from "./dividend-utils";
+import {
+  buildPastDividendInboxItem,
+  buildUpcomingDividendInboxItem,
+  finalizePastDividendItems,
+  finalizeUpcomingDividendItems,
+} from "./dividend-inbox-builders";
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -272,26 +277,24 @@ export async function getDividendInbox(input: Readonly<{
         isTaxAdvantaged,
       });
 
-      rawPastItems.push({
-        dividendEventKey: buildDividendEventKey(
-          candidate.holding.providerKey,
-          candidate.eventDate
-        ),
-        providerKey: candidate.holding.providerKey,
-        symbol: candidate.holding.symbol,
-        name: candidate.holding.name,
-        eventDate: candidate.eventDate,
-        payoutCurrency: candidate.holding.currency,
-        amountPerShare: candidate.amountPerShare,
-        estimatedShares: sharesDecimal.toString(),
-        estimatedGross: gross,
-        netSuggested: smartDefault.netSuggested,
-        smartDefaultHint: smartDefault.hint,
-        market,
-        isBooked: false,
-        canBook: false,
-        disabledReason: null,
-      });
+      rawPastItems.push(
+        buildPastDividendInboxItem({
+          dividendEventKey: buildDividendEventKey(
+            candidate.holding.providerKey,
+            candidate.eventDate
+          ),
+          providerKey: candidate.holding.providerKey,
+          symbol: candidate.holding.symbol,
+          name: candidate.holding.name,
+          eventDate: candidate.eventDate,
+          payoutCurrency: candidate.holding.currency,
+          amountPerShare: candidate.amountPerShare,
+          estimatedShares: sharesDecimal.toString(),
+          estimatedGross: gross,
+          market,
+          smartDefault,
+        })
+      );
     }
   }
 
@@ -317,23 +320,21 @@ export async function getDividendInbox(input: Readonly<{
       isTaxAdvantaged,
     });
 
-    upcomingItems.push({
-      dividendEventKey: buildDividendEventKey(holding.providerKey, upcoming.eventDate),
-      providerKey: holding.providerKey,
-      symbol: holding.symbol,
-      name: holding.name,
-      eventDate: upcoming.eventDate,
-      payoutCurrency: holding.currency,
-      amountPerShare: upcoming.amountPerShare,
-      estimatedShares: sharesDecimal.toString(),
-      estimatedGross: gross,
-      netSuggested: smartDefault.netSuggested,
-      smartDefaultHint: smartDefault.hint,
-      market,
-      isBooked: false,
-      canBook: false,
-      disabledReason: "Dostępne do zaksięgowania po dniu wypłaty.",
-    });
+    upcomingItems.push(
+      buildUpcomingDividendInboxItem({
+        dividendEventKey: buildDividendEventKey(holding.providerKey, upcoming.eventDate),
+        providerKey: holding.providerKey,
+        symbol: holding.symbol,
+        name: holding.name,
+        eventDate: upcoming.eventDate,
+        payoutCurrency: holding.currency,
+        amountPerShare: upcoming.amountPerShare,
+        estimatedShares: sharesDecimal.toString(),
+        estimatedGross: gross,
+        market,
+        smartDefault,
+      })
+    );
   }
 
   const allKnownKeys = [...rawPastItems, ...upcomingItems].map((item) => item.dividendEventKey);
@@ -346,41 +347,16 @@ export async function getDividendInbox(input: Readonly<{
         })
       : new Set<string>();
 
-  const pastItems = rawPastItems
-    .map((item) => {
-      const isBooked = bookedKeys.has(item.dividendEventKey);
-      const isSupportedCurrency = isSupportedCashCurrency(item.payoutCurrency);
+  const pastItems = finalizePastDividendItems({
+    rawItems: rawPastItems,
+    bookedKeys,
+    isReadOnly,
+  });
 
-      return {
-        ...item,
-        isBooked,
-        canBook: !isReadOnly && !isBooked && isSupportedCurrency,
-        disabledReason:
-          isBooked
-            ? null
-            : !isSupportedCurrency
-              ? `Waluta ${item.payoutCurrency} nie jest jeszcze obsługiwana dla księgowania.`
-              : null,
-      } satisfies DividendInboxItem;
-    })
-    .sort((a, b) => {
-      if (a.eventDate === b.eventDate) {
-        return a.symbol.localeCompare(b.symbol);
-      }
-      return b.eventDate.localeCompare(a.eventDate);
-    });
-
-  const normalizedUpcoming = upcomingItems
-    .map((item) => ({
-      ...item,
-      isBooked: bookedKeys.has(item.dividendEventKey),
-    }))
-    .sort((a, b) => {
-      if (a.eventDate === b.eventDate) {
-        return a.symbol.localeCompare(b.symbol);
-      }
-      return a.eventDate.localeCompare(b.eventDate);
-    });
+  const normalizedUpcoming = finalizeUpcomingDividendItems({
+    items: upcomingItems,
+    bookedKeys,
+  });
 
   return {
     scope: input.portfolioId ? "PORTFOLIO" : "ALL",

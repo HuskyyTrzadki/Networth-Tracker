@@ -145,6 +145,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Financial columns (`Ilość`, `Cena`, `Wartość`) are strictly right-aligned to preserve decimal-column scanability with `tabular-nums`.
 - Cash settlement legs render as visual children of the primary asset row (left indentation + muted tone), improving grouped-transaction hierarchy.
 - Monetary cells split amount vs unit tokens so currency suffixes (e.g. `USD`, `zł`) are smaller/more muted than the numeric value.
+- Transactions table internals are split into focused modules: row-shaping (`components/transactions-ledger-rows.ts`), display formatters (`components/transactions-table-formatters.ts`), and row-intro animation hook (`components/use-new-transaction-row-highlight.ts`), keeping `TransactionsTable.tsx` orchestration-only.
 - Modal receipt summary (`TransactionLiveSummary`) also splits amount/unit tokens and keeps all monetary rows right-aligned with `font-mono tabular-nums`.
 - Transactions table rows keep lightweight visual feedback via alternating striping + short “fresh stamp” highlight (`~0.5s`) on newly added rows; no heavy row-motion choreography.
 - Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.

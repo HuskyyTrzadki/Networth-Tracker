@@ -15,6 +15,7 @@ import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/client";
 import { AuthEmailTabs } from "./AuthEmailTabs";
 import { AuthGuestUpgradeForm } from "./AuthGuestUpgradeForm";
+import { runAuthAction } from "./auth-action-runner";
 
 type Mode = "signedOut" | "guest" | "signedIn";
 
@@ -115,172 +116,143 @@ export function AuthActions({
     pendingAction,
   } = state;
 
+  const setNotice = (payload: Notice | null) =>
+    dispatch({ type: "set_notice", payload });
+  const setPendingAction = (payload: PendingAction) =>
+    dispatch({ type: "set_pending_action", payload });
+  const clearNotice = () => setNotice(null);
+  const setErrorNotice = (message: string) =>
+    setNotice({
+      kind: "error",
+      message,
+    });
+  const setSuccessNotice = (message: string) =>
+    setNotice({
+      kind: "success",
+      message,
+    });
+
   const startGoogleAuth = async () => {
-    dispatch({ type: "set_notice", payload: null });
-    dispatch({ type: "set_pending_action", payload: "google" });
-    const redirectTo = buildRedirectTo(nextPath);
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction("google");
+      },
+      run: async () => {
+        const redirectTo = buildRedirectTo(nextPath);
+        const result =
+          mode === "signedOut"
+            ? await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: { redirectTo },
+              })
+            : await supabase.auth.linkIdentity({
+                provider: "google",
+                options: { redirectTo },
+              });
 
-    const { error } =
-      mode === "signedOut"
-        ? await supabase.auth.signInWithOAuth({
-            provider: "google",
-            options: { redirectTo },
-          })
-        : await supabase.auth.linkIdentity({
-            provider: "google",
-            options: { redirectTo },
-          });
-
-    if (error) {
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message:
-            "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie.",
-        },
-      });
-    }
-
-    dispatch({ type: "set_pending_action", payload: null });
+        if (result.error) {
+          throw result.error;
+        }
+      },
+      onError: () =>
+        setErrorNotice(
+          "Nie udało się rozpocząć logowania przez Google. Spróbuj ponownie."
+        ),
+      after: () => setPendingAction(null),
+    });
   };
 
   const submitEmailUpgrade = async () => {
-    dispatch({ type: "set_notice", payload: null });
-    dispatch({ type: "set_pending_action", payload: "upgrade" });
-    try {
-      await upgradeWithEmail({ email: upgradeEmail, password: upgradePassword });
-    } catch (error) {
-      const message = readAuthErrorMessage(
-        error,
-        "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie."
-      );
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message,
-        },
-      });
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
-
-    dispatch({
-      type: "set_notice",
-      payload: {
-        kind: "success",
-        message:
-          "Zaktualizowano. Sprawdź skrzynkę, jeśli wymagana jest weryfikacja.",
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction("upgrade");
       },
+      run: () => upgradeWithEmail({ email: upgradeEmail, password: upgradePassword }),
+      onSuccess: () => {
+        setSuccessNotice(
+          "Zaktualizowano. Sprawdź skrzynkę, jeśli wymagana jest weryfikacja."
+        );
+        router.refresh();
+      },
+      onError: (error) =>
+        setErrorNotice(
+          readAuthErrorMessage(
+            error,
+            "Nie udało się uaktualnić przez e-mail. Sprawdź dane i spróbuj ponownie."
+          )
+        ),
+      after: () => setPendingAction(null),
     });
-    router.refresh();
-    dispatch({ type: "set_pending_action", payload: null });
   };
 
   const startSignOut = async () => {
-    dispatch({ type: "set_notice", payload: null });
-    dispatch({ type: "set_pending_action", payload: "signout" });
-    try {
-      await signOutSession();
-    } catch (error) {
-      const message = readAuthErrorMessage(
-        error,
-        "Coś poszło nie tak. Spróbuj ponownie."
-      );
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message,
-        },
-      });
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
-    router.refresh();
-    dispatch({ type: "set_pending_action", payload: null });
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction("signout");
+      },
+      run: signOutSession,
+      onSuccess: () => {
+        router.refresh();
+      },
+      onError: (error) =>
+        setErrorNotice(readAuthErrorMessage(error, "Coś poszło nie tak. Spróbuj ponownie.")),
+      after: () => setPendingAction(null),
+    });
   };
 
   const submitEmailSignIn = async () => {
-    dispatch({ type: "set_notice", payload: null });
-    dispatch({ type: "set_pending_action", payload: "signin" });
-    try {
-      await signInWithEmail({ email: signInEmail, password: signInPassword });
-    } catch (error) {
-      const message = readAuthErrorMessage(
-        error,
-        "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie."
-      );
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message,
-        },
-      });
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
-
-    dispatch({
-      type: "set_notice",
-      payload: {
-        kind: "success",
-        message: "Zalogowano.",
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction("signin");
       },
+      run: () => signInWithEmail({ email: signInEmail, password: signInPassword }),
+      onSuccess: () => {
+        setSuccessNotice("Zalogowano.");
+        router.refresh();
+      },
+      onError: (error) =>
+        setErrorNotice(
+          readAuthErrorMessage(
+            error,
+            "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie."
+          )
+        ),
+      after: () => setPendingAction(null),
     });
-    router.refresh();
-    dispatch({ type: "set_pending_action", payload: null });
   };
 
   const submitEmailSignUp = async () => {
-    dispatch({ type: "set_notice", payload: null });
-    dispatch({ type: "set_pending_action", payload: "signup" });
-    let hasSession = false;
-    try {
-      const result = await signUpWithEmail({
-        email: signUpEmail,
-        password: signUpPassword,
-      });
-      hasSession = result.hasSession;
-    } catch (error) {
-      const message = readAuthErrorMessage(
-        error,
-        "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie."
-      );
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "error",
-          message,
-        },
-      });
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
-
-    if (hasSession) {
-      dispatch({
-        type: "set_notice",
-        payload: {
-          kind: "success",
-          message: "Konto utworzone i zalogowano.",
-        },
-      });
-      router.push("/onboarding");
-      dispatch({ type: "set_pending_action", payload: null });
-      return;
-    }
-
-    dispatch({
-      type: "set_notice",
-      payload: {
-        kind: "success",
-        message: "Sprawdź skrzynkę, aby potwierdzić konto.",
+    await runAuthAction({
+      before: () => {
+        clearNotice();
+        setPendingAction("signup");
       },
+      run: () =>
+        signUpWithEmail({
+          email: signUpEmail,
+          password: signUpPassword,
+        }),
+      onSuccess: (result) => {
+        if (result.hasSession) {
+          setSuccessNotice("Konto utworzone i zalogowano.");
+          router.push("/onboarding");
+          return;
+        }
+        setSuccessNotice("Sprawdź skrzynkę, aby potwierdzić konto.");
+      },
+      onError: (error) =>
+        setErrorNotice(
+          readAuthErrorMessage(
+            error,
+            "Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie."
+          )
+        ),
+      after: () => setPendingAction(null),
     });
-    dispatch({ type: "set_pending_action", payload: null });
   };
 
   const showGoogleAction = Boolean(primaryGoogleActionLabel);

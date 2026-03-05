@@ -1,6 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { listPortfolios } from "./list-portfolios";
+import { listDemoPortfolioIds } from "./list-demo-portfolio-ids";
+
+vi.mock("./list-demo-portfolio-ids", () => ({
+  listDemoPortfolioIds: vi.fn(),
+}));
 
 type QueryResult<T> = Promise<{
   data: T[] | null;
@@ -33,6 +38,10 @@ const createSupabaseStub = <T, U>(
 };
 
 describe("listPortfolios", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("maps rows into portfolio summaries", async () => {
     const supabase = createSupabaseStub(
       Promise.resolve({
@@ -52,6 +61,7 @@ describe("listPortfolios", () => {
         error: null,
       })
     );
+    vi.mocked(listDemoPortfolioIds).mockResolvedValue(new Set(["p1"]));
 
     await expect(listPortfolios(supabase as never)).resolves.toEqual([
       {
@@ -72,6 +82,7 @@ describe("listPortfolios", () => {
         error: { message: "boom" },
       })
     );
+    vi.mocked(listDemoPortfolioIds).mockResolvedValue(new Set());
 
     await expect(listPortfolios(supabase as never)).rejects.toThrow("boom");
   });

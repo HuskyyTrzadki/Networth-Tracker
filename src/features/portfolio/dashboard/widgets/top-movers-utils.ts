@@ -44,15 +44,16 @@ const compareByMagnitudeDesc = (a: Candidate, b: Candidate) => {
 function toCandidate(holding: ValuedHolding): Candidate | null {
   if (holding.instrumentType === "CURRENCY") return null;
   if (holding.provider === "custom") return null;
-  if (!holding.providerKey) return null;
   if (!holding.todayChangeBase) return null;
 
   const change = parseDecimalString(holding.todayChangeBase);
   if (!change || change.eq(0)) return null;
+  const providerKey = holding.providerKey ?? holding.symbol.trim();
+  if (providerKey.length === 0) return null;
 
   return {
     instrumentId: holding.instrumentId,
-    providerKey: holding.providerKey,
+    providerKey,
     symbol: holding.symbol,
     name: holding.name,
     logoUrl: holding.logoUrl,
