@@ -8,6 +8,7 @@ export type TradingViewSupportedInstrumentExchange =
   (typeof TRADINGVIEW_SUPPORTED_INSTRUMENT_EXCHANGES)[number];
 
 export type TradingViewVenueCode = "NASDAQ" | "NYSE" | "GPW";
+export type TradingViewRevenueBreakdownKind = "geo" | "source";
 
 export type TradingViewSymbolMapSuccess = Readonly<{
   ok: true;
@@ -33,6 +34,11 @@ export type TradingViewCountryDomRow = Readonly<{
   rawValues: readonly string[];
 }>;
 
+export type TradingViewRevenueBreakdownRow = Readonly<{
+  label: string;
+  rawValues: readonly string[];
+}>;
+
 export type TradingViewRevenueGeoSnapshot = Readonly<{
   provider: string;
   providerKey: string;
@@ -40,6 +46,17 @@ export type TradingViewRevenueGeoSnapshot = Readonly<{
   fetchedAt: string;
   latestByCountry: Readonly<Record<string, number>>;
   historyByCountry: Readonly<Record<string, readonly number[]>>;
+  seriesOrder: readonly string[];
+  metadata: Readonly<Record<string, string | number | boolean | null>>;
+}>;
+
+export type TradingViewRevenueBreakdownSnapshot = Readonly<{
+  provider: string;
+  providerKey: string;
+  source: "tradingview_dom";
+  fetchedAt: string;
+  latestByLabel: Readonly<Record<string, number>>;
+  historyByLabel: Readonly<Record<string, readonly number[]>>;
   seriesOrder: readonly string[];
   metadata: Readonly<Record<string, string | number | boolean | null>>;
 }>;

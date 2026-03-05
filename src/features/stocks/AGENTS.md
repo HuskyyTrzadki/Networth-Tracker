@@ -115,14 +115,16 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - v1 data source is intentionally hardcoded and shared across all tickers.
 - Report content sections (`What They Own & Owe`, `Revenue by Products`, `Earnings Call Summary`, peers, and deep dives) are currently hardcoded mock content pending provider wiring.
 - `Jak firma zarabia` now reads the geography donut from cached TradingView geography data for the latest available period via `get-public-stock-revenue-geo-cached.ts`; the widget keeps the user-facing title `Przychody wedlug regionu`, groups the long tail into `Pozostale` for readability, and must stay fail-soft when cache rows are missing.
+- `Jak firma zarabia` now also reads the segment/source mix from cached TradingView source data via `get-public-stock-revenue-source-cached.ts`; the report uses the user-facing title `Przychody wedlug segmentow`, groups the long tail into `Pozostale`, and must not fall back to hardcoded product rows once cache-backed data is available.
 - Geography history in the report is intentionally honest: until cache ingestion also persists trustworthy period labels/order for country rows, quarterly/annual geography controls should render an explicit unavailable state instead of inferring or faking historical slices.
+- Segment history follows the same honesty rule: until cache ingestion also persists trustworthy period labels/order for source rows, quarterly/annual segment views should render an explicit unavailable state instead of inferring or faking history.
 - Report content includes additional hardcoded concept blocks with quarter/year toggles:
   - revenue allocation ("Gdzie trafia kazda zlotowka przychodu"),
   - year-over-year KPI block ("Ten rok vs poprzedni rok"),
   - free-cash-flow explainer section.
 - "Jak firma zarabia" now has two visuals for revenue understanding:
   - default `Sankey` flow rendered via `d3-sankey` + React SVG in clean left-to-right topology (`segmenty biznesowe` -> `Przychody razem` -> `COGS / OPEX / Podatki / Zysk netto`) with ordered right-side waterfall and bottom-line emphasis,
-  - fallback `Kołowe` view (existing product/geo donuts).
+  - fallback `Kołowe` view (cached segment/geo donuts).
 - Sankey uses one central revenue aggregator to avoid "spaghetti" crossings; costs follow investor-first waterfall order (`COGS`, `OPEX` as `R&D+SG&A`, `Podatki`) and net profit is rendered as the final terminal stage.
 - In Sankey mode, geography is shown as a separate circular card under the flow (`Geografia przychodow`) so business-source mix and regional exposure are not conflated.
 - Price chart keeps timeframe as the primary report control; secondary non-ready layers should stay hidden from the public report surface.

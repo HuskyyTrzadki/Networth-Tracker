@@ -1,7 +1,7 @@
 import type { InstrumentRevenueGeoBreakdown } from "@/features/market-data/server/get-instrument-revenue-geo-breakdown";
 
 import { toPercentSlices } from "./stock-report-revenue-mix-helpers";
-import type { RevenueGeoCardViewModel } from "./stock-report-revenue-geo-view-model";
+import type { RevenueBreakdownCardViewModel } from "./stock-report-revenue-breakdown-view-model";
 
 const GEO_COLORS = ["#4f5f75", "#6c785e", "#826447", "#7d6b5c", "#756a7f", "#50746d"] as const;
 const GEO_HELP =
@@ -33,7 +33,7 @@ const groupEntries = (entries: NonNullable<InstrumentRevenueGeoBreakdown>["entri
 
 export function buildRevenueGeoCardViewModel(
   breakdown: InstrumentRevenueGeoBreakdown | null
-): RevenueGeoCardViewModel {
+): RevenueBreakdownCardViewModel {
   if (!breakdown) {
     return {
       title: "Przychody wedlug regionu",

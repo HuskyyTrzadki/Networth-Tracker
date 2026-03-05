@@ -13,17 +13,27 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Daily FX rates cache: `src/features/market-data/server/get-fx-daily-rates-cached.ts`
 - Dividend signals cache: `src/features/market-data/server/get-instrument-dividend-signals-cached.ts`
 - Revenue geography read helper: `src/features/market-data/server/get-instrument-revenue-geo-breakdown.ts`
+- Revenue source/segment read helper: `src/features/market-data/server/get-instrument-revenue-source-breakdown.ts`
 - Polish CPI cache: `src/features/market-data/server/get-polish-cpi-series-cached.ts`
 - Shared types: `src/features/market-data/lib/instrument-types.ts`
-- TradingView revenue-geo provider helpers:
+- TradingView revenue breakdown provider helpers:
   - `src/features/market-data/server/providers/tradingview/types.ts`
   - `src/features/market-data/server/providers/tradingview/symbol-map.ts`
+  - `src/features/market-data/server/providers/tradingview/revenue-breakdown-parser.ts`
   - `src/features/market-data/server/providers/tradingview/revenue-geo-parser.ts`
+  - `src/features/market-data/server/providers/tradingview/revenue-source-parser.ts`
   - `src/features/market-data/server/providers/tradingview/fetch-revenue-geo.ts`
+  - `src/features/market-data/server/providers/tradingview/fetch-revenue-source.ts`
 - TradingView batch ingestion scripts:
+  - `scripts/tradingview-revenue-breakdown-batch.mjs`
   - `scripts/tradingview-revenue-geo-batch.mjs`
+  - `scripts/tradingview-revenue-source-batch.mjs`
+  - `scripts/lib/tradingview-revenue-breakdown-batch-core.mjs`
+  - `scripts/lib/tradingview-revenue-breakdown-scrape.mjs`
   - `scripts/lib/tradingview-revenue-geo-batch-core.mjs`
   - `scripts/lib/tradingview-revenue-geo-scrape.mjs`
+  - `scripts/lib/tradingview-revenue-source-batch-core.mjs`
+  - `scripts/lib/tradingview-revenue-source-scrape.mjs`
 - Yahoo provider helpers:
   - `src/features/market-data/server/providers/yahoo/yahoo-quote.ts`
   - `src/features/market-data/server/providers/yahoo/yahoo-fx.ts`
@@ -45,13 +55,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Macro CPI (Eurostat HICP index level, PL) is cached globally in monthly buckets (`macro_cpi_pl_cache`) and is used to derive cumulative inflation + real return overlays for PLN performance.
 - CPI service logs explicit backend diagnostics for cache-read, missing-table, and fetch/parse failures (`[market-data][cpi-pl] ...`) and gracefully falls back to non-cached fetch or empty overlay data.
 - TradingView revenue geography ingestion is currently batch-only (local Playwright script), not request-path runtime, and persists into `instrument_revenue_geo_breakdown_cache`.
+- TradingView revenue source/segment ingestion is also batch-only and persists into `instrument_revenue_source_breakdown_cache`.
 - `instrument_revenue_geo_breakdown_cache` is also read by portfolio economic currency-exposure analysis (`/api/portfolio/currency-exposure/economic`) as an enrichment source for per-asset LLM splits.
-- TradingView revenue geography refresh now has a cron-safe backfill path: `/api/cron/tradingview-revenue-geo/run` selects Yahoo equities with missing or stale cache via SQL helper functions, then runs the existing Playwright scraper sequentially with a polite fixed delay (`delayMs`, default 2000).
-- Backfill cron runtime loader (`run-backfill-cron.ts`) must keep a literal dynamic import path to `scripts/lib/tradingview-revenue-geo-batch-core.mjs` to avoid webpack critical-dependency warnings; maintain matching ESM declaration file `scripts/lib/tradingview-revenue-geo-batch-core.d.mts` for strict TypeScript builds.
-- Do not add synchronous/on-demand TradingView scraping to request paths. Missing geo coverage must degrade gracefully in UI/backend until the next async backfill run.
+- TradingView revenue breakdown refresh now has cron-safe backfill paths for both `/api/cron/tradingview-revenue-geo/run` and `/api/cron/tradingview-revenue-source/run`; both select Yahoo equities with missing or stale cache via SQL helper functions, then run the shared Playwright batch runner sequentially with a polite fixed delay (`delayMs`, default 2000).
+- Backfill cron runtime loader (`tradingview-revenue-breakdown/run-backfill-cron.ts`) must keep a literal dynamic import path to `scripts/lib/tradingview-revenue-breakdown-batch-core.mjs` to avoid webpack critical-dependency warnings; maintain matching ESM declaration file `scripts/lib/tradingview-revenue-breakdown-batch-core.d.mts` for strict TypeScript builds.
+- Do not add synchronous/on-demand TradingView scraping to request paths. Missing geo or source coverage must degrade gracefully in UI/backend until the next async backfill run.
 - TradingView symbol mapping uses instrument exchanges (`NASDAQ`, `NYSE`, `WSE`) with `WSE` translated to TradingView venue code `GPW` and `.WA` suffix trimmed from Yahoo provider keys.
-- TradingView geography values are parsed from hydrated DOM rows (`By country` / `Według kraju`) and normalized to numeric latest + history payloads per country.
-- Public stock reports now consume the cached geography through `get-instrument-revenue-geo-breakdown.ts`; report UI should use the latest country mix only until period labels/order are persisted reliably enough for historical chart modes.
+- TradingView breakdown values are parsed from hydrated DOM rows (`By country` / `Według kraju` and `By source` / `Według źródła`) and normalized to numeric latest + history payloads by label.
+- Public stock reports now consume both cached geography and cached source/segment data; report UI should use the latest mix only until period labels/order are persisted reliably enough for historical chart modes.
 
 ## Tests
 - `src/features/market-data/server/get-instrument-quotes-cached.test.ts`
@@ -64,4 +75,5 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/market-data/server/get-polish-cpi-series-cached.test.ts`
 - `src/features/market-data/server/providers/tradingview/symbol-map.test.ts`
 - `src/features/market-data/server/providers/tradingview/revenue-geo-parser.test.ts`
+- `src/features/market-data/server/providers/tradingview/revenue-source-parser.test.ts`
 - TODO: extend daily cache tests with integration-level cache hit/miss + inversion fallback against mocked Supabase rows.

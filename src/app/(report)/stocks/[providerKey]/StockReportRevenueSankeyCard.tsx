@@ -23,6 +23,7 @@ type Props = Readonly<{
   costSlices: readonly CostSlice[];
   netMarginPercent: number;
   netProfitDescription?: string;
+  emptyState?: string;
 }>;
 
 const percentFormatter = new Intl.NumberFormat("pl-PL", {
@@ -134,7 +135,37 @@ export function StockReportRevenueSankeyCard({
   costSlices,
   netMarginPercent,
   netProfitDescription,
+  emptyState = "Brak danych do wykresu",
 }: Props) {
+  const hasSegments = revenueSegments.some(
+    (segment) =>
+      Number.isFinite(segment.valuePercent) && segment.valuePercent > 0
+  );
+
+  if (!hasSegments) {
+    return (
+      <article className="border-t border-dashed border-black/15 pt-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-1">
+              <h4 className="text-base font-semibold tracking-tight">
+                Przeplyw przychodow: zrodla -&gt; suma -&gt; koszty -&gt; zysk
+              </h4>
+              <StockReportInfoHint
+                text="Wykres czytamy od lewej: segmenty przychodow wpadaja do jednego kolektora, po prawej koszty sa ulozone jak wodospad (COGS, OPEX, Podatki), a na samym dole zostaje zysk netto."
+                ariaLabel="Wyjasnienie wykresu przeplywu przychodow"
+              />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{emptyState}</p>
+          </div>
+        </div>
+        <div className="mt-3 flex h-[336px] items-center justify-center border-y border-dashed border-black/15 bg-white/70 p-4 text-sm text-muted-foreground">
+          {emptyState}
+        </div>
+      </article>
+    );
+  }
+
   const model = buildRevenueSankeyModel({
     revenueSegments,
     costs: costSlices,

@@ -1,11 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/database.types";
-import { runTradingViewRevenueBreakdownBackfillCron } from "../tradingview-revenue-breakdown/run-backfill-cron";
 
+import { runTradingViewRevenueBreakdownBackfillCron } from "../tradingview-revenue-breakdown/run-backfill-cron";
 import {
-  countTradingViewRevenueGeoBackfillCandidates,
-  listTradingViewRevenueGeoBackfillCandidates,
+  countTradingViewRevenueSourceBackfillCandidates,
+  listTradingViewRevenueSourceBackfillCandidates,
 } from "./list-backfill-candidates";
 
 type SupabaseAdminClient = SupabaseClient<Database>;
@@ -22,7 +22,7 @@ type Input = Readonly<{
 
 const DEFAULT_PROVIDER = "yahoo";
 
-export async function runTradingViewRevenueGeoBackfillCron({
+export async function runTradingViewRevenueSourceBackfillCron({
   supabase,
   limit,
   staleDays,
@@ -33,14 +33,14 @@ export async function runTradingViewRevenueGeoBackfillCron({
 }: Input) {
   return runTradingViewRevenueBreakdownBackfillCron({
     supabase,
-    kind: "geo",
+    kind: "source",
     limit,
     staleDays,
     delayMs,
     timeBudgetMs,
     provider,
     localeSubdomain,
-    listCandidates: listTradingViewRevenueGeoBackfillCandidates,
-    countCandidates: countTradingViewRevenueGeoBackfillCandidates,
+    listCandidates: listTradingViewRevenueSourceBackfillCandidates,
+    countCandidates: countTradingViewRevenueSourceBackfillCandidates,
   });
 }

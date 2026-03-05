@@ -3,11 +3,11 @@ import {
   runTradingViewRevenueBreakdownBatch,
 } from "./tradingview-revenue-breakdown-batch-core.mjs";
 
-export const processTradingViewRevenueGeoInstruments = async (input) =>
+export const processTradingViewRevenueSourceInstruments = async (input) =>
   processTradingViewRevenueBreakdownInstruments({
     ...input,
-    kind: "geo",
+    kind: "source",
   });
 
-export const runTradingViewRevenueGeoBatch = async (argv) =>
-  runTradingViewRevenueBreakdownBatch(["--kind=geo", ...argv]);
+export const runTradingViewRevenueSourceBatch = async (argv) =>
+  runTradingViewRevenueBreakdownBatch(["--kind=source", ...argv]);

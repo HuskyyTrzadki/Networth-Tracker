@@ -8,18 +8,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/features/design-system/components/ui/button";
 
 import { InvestorTakeaway, ReportCard, SectionHeader } from "./ReportPrimitives";
-import type { RevenueGeoCardViewModel } from "./stock-report-revenue-geo-view-model";
+import type { RevenueBreakdownCardViewModel } from "./stock-report-revenue-breakdown-view-model";
 import {
   QUARTER_LABELS,
-  getQuarterCell,
-  parseCompactMoney,
-  toPercentSlices,
   type MixMode,
   type QuarterKey,
 } from "./stock-report-revenue-mix-helpers";
 import {
   HOW_THEY_MAKE_MONEY,
-  REVENUE_BY_PRODUCTS,
   type HowTheyMakeMoneyMode,
 } from "./stock-report-static-data";
 
@@ -82,41 +78,31 @@ const percentFormatter = new Intl.NumberFormat("pl-PL", {
 });
 
 type Props = Readonly<{
-  geoViewModel: RevenueGeoCardViewModel;
+  geoViewModel: RevenueBreakdownCardViewModel;
+  sourceViewModel: RevenueBreakdownCardViewModel;
 }>;
 
-export default function StockReportRevenueMixSection({ geoViewModel }: Props) {
+export default function StockReportRevenueMixSection({
+  geoViewModel,
+  sourceViewModel,
+}: Props) {
   const [mode, setMode] = useState<MixMode>("now");
   const [quarter, setQuarter] = useState<QuarterKey>("q4");
   const [profitMode, setProfitMode] = useState<HowTheyMakeMoneyMode>("lastQuarter");
-
-  const productEntries = REVENUE_BY_PRODUCTS.map((row) => {
-    const cell = mode === "annual" ? null : getQuarterCell(row, mode === "now" ? "q4" : quarter);
-    const quarterlyValue = cell ? parseCompactMoney(cell.value) : null;
-    const annual =
-      (parseCompactMoney(row.q1.value) ?? 0) +
-      (parseCompactMoney(row.q2.value) ?? 0) +
-      (parseCompactMoney(row.q3.value) ?? 0) +
-      (parseCompactMoney(row.q4.value) ?? 0);
-
-    return {
-      id: row.iconLabel,
-      label: row.name,
-      value: mode === "annual" ? annual : quarterlyValue ?? 0,
-      color: row.iconLabel === "FOA" ? "#4f5f75" : "#826447",
-      help:
-        row.iconLabel === "FOA"
-          ? "Glowna linia przychodow (core produkty)."
-          : "Segment poboczny/eksperymentalny; czesto o nizszej skali, ale wysokiej intensywnosci inwestycji.",
-    };
-  });
-
-  const productsSlices = toPercentSlices(productEntries);
+  const sourceSlices = mode === "now" ? sourceViewModel.nowSlices : [];
   const geoSlices = mode === "now" ? geoViewModel.nowSlices : [];
+  const sourceSubtitle =
+    mode === "now"
+      ? sourceViewModel.nowSubtitle
+      : "Historyczny podzial segmentow jeszcze niedostepny";
   const geoSubtitle =
     mode === "now"
       ? geoViewModel.nowSubtitle
       : "Historyczny podzial geograficzny jeszcze niedostepny";
+  const sourceEmptyState =
+    mode === "now"
+      ? sourceViewModel.nowEmptyState
+      : sourceViewModel.historyEmptyState;
   const geoEmptyState =
     mode === "now"
       ? geoViewModel.nowEmptyState
@@ -171,14 +157,12 @@ export default function StockReportRevenueMixSection({ geoViewModel }: Props) {
       description: taxSlice?.help ?? "Obciazenia podatkowe od wyniku finansowego spolki.",
     },
   ].filter((slice) => slice.valuePercent > 0);
-  const sankeySegments = productsSlices.map((slice) => ({
+  const sankeySegments = sourceSlices.map((slice) => ({
     id: slice.key,
     label: slice.label,
     valuePercent: slice.value,
-    color: productEntries.find((entry) => entry.label === slice.label)?.color ?? "#646464",
-    description:
-      productEntries.find((entry) => entry.label === slice.label)?.help ??
-      "Udzial segmentu w calosci przychodow.",
+    color: slice.color,
+    description: slice.help,
   }));
   const netMarginPercent = netSlice?.valuePercent ?? 0;
 
@@ -252,12 +236,15 @@ export default function StockReportRevenueMixSection({ geoViewModel }: Props) {
               costSlices={costSlices}
               netMarginPercent={netMarginPercent}
               netProfitDescription={netSlice?.help}
+              emptyState={sourceEmptyState}
             />
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               <DonutCard
-                title="Przychody wedlug produktow"
-                subtitle="Udzial segmentow w przychodach"
-                slices={productsSlices}
+                title={sourceViewModel.title}
+                subtitle={sourceSubtitle}
+                note={sourceViewModel.note}
+                slices={sourceSlices}
+                emptyState={sourceEmptyState}
               />
               <DonutCard
                 title={geoViewModel.title}

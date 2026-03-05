@@ -47,6 +47,7 @@ Out of scope:
 - Public/heavy endpoints must use shared rate limiting (`src/lib/http/rate-limit.ts`) and return `429` with `Retry-After`.
 - Client-side API modules should use shared `requestJson` from `src/lib/http/client-request.ts` for fetch + JSON parsing + RFC7807-lite error mapping (including explicit `allowStatuses` for non-fatal statuses like `401`).
 - Validate external provider interfaces against official docs before changing integrations.
+- After applying Supabase migrations that change schema/functions, regenerate `src/lib/supabase/database.types.ts` from the real project immediately; do not hand-edit generated DB types except as a temporary emergency unblocker, and replace any temporary edits with regenerated output in the same task.
 - URL query state in client components should use `nuqs` parser maps (avoid manual `URLSearchParams` mutation); use non-shallow updates when server data depends on search params.
 - Viewport-gated client rendering should use `useInViewVisibility` (`src/features/common/hooks/use-in-view-visibility.ts`) to keep observer behavior consistent and avoid route-wide motion runtime dependencies.
 - Shared chart rendering should go through `src/components/ui/chart.tsx` (`ui/chart`) for container/content styling (`ChartContainer`, `ChartTooltipContent`, `ChartLegendContent`), while runtime chart primitives (`Tooltip`, `Legend`, etc.) should be imported from `src/lib/recharts-dynamic.tsx` to keep non-chart chunks lean.
@@ -182,6 +183,7 @@ When shipping feature/architecture changes:
 - Economic exposure cache uses instrument-set fingerprint only (sorted `instrumentId`s + scope/model/prompt version), then reweights cached per-asset splits with fresh `valueBase` on each request.
 - TradingView revenue geography must stay asynchronous-only: refresh via daily/backfill batch (`/api/cron/tradingview-revenue-geo/run` or CLI batch), never via request-path scraping. If geo cache is missing for Yahoo equities, economic exposure should return a graceful pending state rather than block, scrape, or fake readiness.
 - Public stock reports now read the latest cached TradingView revenue geography directly from `instrument_revenue_geo_breakdown_cache`, presenting top countries plus `Pozostale`; do not fake quarterly/annual geography in the report until cache ingestion also stores trustworthy period labels/order for historical country rows.
+- TradingView revenue breakdown ingestion now has a shared async framework for `geo` and `source/segment` kinds. Keep separate cache tables per kind, keep cron/request paths async-only, and keep stock report mix cards honest: latest cached period only until period ordering is reliable enough for historical views.
 
 
 ## Quality bar

@@ -10,6 +10,9 @@ export type {
 } from "./server/types";
 
 export type {
+  TradingViewRevenueBreakdownKind,
+  TradingViewRevenueBreakdownRow,
+  TradingViewRevenueBreakdownSnapshot,
   TradingViewCountryDomRow,
   TradingViewIngestionResult,
   TradingViewRevenueGeoSnapshot,

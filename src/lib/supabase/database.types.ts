@@ -678,6 +678,42 @@ export type Database = {
         }
         Relationships: []
       }
+      instrument_revenue_source_breakdown_cache: {
+        Row: {
+          fetched_at: string
+          history_by_source: Json
+          id: string
+          latest_by_source: Json
+          metadata: Json
+          provider: string
+          provider_key: string
+          series_order: string[]
+          source: string
+        }
+        Insert: {
+          fetched_at?: string
+          history_by_source?: Json
+          id?: string
+          latest_by_source?: Json
+          metadata?: Json
+          provider?: string
+          provider_key: string
+          series_order?: string[]
+          source?: string
+        }
+        Update: {
+          fetched_at?: string
+          history_by_source?: Json
+          id?: string
+          latest_by_source?: Json
+          metadata?: Json
+          provider?: string
+          provider_key?: string
+          series_order?: string[]
+          source?: string
+        }
+        Relationships: []
+      }
       instrument_valuation_summary_cache: {
         Row: {
           as_of: string | null
@@ -1217,6 +1253,10 @@ export type Database = {
         Args: { p_provider?: string; p_stale_before?: string }
         Returns: number
       }
+      count_tradingview_revenue_source_backfill_candidates: {
+        Args: { p_provider?: string; p_stale_before?: string }
+        Returns: number
+      }
       get_cash_balances: {
         Args: { p_portfolio_ids?: string[] }
         Returns: {
@@ -1346,6 +1386,19 @@ export type Database = {
         }[]
       }
       list_tradingview_revenue_geo_backfill_candidates: {
+        Args: { p_limit?: number; p_provider?: string; p_stale_before?: string }
+        Returns: {
+          cache_fetched_at: string
+          exchange: string
+          instrument_type: Database["public"]["Enums"]["instrument_type"]
+          name: string
+          provider: string
+          provider_key: string
+          symbol: string
+          updated_at: string
+        }[]
+      }
+      list_tradingview_revenue_source_backfill_candidates: {
         Args: { p_limit?: number; p_provider?: string; p_stale_before?: string }
         Returns: {
           cache_fetched_at: string

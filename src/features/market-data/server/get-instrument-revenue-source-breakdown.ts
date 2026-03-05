@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/database.types";
+
 import {
   getInstrumentRevenueBreakdown,
   type InstrumentRevenueBreakdown,
@@ -9,12 +10,12 @@ import {
 
 type SupabaseServerClient = SupabaseClient<Database>;
 
-export type InstrumentRevenueGeoBreakdownEntry = InstrumentRevenueBreakdownEntry;
-export type InstrumentRevenueGeoBreakdown = InstrumentRevenueBreakdown;
+export type InstrumentRevenueSourceBreakdownEntry = InstrumentRevenueBreakdownEntry;
+export type InstrumentRevenueSourceBreakdown = InstrumentRevenueBreakdown;
 
-export async function getInstrumentRevenueGeoBreakdown(
+export async function getInstrumentRevenueSourceBreakdown(
   supabase: SupabaseServerClient,
   providerKey: string
-): Promise<InstrumentRevenueGeoBreakdown | null> {
-  return getInstrumentRevenueBreakdown(supabase, providerKey, "geo");
+): Promise<InstrumentRevenueSourceBreakdown | null> {
+  return getInstrumentRevenueBreakdown(supabase, providerKey, "source");
 }
