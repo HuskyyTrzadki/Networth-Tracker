@@ -153,6 +153,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.
 - Add/edit transaction modal now writes via server actions (`createTransactionAction` / `updateTransactionAction`) with server revalidation; some route wrappers still use `router.refresh()` after close/navigation to guarantee back-stack list sync.
 - Add/edit submit orchestration is split into two layers: pure intent builder (`submit-intent.ts`) and async executor (`submit-actions.ts`), keeping `AddTransactionDialogContent.tsx` focused on UI state + side effects.
+- Add-transaction form field orchestration is split:
+  - `AddTransactionDialogFields.tsx` remains render + handlers,
+  - watched/derived market context (`useWatch`, cash balance preview, historical price assist, sell guard) lives in `components/add-transaction/use-add-transaction-fields-context.ts`.
 - Add-transaction close guard uses an in-app confirmation dialog (`Odrzucić niezapisane zmiany?`) instead of `window.confirm`, so behavior stays consistent with design-system modals.
 - Add-transaction close guard now uses shared `AlertDialog` shim primitives (`AlertDialogAction`/`AlertDialogCancel`) for clearer destructive-confirm semantics while keeping current dependency set.
 - Add-transaction dialog container marks submit-in-progress semantics on the shell (`aria-busy`, `data-submitting`) to align modal accessibility with async state.

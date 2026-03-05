@@ -1,35 +1,25 @@
 "use client";
 
-import { parseISO } from "date-fns";
 import { useState } from "react";
-import { useWatch, type UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 
 import { FormControl, FormField, FormItem, FormLabel } from "@/features/design-system/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/features/design-system/components/ui/select";
-import { useHistoricalPriceAssist } from "./useHistoricalPriceAssist";
-import { useCashImpactPreview } from "./use-cash-impact-preview";
-import { useCashBalanceOnDate } from "./use-cash-balance-on-date";
-import { useSellQuantityGuard } from "./use-sell-quantity-guard";
 import { AddTransactionInstrumentSection } from "./AddTransactionInstrumentSection";
 import { AddTransactionCustomTradeFields } from "./AddTransactionCustomTradeFields";
 import { AddTransactionTradeFields } from "./AddTransactionTradeFields";
 import { AddTransactionSidebarSummary } from "./AddTransactionSidebarSummary";
 import { AddTransactionNotesField } from "./AddTransactionNotesField";
-import {
-  deriveAvailableAssetQuantity,
-  deriveDisplayCurrency,
-  deriveResolvedCashCurrency,
-} from "./form-derivations";
 import type { InstrumentSearchClient } from "../../client/search-instruments";
 import type { InstrumentSearchResult } from "../../lib/instrument-search";
 import { isSupportedCashCurrency, type CashCurrency } from "../../lib/system-currencies";
-import { getTradeDateLowerBound } from "../../lib/trade-date";
-import { buildEmptyBalances, type AssetTab } from "./constants";
+import { type AssetTab } from "./constants";
 import { applyCashCurrencyChange, applyCashTabState, applyCustomTabState, applyMarketTabState } from "./tab-state";
 import type { FormValues } from "../AddTransactionDialogContent";
 import { createPortfolioAction } from "@/features/portfolio/server/create-portfolio-action";
 import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
 import { ScreenshotImportWizard } from "@/features/onboarding/components/ScreenshotImportWizard";
+import { useAddTransactionFieldsContext } from "./use-add-transaction-fields-context";
 
 type PortfolioOption = Readonly<{ id: string; name: string; baseCurrency: string }>;
 
@@ -82,89 +72,44 @@ export function AddTransactionDialogFields({
   onScreenshotModeChange?: (next: boolean) => void;
   onRequestCloseDialog?: () => void;
 }>) {
-  const minTradeDate = parseISO(getTradeDateLowerBound());
-  const maxTradeDate = new Date();
-  const currency = useWatch({ control: form.control, name: "currency" });
-  const consumeCash = useWatch({ control: form.control, name: "consumeCash" });
-  const cashCurrency = useWatch({ control: form.control, name: "cashCurrency" });
-  const portfolioId = useWatch({ control: form.control, name: "portfolioId" });
-  const type = useWatch({ control: form.control, name: "type" });
-  const quantity = useWatch({ control: form.control, name: "quantity" });
-  const price = useWatch({ control: form.control, name: "price" });
-  const fee = useWatch({ control: form.control, name: "fee" });
-  const fxFee = useWatch({ control: form.control, name: "fxFee" });
-  const date = useWatch({ control: form.control, name: "date" });
-  const customCurrency = useWatch({ control: form.control, name: "customCurrency" });
-
   const [localPortfolios, setLocalPortfolios] = useState<PortfolioOption[]>([]);
   const [isScreenshotOpen, setIsScreenshotOpen] = useState(false);
-  const isCashTab = activeTab === "CASH";
-  const isCustomTab = activeTab === "CUSTOM";
-  const resolvedPortfolioId = forcedPortfolioId ?? portfolioId;
-  const mergedPortfolios = mergePortfolios(portfolios, localPortfolios);
-  const screenshotPortfolio =
-    mergedPortfolios.find((portfolio) => portfolio.id === resolvedPortfolioId) ??
-    null;
-
-  const resolvedCashCurrency = deriveResolvedCashCurrency(
-    cashCurrency,
-    initialCashCurrency
-  );
-  const cashBalances = cashBalancesByPortfolio[resolvedPortfolioId] ?? buildEmptyBalances();
-  const availableCashNow = cashBalances[resolvedCashCurrency] ?? "0";
-  const cashBalanceOnDate = useCashBalanceOnDate({
-    enabled:
-      consumeCash &&
-      !isCashTab &&
-      Boolean(resolvedPortfolioId) &&
-      Boolean(resolvedCashCurrency) &&
-      Boolean(date),
-    portfolioId: resolvedPortfolioId,
-    cashCurrency: resolvedCashCurrency,
-    tradeDate: date,
-  });
-  const availableCashOnTradeDate = cashBalanceOnDate.availableCashOnDate ?? availableCashNow;
-  const availableAssetQuantity = deriveAvailableAssetQuantity({
-    selectedInstrument,
-    type,
-    isCashTab,
-    resolvedPortfolioId,
-    assetBalancesByPortfolio,
-  });
-  const displayCurrency = deriveDisplayCurrency(selectedInstrument, currency);
-  const assetCurrency = isCustomTab
-    ? (customCurrency?.trim().toUpperCase() ?? "")
-    : (selectedInstrument?.currency ?? "");
-  const cashImpactPreview = useCashImpactPreview({
-    form,
+  const {
+    minTradeDate,
+    maxTradeDate,
     consumeCash,
-    isCashTab,
-    assetCurrency,
-    resolvedCashCurrency,
-    availableCashOnTradeDate,
+    cashCurrency,
     type,
     quantity,
     price,
     fee,
-    fxFee,
-  });
-  const historicalPriceAssist = useHistoricalPriceAssist({
-    enabled: !isCashTab && !isCustomTab,
-    form,
-    provider: selectedInstrument?.provider ?? null,
-    providerKey: selectedInstrument?.providerKey ?? null,
     date,
-    price,
-  });
-  useSellQuantityGuard({
-    form,
+    customCurrency,
     isCashTab,
-    type,
-    selectedInstrument,
-    date,
-    quantity,
+    isCustomTab,
+    resolvedPortfolioId,
+    resolvedCashCurrency,
+    availableCashNow,
+    cashBalanceOnDate,
+    availableCashOnTradeDate,
     availableAssetQuantity,
+    displayCurrency,
+    cashImpactPreview,
+    historicalPriceAssist,
+  } = useAddTransactionFieldsContext({
+    form,
+    selectedInstrument,
+    activeTab,
+    forcedPortfolioId,
+    initialCashCurrency,
+    cashBalancesByPortfolio,
+    assetBalancesByPortfolio,
   });
+
+  const mergedPortfolios = mergePortfolios(portfolios, localPortfolios);
+  const screenshotPortfolio =
+    mergedPortfolios.find((portfolio) => portfolio.id === resolvedPortfolioId) ??
+    null;
 
   const handleTabChange = (nextTab: AssetTab) => {
     setActiveTab(nextTab);
