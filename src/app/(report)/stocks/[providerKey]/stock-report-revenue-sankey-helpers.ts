@@ -55,6 +55,14 @@ const normalizeSlices = <T extends { valuePercent: number }>(
   }));
 };
 
+const sanitizePercentSlices = <T extends { valuePercent: number }>(
+  slices: readonly T[]
+) =>
+  slices.map((slice) => ({
+    ...slice,
+    valuePercent: clampPercent(slice.valuePercent),
+  }));
+
 export const buildRevenueSankeyModel = (params: Readonly<{
   revenueSegments: readonly RevenueSegment[];
   costs: readonly CostSlice[];
@@ -68,13 +76,25 @@ export const buildRevenueSankeyModel = (params: Readonly<{
         Number.isFinite(segment.valuePercent) && segment.valuePercent > 0
     )
   );
-  const costSlices = normalizeSlices(
+  const rawCostSlices = sanitizePercentSlices(
     params.costs.filter(
       (cost) => Number.isFinite(cost.valuePercent) && cost.valuePercent > 0
     )
   );
   const netMarginPercent = clampPercent(params.netMarginPercent);
-  const costTotalPercent = clampPercent(100 - netMarginPercent);
+  const availableCostPercent = clampPercent(100 - netMarginPercent);
+  const rawCostTotal = rawCostSlices.reduce((sum, cost) => sum + cost.valuePercent, 0);
+  const scaleFactor =
+    rawCostTotal > 0 && rawCostTotal > availableCostPercent
+      ? availableCostPercent / rawCostTotal
+      : 1;
+  const costSlices = rawCostSlices.map((cost) => ({
+    ...cost,
+    valuePercent: cost.valuePercent * scaleFactor,
+  }));
+  const costTotalPercent = clampPercent(
+    costSlices.reduce((sum, cost) => sum + cost.valuePercent, 0)
+  );
 
   const nodes: SankeyNode[] = [
     ...segments.map((segment) => ({
@@ -103,7 +123,7 @@ export const buildRevenueSankeyModel = (params: Readonly<{
       label: cost.label,
       stage: "cost" as const,
       depth: 2,
-      valuePercent: (cost.valuePercent / 100) * costTotalPercent,
+      valuePercent: cost.valuePercent,
       color: costPalette[index % costPalette.length],
       pattern:
         index % 3 === 0
@@ -141,7 +161,7 @@ export const buildRevenueSankeyModel = (params: Readonly<{
 
   costSlices.forEach((cost, index) => {
     const targetNode = nodes.find((node) => node.id === cost.id);
-    const linkValue = (cost.valuePercent / 100) * costTotalPercent;
+    const linkValue = cost.valuePercent;
     if (!targetNode || linkValue <= 0) return;
 
     links.push({

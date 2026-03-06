@@ -61,7 +61,9 @@ const normalizeCacheRows = (
     periodEndDate: row.period_end_date,
     value: toFiniteNumber(row.value),
     periodType:
-      row.period_type === "TTM_PROXY_ANNUAL"
+      row.period_type === "FLOW_QUARTERLY"
+        ? "FLOW_QUARTERLY"
+        : row.period_type === "TTM_PROXY_ANNUAL"
         ? "TTM_PROXY_ANNUAL"
         : row.period_type === "POINT_IN_TIME"
           ? "POINT_IN_TIME"
@@ -69,6 +71,7 @@ const normalizeCacheRows = (
             ? "POINT_IN_TIME_ANNUAL"
             : "TTM",
     source:
+      row.source === "quarterly_financials" ||
       row.source === "quarterly_rollup" ||
       row.source === "annual_proxy" ||
       row.source === "trailing" ||
@@ -170,16 +173,17 @@ const resolveFetchWindow = (
   const definition = getFundamentalMetricDefinition(metric);
 
   if (!hasRequestedCoverage || cachedRows.length === 0) {
+    const isFlowMetric = definition.mode !== "point_in_time";
     return {
       fundamentalsFromDate: subtractDays(
         periodStartDate,
-        definition.mode === "flow"
+        isFlowMetric
           ? FLOW_INITIAL_LOOKBACK_DAYS
           : POINT_IN_TIME_LOOKBACK_DAYS
       ),
       annualFromDate: subtractDays(
         periodStartDate,
-        definition.mode === "flow"
+        isFlowMetric
           ? FLOW_ANNUAL_LOOKBACK_DAYS
           : POINT_IN_TIME_ANNUAL_LOOKBACK_DAYS
       ),
@@ -223,7 +227,7 @@ export async function getFundamentalTimeSeriesCached(
   try {
     let fetchedMerged: FundamentalSeriesEvent[];
 
-    if (definition.mode === "flow") {
+    if (definition.mode === "flow_ttm") {
       const trailingRaw = await yahooFinance.fundamentalsTimeSeries(
         providerKey,
         {
@@ -278,6 +282,22 @@ export async function getFundamentalTimeSeriesCached(
         quarterlyTtmEvents,
         annualProxyEvents,
       ]);
+    } else if (definition.mode === "flow_quarterly") {
+      const quarterlyRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.fundamentalsFromDate,
+          type: "quarterly",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      fetchedMerged = parseFundamentalRows(unwrapYahooRows(quarterlyRaw), {
+        metric,
+        source: "quarterly_financials",
+        outputPeriodType: "FLOW_QUARTERLY",
+        expectedPeriodType: "3M",
+      });
     } else {
       const quarterlyRaw = await yahooFinance.fundamentalsTimeSeries(
         providerKey,

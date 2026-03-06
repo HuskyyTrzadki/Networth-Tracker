@@ -184,6 +184,7 @@ When shipping feature/architecture changes:
 - TradingView revenue geography must stay asynchronous-only: refresh via daily/backfill batch (`/api/cron/tradingview-revenue-geo/run` or CLI batch), never via request-path scraping. If geo cache is missing for Yahoo equities, economic exposure should return a graceful pending state rather than block, scrape, or fake readiness.
 - Public stock reports now read the latest cached TradingView revenue geography directly from `instrument_revenue_geo_breakdown_cache`, presenting top countries plus `Pozostale`; do not fake quarterly/annual geography in the report until cache ingestion also stores trustworthy period labels/order for historical country rows.
 - TradingView revenue breakdown ingestion now has a shared async framework for `geo` and `source/segment` kinds. Keep separate cache tables per kind, keep cron/request paths async-only, and keep stock report mix cards honest: latest cached period only until period ordering is reliable enough for historical views.
+- Public stock report `Jak firma zarabia` now splits responsibilities by provider: TradingView stays responsible for async cached segment/geo mix, while Yahoo fundamentals are the canonical source for quarterly profit-conversion (`revenue -> delivery cost -> operating cost -> taxes/other -> net income`). Do not scrape TradingView’s waterfall widget on the request path.
 
 
 ## Quality bar

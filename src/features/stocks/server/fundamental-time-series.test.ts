@@ -53,6 +53,27 @@ describe("fundamental-time-series helpers", () => {
     ]);
   });
 
+  it("parses quarterly operating income rows for report profitability", () => {
+    const rows = __test__.parseFundamentalRows(
+      [{ date: "2025-03-31", periodType: "3M", operatingIncome: 42 }],
+      {
+        metric: "operating_income",
+        source: "quarterly_financials",
+        outputPeriodType: "FLOW_QUARTERLY",
+        expectedPeriodType: "3M",
+      }
+    );
+
+    expect(rows).toEqual([
+      {
+        periodEndDate: "2025-03-31",
+        value: 42,
+        periodType: "FLOW_QUARTERLY",
+        source: "quarterly_financials",
+      },
+    ]);
+  });
+
   it("parses shares outstanding from balance-sheet rows", () => {
     const rows = __test__.parseFundamentalRows(
       [{ date: "2025-03-31", periodType: "3M", ordinarySharesNumber: 15.2 }],
@@ -179,12 +200,41 @@ describe("fundamental-time-series helpers", () => {
     expect(__test__.getFundamentalMetricDefinition("revenue_ttm")).toEqual({
       metric: "revenue_ttm",
       module: "financials",
-      mode: "flow",
+      mode: "flow_ttm",
+      fields: [
+        "totalRevenue",
+        "operatingRevenue",
+        "trailingTotalRevenue",
+        "trailingOperatingRevenue",
+        "quarterlyTotalRevenue",
+        "quarterlyOperatingRevenue",
+        "annualTotalRevenue",
+        "annualOperatingRevenue",
+      ],
+      keyword: "revenue",
+    });
+    expect(__test__.getFundamentalMetricDefinition("operating_income")).toEqual({
+      metric: "operating_income",
+      module: "financials",
+      mode: "flow_quarterly",
+      fields: [
+        "operatingIncome",
+        "totalOperatingIncomeAsReported",
+        "quarterlyOperatingIncome",
+      ],
     });
     expect(__test__.getFundamentalMetricDefinition("book_value")).toEqual({
       metric: "book_value",
       module: "balance-sheet",
       mode: "point_in_time",
+      fields: [
+        "commonStockEquity",
+        "stockholdersEquity",
+        "totalEquityGrossMinorityInterest",
+        "tangibleBookValue",
+        "commonStock",
+      ],
+      keyword: "equity",
     });
   });
 });

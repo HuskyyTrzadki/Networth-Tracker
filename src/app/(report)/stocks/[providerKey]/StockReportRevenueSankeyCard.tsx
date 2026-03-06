@@ -142,8 +142,12 @@ export function StockReportRevenueSankeyCard({
     (segment) =>
       Number.isFinite(segment.valuePercent) && segment.valuePercent > 0
   );
+  const hasProfitBreakdown =
+    costSlices.some(
+      (slice) => Number.isFinite(slice.valuePercent) && slice.valuePercent > 0
+    ) || netMarginPercent > 0;
 
-  if (!hasSegments) {
+  if (!hasSegments || !hasProfitBreakdown) {
     return (
       <article className="border-t border-dashed border-black/15 pt-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
@@ -153,7 +157,7 @@ export function StockReportRevenueSankeyCard({
                 Przeplyw przychodow: zrodla -&gt; suma -&gt; koszty -&gt; zysk
               </h4>
               <StockReportInfoHint
-                text="Wykres czytamy od lewej: segmenty przychodow wpadaja do jednego kolektora, po prawej koszty sa ulozone jak wodospad (COGS, OPEX, Podatki), a na samym dole zostaje zysk netto."
+                text="Po lewej pokazujemy ostatni dostepny mix segmentow z TradingView, a po prawej ostatni kwartal Yahoo: koszt dostarczenia, koszty operacyjne oraz zysk netto."
                 ariaLabel="Wyjasnienie wykresu przeplywu przychodow"
               />
             </div>
@@ -185,12 +189,12 @@ export function StockReportRevenueSankeyCard({
               Przeplyw przychodow: zrodla -&gt; suma -&gt; koszty -&gt; zysk
             </h4>
             <StockReportInfoHint
-              text="Wykres czytamy od lewej: segmenty przychodow wpadaja do jednego kolektora, po prawej koszty sa ulozone jak wodospad (COGS, OPEX, Podatki), a na samym dole zostaje zysk netto."
+              text="Po lewej pokazujemy ostatni dostepny mix segmentow z TradingView, a po prawej ostatni kwartal Yahoo: koszt dostarczenia, koszty operacyjne oraz zysk netto."
               ariaLabel="Wyjasnienie wykresu przeplywu przychodow"
             />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Grubosc strumienia pokazuje, jaka czesc przychodu zostaje zjedzona przez koszty i jaka trafia finalnie do zysku netto.
+            Najpierw przychod znika na dostarczenie uslugi, a dopiero potem na rozwoj i utrzymanie firmy; u Google to zwykle najpierw centra danych i TAC, a potem wyplaty inzynierow, sprzedaz i administracja.
           </p>
         </div>
         <p className="font-mono text-xs text-muted-foreground">

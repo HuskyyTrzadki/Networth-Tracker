@@ -10,8 +10,8 @@ describe("buildRevenueSankeyModel", () => {
         { id: "rl", label: "Reality Labs", valuePercent: 10, color: "#222" },
       ],
       costs: [
-        { id: "cogs", label: "COGS", valuePercent: 60 },
-        { id: "rd", label: "R&D", valuePercent: 40 },
+        { id: "cogs", label: "COGS", valuePercent: 50 },
+        { id: "rd", label: "R&D", valuePercent: 20 },
       ],
       netMarginPercent: 30,
     });

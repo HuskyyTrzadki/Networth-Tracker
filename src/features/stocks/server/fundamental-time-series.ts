@@ -17,7 +17,9 @@ type YahooFinancialSeriesRow = Readonly<{
 export type FundamentalMetricDefinition = Readonly<{
   metric: FundamentalSeriesMetric;
   module: "financials" | "balance-sheet";
-  mode: "flow" | "point_in_time";
+  mode: "flow_ttm" | "flow_quarterly" | "point_in_time";
+  fields: readonly string[];
+  keyword?: string;
 }>;
 
 const pickByFields = (
@@ -39,25 +41,26 @@ const pickByKeyword = (
     return toFiniteNumber(value);
   }, null);
 
-const extractMetricValue = (
-  row: YahooFinancialSeriesRow,
-  metric: FundamentalSeriesMetric
-) => {
-  if (metric === "eps_ttm") {
-    return (
-      pickByFields(row, [
+const METRIC_DEFINITIONS: Readonly<Record<FundamentalSeriesMetric, FundamentalMetricDefinition>> =
+  {
+    eps_ttm: {
+      metric: "eps_ttm",
+      module: "financials",
+      mode: "flow_ttm",
+      fields: [
         "dilutedEPS",
         "basicEPS",
         "trailingDilutedEPS",
         "trailingBasicEPS",
         "reportedNormalizedDilutedEPS",
-      ]) ?? pickByKeyword(row, "eps")
-    );
-  }
-
-  if (metric === "revenue_ttm") {
-    return (
-      pickByFields(row, [
+      ],
+      keyword: "eps",
+    },
+    revenue_ttm: {
+      metric: "revenue_ttm",
+      module: "financials",
+      mode: "flow_ttm",
+      fields: [
         "totalRevenue",
         "operatingRevenue",
         "trailingTotalRevenue",
@@ -66,48 +69,87 @@ const extractMetricValue = (
         "quarterlyOperatingRevenue",
         "annualTotalRevenue",
         "annualOperatingRevenue",
-      ]) ?? pickByKeyword(row, "revenue")
-    );
-  }
+      ],
+      keyword: "revenue",
+    },
+    total_revenue: {
+      metric: "total_revenue",
+      module: "financials",
+      mode: "flow_quarterly",
+      fields: ["totalRevenue", "operatingRevenue", "quarterlyTotalRevenue"],
+      keyword: "revenue",
+    },
+    cost_of_revenue: {
+      metric: "cost_of_revenue",
+      module: "financials",
+      mode: "flow_quarterly",
+      fields: ["costOfRevenue", "quarterlyCostOfRevenue"],
+    },
+    operating_income: {
+      metric: "operating_income",
+      module: "financials",
+      mode: "flow_quarterly",
+      fields: [
+        "operatingIncome",
+        "totalOperatingIncomeAsReported",
+        "quarterlyOperatingIncome",
+      ],
+    },
+    net_income: {
+      metric: "net_income",
+      module: "financials",
+      mode: "flow_quarterly",
+      fields: [
+        "netIncome",
+        "netIncomeCommonStockholders",
+        "netIncomeFromContinuingOperations",
+        "netIncomeContinuousOperations",
+        "netIncomeFromContinuingOperationNetMinorityInterest",
+        "quarterlyNetIncome",
+      ],
+      keyword: "netincome",
+    },
+    shares_outstanding: {
+      metric: "shares_outstanding",
+      module: "balance-sheet",
+      mode: "point_in_time",
+      fields: [
+        "ordinarySharesNumber",
+        "shareIssued",
+        "sharesOutstanding",
+        "basicAverageShares",
+        "dilutedAverageShares",
+      ],
+    },
+    book_value: {
+      metric: "book_value",
+      module: "balance-sheet",
+      mode: "point_in_time",
+      fields: [
+        "commonStockEquity",
+        "stockholdersEquity",
+        "totalEquityGrossMinorityInterest",
+        "tangibleBookValue",
+        "commonStock",
+      ],
+      keyword: "equity",
+    },
+  };
 
-  if (metric === "shares_outstanding") {
-    return pickByFields(row, [
-      "ordinarySharesNumber",
-      "shareIssued",
-      "sharesOutstanding",
-      "basicAverageShares",
-      "dilutedAverageShares",
-    ]);
-  }
-
+const extractMetricValue = (
+  row: YahooFinancialSeriesRow,
+  metric: FundamentalSeriesMetric
+) => {
+  const definition = METRIC_DEFINITIONS[metric];
   return (
-    pickByFields(row, [
-      "commonStockEquity",
-      "stockholdersEquity",
-      "totalEquityGrossMinorityInterest",
-      "tangibleBookValue",
-      "commonStock",
-    ]) ?? pickByKeyword(row, "equity")
+    pickByFields(row, definition.fields) ??
+    (definition.keyword ? pickByKeyword(row, definition.keyword) : null)
   );
 };
 
 export const getFundamentalMetricDefinition = (
   metric: FundamentalSeriesMetric
-): FundamentalMetricDefinition => {
-  if (metric === "eps_ttm" || metric === "revenue_ttm") {
-    return {
-      metric,
-      module: "financials",
-      mode: "flow",
-    };
-  }
-
-  return {
-    metric,
-    module: "balance-sheet",
-    mode: "point_in_time",
-  };
-};
+): FundamentalMetricDefinition => METRIC_DEFINITIONS[metric];
 
 const createEvent = (
   periodEndDate: string,

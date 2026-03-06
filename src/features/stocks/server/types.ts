@@ -94,17 +94,23 @@ export type EpsTtmEvent = Readonly<{
 export type FundamentalSeriesMetric =
   | "eps_ttm"
   | "revenue_ttm"
+  | "total_revenue"
+  | "cost_of_revenue"
+  | "operating_income"
+  | "net_income"
   | "shares_outstanding"
   | "book_value";
 
 export type FundamentalSeriesPeriodType =
   | "TTM"
+  | "FLOW_QUARTERLY"
   | "TTM_PROXY_ANNUAL"
   | "POINT_IN_TIME"
   | "POINT_IN_TIME_ANNUAL";
 
 export type FundamentalSeriesSource =
   | "trailing"
+  | "quarterly_financials"
   | "quarterly_rollup"
   | "annual_proxy"
   | "quarterly_balance_sheet"

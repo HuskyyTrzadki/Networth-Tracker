@@ -9,7 +9,6 @@ import {
   Tooltip as ChartTooltip,
 } from "@/lib/recharts-dynamic";
 
-import { Button } from "@/features/design-system/components/ui/button";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 import {
   ChartContainer,
@@ -18,39 +17,32 @@ import {
 } from "@/features/design-system/components/ui/chart";
 
 import StockReportInfoHint from "./StockReportInfoHint";
-import { RevenueChartEmptyState } from "./stock-report-revenue-empty-state";
 import {
-  HOW_THEY_MAKE_MONEY,
-  type HowTheyMakeMoneyMode,
-  type HowTheyMakeMoneySliceKey,
-} from "./stock-report-static-data";
+  PROFIT_CONVERSION_EMPTY_STATE,
+  type ProfitConversionViewModel,
+} from "./stock-report-profit-conversion";
+import { RevenueChartEmptyState } from "./stock-report-revenue-empty-state";
 import { clamp, type Slice } from "./stock-report-revenue-mix-helpers";
-
-const getChangeTone = (direction: "up" | "down" | "flat") => {
-  if (direction === "up") return "text-[#3f7255]";
-  if (direction === "down") return "text-[#a35f58]";
-  return "text-muted-foreground";
-};
 
 function MetricCard({
   label,
   value,
-  change,
-  changeDirection,
+  caption,
 }: Readonly<{
   label: string;
   value: string;
-  change: string;
-  changeDirection: "up" | "down" | "flat";
+  caption?: string;
 }>) {
   return (
     <Card className="border-black/5 bg-[#faf9f6] [background-image:linear-gradient(140deg,#ffffff_0%,#f3f1eb_100%)]">
       <CardContent className="space-y-1.5 pt-3">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="font-mono text-xl font-semibold tabular-nums">{value}</p>
-        <p className={`font-mono text-xs font-semibold tabular-nums ${getChangeTone(changeDirection)}`}>
-          {change}
-        </p>
+        {caption ? (
+          <p className="font-mono text-xs font-semibold tabular-nums text-muted-foreground">
+            {caption}
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -225,114 +217,107 @@ export function DonutCard({
   );
 }
 
-const getHowTheyMakeMoneySliceValue = (
-  mode: HowTheyMakeMoneyMode,
-  key: HowTheyMakeMoneySliceKey
-) =>
-  HOW_THEY_MAKE_MONEY[mode].slices.find((slice) => slice.key === key)?.valuePercent ?? 0;
-
 export function ProfitabilitySnapshot({
-  mode,
-  onModeChange,
+  viewModel,
+  emptyState = PROFIT_CONVERSION_EMPTY_STATE,
 }: Readonly<{
-  mode: HowTheyMakeMoneyMode;
-  onModeChange: (next: HowTheyMakeMoneyMode) => void;
+  viewModel: ProfitConversionViewModel | null;
+  emptyState?: string;
 }>) {
-  const dataset = HOW_THEY_MAKE_MONEY[mode];
-  const cogs = getHowTheyMakeMoneySliceValue(mode, "COGS");
-  const rd = getHowTheyMakeMoneySliceValue(mode, "R&D");
-  const sga = getHowTheyMakeMoneySliceValue(mode, "SG&A");
-  const taxes = getHowTheyMakeMoneySliceValue(mode, "Podatki");
-  const net = getHowTheyMakeMoneySliceValue(mode, "Zysk");
+  if (!viewModel) {
+    return (
+      <article className="space-y-3 border-b border-dashed border-black/15 pb-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h4 className="text-base font-semibold tracking-tight">
+              Jak firma zamienia przychody na zysk
+            </h4>
+          </div>
+        </div>
 
-  const grossMargin = clamp(100 - cogs, 0, 100);
-  const operatingMargin = clamp(grossMargin - rd - sga, 0, 100);
-  const netMargin = clamp(net, 0, 100);
-  const operatingDrop = clamp(rd + sga, 0, 100);
-  const netDrop = clamp(operatingMargin - netMargin, 0, 100);
-  const impliedOther = clamp(100 - (cogs + rd + sga + taxes + net), 0, 100);
-
-  const explanation = `Po kosztach produkcji zostaje ${grossMargin.toFixed(1)}% marzy brutto; po kosztach operacyjnych ${operatingMargin.toFixed(1)}%; finalnie ${netMargin.toFixed(1)}% zysku netto.`;
-  const implication =
-    netMargin >= 25
-      ? "Wysoka marza netto daje duzy bufor na inwestycje i gorszy cykl."
-      : "Marza netto jest umiarkowana, wiec dyscyplina kosztowa i monetyzacja nowych produktow maja duze znaczenie.";
+        <div className="mt-3 h-[220px]">
+          <RevenueChartEmptyState message={emptyState} variant="wide" />
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="space-y-3 border-b border-dashed border-black/15 pb-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h4 className="text-base font-semibold tracking-tight">Jak firma zamienia przychody na zysk</h4>
+          <h4 className="text-base font-semibold tracking-tight">
+            Jak firma zamienia przychody na zysk
+          </h4>
         </div>
-
-        <div className="inline-flex items-center gap-2">
-          <Button
-            size="sm"
-            className="h-8 rounded-none px-3 text-xs"
-            variant={mode === "lastQuarter" ? "default" : "outline"}
-            onClick={() => onModeChange("lastQuarter")}
-          >
-            Ostatni kwartal
-          </Button>
-          <Button
-            size="sm"
-            className="h-8 rounded-none px-3 text-xs"
-            variant={mode === "lastYear" ? "default" : "outline"}
-            onClick={() => onModeChange("lastYear")}
-          >
-            Ostatni rok
-          </Button>
-        </div>
+        <p className="font-mono text-xs text-muted-foreground">{viewModel.periodLabel}</p>
       </div>
 
       <div className="mt-4 border-l border-dashed border-black/20 bg-amber-100/20 px-3 py-2">
         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Szybkie podsumowanie
         </p>
-        <p className="mt-1 text-sm italic leading-relaxed text-foreground/90">{dataset.quickSummary}</p>
+        <p className="mt-1 text-sm italic leading-relaxed text-foreground/90">
+          {viewModel.quickSummary}
+        </p>
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {dataset.metrics.slice(0, 4).map((metric) => (
+        {viewModel.metrics.map((metric) => (
           <MetricCard
             key={metric.label}
             label={metric.label}
             value={metric.value}
-            change={metric.change}
-            changeDirection={metric.changeDirection}
+            caption={metric.caption}
           />
         ))}
       </div>
 
       <div className="mt-5 space-y-3">
         <h5 className="text-sm font-semibold tracking-tight">Jak kurczy sie marza</h5>
-        <MarginBar label="Marza brutto" description="Po kosztach produkcji (COGS)" valuePercent={grossMargin} />
-        <MarginDrop label="koszty operacyjne (R&D + SG&A)" dropPercent={operatingDrop} />
-        <MarginBar label="Marza operacyjna" description="Po kosztach operacyjnych" valuePercent={operatingMargin} />
-        <MarginDrop
-          label={`podatki${impliedOther > 0 ? " i inne" : ""}`}
-          dropPercent={netDrop}
+        <MarginBar
+          label="Marza brutto"
+          description="Po koszcie dostarczenia produktu lub uslugi"
+          valuePercent={clamp(viewModel.grossMarginPercent, 0, 100)}
         />
-        <MarginBar label="Marza netto" description="Po odsetkach i podatkach" valuePercent={netMargin} />
+        <MarginDrop
+          label="dzialanie i rozwoj firmy"
+          dropPercent={clamp(viewModel.operatingDropPercent, 0, 100)}
+        />
+        <MarginBar
+          label="Marza operacyjna"
+          description="Po kosztach operacyjnych"
+          valuePercent={clamp(viewModel.operatingMarginPercent, 0, 100)}
+        />
+        <MarginDrop
+          label="podatki i inne obciazenia"
+          dropPercent={clamp(viewModel.netDropPercent, 0, 100)}
+        />
+        <MarginBar
+          label="Marza netto"
+          description="Po pozycjach ponizej wyniku operacyjnego"
+          valuePercent={clamp(viewModel.netMarginPercent, 0, 100)}
+        />
       </div>
 
       <div className="mt-5 border-l border-dashed border-black/20 bg-sky-100/20 px-3 py-2 text-sm text-foreground/90">
         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Wniosek
         </p>
-        <p className="mt-1 italic leading-relaxed">{explanation}</p>
-        <p className="mt-2 italic leading-relaxed">{implication}</p>
+        <p className="mt-1 italic leading-relaxed">{viewModel.explanation}</p>
+        <p className="mt-2 italic leading-relaxed">{viewModel.implication}</p>
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2 text-sm md:grid-cols-2">
-        {dataset.slices.map((slice) => (
+        {viewModel.slices.map((slice) => (
           <div key={slice.key} className="flex items-center justify-between">
             <span className="inline-flex items-center gap-2 text-muted-foreground">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: slice.color }} />
               <span className="text-foreground/85">{slice.label}</span>
-              <StockReportInfoHint text={slice.help} ariaLabel={`Wyjasnienie: ${slice.label}`} />
             </span>
-            <span className="font-mono text-sm font-bold tabular-nums">{slice.valuePercent.toFixed(1)}%</span>
+            <span className="font-mono text-sm font-bold tabular-nums">
+              {slice.valuePercent.toFixed(1)}%
+            </span>
           </div>
         ))}
       </div>
