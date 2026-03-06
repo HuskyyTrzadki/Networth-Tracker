@@ -151,7 +151,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Demo portfolios render a large `DEMO` badge in both page header and net-value hero; treat this as V1-required visibility, not optional ornament.
 - Dividend inbox now renders the past 60-day section even in aggregate read-only mode, so demo/overview views can still show recent unpaid events without allowing booking from `/portfolio`.
 - Aggregate and single-portfolio routes share one loading skeleton (`src/app/(app)/portfolio/PortfolioRouteLoading.tsx`) so switching portfolios displays immediate pending feedback.
-- Portfolio route loaders (`/portfolio` and `/portfolio/<id>`) gate heavy skeleton rendering behind a short client delay (~150ms) via `DelayedPortfolioRouteLoading` to avoid flash/flicker on fast cached transitions.
+- Portfolio route loaders (`/portfolio` and `/portfolio/<id>`) now render the shared skeleton immediately; do not reintroduce blank-delay staging before the first pending frame.
+- Query-state portfolio controls (`PortfolioSwitcher`, `PortfolioMobileHeaderActions`) keep non-null Suspense fallbacks so selector chrome does not pop in late on first paint.
 - Onboarding route (`/onboarding`) now offers a screenshot import path that creates a new portfolio via a dedicated wizard and bootstraps transactions dated today, then navigates to canonical `/portfolio/<id>`.
 - Portfolio create flows (`sidebar`, `mobile header`, transactions modal, onboarding) use server action `create-portfolio-action` (`create + revalidatePath`) and only navigate client-side after success.
 - `create-portfolio` server helper uses typed `AppError` mapping (`PORTFOLIO_NAME_CONFLICT` -> `409`, other failures -> internal) so route handlers can return stable machine-readable errors.

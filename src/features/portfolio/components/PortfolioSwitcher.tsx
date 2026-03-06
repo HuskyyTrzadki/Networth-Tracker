@@ -16,6 +16,7 @@ import { cn } from "@/lib/cn";
 
 import { buildPortfolioUrl } from "../lib/portfolio-url";
 import { portfolioQueryStateParsers } from "../lib/portfolio-query-state";
+import { PortfolioSwitcherSkeleton } from "./PortfolioSwitcherSkeleton";
 
 const ALL_VALUE = "all";
 
@@ -127,7 +128,7 @@ function PortfolioSwitcherInner({
 
 export function PortfolioSwitcher(props: Props) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PortfolioSwitcherSkeleton className={props.className} />}>
       <PortfolioSwitcherInner {...props} />
     </Suspense>
   );

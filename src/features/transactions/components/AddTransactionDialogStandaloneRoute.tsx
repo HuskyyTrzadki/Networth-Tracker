@@ -4,6 +4,7 @@ import { Suspense, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { AddTransactionDialog } from "./AddTransactionDialog";
+import { AddTransactionDialogSkeleton } from "./AddTransactionDialogSkeleton";
 import type { FormValues } from "./AddTransactionDialogContent";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
 
@@ -71,7 +72,7 @@ function AddTransactionDialogStandaloneRouteInner({
 
 export function AddTransactionDialogStandaloneRoute(props: Props) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AddTransactionDialogSkeleton fullscreen />}>
       <AddTransactionDialogStandaloneRouteInner {...props} />
     </Suspense>
   );

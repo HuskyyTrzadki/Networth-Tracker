@@ -141,6 +141,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transactions empty state is actionable: no-results state can clear the search filters, and default empty state provides direct CTA to open add-transaction flow.
 - Transactions toolbar exposes explicit pending feedback (`Aktualizuję...`) via `role="status"` + `aria-live="polite"` during URL/filter transitions.
 - Transactions toolbar uses semantic form labeling (`Label` + `htmlFor`, `fieldset` + `legend`) instead of visual-only microcopy labels.
+- Transactions query-state wrappers (`TransactionsSearchToolbar`, add/edit dialog route wrappers) must keep visible skeleton fallbacks; avoid `fallback={null}` for user-facing chrome.
 - Transactions table enforces ledger typography split: ticker/date/quantity/price/value cells stay `font-mono tabular-nums`, while descriptive copy remains sans for readability.
 - Transactions table now uses semantic shadcn table primitives (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`) while preserving ledger hierarchy (cash-leg indentation, group dividers, numeric alignment).
 - Group row separators use subtle dashed dividers to reinforce the printed-ledger visual rhythm between asset/cash legs.
@@ -165,6 +166,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - shell data (`portfolios` for header/filter chrome) resolves first,
   - the heavy transactions list/table resolves in a separate Suspense section,
   - keep new transaction-page work in that shape so filter chrome can stream before the ledger payload.
+- CSV import routes (`/transactions/import` standalone + intercepted modal) now have dedicated `loading.tsx` files and dialog skeletons; preserve visible feedback if the route or client bundle suspends.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - Trade markers exposed to the stock report are merged server-side per day:
   - net-positive day -> green buy marker,

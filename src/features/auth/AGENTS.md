@@ -52,6 +52,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - both return provider redirect URL JSON and keep Supabase OAuth start logic out of client bundles.
 - Client auth UI should call `startGoogleSignIn` / `startGoogleLink` from `src/features/auth/client/auth-api.ts` and navigate with `window.location.assign(redirectUrl)`.
 - Dedicated `/login` report page reuses existing auth APIs (Google OAuth + email/password sign-in/sign-up) with editorial layout.
+- `/login` and `/settings` now ship dedicated route-level loading shells, so auth/cookie reads never feel like a dead click during navigation.
 - Auth surfaces were visually normalized to shared UI rhythm (button heights, section radii, status panel shape) while preserving existing auth flow behavior and copy.
 - Auth settings and login wrappers now use the shared tactile `Card` primitive (`bg-white`, subtle shadow token, light border) instead of one-off container styling.
 - Auth forms now keep a constrained inner width (`max-w-md`) to avoid over-wide desktop inputs.

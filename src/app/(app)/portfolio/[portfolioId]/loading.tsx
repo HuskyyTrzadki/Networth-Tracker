@@ -1,5 +1,5 @@
-import { DelayedPortfolioRouteLoading } from "../DelayedPortfolioRouteLoading";
+import { PortfolioRouteLoading } from "../PortfolioRouteLoading";
 
 export default function PortfolioByIdLoading() {
-  return <DelayedPortfolioRouteLoading />;
+  return <PortfolioRouteLoading />;
 }

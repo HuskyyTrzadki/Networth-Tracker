@@ -38,6 +38,7 @@ Out of scope:
 - Server-first by default (Server Components + server data prep).
 - Keep business logic in repo; avoid SDK-driven logic leakage.
 - Every data-heavy route needs Suspense + `loading.tsx`.
+- User-visible Suspense boundaries should prefer a lightweight skeleton/placeholder over `fallback={null}` when the UI would otherwise blink or pop in.
 - Feature-first structure with explicit public APIs.
 - Keep provider-specific response shapes out of UI; normalize in feature/server layer.
 - Use `cn()` for class composition.

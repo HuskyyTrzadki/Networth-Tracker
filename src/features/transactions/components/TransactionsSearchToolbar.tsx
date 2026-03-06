@@ -23,6 +23,7 @@ import { cn } from "@/lib/cn";
 
 import type { TransactionSide, TransactionsSort } from "../server/filters";
 import { transactionsQueryStateParsers } from "../lib/transactions-query-state";
+import { TransactionsSearchToolbarSkeleton } from "./TransactionsSearchToolbarSkeleton";
 
 type Props = Readonly<{
   query: string | null;
@@ -232,7 +233,7 @@ function TransactionsSearchToolbarInner({
 
 export function TransactionsSearchToolbar(props: Props) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<TransactionsSearchToolbarSkeleton />}>
       <TransactionsSearchToolbarInner {...props} />
     </Suspense>
   );

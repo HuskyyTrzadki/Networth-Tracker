@@ -11,6 +11,7 @@ import { portfolioQueryStateParsers } from "../lib/portfolio-query-state";
 import { buildPortfolioUrl } from "../lib/portfolio-url";
 import { CreatePortfolioDialog } from "./CreatePortfolioDialog";
 import { PortfolioSwitcher } from "./PortfolioSwitcher";
+import { PortfolioSwitcherSkeleton } from "./PortfolioSwitcherSkeleton";
 
 type Props = Readonly<{
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
@@ -77,7 +78,14 @@ function PortfolioMobileHeaderActionsInner({
 
 export function PortfolioMobileHeaderActions(props: Props) {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <div aria-hidden="true" className="flex flex-col gap-2">
+          <PortfolioSwitcherSkeleton />
+          <div className="h-9 w-full animate-pulse rounded-md border border-border/65 bg-background/80" />
+        </div>
+      }
+    >
       <PortfolioMobileHeaderActionsInner {...props} />
     </Suspense>
   );
