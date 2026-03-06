@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { newsreader } from "@/app/fonts";
 import { HomeHero } from "@/features/home/components/HomeHero";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
@@ -14,5 +15,5 @@ export default async function Home() {
     redirect(pageData.portfolios.length > 0 ? "/portfolio" : "/onboarding");
   }
 
-  return <HomeHero />;
+  return <div className={newsreader.variable}><HomeHero /></div>;
 }

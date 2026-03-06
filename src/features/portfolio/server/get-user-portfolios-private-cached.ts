@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,7 +19,7 @@ type UserPortfoliosResult = Readonly<{
   portfolios: readonly UserPortfolio[];
 }>;
 
-export const getUserPortfoliosPrivateCached =
+export const getUserPortfoliosPrivateCached = cache(
   async (): Promise<UserPortfoliosResult> => {
     "use cache: private";
 
@@ -41,4 +42,5 @@ export const getUserPortfoliosPrivateCached =
       isAuthenticated: true,
       portfolios: await listPortfolios(supabase),
     };
-  };
+  }
+);

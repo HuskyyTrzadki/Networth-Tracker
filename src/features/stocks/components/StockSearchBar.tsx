@@ -39,7 +39,6 @@ const buildOptimisticCard = (
   currency: option.currency.trim().toUpperCase(),
   price: null,
   previewChart: [],
-  tradeMarkers: [],
   asOf: null,
 });
 

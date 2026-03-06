@@ -31,10 +31,10 @@ describe("buildProfitConversionViewModel", () => {
     expect(viewModel?.periodLabel).toContain("Q4");
     expect(viewModel?.metrics[0]?.label).toBe("Przychody (waluta spolki)");
     expect(viewModel?.slices.map((slice) => slice.label)).toEqual([
-      "Koszt dostarczenia produktu/uslugi",
-      "Koszty operacyjne",
-      "Podatki i pozostale",
-      "Zysk netto",
+      "Na dostarczenie uslugi",
+      "Na rozwoj i utrzymanie firmy",
+      "Na podatki i inne",
+      "Zostaje jako zysk",
     ]);
     expect(viewModel?.sankeyCostSlices.reduce((sum, slice) => sum + slice.valuePercent, 0)).toBe(
       70

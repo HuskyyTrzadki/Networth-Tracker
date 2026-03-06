@@ -1,142 +1,78 @@
 "use client";
 
-import { useId, useState } from "react";
-
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ReferenceDot,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip as ChartTooltip,
-  XAxis,
-  YAxis,
-} from "@/lib/recharts-dynamic";
-import {
-  ChartContainer,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/features/design-system/components/ui/chart";
-
 import { cn } from "@/lib/cn";
-
-import type { StockTradeMarker } from "../server/types";
-import { formatLabelDate, formatPrice } from "./stock-chart-card-helpers";
-import { resolveVisibleTradeMarkers } from "./stock-chart-card-view-model";
-import { StockChartMarkerDot, type StockChartEventMarkerDotProps } from "./stock-chart-plot-events";
-import { buildPositionedTradeMarkers } from "./stock-chart-trade-marker-layout";
 
 export type StockScreenerPreviewPoint = Readonly<{
   date: string;
   price: number;
 }>;
 
-type HoveredMarkerState = Readonly<{
-  id: string;
-  tradeDate: string;
-  tradeDateEnd: string | null;
-  side: "BUY" | "SELL";
-  netQuantity: number;
-  weightedPrice: number;
-  grossNotional: number;
-  tradeCount: number;
-  clusteredMarkerCount: number;
+type ChartPoint = Readonly<{
   x: number;
   y: number;
 }>;
 
-const formatXAxisTick = (value: string) => {
+const CHART_WIDTH = 240;
+const CHART_HEIGHT = 86;
+
+const formatDateLabel = (value: string) => {
   const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return "";
+
   return new Intl.DateTimeFormat("pl-PL", {
     day: "numeric",
     month: "short",
   }).format(date);
 };
 
-const buildPriceFormatter = (currency: string) => {
+const buildPriceLabelFormatter = (currency: string) => {
   if (!currency || currency === "-") {
-    return (value: number) => `${value.toFixed(0)}`;
+    return (value: number) =>
+      new Intl.NumberFormat("pl-PL", {
+        maximumFractionDigits: value >= 100 ? 0 : 2,
+      }).format(value);
   }
 
   const formatter = new Intl.NumberFormat("pl-PL", {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
+    notation: "compact",
+    maximumFractionDigits: 1,
   });
 
   return (value: number) => formatter.format(value);
 };
 
-const quantityFormatter = new Intl.NumberFormat("pl-PL", {
-  maximumFractionDigits: 2,
-});
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
 
-function ScreenerTradeHoverCard({
-  marker,
-  currency,
-}: Readonly<{
-  marker: HoveredMarkerState;
-  currency: string;
-}>) {
-  const tradeAction = marker.side === "BUY" ? "Zakup netto" : "Sprzedaz netto";
-  const tradeDateLabel = marker.tradeDateEnd
-    ? `${formatLabelDate(marker.tradeDate)} - ${formatLabelDate(marker.tradeDateEnd)}`
-    : formatLabelDate(marker.tradeDate);
-  const compactSummary =
-    marker.clusteredMarkerCount > 1
-      ? `${marker.clusteredMarkerCount} znaczniki • ${marker.tradeCount} transakcji`
-      : `${marker.tradeCount} transakcji`;
+const buildLinePath = (points: readonly ChartPoint[]) =>
+  points
+    .map((point, index) =>
+      `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`
+    )
+    .join(" ");
 
-  return (
-    <div
-      className="pointer-events-none absolute z-20 w-[220px] rounded-sm border border-border/80 bg-popover/98 px-2.5 py-2 text-[11px] text-popover-foreground shadow-[var(--surface-shadow)]"
-      style={{
-        left: `clamp(112px, ${marker.x}px, calc(100% - 112px))`,
-        top: `${Math.max(marker.y, 24)}px`,
-        transform: "translate(-50%, calc(-100% - 10px))",
-      }}
-    >
-      <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-        {tradeDateLabel}
-      </p>
-      <p className="mt-1 font-semibold">{tradeAction}</p>
-      <div className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-        <span className="text-muted-foreground">Netto</span>
-        <span className="text-right font-mono tabular-nums">
-          {marker.side === "BUY" ? "+" : "-"}
-          {quantityFormatter.format(marker.netQuantity)} szt.
-        </span>
-        <span className="text-muted-foreground">Srednia</span>
-        <span className="text-right font-mono tabular-nums">
-          {formatPrice(marker.weightedPrice, currency)}
-        </span>
-        <span className="text-muted-foreground">Wartosc</span>
-        <span className="text-right font-mono tabular-nums">
-          {formatPrice(marker.grossNotional, currency)}
-        </span>
-      </div>
-      <p className="mt-2 border-t border-border/70 pt-1.5 text-[10px] text-muted-foreground">
-        {compactSummary}
-      </p>
-    </div>
-  );
-}
+const buildAreaPath = (points: readonly ChartPoint[]) => {
+  const first = points[0];
+  const last = points.at(-1);
+
+  if (!first || !last) {
+    return "";
+  }
+
+  return `${buildLinePath(points)} L ${last.x.toFixed(2)} ${CHART_HEIGHT} L ${first.x.toFixed(2)} ${CHART_HEIGHT} Z`;
+};
 
 export function StockScreenerPreviewChart({
   data,
   currency,
-  tradeMarkers,
   className,
 }: Readonly<{
   data: readonly StockScreenerPreviewPoint[];
   currency: string;
-  tradeMarkers: readonly StockTradeMarker[];
   className?: string;
 }>) {
-  const gradientId = useId().replace(/:/g, "");
-  const [hoveredMarker, setHoveredMarker] = useState<HoveredMarkerState | null>(null);
   const safeData =
     data.length >= 2
       ? data
@@ -144,150 +80,88 @@ export function StockScreenerPreviewChart({
           { date: "1970-01-01", price: 0 },
           { date: "1970-01-02", price: 0 },
         ];
+
   const minPrice = Math.min(...safeData.map((point) => point.price));
   const maxPrice = Math.max(...safeData.map((point) => point.price));
+  const spread = maxPrice - minPrice;
   const pad =
-    minPrice === maxPrice
-      ? Math.max(Math.abs(minPrice) * 0.02, 1)
-      : (maxPrice - minPrice) * 0.08;
-  const domain: [number, number] = [minPrice - pad, maxPrice + pad];
-  const formatPriceTick = buildPriceFormatter(currency);
-  const chartData = [...safeData];
-  const chartConfig = {
-    price: {
-      label: "Cena",
-      color: "var(--chart-1)",
-    },
-  } satisfies ChartConfig;
-  const visibleTradeMarkers = resolveVisibleTradeMarkers(
-    tradeMarkers,
-    chartData.map((point) => ({ t: point.date }))
-  );
-  const positionedTradeMarkers = buildPositionedTradeMarkers({
-    markers: visibleTradeMarkers,
-    chartData: chartData.map((point) => ({ t: point.date })),
-    priceAxisDomain: domain,
-    plotWidth: 220,
+    spread === 0 ? Math.max(Math.abs(minPrice) * 0.02, 1) : spread * 0.08;
+  const lowerBound = minPrice - pad;
+  const upperBound = maxPrice + pad;
+  const yRange = Math.max(upperBound - lowerBound, 1);
+  const points = safeData.map((point, index) => {
+    const x =
+      safeData.length === 1
+        ? CHART_WIDTH / 2
+        : (index / (safeData.length - 1)) * CHART_WIDTH;
+    const normalizedY = (point.price - lowerBound) / yRange;
+
+    return {
+      x,
+      y: clamp(CHART_HEIGHT - normalizedY * CHART_HEIGHT, 4, CHART_HEIGHT - 4),
+    } satisfies ChartPoint;
   });
+  const linePath = buildLinePath(points);
+  const areaPath = buildAreaPath(points);
+  const firstPoint = safeData[0];
+  const lastPoint = safeData.at(-1) ?? firstPoint;
+  const trendTone =
+    lastPoint.price > firstPoint.price
+      ? "var(--profit)"
+      : lastPoint.price < firstPoint.price
+        ? "var(--loss)"
+        : "var(--chart-1)";
+  const formatPriceLabel = buildPriceLabelFormatter(currency);
 
   return (
-    <ChartContainer config={chartConfig} className={cn("relative h-full w-full", className)}>
-      {hoveredMarker ? (
-        <ScreenerTradeHoverCard marker={hoveredMarker} currency={currency} />
-      ) : null}
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 18, right: 8, bottom: 6, left: 8 }}>
-          <defs>
-            <linearGradient id={`screener-fill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-price)" stopOpacity={0.18} />
-              <stop offset="70%" stopColor="var(--color-price)" stopOpacity={0.06} />
-              <stop offset="100%" stopColor="var(--color-price)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
+    <div className={cn("flex h-full w-full flex-col", className)}>
+      <div className="flex items-center justify-between px-1.5 pb-1 font-mono text-[10px] tabular-nums text-muted-foreground/75">
+        <span className="max-w-[46%] truncate">
+          {formatPriceLabel(maxPrice)}
+        </span>
+        <span className="max-w-[46%] truncate text-right">
+          {formatPriceLabel(minPrice)}
+        </span>
+      </div>
 
-          <CartesianGrid
-            vertical={false}
-            stroke="var(--border)"
-            strokeDasharray="3 3"
-            strokeOpacity={0.12}
-          />
+      <svg
+        aria-hidden="true"
+        className="block h-[86px] w-full"
+        viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT + 1}`}
+        preserveAspectRatio="none"
+      >
+        <line
+          x1="0"
+          y1={CHART_HEIGHT / 2}
+          x2={CHART_WIDTH}
+          y2={CHART_HEIGHT / 2}
+          stroke="var(--border)"
+          strokeDasharray="3 4"
+          strokeOpacity="0.28"
+        />
+        <line
+          x1="0"
+          y1={CHART_HEIGHT}
+          x2={CHART_WIDTH}
+          y2={CHART_HEIGHT}
+          stroke="var(--border)"
+          strokeOpacity="0.32"
+        />
+        <path d={areaPath} fill={trendTone} fillOpacity="0.14" />
+        <path
+          d={linePath}
+          fill="none"
+          stroke={trendTone}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2.5"
+        />
+      </svg>
 
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatXAxisTick}
-            tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
-            tickLine={false}
-            axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-            minTickGap={18}
-          />
-
-          <YAxis
-            domain={domain}
-            width={56}
-            tickFormatter={formatPriceTick}
-            tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
-            tickLine={false}
-            axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
-          />
-
-          <ChartTooltip
-            cursor={{ stroke: "var(--border)", strokeDasharray: "3 4", strokeOpacity: 0.45 }}
-            content={
-              <ChartTooltipContent
-                className={cn(
-                  hoveredMarker ? "opacity-0" : "opacity-100",
-                  "transition-opacity duration-100"
-                )}
-                indicator="dot"
-                labelFormatter={(label) => formatLabelDate(String(label))}
-                formatter={(value) => [formatPrice(Number(value), currency), "Cena"]}
-              />
-            }
-          />
-
-          {positionedTradeMarkers.map((marker) => (
-            <ReferenceLine
-              key={`mini-trade-line-${marker.id}`}
-              x={marker.t}
-              stroke={marker.side === "BUY" ? "var(--profit)" : "var(--loss)"}
-              strokeOpacity={0.18}
-              strokeWidth={1}
-              strokeDasharray="2 4"
-              ifOverflow="extendDomain"
-            />
-          ))}
-
-          {positionedTradeMarkers.map((marker) => (
-            <ReferenceDot
-              key={`mini-trade-dot-${marker.id}`}
-              x={marker.t}
-              y={marker.markerY}
-              ifOverflow="extendDomain"
-              isFront
-              shape={(props: unknown) => (
-                <StockChartMarkerDot
-                  {...(props as StockChartEventMarkerDotProps)}
-                  payload={marker}
-                  isActive={hoveredMarker?.id === marker.id}
-                  onHoverChange={(nextMarker, coordinates) => {
-                    if (
-                      nextMarker?.kind === "tradeMarker" &&
-                      coordinates
-                    ) {
-                      setHoveredMarker({
-                        id: nextMarker.id,
-                        tradeDate: nextMarker.tradeDate,
-                        tradeDateEnd: nextMarker.tradeDateEnd,
-                        side: nextMarker.side,
-                        netQuantity: nextMarker.netQuantity,
-                        weightedPrice: nextMarker.weightedPrice,
-                        grossNotional: nextMarker.grossNotional,
-                        tradeCount: nextMarker.tradeCount,
-                        clusteredMarkerCount: nextMarker.clusteredMarkerCount,
-                        x: coordinates.x,
-                        y: coordinates.y,
-                      });
-                      return;
-                    }
-
-                    setHoveredMarker(null);
-                  }}
-                />
-              )}
-            />
-          ))}
-
-          <Area
-            type="monotone"
-            dataKey="price"
-            stroke="var(--color-price)"
-            strokeWidth={2.5}
-            fill={`url(#screener-fill-${gradientId})`}
-            dot={false}
-            isAnimationActive={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+      <div className="mt-1 flex items-center justify-between px-1.5 text-[10px] text-muted-foreground/70">
+        <span>{formatDateLabel(firstPoint.date)}</span>
+        <span>{formatDateLabel(lastPoint.date)}</span>
+      </div>
+    </div>
   );
 }

@@ -74,8 +74,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - click per-item star -> add ticker to `stock_watchlist` without navigation.
 - `/stocks` page server-renders initial watchlist provider keys into `StockSearchBar`, so favorite stars are correct on first paint without extra client fetch.
 - `/stocks` screener cards now ship one shared 12M daily preview series per card and slice it client-side into `1M / 3M / 6M / 12M`; avoid fetch-per-card/per-range preview requests.
-- `/stocks` screener mini-charts reuse the same merged stock trade marker pipeline as the report chart, but only render buy/sell markers (always-on, no PE/news/event overlays in card previews).
-- `/stocks` screener mini-charts expose compact hover info: standard date/price tooltip for the line and a smaller trade hover card for buy/sell markers.
+- `/stocks` screener previews are lightweight inline SVG sparklines: no Recharts tree, no trade-marker query, and no client-only `next/dynamic` island per card.
+- Screener previews should stay cheap: reuse one cached 12M price series per card, slice it client-side by range, and keep the visual treatment to simple trend/area rendering plus compact edge labels.
 - Optimistic watchlist UX follows React 19 + App Router standard:
   - `StocksScreenerInteractive` owns `useOptimistic` (no local mirror state / no sync effect),
   - `StockSearchBar` applies optimistic favorite toggle + optimistic card skeleton via callbacks,
@@ -94,7 +94,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Public stock endpoints (`/api/public/stocks/[providerKey]/chart`, watchlist helpers) should use shared HTTP error contract (`src/lib/http/api-error.ts`) and shared rate limiting (`src/lib/http/rate-limit.ts`) for abuse control.
 - Private chart API (`/api/stocks/[providerKey]/chart`) and trade-markers API (`/api/stocks/[providerKey]/trade-markers`) use shared route auth helper (`src/lib/http/route-handler.ts`) and delegate to feature/server services.
 - Report page stays public/cache-first; personalized trade markers are fetched client-side from the authenticated trade-markers API so stock content still paints instantly for anonymous users.
-- Report chart also receives initial trade markers from server render when the user is authenticated, so stock report pages do not rely on a client refetch to show existing BUY/SELL markers on first paint.
+- Stock report chart first paint is strictly public: `StockChartSection` should not block on `cookies()` or user lookups, and authenticated BUY/SELL markers hydrate later from the private trade-markers API.
 - Stock details sections (`StockChartSection`, `StockMetricsSection`, instrument header) use Cache Components (`'use cache'` + `cacheLife` + `cacheTag`) with public Supabase reads.
 - Report route keeps public URL `/stocks/[providerKey]` and now uses a 2-column clarity-first layout:
   - left rail: identity, quick facts, and a simplified sticky table of contents,

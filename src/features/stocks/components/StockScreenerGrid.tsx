@@ -202,7 +202,6 @@ export function StockScreenerGrid({
                       <StockScreenerPreviewChartLazy
                         data={preview.data}
                         currency={card.currency}
-                        tradeMarkers={card.tradeMarkers}
                       />
                     )}
                   </div>

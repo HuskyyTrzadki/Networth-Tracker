@@ -50,6 +50,7 @@ Out of scope:
 - After applying Supabase migrations that change schema/functions, regenerate `src/lib/supabase/database.types.ts` from the real project immediately; do not hand-edit generated DB types except as a temporary emergency unblocker, and replace any temporary edits with regenerated output in the same task.
 - URL query state in client components should use `nuqs` parser maps (avoid manual `URLSearchParams` mutation); use non-shallow updates when server data depends on search params.
 - Viewport-gated client rendering should use `useInViewVisibility` (`src/features/common/hooks/use-in-view-visibility.ts`) to keep observer behavior consistent and avoid route-wide motion runtime dependencies.
+- Decorative serif typography (`Newsreader`) is route-scoped, not root-scoped: do not preload it in `src/app/layout.tsx`; load it only in layouts/pages that actually render `font-serif`.
 - Shared chart rendering should go through `src/components/ui/chart.tsx` (`ui/chart`) for container/content styling (`ChartContainer`, `ChartTooltipContent`, `ChartLegendContent`), while runtime chart primitives (`Tooltip`, `Legend`, etc.) should be imported from `src/lib/recharts-dynamic.tsx` to keep non-chart chunks lean.
 
 ## Supabase usage
@@ -144,6 +145,7 @@ When shipping feature/architecture changes:
 - App Router uses Cache Components (`cacheComponents: true`) with Suspense boundaries.
 - App shell PPR rule: do not gate `/(app)` layout with global `connection()` or top-level blocking `cookies()` reads outside Suspense; keep shell streamable and isolate personalized reads inside nested Suspense boundaries/components.
 - Root layout wraps app content in `NuqsAdapter` (`nuqs/adapters/next/app`) so query-state hooks are standardized across features.
+- Root layout should keep only base cross-site fonts (`sans` + `mono`) globally; serif font variables should be attached at narrower route/page scopes to reduce broad preload cost.
 - Private dashboard/shell reads use tagged private cache (`portfolio:all`, `portfolio:<id>`, `transactions:*`).
 - Write APIs invalidate with `revalidateTag`/`revalidatePath`.
 - Transactions and portfolio filter controls use `nuqs` query-state parsers for deterministic URL/history behavior.

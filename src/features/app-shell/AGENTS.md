@@ -32,7 +32,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - top sheet with logo, search, `Portfolio management`, and account actions,
   - signed-in state includes `Konto` and `Wyloguj` action.
 - `ReportShell` uses a small context with ref-backed menu-open reads and explicit mount/unmount counters so custom menu triggers mount predictably without `useMemo`/`useCallback`.
-- Report shell receives auth state from server layout (`/(report)/layout.tsx`) and does not run client-side Supabase session polling anymore.
+- Report shell is public-first: `/(report)/layout.tsx` should not block on `cookies()`/auth reads. Account-specific actions resolve in a deferred server slot (`ReportShellAccountControlsSlot`) under Suspense, with guest controls available immediately.
+- `ReportShell` now accepts `accountControls` instead of a blocking `hasSession` prop, so report chrome can stream before personalized account state resolves.
 - Shell chrome was visually normalized with the refreshed design system: tighter uppercase micro-labels for menu triggers, consistent `rounded-md` control styling, and reduced one-off styling in report search/menu surfaces.
 - App shell owns global keyboard shortcuts:
   - `/` focuses the active search surface (`app:focus-search` event),
@@ -60,7 +61,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - No domain business logic; UI/navigation only.
 - App shell receives data from layouts; no sidebar-specific domain fetches.
 - `/(app)` layout must remain PPR-friendly: avoid top-level `connection()` gating; keep shell render streamable and place personalized/dynamic data reads behind nested Suspense boundaries.
-- Report shell performs UI/menu state handling and sign-out action call; auth-status read is server-owned.
+- Report shell performs UI/menu state handling only; account-state resolution is server-owned in a nested deferred slot, not at the report layout root.
 
 ## Tests
 - Path helpers: `src/features/app-shell/lib/path.test.ts`.

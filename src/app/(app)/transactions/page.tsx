@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
+import { cache, Suspense } from "react";
 
 import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { Button } from "@/features/design-system/components/ui/button";
@@ -111,9 +112,9 @@ export const metadata: Metadata = {
 export default async function TransactionsPage({ searchParams }: Props) {
   const params = await searchParams;
   const filters = parseTransactionsFilters(params);
-  const pageData = await getTransactionsPageDataCached(filters);
+  const shellData = await getTransactionsShellDataCached();
 
-  if (!pageData.isAuthenticated) {
+  if (!shellData.isAuthenticated) {
     return (
       <main className={`mx-auto w-full px-6 py-8 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
         <section className="max-w-[720px] rounded-xl border border-border/75 bg-card/94 p-6 shadow-[var(--surface-shadow)]">
@@ -143,9 +144,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
     ? `/transactions/new?portfolio=${filters.portfolioId}`
     : "/transactions/new";
   const clearSearchHref = buildClearSearchHref(filters);
-  const activeFilterChips = buildActiveFilterChips(filters, pageData.portfolios);
-  const sortSummary =
-    filters.sort === "date_desc" ? "Najnowsze" : "Najstarsze";
+  const activeFilterChips = buildActiveFilterChips(filters, shellData.portfolios);
 
   return (
     <main className={`mx-auto w-full px-5 py-5 sm:px-6 sm:py-7 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
@@ -168,7 +167,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
           key={`${filters.query ?? ""}:${filters.type ?? "all"}:${
             filters.sort
           }:${filters.portfolioId ?? "all"}`}
-          portfolios={pageData.portfolios}
+          portfolios={shellData.portfolios}
           query={filters.query}
           selectedPortfolioId={filters.portfolioId}
           sort={filters.sort}
@@ -208,46 +207,63 @@ export default async function TransactionsPage({ searchParams }: Props) {
         </AnimatedReveal>
       ) : null}
 
-      <AnimatedReveal className="mt-4" delay={0.08}>
-        <section className="rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
-          <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Historia operacji</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
-          </div>
-
-          <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
-            {pageData.transactionsPage.items.length > 0 ? (
-              <TransactionsTable items={pageData.transactionsPage.items} />
-            ) : (
-              <TransactionsEmptyState
-                addTransactionHref={transactionCreateHref}
-                clearSearchHref={clearSearchHref}
-                query={filters.query}
-              />
-            )}
-
-            <TransactionsPagination
-              filters={filters}
-              hasNextPage={pageData.transactionsPage.hasNextPage}
-            />
-          </div>
-        </section>
-      </AnimatedReveal>
+      <Suspense fallback={<TransactionsResultsSectionSkeleton sort={filters.sort} />}>
+        <TransactionsResultsSection
+          filters={filters}
+          transactionCreateHref={transactionCreateHref}
+          clearSearchHref={clearSearchHref}
+        />
+      </Suspense>
     </main>
   );
 }
 
-type TransactionsPageData = Readonly<{
+type TransactionsShellData = Readonly<{
   isAuthenticated: boolean;
   portfolios: Awaited<ReturnType<typeof listPortfolios>>;
+}>;
+
+const getTransactionsRequestContext = cache(async () => {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    return null;
+  }
+
+  return { supabase };
+});
+
+const getTransactionsShellDataCached =
+  async (): Promise<TransactionsShellData> => {
+    "use cache: private";
+
+    cacheLife("minutes");
+    cacheTag("portfolio:all");
+
+    const context = await getTransactionsRequestContext();
+
+    if (!context) {
+      return {
+        isAuthenticated: false,
+        portfolios: [],
+      };
+    }
+
+    return {
+      isAuthenticated: true,
+      portfolios: await listPortfolios(context.supabase),
+    };
+  };
+
+type TransactionsListData = Readonly<{
   transactionsPage: Awaited<ReturnType<typeof listTransactions>>;
 }>;
 
-const getTransactionsPageDataCached = async (
+const getTransactionsPageItemsCached = async (
   filters: ReturnType<typeof parseTransactionsFilters>
-): Promise<TransactionsPageData> => {
+): Promise<TransactionsListData> => {
   "use cache: private";
 
   // Transactions list is frequently revisited with nearby filters.
@@ -259,14 +275,9 @@ const getTransactionsPageDataCached = async (
     cacheTag(`portfolio:${filters.portfolioId}`);
   }
 
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-  const { data } = await supabase.auth.getUser();
-
-  if (!data.user) {
+  const context = await getTransactionsRequestContext();
+  if (!context) {
     return {
-      isAuthenticated: false,
-      portfolios: [],
       transactionsPage: {
         items: [],
         page: filters.page,
@@ -276,14 +287,90 @@ const getTransactionsPageDataCached = async (
     };
   }
 
-  const [transactionsPage, portfolios] = await Promise.all([
-    listTransactions(supabase, filters),
-    listPortfolios(supabase),
-  ]);
+  const transactionsPage = await listTransactions(context.supabase, filters);
 
   return {
-    isAuthenticated: true,
-    portfolios,
     transactionsPage,
   };
 };
+
+async function TransactionsResultsSection({
+  filters,
+  transactionCreateHref,
+  clearSearchHref,
+}: Readonly<{
+  filters: ReturnType<typeof parseTransactionsFilters>;
+  transactionCreateHref: string;
+  clearSearchHref: string;
+}>) {
+  const { transactionsPage } = await getTransactionsPageItemsCached(filters);
+  const sortSummary = filters.sort === "date_desc" ? "Najnowsze" : "Najstarsze";
+
+  return (
+    <AnimatedReveal className="mt-4" delay={0.08}>
+      <section className="rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
+        <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">Historia operacji</p>
+          </div>
+          <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
+        </div>
+
+        <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
+          {transactionsPage.items.length > 0 ? (
+            <TransactionsTable items={transactionsPage.items} />
+          ) : (
+            <TransactionsEmptyState
+              addTransactionHref={transactionCreateHref}
+              clearSearchHref={clearSearchHref}
+              query={filters.query}
+            />
+          )}
+
+          <TransactionsPagination
+            filters={filters}
+            hasNextPage={transactionsPage.hasNextPage}
+          />
+        </div>
+      </section>
+    </AnimatedReveal>
+  );
+}
+
+function TransactionsResultsSectionSkeleton({
+  sort,
+}: Readonly<{
+  sort: ReturnType<typeof parseTransactionsFilters>["sort"];
+}>) {
+  const sortSummary = sort === "date_desc" ? "Najnowsze" : "Najstarsze";
+
+  return (
+    <section className="mt-4 rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
+      <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">Historia operacji</p>
+        </div>
+        <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
+      </div>
+
+      <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
+        <div className="space-y-3">
+          <div className="h-4 w-40 animate-pulse rounded bg-muted/40" />
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={`transactions-skeleton-row-${index}`}
+              className="grid h-14 grid-cols-[minmax(0,1.7fr)_0.75fr_0.9fr_1fr] gap-3 rounded-md border border-dashed border-border/70 px-3 py-3"
+            >
+              {Array.from({ length: 4 }).map((__, cellIndex) => (
+                <div
+                  key={`transactions-skeleton-cell-${index}-${cellIndex}`}
+                  className="h-3 animate-pulse rounded bg-muted/35"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

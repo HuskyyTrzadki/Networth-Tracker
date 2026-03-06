@@ -30,7 +30,6 @@ export type StockScreenerCard = Readonly<{
     date: string;
     price: number;
   }>[];
-  tradeMarkers: readonly StockTradeMarker[];
   asOf: string | null;
 }>;
 

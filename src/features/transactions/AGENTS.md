@@ -161,6 +161,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction dialog container marks submit-in-progress semantics on the shell (`aria-busy`, `data-submitting`) to align modal accessibility with async state.
 - Add-transaction footer is intentionally simpler now: create mode uses full-width primary/secondary actions across the modal width and only shows inline error text when needed, without passive status strips.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
+- `/transactions` now splits server reads by priority:
+  - shell data (`portfolios` for header/filter chrome) resolves first,
+  - the heavy transactions list/table resolves in a separate Suspense section,
+  - keep new transaction-page work in that shape so filter chrome can stream before the ledger payload.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - Trade markers exposed to the stock report are merged server-side per day:
   - net-positive day -> green buy marker,

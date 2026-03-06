@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Newsreader } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { Suspense } from "react";
@@ -27,13 +27,6 @@ const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-ibm-plex-mono",
-  display: "swap",
-});
-
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-newsreader",
   display: "swap",
 });
 
@@ -93,7 +86,7 @@ export default function RootLayout({ children }: Props) {
     <html
       lang="pl"
       suppressHydrationWarning
-      className={`${ibmPlexMono.variable} ${newsreader.variable} ${geistSans.variable} ${geistMono.variable}`}
+      className={`${ibmPlexMono.variable} ${geistSans.variable} ${geistMono.variable}`}
     >
       <head>
         {process.env.NODE_ENV === "development" && (

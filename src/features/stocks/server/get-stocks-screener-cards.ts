@@ -5,14 +5,9 @@ import { subtractIsoDays } from "@/features/market-data/server/lib/date-utils";
 import { getPortfolioHoldings } from "@/features/portfolio/server/get-portfolio-holdings";
 import { preloadInstrumentDailySeries } from "@/features/portfolio/server/snapshots/range-market-data";
 
-import { mergeStockTradeMarkers } from "./merge-stock-trade-markers";
 import { listStockWatchlist } from "./stock-watchlist";
 
-import type {
-  StockScreenerCard,
-  StockTradeMarker,
-  StockTradeMarkerTrade,
-} from "./types";
+import type { StockScreenerCard } from "./types";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
 
@@ -36,23 +31,6 @@ type InstrumentLookupRow = Readonly<{
   logo_url: string | null;
 }>;
 
-type TradeMarkerRow = Readonly<{
-  id: string;
-  trade_date: string;
-  side: "BUY" | "SELL";
-  price: string | number;
-  quantity: string | number;
-  portfolio_id: string;
-  portfolio:
-    | Readonly<{ name: string }>
-    | readonly Readonly<{ name: string }>[]
-    | null;
-  instrument:
-    | Readonly<{ provider_key: string }>
-    | readonly Readonly<{ provider_key: string }>[]
-    | null;
-}>;
-
 const PREVIEW_LOOKBACK_DAYS = 366;
 
 const toIsoDate = (date: Date) => date.toISOString().slice(0, 10);
@@ -61,20 +39,6 @@ const toFiniteNumber = (value: string | number | null | undefined) => {
   if (value === null || value === undefined) return null;
   const numeric = typeof value === "number" ? value : Number(value);
   return Number.isFinite(numeric) ? numeric : null;
-};
-
-const resolveProviderKey = (
-  instrument: TradeMarkerRow["instrument"]
-) => {
-  const resolved = Array.isArray(instrument) ? instrument[0] ?? null : instrument;
-  return resolved?.provider_key ?? null;
-};
-
-const resolvePortfolioName = (
-  portfolio: TradeMarkerRow["portfolio"]
-) => {
-  const resolved = Array.isArray(portfolio) ? portfolio[0] ?? null : portfolio;
-  return resolved?.name ?? "Portfel";
 };
 
 async function hydrateMissingInstrumentIds(
@@ -116,60 +80,6 @@ async function hydrateMissingInstrumentIds(
       logoUrl: instrument.logo_url ?? existing.logoUrl,
     });
   });
-}
-
-async function loadTradeMarkersByProviderKey(
-  supabase: SupabaseServerClient,
-  providerKeys: readonly string[]
-) {
-  if (providerKeys.length === 0) {
-    return new Map<string, readonly StockTradeMarker[]>();
-  }
-
-  const { data, error } = await supabase
-    .from("transactions")
-    .select(
-      "id,trade_date,side,price,quantity,portfolio_id,portfolio:portfolios(name),instrument:instruments!inner(provider_key)"
-    )
-    .eq("leg_role", "ASSET")
-    .in("instrument.provider_key", providerKeys)
-    .order("trade_date", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const tradesByProviderKey = new Map<string, StockTradeMarkerTrade[]>();
-
-  ((data ?? []) as TradeMarkerRow[]).forEach((row) => {
-    const providerKey = resolveProviderKey(row.instrument);
-    const price = toFiniteNumber(row.price);
-    const quantity = toFiniteNumber(row.quantity);
-
-    if (!providerKey || price === null || quantity === null) {
-      return;
-    }
-
-    const trades = tradesByProviderKey.get(providerKey) ?? [];
-    trades.push({
-      id: row.id,
-      tradeDate: row.trade_date,
-      side: row.side,
-      price,
-      quantity,
-      portfolioId: row.portfolio_id,
-      portfolioName: resolvePortfolioName(row.portfolio),
-    });
-    tradesByProviderKey.set(providerKey, trades);
-  });
-
-  return new Map<string, readonly StockTradeMarker[]>(
-    Array.from(tradesByProviderKey.entries()).map(([providerKey, trades]) => [
-      providerKey,
-      mergeStockTradeMarkers(trades),
-    ])
-  );
 }
 
 export async function getStocksScreenerCards(
@@ -236,15 +146,10 @@ export async function getStocksScreenerCards(
   const nowDate = toIsoDate(new Date());
   const previewStartDate = subtractIsoDays(nowDate, PREVIEW_LOOKBACK_DAYS);
 
-  const [quotesByInstrument, dailySeriesByProviderKey, tradeMarkersByProviderKey] =
-    await Promise.all([
-      getInstrumentQuotesCached(supabase, quoteRequests),
-      preloadInstrumentDailySeries(supabase, quoteRequests, previewStartDate, nowDate),
-      loadTradeMarkersByProviderKey(
-        supabase,
-        quoteRequests.map((item) => item.providerKey)
-      ),
-    ]);
+  const [quotesByInstrument, dailySeriesByProviderKey] = await Promise.all([
+    getInstrumentQuotesCached(supabase, quoteRequests),
+    preloadInstrumentDailySeries(supabase, quoteRequests, previewStartDate, nowDate),
+  ]);
 
   const previewSeriesByProviderKey = new Map<
     string,
@@ -309,7 +214,6 @@ export async function getStocksScreenerCards(
         currency: quote?.currency ?? holding.currency ?? "-",
         price: quote?.price ?? null,
         previewChart,
-        tradeMarkers: tradeMarkersByProviderKey.get(holding.providerKey) ?? [],
         asOf: quote?.asOf ?? null,
       } satisfies StockScreenerCard;
     })

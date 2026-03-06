@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import { cookies } from "next/headers";
 
@@ -127,7 +127,7 @@ async function PortfolioAllocationsByPortfolioSection({
   return <PortfolioAllocationsByPortfolioDeferredWidget items={items} />;
 }
 
-const getAuthenticatedContext = async () => {
+const getAuthenticatedContext = cache(async () => {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
   const { data: authData } = await supabase.auth.getUser();
@@ -139,7 +139,7 @@ const getAuthenticatedContext = async () => {
     supabase,
     userId: authData.user.id,
   };
-};
+});
 
 const getPortfolioDashboardCoreDataCached = async (
   selectedPortfolioId: string | null,

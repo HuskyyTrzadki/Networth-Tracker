@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type Options = Readonly<{
   rootMargin?: string;
@@ -13,6 +13,11 @@ type Result<T extends Element> = Readonly<{
   isInView: boolean;
 }>;
 
+const subscribeToClientFallback = () => () => {};
+const getServerFallbackValue = () => false;
+const getClientFallbackValue = () =>
+  typeof IntersectionObserver === "undefined";
+
 export function useInViewVisibility<T extends Element = HTMLDivElement>({
   rootMargin = "220px 0px",
   once = true,
@@ -20,7 +25,12 @@ export function useInViewVisibility<T extends Element = HTMLDivElement>({
 }: Options = {}): Result<T> {
   const ref = useRef<T | null>(null);
   const supportsObserver = typeof IntersectionObserver !== "undefined";
-  const [isInView, setIsInView] = useState(!supportsObserver);
+  const fallbackInView = useSyncExternalStore(
+    subscribeToClientFallback,
+    getClientFallbackValue,
+    getServerFallbackValue
+  );
+  const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
     if (!supportsObserver) {
@@ -62,5 +72,5 @@ export function useInViewVisibility<T extends Element = HTMLDivElement>({
     };
   }, [isInView, once, rootMargin, supportsObserver, threshold]);
 
-  return { ref, isInView };
+  return { ref, isInView: supportsObserver ? isInView : fallbackInView };
 }

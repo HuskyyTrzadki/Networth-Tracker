@@ -3,7 +3,7 @@
 import { Newspaper, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import { Input } from "@/features/design-system/components/ui/input";
@@ -20,7 +20,7 @@ import { cn } from "@/lib/cn";
 
 type Props = Readonly<{
   children: React.ReactNode;
-  hasSession: boolean;
+  accountControls?: React.ReactNode;
 }>;
 
 type MenuTriggerCtx = Readonly<{
@@ -63,18 +63,19 @@ export function ReportShellMenuTrigger({
   );
 }
 
-export function ReportShell({ children, hasSession }: Props) {
+export function ReportShell({ children, accountControls = null }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const [customTriggerCount, setCustomTriggerCount] = useState(0);
   const router = useRouter();
-  const mountCustomTrigger = useCallback(() => {
+
+  const mountCustomTrigger = () => {
     setCustomTriggerCount((value) => value + 1);
-  }, []);
-  const unmountCustomTrigger = useCallback(() => {
+  };
+
+  const unmountCustomTrigger = () => {
     setCustomTriggerCount((value) => Math.max(0, value - 1));
-  }, []);
+  };
 
   const onSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -88,28 +89,11 @@ export function ReportShell({ children, hasSession }: Props) {
     setIsMenuOpen(false);
   };
 
-  const onSignOut = async () => {
-    if (isSigningOut) return;
-    setIsSigningOut(true);
-    await fetch("/api/auth/signout", { method: "POST" }).catch(() => null);
-    setIsMenuOpen(false);
-    router.push("/login");
-    router.refresh();
-    setIsSigningOut(false);
+  const menuTriggerContext: MenuTriggerCtx = {
+    mountCustomTrigger,
+    unmountCustomTrigger,
+    isMenuOpen,
   };
-
-  const menuTriggerContext = useMemo<MenuTriggerCtx>(
-    () => ({
-      mountCustomTrigger: () => {
-        mountCustomTrigger();
-      },
-      unmountCustomTrigger: () => {
-        unmountCustomTrigger();
-      },
-      isMenuOpen,
-    }),
-    [isMenuOpen, mountCustomTrigger, unmountCustomTrigger]
-  );
   const hasCustomTrigger = customTriggerCount > 0;
 
   return (
@@ -179,40 +163,7 @@ export function ReportShell({ children, hasSession }: Props) {
                       <Link href="/portfolio">Portfel</Link>
                     </Button>
                   </SheetClose>
-                  {hasSession ? (
-                    <>
-                      <SheetClose asChild>
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
-                        >
-                          <Link href="/settings">Konto</Link>
-                        </Button>
-                      </SheetClose>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
-                        onClick={onSignOut}
-                        disabled={isSigningOut}
-                      >
-                        {isSigningOut ? "Wylogowywanie..." : "Wyloguj"}
-                      </Button>
-                    </>
-                  ) : (
-                    <SheetClose asChild>
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="h-9 border-[color:var(--report-rule)] px-3 text-sm"
-                      >
-                        <Link href="/login">Konto</Link>
-                      </Button>
-                    </SheetClose>
-                  )}
+                  {accountControls}
                 </div>
               </div>
             </SheetBody>
