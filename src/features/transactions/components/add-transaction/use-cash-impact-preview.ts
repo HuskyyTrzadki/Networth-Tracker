@@ -18,7 +18,7 @@ type Params = Readonly<{
   isCashTab: boolean;
   assetCurrency: string;
   resolvedCashCurrency: CashCurrency;
-  availableCashOnTradeDate: string;
+  availableCashOnTradeDate: string | null;
   type: TransactionType;
   quantity: string;
   price: string;

@@ -27,6 +27,8 @@ type Params = Readonly<{
   initialCashCurrency: CashCurrency;
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  loadingPortfolioIds: readonly string[];
+  balanceErrorMessagesByPortfolio: Readonly<Record<string, string>>;
 }>;
 
 export function useAddTransactionFieldsContext({
@@ -37,6 +39,8 @@ export function useAddTransactionFieldsContext({
   initialCashCurrency,
   cashBalancesByPortfolio,
   assetBalancesByPortfolio,
+  loadingPortfolioIds,
+  balanceErrorMessagesByPortfolio,
 }: Params) {
   const minTradeDate = parseISO(getTradeDateLowerBound());
   const maxTradeDate = new Date();
@@ -61,8 +65,14 @@ export function useAddTransactionFieldsContext({
     cashCurrency,
     initialCashCurrency
   );
-  const cashBalances = cashBalancesByPortfolio[resolvedPortfolioId] ?? buildEmptyBalances();
-  const availableCashNow = cashBalances[resolvedCashCurrency] ?? "0";
+  const hasCurrentPortfolioBalances = Boolean(cashBalancesByPortfolio[resolvedPortfolioId]);
+  const isCurrentPortfolioBalanceLoading = loadingPortfolioIds.includes(resolvedPortfolioId);
+  const currentPortfolioBalanceErrorMessage =
+    balanceErrorMessagesByPortfolio[resolvedPortfolioId] ?? null;
+  const cashBalances = hasCurrentPortfolioBalances
+    ? cashBalancesByPortfolio[resolvedPortfolioId] ?? buildEmptyBalances()
+    : null;
+  const availableCashNow = cashBalances?.[resolvedCashCurrency] ?? null;
 
   const cashBalanceOnDate = useCashBalanceOnDate({
     enabled:
@@ -76,14 +86,17 @@ export function useAddTransactionFieldsContext({
     tradeDate: date,
   });
 
-  const availableCashOnTradeDate = cashBalanceOnDate.availableCashOnDate ?? availableCashNow;
-  const availableAssetQuantity = deriveAvailableAssetQuantity({
-    selectedInstrument,
-    type,
-    isCashTab,
-    resolvedPortfolioId,
-    assetBalancesByPortfolio,
-  });
+  const availableCashOnTradeDate =
+    cashBalanceOnDate.availableCashOnDate ?? availableCashNow;
+  const availableAssetQuantity = hasCurrentPortfolioBalances
+    ? deriveAvailableAssetQuantity({
+        selectedInstrument,
+        type,
+        isCashTab,
+        resolvedPortfolioId,
+        assetBalancesByPortfolio,
+      })
+    : null;
   const displayCurrency = deriveDisplayCurrency(selectedInstrument, currency);
   const assetCurrency = isCustomTab
     ? (customCurrency?.trim().toUpperCase() ?? "")
@@ -120,6 +133,7 @@ export function useAddTransactionFieldsContext({
     date,
     quantity,
     availableAssetQuantity,
+    hasCurrentPortfolioBalances,
   });
 
   return {
@@ -137,6 +151,9 @@ export function useAddTransactionFieldsContext({
     isCustomTab,
     resolvedPortfolioId,
     resolvedCashCurrency,
+    hasCurrentPortfolioBalances,
+    isCurrentPortfolioBalanceLoading,
+    currentPortfolioBalanceErrorMessage,
     availableCashNow,
     cashBalanceOnDate,
     availableCashOnTradeDate,

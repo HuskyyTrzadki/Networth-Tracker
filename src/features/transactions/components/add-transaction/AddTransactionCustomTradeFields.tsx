@@ -47,6 +47,8 @@ export function AddTransactionCustomTradeFields({
   cashBalanceOnDate,
   availableCashNow,
   availableCashOnTradeDate,
+  isPortfolioBalanceLoading,
+  portfolioBalanceErrorMessage,
   tradeDate,
   cashCurrency,
   consumeCash,
@@ -59,8 +61,10 @@ export function AddTransactionCustomTradeFields({
   displayCurrency: string;
   cashImpactPreview: CashImpactPreviewState;
   cashBalanceOnDate: CashBalanceOnDateState;
-  availableCashNow: string;
-  availableCashOnTradeDate: string;
+  availableCashNow: string | null;
+  availableCashOnTradeDate: string | null;
+  isPortfolioBalanceLoading: boolean;
+  portfolioBalanceErrorMessage: string | null;
   tradeDate: string;
   cashCurrency: string;
   consumeCash: boolean;
@@ -181,6 +185,8 @@ export function AddTransactionCustomTradeFields({
         isCashBalanceOnDateLoading={cashBalanceOnDate.isLoading}
         isFxMismatch={cashImpactPreview.isFxMismatch}
         isFxPreviewLoading={cashImpactPreview.fxPreview.isLoading}
+        isPortfolioBalanceLoading={isPortfolioBalanceLoading}
+        portfolioBalanceErrorMessage={portfolioBalanceErrorMessage}
         projectedCashAfterLabel={cashImpactPreview.projectedCashAfterLabel}
         projectedCashDeltaLabel={cashImpactPreview.projectedCashDeltaLabel}
         resolvedCashCurrency={resolvedCashCurrency}

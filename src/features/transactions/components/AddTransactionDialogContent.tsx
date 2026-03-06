@@ -57,6 +57,8 @@ export function AddTransactionDialogContent({
   portfolios,
   cashBalancesByPortfolio,
   assetBalancesByPortfolio,
+  loadingPortfolioIds = [],
+  balanceErrorMessagesByPortfolio = {},
   initialPortfolioId,
   forcedPortfolioId,
   isPortfolioSwitchPending = false,
@@ -74,6 +76,8 @@ export function AddTransactionDialogContent({
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  loadingPortfolioIds?: readonly string[];
+  balanceErrorMessagesByPortfolio?: Readonly<Record<string, string>>;
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
   isPortfolioSwitchPending?: boolean;
@@ -287,11 +291,13 @@ export function AddTransactionDialogContent({
           <AddTransactionDialogFields
             activeTab={activeTab}
             assetBalancesByPortfolio={assetBalancesByPortfolio}
+            balanceErrorMessagesByPortfolio={balanceErrorMessagesByPortfolio}
             cashBalancesByPortfolio={cashBalancesByPortfolio}
             forcedPortfolioId={forcedPortfolioId}
             form={form}
             initialCashCurrency={initialCashCurrency}
             isPortfolioSwitchPending={isPortfolioSwitchPending}
+            loadingPortfolioIds={loadingPortfolioIds}
             portfolios={portfolios}
             searchClient={searchClient}
             isEditMode={isEditMode}

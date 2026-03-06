@@ -33,6 +33,8 @@ export function AddTransactionDialog({
   portfolios,
   cashBalancesByPortfolio,
   assetBalancesByPortfolio,
+  loadingPortfolioIds = [],
+  balanceErrorMessagesByPortfolio = {},
   initialPortfolioId,
   forcedPortfolioId,
   isPortfolioSwitchPending = false,
@@ -49,6 +51,8 @@ export function AddTransactionDialog({
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  loadingPortfolioIds?: readonly string[];
+  balanceErrorMessagesByPortfolio?: Readonly<Record<string, string>>;
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
   isPortfolioSwitchPending?: boolean;
@@ -112,6 +116,7 @@ export function AddTransactionDialog({
         >
           <AddTransactionDialogContent
             assetBalancesByPortfolio={assetBalancesByPortfolio}
+            balanceErrorMessagesByPortfolio={balanceErrorMessagesByPortfolio}
             cashBalancesByPortfolio={cashBalancesByPortfolio}
             mode={mode}
             editTransactionId={editTransactionId}
@@ -120,6 +125,7 @@ export function AddTransactionDialog({
             initialPortfolioId={initialPortfolioId}
             initialValues={initialValues}
             isPortfolioSwitchPending={isPortfolioSwitchPending}
+            loadingPortfolioIds={loadingPortfolioIds}
             onDirtyChange={setIsDirty}
             onPortfolioSelectionChange={onPortfolioSelectionChange}
             onSubmittingChange={setIsSubmitting}

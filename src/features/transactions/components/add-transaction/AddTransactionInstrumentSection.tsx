@@ -49,6 +49,7 @@ type Props = Readonly<{
   activeTab: AssetTab;
   onTabChange: (nextTab: AssetTab) => void;
   isPortfolioSwitchPending?: boolean;
+  transactionType: FormValues["type"];
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
   resolvedCashCurrency: CashCurrency;
@@ -57,9 +58,11 @@ type Props = Readonly<{
   setSelectedInstrument: (next: InstrumentSearchResult | null) => void;
   searchClient?: InstrumentSearchClient;
   initialCashCurrency: CashCurrency;
-  availableCashNow: string;
+  availableCashNow: string | null;
   availableAssetQuantity: string | null;
+  isPortfolioBalanceLoading?: boolean;
   isEditMode?: boolean;
+  portfolioBalanceErrorMessage?: string | null;
   onOpenScreenshot: () => void;
   createPortfolioFn: (input: CreatePortfolioInput) => Promise<{ id: string }>;
 }>;
@@ -73,6 +76,7 @@ export function AddTransactionInstrumentSection({
   activeTab,
   onTabChange,
   isPortfolioSwitchPending = false,
+  transactionType,
   onPortfolioChange,
   onTypeChange,
   resolvedCashCurrency,
@@ -83,7 +87,9 @@ export function AddTransactionInstrumentSection({
   initialCashCurrency,
   availableCashNow,
   availableAssetQuantity,
+  isPortfolioBalanceLoading = false,
   isEditMode = false,
+  portfolioBalanceErrorMessage = null,
   onOpenScreenshot,
   createPortfolioFn,
 }: Props) {
@@ -330,11 +336,25 @@ export function AddTransactionInstrumentSection({
               </FormControl>
               {isCashTab ? (
                 <p className="mt-2 border-t border-dashed border-border/55 pt-2 text-[11px] text-muted-foreground">
-                  Dostępne (na dziś): {formatMoney(availableCashNow, resolvedCashCurrency)}
+                  Dostępne (na dziś):{" "}
+                  {isPortfolioBalanceLoading
+                    ? "Ładuję stan gotówki..."
+                    : availableCashNow
+                      ? formatMoney(availableCashNow, resolvedCashCurrency)
+                      : "—"}
                 </p>
               ) : availableAssetQuantity !== null ? (
                 <p className="mt-2 border-t border-dashed border-border/55 pt-2 text-[11px] text-muted-foreground">
                   Dostępne do sprzedaży (na teraz): {availableAssetQuantity}
+                </p>
+              ) : transactionType === "SELL" && isPortfolioBalanceLoading ? (
+                <p className="mt-2 border-t border-dashed border-border/55 pt-2 text-[11px] text-muted-foreground">
+                  Sprawdzam dostępny stan portfela...
+                </p>
+              ) : null}
+              {transactionType === "SELL" && portfolioBalanceErrorMessage ? (
+                <p className="mt-2 rounded-sm border border-[color:var(--loss)]/30 bg-[color:var(--loss)]/8 px-2 py-1 text-[11px] text-[color:var(--loss)]">
+                  {portfolioBalanceErrorMessage}
                 </p>
               ) : null}
               <FormMessage />

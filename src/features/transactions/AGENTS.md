@@ -152,6 +152,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Modal receipt summary (`TransactionLiveSummary`) also splits amount/unit tokens and keeps all monetary rows right-aligned with `font-mono tabular-nums`.
 - Transactions table rows keep lightweight visual feedback via alternating striping + short “fresh stamp” highlight (`~0.5s`) on newly added rows; no heavy row-motion choreography.
 - Add-transaction routes (`/transactions/new` standalone and intercepted modal) redirect to onboarding when user has no portfolios, avoiding dead-end messaging.
+- Create add-transaction routes now use a minimal bootstrap (`get-create-transaction-dialog-data.ts`) based on cached portfolio/auth state; do not block first paint on cash/asset balance RPCs.
+- Create add-transaction balance hints load on demand through `POST /api/transactions/dialog-balances` and client cache hook `use-transaction-dialog-balance-cache.ts`; keep this path shallow and portfolio-scoped.
+- Create add-transaction portfolio changes now update URL query state shallowly via `nuqs` instead of route-reloading the whole modal.
+- Screenshot import inside add-transaction is lazy-loaded; keep heavyweight onboarding/import code behind the explicit CTA instead of the default dialog bundle.
 - Add/edit transaction modal now writes via server actions (`createTransactionAction` / `updateTransactionAction`) with server revalidation; some route wrappers still use `router.refresh()` after close/navigation to guarantee back-stack list sync.
 - Add/edit submit orchestration is split into two layers: pure intent builder (`submit-intent.ts`) and async executor (`submit-actions.ts`), keeping `AddTransactionDialogContent.tsx` focused on UI state + side effects.
 - Add-transaction form field orchestration is split:

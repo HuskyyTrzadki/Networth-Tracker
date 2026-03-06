@@ -1,17 +1,18 @@
 "use client";
 
-import { Suspense, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQueryStates } from "nuqs";
 
 import { AddTransactionDialog } from "./AddTransactionDialog";
 import { AddTransactionDialogSkeleton } from "./AddTransactionDialogSkeleton";
 import type { FormValues } from "./AddTransactionDialogContent";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
+import { addTransactionQueryStateParsers } from "../lib/add-transaction-query-state";
+import { useTransactionDialogBalanceCache } from "./add-transaction/use-transaction-dialog-balance-cache";
 
 type Props = Readonly<{
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
-  cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
-  assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   initialPortfolioId: string;
   forcedPortfolioId: string | null;
   initialValues?: Partial<FormValues>;
@@ -20,31 +21,34 @@ type Props = Readonly<{
 
 function AddTransactionDialogStandaloneRouteInner({
   portfolios,
-  cashBalancesByPortfolio,
-  assetBalancesByPortfolio,
   initialPortfolioId,
   forcedPortfolioId,
   initialValues,
   initialInstrument,
 }: Props) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isPortfolioSwitchPending, startTransition] = useTransition();
+  const [, setQueryState] = useQueryStates(addTransactionQueryStateParsers, {
+    history: "replace",
+    shallow: true,
+    scroll: false,
+  });
+  const {
+    cashBalancesByPortfolio,
+    assetBalancesByPortfolio,
+    loadingPortfolioIds,
+    balanceErrorMessagesByPortfolio,
+    ensurePortfolioBalances,
+  } = useTransactionDialogBalanceCache(initialPortfolioId);
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState(initialPortfolioId);
+  const [hasPortfolioSelectionChanged, setHasPortfolioSelectionChanged] = useState(false);
 
   const handlePortfolioSelectionChange = (nextPortfolioId: string) => {
-    const currentPortfolioId =
-      searchParams.get("portfolioId") ?? searchParams.get("portfolio");
-    if (currentPortfolioId === nextPortfolioId) {
-      return;
-    }
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("portfolioId", nextPortfolioId);
-    params.delete("portfolio");
-
-    startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    setHasPortfolioSelectionChanged(true);
+    setSelectedPortfolioId(nextPortfolioId);
+    void ensurePortfolioBalances(nextPortfolioId);
+    void setQueryState({
+      portfolioId: nextPortfolioId,
+      portfolio: null,
     });
   };
 
@@ -56,9 +60,13 @@ function AddTransactionDialogStandaloneRouteInner({
       portfolios={portfolios}
       cashBalancesByPortfolio={cashBalancesByPortfolio}
       assetBalancesByPortfolio={assetBalancesByPortfolio}
+      loadingPortfolioIds={loadingPortfolioIds}
+      balanceErrorMessagesByPortfolio={balanceErrorMessagesByPortfolio}
       initialPortfolioId={initialPortfolioId}
       forcedPortfolioId={forcedPortfolioId}
-      isPortfolioSwitchPending={isPortfolioSwitchPending}
+      isPortfolioSwitchPending={
+        hasPortfolioSelectionChanged && loadingPortfolioIds.includes(selectedPortfolioId)
+      }
       onPortfolioSelectionChange={handlePortfolioSelectionChange}
       onSubmitSuccess={() => {
         router.refresh();

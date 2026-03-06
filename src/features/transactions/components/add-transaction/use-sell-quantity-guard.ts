@@ -18,6 +18,7 @@ type Params = Readonly<{
   date: string;
   quantity: string;
   availableAssetQuantity: string | null;
+  hasCurrentPortfolioBalances: boolean;
 }>;
 
 export function useSellQuantityGuard({
@@ -28,6 +29,7 @@ export function useSellQuantityGuard({
   date,
   quantity,
   availableAssetQuantity,
+  hasCurrentPortfolioBalances,
 }: Params) {
   useEffect(() => {
     const guardMessage = "Ilość sprzedaży przekracza aktualnie dostępny stan.";
@@ -37,6 +39,7 @@ export function useSellQuantityGuard({
     const entered = parseDecimalString(quantity);
     const available = parseDecimalString(availableAssetQuantity ?? null);
     const hasOversell =
+      hasCurrentPortfolioBalances &&
       isSellAssetFlow &&
       isToday &&
       Boolean(entered && available && entered.gt(available));
@@ -63,6 +66,7 @@ export function useSellQuantityGuard({
     quantity,
     selectedInstrument,
     type,
+    hasCurrentPortfolioBalances,
     form.formState.errors.quantity,
   ]);
 }

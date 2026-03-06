@@ -33,7 +33,9 @@ export function AddTransactionCashSection({
   projectedCashDeltaLabel,
   projectedCashAfterLabel,
   hasInsufficientCash,
+  isPortfolioBalanceLoading = false,
   isCashBalanceOnDateLoading,
+  portfolioBalanceErrorMessage = null,
   cashBalanceOnDateErrorMessage,
   isFxPreviewLoading,
   fxPreviewErrorMessage,
@@ -46,13 +48,15 @@ export function AddTransactionCashSection({
   transactionType: FormValues["type"];
   resolvedCashCurrency: CashCurrency;
   isFxMismatch: boolean;
-  availableCashNow: string;
-  availableCashOnTradeDate: string;
+  availableCashNow: string | null;
+  availableCashOnTradeDate: string | null;
   tradeDate: string;
   projectedCashDeltaLabel: string | null;
   projectedCashAfterLabel: string | null;
   hasInsufficientCash: boolean;
+  isPortfolioBalanceLoading?: boolean;
   isCashBalanceOnDateLoading: boolean;
+  portfolioBalanceErrorMessage?: string | null;
   cashBalanceOnDateErrorMessage: string | null;
   isFxPreviewLoading: boolean;
   fxPreviewErrorMessage: string | null;
@@ -164,13 +168,17 @@ export function AddTransactionCashSection({
             <div className="flex items-center justify-between gap-3 rounded-sm px-1">
               <span>Dostępna gotówka (na dziś)</span>
               <span className="font-mono text-[12px] font-medium tabular-nums">
-                {formatMoney(availableCashNow, resolvedCashCurrency)}
+                {availableCashNow
+                  ? formatMoney(availableCashNow, resolvedCashCurrency)
+                  : "—"}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 rounded-sm border-t border-dashed border-border/55 px-1 pt-1.5">
               <span>Dostępna gotówka (na dzień transakcji)</span>
               <span className="font-mono text-[12px] font-medium tabular-nums">
-                {formatMoney(availableCashOnTradeDate, resolvedCashCurrency)}
+                {availableCashOnTradeDate
+                  ? formatMoney(availableCashOnTradeDate, resolvedCashCurrency)
+                  : "—"}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 rounded-sm border-t border-dashed border-border/55 px-1 pt-1.5">
@@ -186,8 +194,18 @@ export function AddTransactionCashSection({
               </span>
             </div>
 
+            {isPortfolioBalanceLoading ? (
+              <p>Pobieram bieżący stan portfela...</p>
+            ) : null}
+
             {isCashBalanceOnDateLoading ? (
               <p>Pobieram saldo gotówki na dzień {tradeDate}...</p>
+            ) : null}
+
+            {portfolioBalanceErrorMessage ? (
+              <p className="rounded-sm border border-[color:var(--loss)]/30 bg-[color:var(--loss)]/8 px-2 py-1 text-[color:var(--loss)]">
+                {portfolioBalanceErrorMessage}
+              </p>
             ) : null}
 
             {cashBalanceOnDateErrorMessage ? (

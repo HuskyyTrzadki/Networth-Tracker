@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
@@ -18,10 +19,28 @@ import { applyCashCurrencyChange, applyCashTabState, applyCustomTabState, applyM
 import type { FormValues } from "../AddTransactionDialogContent";
 import { createPortfolioAction } from "@/features/portfolio/server/create-portfolio-action";
 import type { CreatePortfolioInput } from "@/features/portfolio/lib/create-portfolio-schema";
-import { ScreenshotImportWizard } from "@/features/onboarding/components/ScreenshotImportWizard";
 import { useAddTransactionFieldsContext } from "./use-add-transaction-fields-context";
 
 type PortfolioOption = Readonly<{ id: string; name: string; baseCurrency: string }>;
+
+const ScreenshotImportWizard = dynamic(
+  () =>
+    import("@/features/onboarding/components/ScreenshotImportWizard").then((module) => ({
+      default: module.ScreenshotImportWizard,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-lg border border-border/70 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+        <div className="space-y-3">
+          <div className="h-4 w-36 animate-pulse rounded-md bg-muted/35" />
+          <div className="h-10 animate-pulse rounded-md bg-muted/35" />
+          <div className="h-40 animate-pulse rounded-md bg-muted/25" />
+        </div>
+      </div>
+    ),
+  }
+);
 
 const mergePortfolios = (
   portfolios: readonly PortfolioOption[],
@@ -47,6 +66,8 @@ export function AddTransactionDialogFields({
   portfolios,
   cashBalancesByPortfolio,
   assetBalancesByPortfolio,
+  loadingPortfolioIds = [],
+  balanceErrorMessagesByPortfolio = {},
   forcedPortfolioId,
   initialCashCurrency,
   isPortfolioSwitchPending = false,
@@ -64,6 +85,8 @@ export function AddTransactionDialogFields({
   portfolios: readonly PortfolioOption[];
   cashBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
   assetBalancesByPortfolio: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  loadingPortfolioIds?: readonly string[];
+  balanceErrorMessagesByPortfolio?: Readonly<Record<string, string>>;
   forcedPortfolioId: string | null;
   initialCashCurrency: CashCurrency;
   isPortfolioSwitchPending?: boolean;
@@ -89,6 +112,8 @@ export function AddTransactionDialogFields({
     isCustomTab,
     resolvedPortfolioId,
     resolvedCashCurrency,
+    currentPortfolioBalanceErrorMessage,
+    isCurrentPortfolioBalanceLoading,
     availableCashNow,
     cashBalanceOnDate,
     availableCashOnTradeDate,
@@ -104,6 +129,8 @@ export function AddTransactionDialogFields({
     initialCashCurrency,
     cashBalancesByPortfolio,
     assetBalancesByPortfolio,
+    loadingPortfolioIds,
+    balanceErrorMessagesByPortfolio,
   });
 
   const mergedPortfolios = mergePortfolios(portfolios, localPortfolios);
@@ -247,6 +274,7 @@ export function AddTransactionDialogFields({
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 isPortfolioSwitchPending={isPortfolioSwitchPending}
+                transactionType={type}
                 onPortfolioChange={handlePortfolioSelection}
                 onTypeChange={handleTypeChange}
                 resolvedCashCurrency={resolvedCashCurrency}
@@ -257,7 +285,9 @@ export function AddTransactionDialogFields({
                 initialCashCurrency={initialCashCurrency}
                 availableCashNow={availableCashNow}
                 availableAssetQuantity={availableAssetQuantity}
+                isPortfolioBalanceLoading={isCurrentPortfolioBalanceLoading}
                 isEditMode={isEditMode}
+                portfolioBalanceErrorMessage={currentPortfolioBalanceErrorMessage}
                 onOpenScreenshot={openScreenshotImport}
                 createPortfolioFn={handleCreatePortfolio}
               />
@@ -274,6 +304,8 @@ export function AddTransactionDialogFields({
                   cashBalanceOnDate={cashBalanceOnDate}
                   availableCashNow={availableCashNow}
                   availableCashOnTradeDate={availableCashOnTradeDate}
+                  isPortfolioBalanceLoading={isCurrentPortfolioBalanceLoading}
+                  portfolioBalanceErrorMessage={currentPortfolioBalanceErrorMessage}
                   tradeDate={date}
                   cashCurrency={cashCurrency}
                   consumeCash={consumeCash}
@@ -293,6 +325,8 @@ export function AddTransactionDialogFields({
                   cashBalanceOnDate={cashBalanceOnDate}
                   availableCashNow={availableCashNow}
                   availableCashOnTradeDate={availableCashOnTradeDate}
+                  isPortfolioBalanceLoading={isCurrentPortfolioBalanceLoading}
+                  portfolioBalanceErrorMessage={currentPortfolioBalanceErrorMessage}
                   tradeDate={date}
                   cashCurrency={cashCurrency}
                   consumeCash={consumeCash}
