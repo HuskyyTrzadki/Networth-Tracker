@@ -117,6 +117,17 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Same-day guidance in cash section clarifies operational ordering: when date is equal, add cash deposit first, then asset buy.
 - Instrument upsert does not overwrite an existing `logo_url` unless a non-empty value is provided by the client.
 - `InstrumentCombobox` supports reusable presentation overrides (`emptyLabel`, `queryPlaceholder`, `triggerClassName`) so other features can reuse search behavior without duplicating async logic.
+- Instrument search `auto` mode is strict cache-first: if local matches exist, return only the compact local shortlist (prefer a single exact cached ticker/symbol match); only when local cache is empty should `auto` fall back to Yahoo. `all` mode is reserved for `Pokaż więcej wyników`.
+- Yahoo instrument search must call `yahooFinance.search(..., { enableFuzzyQuery: true }, { validateResult: false })`; Yahoo sometimes returns usable search hits with schema-invalid `typeDisp` casing (for example `equity`), and strict validation drops names like `Cyber_Folks`.
+- Yahoo result ordering must preserve provider relevance ahead of exchange preference: after our local exact/prefix/name ranking ties, compare Yahoo `score` before exchange priority so canonical matches like `AAPL` stay above weaker NYSE name matches such as `APLE`.
+- `InstrumentLogoImage` should prefer proxied remote `logoUrl` when available (for fresh Yahoo hits not cached yet), then fall back to ticker-based `logo.dev` lookup; exchange-suffixed symbols like `CBF.WA` should preserve the full symbol for logo fallback candidates.
+- XTB upload step should keep its primary progression CTA below `Wybrane pliki` and label it as a forward step (`Dalej ...`), not a vague preview action, so the import path reads top-to-bottom.
+- XTB import must preserve broker execution ordering across parse -> preview -> commit (`executedAtUtc` + `sourceOrder`); do not sort same-day commits only by `tradeDate` and `xtbRowId`, because that can apply withdrawals before earlier same-day deposits and trigger false insufficient-cash errors.
+- Transfer-like XTB rows (`Transfer`, `IKE deposit`, `IKE return partial`) must follow the row amount sign instead of hardcoded direction; some account exports report those operations with opposite sign/context, and forcing them to withdrawal/deposit can break import cash validation.
+- `IKE deposit` in XTB `Cash Operations` must also follow the signed transfer semantics from the source row/comment. In the real broker export for taxable account `51420076`, negative `IKE deposit` rows are `Transfer out operation...` and must reduce cash, not increase it.
+- XTB same-day commit ordering should reflect date-level portfolio guards, not raw intraday timestamps: on one `tradeDate`, prioritize cash inflows first, then asset buys, then asset sells, then cash outflows/tax. This avoids false oversell/insufficient-cash failures when the broker export is correct but the app validates only by date bucket.
+- XTB broker-history import runs in `IMPORT` guard mode for all rows: do not block rows on manual-entry cash or oversell guardrails. Broker exports are authoritative history, and import should replay them instead of second-guessing earlier funding/position state from the app’s own date-bucket model.
+- Transaction cash guards allow a small rounding tolerance (`0.05`) for cash withdrawals and settlement checks to avoid blocking broker imports on tiny FX/precision drift (for example a few grosz/cents between imported broker cash rows and reconstructed historical cash).
 - Yahoo search debug logs are disabled by default and can be enabled with `DEBUG_YAHOO_SEARCH=1` (non-production only).
 - Add-transaction modal shows "Dostępne do sprzedaży (na teraz)" hints for selected sell instrument per portfolio.
 - Add-transaction modal shows screenshot-import CTA below portfolio selection with a short explanation; CTA is disabled until a portfolio is selected.
@@ -170,7 +181,38 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - shell data (`portfolios` for header/filter chrome) resolves first,
   - the heavy transactions list/table resolves in a separate Suspense section,
   - keep new transaction-page work in that shape so filter chrome can stream before the ledger payload.
-- CSV import routes (`/transactions/import` standalone + intercepted modal) now have dedicated `loading.tsx` files and dialog skeletons; preserve visible feedback if the route or client bundle suspends.
+- Transactions import routes (`/transactions/import` standalone + intercepted modal) now host the real XTB-first importer:
+  - server page should preload user portfolios and redirect empty-state users to `/onboarding`,
+  - importer accepts only unpacked XTB Excel files (`.xlsx` / `.xls`) from `Cash Operations`,
+  - preview runs through `POST /api/transactions/import/xtb/preview`,
+  - manual instrument overrides inside preview should refresh valuation in place through `POST /api/transactions/import/xtb/valuation` instead of forcing a full file reparse,
+  - commit creates an async import run through `/api/transactions/import/xtb/jobs`, then processes chunked writes through `/api/transactions/import/xtb/jobs/[runId]/run`.
+- XTB row mapping v1:
+  - trades: `Stock purchase`, `Stock sell`,
+  - cash flows: `Deposit`, `Withdrawal`, `Transfer`, `IKE deposit`, `IKE return partial`, `Dividend`, `Withholding tax`, `Free funds interest`, `Free funds interest tax`,
+  - skip only workbook summary rows such as `Total`.
+- XTB import now prioritizes cash/balance fidelity for the imported account: transfer-like rows (`IKE deposit`, `Transfer`, `Withdrawal`, `IKE return partial`) are imported strictly from the broker sign/direction so previewed and imported cash stays close to XTB, even though cross-account/internal-transfer semantics remain a future refinement.
+- XTB regression tests must cover the real broker quirk where `IKE deposit` can arrive with a negative amount in `Cash Operations`; in that case it is cash leaving the imported account and must become a withdrawal-like cash row.
+- XTB filename parsing must accept `IKE_...` account exports as PLN accounts. The portfolio/base-currency dropdown does not replace this; `accountCurrency` still comes from broker file naming and drives imported cash rows.
+- XTB trade import should keep cash close to broker reality by treating XTB `Amount` as settlement truth and deriving stored `price`/`fee` from `Comment` + `Amount` when necessary.
+- When XTB `Amount` is far larger than `quantity * display price`, treat that as cross-currency settlement rather than as a gigantic fee. Infer `fee` only for small plausible deltas; otherwise keep the displayed trade price and let settlement FX explain the account-currency amount.
+- XTB commit uses a persisted run/row state model (`xtb_import_runs`, `xtb_import_run_rows`) so heavy imports are resumable, debuggable, and not tied to the current page route lifecycle.
+- XTB async run rows must be sorted with the same `sortXtbImportRows(...)` ordering the legacy server action used before persisting `row_index`; chunked job execution relies on that stored order.
+- `sortXtbImportRows(...)` should trust XTB `executedAtUtc` first within the same trade date, and use cash/trade side priorities only as a tie-breaker when timestamps are equal or missing. Do not force same-day buys ahead of earlier sells; that creates false cash-balance failures for broker-accurate `sell -> buy` sequences.
+- XTB preview/job paths now emit lightweight timing logs (`[xtb-import][preview]`, `[xtb-import][job]`) for parse/resolve/valuation, row commit duration, and dirty-mark timing so slow imports can be profiled from app logs without adding ad-hoc debug code.
+- XTB async runner should prefer fewer, larger chunks over tiny batches with long idle polling gaps; the client job driver intentionally uses a larger per-run batch budget and faster polling so import wall-clock time is not dominated by orchestration latency.
+- XTB commit still uses import-only guard relaxation for cash-only rows (`guardMode: IMPORT`), but impossible trade rows remain blocking and stop the run with an explicit report instead of being skipped or auto-adjusted.
+- XTB preview should auto-resolve obvious instruments and keep unresolved/skipped rows visible with reasons for auditability, but import should still proceed with the `READY` rows. Unresolved rows are omitted unless the user manually fixes them before import.
+- XTB preview instrument resolution should try broker-name variants with separators normalized both to spaces and to a compact token (`Mo-Bruk` -> `Mo Bruk`, `MoBruk`) before giving up; some XTB labels only resolve through the compact form.
+- For PLN-denominated XTB accounts, preview resolution should also try short broker labels as probable GPW tickers before fuzzy name search (`GPW` -> `GPW.PL` / `GPW.WA`, `PGE` -> `PGE.PL` / `PGE.WA`, `LPP` -> `LPP.PL` / `LPP.WA`). This keeps bare XTB ticker-like labels from drifting into unrelated US/Asian listings.
+- When XTB preview sees multiple exact instrument matches, prefer `WSE`, then `NASDAQ`, then `NYSE` before fallback exchanges like Frankfurt/Hong Kong; this preference is importer-specific and should not silently change the global search ranking for the rest of the app.
+- For PLN-denominated XTB imports, ETF-like matches should not prefer US listings by default. When multiple exact ETF/fund matches exist, keep Europe-first ordering (`WSE` -> `LSE` -> `FRANKFURT` -> US exchanges) so labels like `Physical Gold` do not drift into US-domiciled trusts when a European listing is available.
+- XTB preview should stay broker-first and resilient: parse + resolve is the critical path, while valuation is best-effort. Missing or failed Yahoo/FX valuation must not block the review step and should degrade to broker-state-only copy instead of breaking preview.
+- XTB preview review UX should be holdings-first:
+  - default view shows compact open-position cards (logo, instrument, quantity, estimated base value),
+  - raw row-by-row table stays available behind an explicit expander for audit/debugging,
+  - each open-position card should expose a holdings-level instrument override so users can correct ambiguous XTB labels once and rewrite every matching broker row before import,
+  - if valuation is only partial (`missingQuotes` / `missingFx`), copy must say so instead of implying the top number is a full broker-comparable value.
 - Stock report chart overlays now consume authenticated `ASSET` transaction legs by instrument `provider_key` to render BUY/SELL markers (`/api/stocks/[providerKey]/trade-markers`).
 - Trade markers exposed to the stock report are merged server-side per day:
   - net-positive day -> green buy marker,

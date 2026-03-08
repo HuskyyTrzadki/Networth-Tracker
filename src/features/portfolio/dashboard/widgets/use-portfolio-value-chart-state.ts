@@ -21,6 +21,8 @@ const EMPTY_BENCHMARK_DATES: Record<BenchmarkId, readonly string[]> = {
   MWIG40: [],
 };
 
+type Updater<T> = T | ((current: T) => T);
+
 export type ChartState = Readonly<{
   currency: SnapshotCurrency;
   mode: ChartMode;
@@ -43,12 +45,15 @@ type ChartAction =
   | { type: "set_full_history_rows"; payload: readonly SnapshotChartRow[] | null }
   | { type: "set_is_all_history_loading"; payload: boolean }
   | { type: "set_selected_comparisons"; payload: readonly ComparisonOptionId[] }
-  | { type: "set_benchmark_series_overrides"; payload: Partial<DashboardBenchmarkSeries> }
+  | {
+      type: "set_benchmark_series_overrides";
+      payload: Updater<Partial<DashboardBenchmarkSeries>>;
+    }
   | {
       type: "set_loaded_benchmark_dates";
-      payload: Record<BenchmarkId, readonly string[]>;
+      payload: Updater<Record<BenchmarkId, readonly string[]>>;
     }
-  | { type: "set_loading_benchmark_ids"; payload: readonly BenchmarkId[] }
+  | { type: "set_loading_benchmark_ids"; payload: Updater<readonly BenchmarkId[]> }
   | { type: "set_range_storage_hydrated"; payload: boolean }
   | { type: "set_bootstrapped"; payload: boolean }
   | { type: "set_bootstrap_pending"; payload: boolean };
@@ -74,11 +79,29 @@ const chartReducer = (state: ChartState, action: ChartAction): ChartState => {
     case "set_selected_comparisons":
       return { ...state, selectedComparisons: action.payload };
     case "set_benchmark_series_overrides":
-      return { ...state, benchmarkSeriesOverrides: action.payload };
+      return {
+        ...state,
+        benchmarkSeriesOverrides:
+          typeof action.payload === "function"
+            ? action.payload(state.benchmarkSeriesOverrides)
+            : action.payload,
+      };
     case "set_loaded_benchmark_dates":
-      return { ...state, loadedBenchmarkDatesById: action.payload };
+      return {
+        ...state,
+        loadedBenchmarkDatesById:
+          typeof action.payload === "function"
+            ? action.payload(state.loadedBenchmarkDatesById)
+            : action.payload,
+      };
     case "set_loading_benchmark_ids":
-      return { ...state, loadingBenchmarkIds: action.payload };
+      return {
+        ...state,
+        loadingBenchmarkIds:
+          typeof action.payload === "function"
+            ? action.payload(state.loadingBenchmarkIds)
+            : action.payload,
+      };
     case "set_range_storage_hydrated":
       return { ...state, rangeStorageHydrated: action.payload };
     case "set_bootstrapped":
@@ -134,11 +157,11 @@ export function usePortfolioValueChartState({ scope, portfolioId, rows }: Input)
       dispatch({ type: "set_is_all_history_loading", payload: isLoading }),
     setSelectedComparisons: (selected: readonly ComparisonOptionId[]) =>
       dispatch({ type: "set_selected_comparisons", payload: selected }),
-    setBenchmarkSeriesOverrides: (overrides: Partial<DashboardBenchmarkSeries>) =>
+    setBenchmarkSeriesOverrides: (overrides: Updater<Partial<DashboardBenchmarkSeries>>) =>
       dispatch({ type: "set_benchmark_series_overrides", payload: overrides }),
-    setLoadedBenchmarkDates: (dates: Record<BenchmarkId, readonly string[]>) =>
+    setLoadedBenchmarkDates: (dates: Updater<Record<BenchmarkId, readonly string[]>>) =>
       dispatch({ type: "set_loaded_benchmark_dates", payload: dates }),
-    setLoadingBenchmarkIds: (ids: readonly BenchmarkId[]) =>
+    setLoadingBenchmarkIds: (ids: Updater<readonly BenchmarkId[]>) =>
       dispatch({ type: "set_loading_benchmark_ids", payload: ids }),
     setBootstrapped: (bootstrapped: boolean) =>
       dispatch({ type: "set_bootstrapped", payload: bootstrapped }),

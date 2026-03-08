@@ -76,7 +76,9 @@ export const resolveInstrumentVisual = (input: InstrumentVisualInput): Instrumen
     provider: input.provider,
   });
   const label = resolveLabel(input, customAssetType);
-  const tickerCandidate = normalizeText(input.ticker) ?? normalizeText(input.symbol) ?? label;
+  const tickerCandidate = normalizeText(input.symbol)?.includes(".")
+    ? normalizeText(input.symbol)
+    : normalizeText(input.ticker) ?? normalizeText(input.symbol) ?? label;
   const logoTicker = !isCash && !customAssetType ? tickerCandidate : null;
 
   return {

@@ -35,7 +35,15 @@ function Demo() {
         </div>
       </div>
 
-      <ImportCsvDialog onOpenChange={setOpen} open={open} />
+      <ImportCsvDialog
+        onOpenChange={setOpen}
+        open={open}
+        portfolios={[
+          { id: "portfolio-1", name: "Portfel testowy", baseCurrency: "PLN" },
+        ]}
+        initialPortfolioId="portfolio-1"
+        forcedPortfolioId={null}
+      />
     </div>
   );
 }
@@ -43,4 +51,3 @@ function Demo() {
 export const Default: Story = {
   render: () => <Demo />,
 };
-

@@ -9,6 +9,8 @@ import {
 import type { SettlementLegPlan } from "./settlement";
 import type { TransactionIntent } from "./transaction-intent";
 
+const CASH_GUARD_TOLERANCE = parseDecimalString("0.05") ?? decimalZero();
+
 type SupabaseServerClient = Pick<SupabaseClient, "rpc">;
 
 type HoldingsAsOfRow = Readonly<{
@@ -37,6 +39,7 @@ type ValidateTransactionGuardsInput = Readonly<{
   consumeCash: boolean;
   cashCurrency?: string;
   settlementLegs: readonly SettlementLegPlan[];
+  guardMode?: "STRICT" | "IMPORT";
 }>;
 
 const normalizeNumeric = (value: string | number) =>
@@ -131,12 +134,16 @@ const buildDepositWithdrawalError = (input: Readonly<{
   `na dzień ${input.tradeDate}. Dostępne: ${formatDecimal(input.available)}. ` +
   "Dodaj wcześniejszy depozyt gotówki albo popraw datę/ilość.";
 
+const exceedsCashTolerance = (shortfall: ReturnType<typeof decimalZero>) =>
+  shortfall.gt(CASH_GUARD_TOLERANCE);
+
 const needsHoldingsSnapshot = (input: Readonly<{
   intent: TransactionIntent;
   consumeCash: boolean;
+  guardMode?: "STRICT" | "IMPORT";
 }>) =>
   input.intent === "ASSET_SELL" ||
-  input.intent === "CASH_WITHDRAWAL" ||
+  (input.intent === "CASH_WITHDRAWAL" && input.guardMode !== "IMPORT") ||
   input.consumeCash;
 
 const fetchHoldingsSnapshot = async (input: Readonly<{
@@ -180,6 +187,10 @@ export async function validateTransactionGuards(
   );
 
   if (input.intent === "ASSET_SELL") {
+    if (input.guardMode === "IMPORT") {
+      return;
+    }
+
     const available = assertInstrumentQuantityParsable(
       getAvailableQuantity(holdingsSnapshot, input.assetInstrumentId),
       "available_asset"
@@ -201,7 +212,8 @@ export async function validateTransactionGuards(
       getCashAvailable(holdingsSnapshot, input.cashCurrency ?? ""),
       "available_cash"
     );
-    if (availableCash.lt(requestedAssetQuantity)) {
+    const shortfall = addDecimals(requestedAssetQuantity, negateDecimal(availableCash));
+    if (shortfall.gt(0) && exceedsCashTolerance(shortfall)) {
       throw unprocessableEntityError(
         buildDepositWithdrawalError({
           currency: input.cashCurrency ?? "",
@@ -215,6 +227,10 @@ export async function validateTransactionGuards(
   }
 
   if (input.consumeCash) {
+    if (input.guardMode === "IMPORT") {
+      return;
+    }
+
     const cashCurrency = input.cashCurrency?.toUpperCase();
     if (!cashCurrency) {
       throw unprocessableEntityError("Wybierz walutę gotówki.", {
@@ -228,8 +244,9 @@ export async function validateTransactionGuards(
     );
     const netCashDelta = computeCashDelta(input.settlementLegs);
     const remainingCash = addDecimals(availableCash, netCashDelta);
+    const shortfall = negateDecimal(remainingCash);
 
-    if (remainingCash.lt(0)) {
+    if (remainingCash.lt(0) && exceedsCashTolerance(shortfall)) {
       throw unprocessableEntityError(
         buildInsufficientCashError({
           currency: cashCurrency,
@@ -249,4 +266,5 @@ export const __test__ = {
   toSearchInstrumentId,
   computeCashDelta,
   needsHoldingsSnapshot,
+  exceedsCashTolerance,
 };

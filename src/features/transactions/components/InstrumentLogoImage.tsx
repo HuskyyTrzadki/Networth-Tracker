@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Wallet } from "lucide-react";
 
 import { buildLogoDevTickerProxyUrl } from "@/features/common/lib/logo-dev";
+import { buildRemoteImageProxyUrl } from "@/features/common/lib/remote-image";
 import { Avatar, AvatarFallback } from "@/features/design-system/components/ui/avatar";
 import { cn } from "@/lib/cn";
 import type { CustomAssetType } from "../lib/custom-asset-types";
@@ -34,7 +35,7 @@ const getFallbackInitials = (value: string) =>
     .toUpperCase();
 
 export function InstrumentLogoImage({
-  src: _src,
+  src,
   ticker,
   customAssetType,
   isCash = false,
@@ -45,10 +46,11 @@ export function InstrumentLogoImage({
   loading = "lazy",
   priority = false,
 }: Props) {
-  void _src;
+  const [didRemoteFail, setDidRemoteFail] = useState(false);
   const [didLogoDevFail, setDidLogoDevFail] = useState(false);
 
   const CustomAssetIcon = customAssetType ? customAssetTypeIcons[customAssetType] : null;
+  const remoteSrc = !didRemoteFail ? buildRemoteImageProxyUrl(src) : null;
   const logoDevSrc = buildLogoDevTickerProxyUrl(ticker ?? fallbackText);
   const iconSize = Math.max(12, Math.round(size * 0.58));
 
@@ -77,6 +79,22 @@ export function InstrumentLogoImage({
           />
         </AvatarFallback>
       </Avatar>
+    );
+  }
+
+  if (remoteSrc) {
+    return (
+      <Image
+        alt={alt}
+        className={cn("block rounded-full object-contain object-center", className)}
+        height={size}
+        loading={loading}
+        onError={() => setDidRemoteFail(true)}
+        priority={priority}
+        sizes={`${size}px`}
+        src={remoteSrc}
+        width={size}
+      />
     );
   }
 

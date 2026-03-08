@@ -44,6 +44,11 @@ export type CustomQuoteState = Readonly<{
   price: string;
 }>;
 
+type FlowMapsForDay = Readonly<{
+  externalByCurrency: ReadonlyMap<string, DecimalValueType>;
+  implicitByCurrency: ReadonlyMap<string, DecimalValueType>;
+}>;
+
 const MS_PER_DAY = 86_400_000;
 
 const isNextIsoDate = (previousDate: string, nextDate: string) => {
@@ -62,6 +67,27 @@ const normalizeAnnualRatePct = (value: string | number | null | undefined) =>
     : typeof value === "number"
       ? value.toString()
       : value;
+
+const hasAnyFlowEntries = (flowMaps: FlowMapsForDay) =>
+  flowMaps.externalByCurrency.size > 0 || flowMaps.implicitByCurrency.size > 0;
+
+const buildZeroValueTotals = (
+  missingFxByCurrency: Readonly<Record<SnapshotCurrency, boolean>>
+) =>
+  SNAPSHOT_CURRENCIES.reduce(
+    (acc, currency) => {
+      const hasMissingFx = missingFxByCurrency[currency];
+      acc[currency] = {
+        totalValue: "0",
+        isPartial: hasMissingFx,
+        missingQuotes: 0,
+        missingFx: hasMissingFx ? 1 : 0,
+        asOf: null,
+      };
+      return acc;
+    },
+    {} as Record<SnapshotCurrency, ReturnType<typeof toSnapshotTotals>>
+  );
 
 const buildFlowMapsForDay = (input: Readonly<{
   dailyTransactions: readonly NormalizedTransaction[];
@@ -330,6 +356,22 @@ export const buildDaySnapshotRow = (input: Readonly<{
     }
   );
 
+  if (holdings.length === 0) {
+    if (!hasAnyFlowEntries(flowMaps)) {
+      return null;
+    }
+
+    return buildSnapshotRow(
+      input.userId,
+      input.scope,
+      input.portfolioId,
+      input.bucketDate,
+      buildZeroValueTotals(flowTotalsByCurrency.missingFx),
+      flowTotalsByCurrency.external,
+      flowTotalsByCurrency.implicit
+    );
+  }
+
   const totals = SNAPSHOT_CURRENCIES.reduce(
     (acc, currency) => {
       const summary = buildPortfolioSummary({
@@ -348,7 +390,7 @@ export const buildDaySnapshotRow = (input: Readonly<{
     {} as Record<SnapshotCurrency, ReturnType<typeof toSnapshotTotals>>
   );
 
-  if (holdings.length === 0 || !hasAnySnapshotValue(totals)) {
+  if (!hasAnySnapshotValue(totals)) {
     return null;
   }
 
@@ -361,4 +403,9 @@ export const buildDaySnapshotRow = (input: Readonly<{
     flowTotalsByCurrency.external,
     flowTotalsByCurrency.implicit
   );
+};
+
+export const __test__ = {
+  hasAnyFlowEntries,
+  buildZeroValueTotals,
 };

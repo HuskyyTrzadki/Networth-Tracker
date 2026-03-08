@@ -71,17 +71,27 @@ export const searchYahooInstruments = async (
   // Yahoo Finance search docs:
   // https://jsr.io/@gadicc/yahoo-finance2/doc/modules/search/~/search
   const searchPromise = yahooFinance.search(query, {
-    quotesCount: limit,
-    newsCount: 0,
-  });
+      quotesCount: limit,
+      newsCount: 0,
+      enableFuzzyQuery: true,
+    },
+    // Yahoo search occasionally returns schema-invalid `typeDisp` casing
+    // (for example `equity` instead of `Equity`) for otherwise usable hits.
+    { validateResult: false }
+  );
 
   const searchResult = await withTimeout(searchPromise, timeoutMs);
-  if (!searchResult) return [];
+  if (!searchResult || typeof searchResult !== "object") return [];
 
   logYahooDebug("search", { query, searchResult });
 
-  const quotes = (searchResult.quotes ?? [])
-    .filter((item) => Boolean(item && "symbol" in item))
+  const quotes = (Array.isArray((searchResult as { quotes?: unknown }).quotes)
+    ? (searchResult as { quotes: unknown[] }).quotes
+    : [])
+    .filter(
+      (item): item is YahooSearchQuote =>
+        typeof item === "object" && item !== null && "symbol" in item
+    )
     .map((item) => item as YahooSearchQuote)
     .filter((item) => item.isYahooFinance !== false);
 
@@ -96,6 +106,12 @@ export const searchYahooInstruments = async (
       const bScore = rankQuote(b, normalizedQuery);
       if (aScore !== bScore) return aScore - bScore;
 
+      const aYahooScore = a.score ?? 0;
+      const bYahooScore = b.score ?? 0;
+      if (aYahooScore !== bYahooScore) {
+        return bYahooScore - aYahooScore;
+      }
+
       const aExchangePriority = getExchangePriority({
         exchange: a.exchange,
         exchangeDisplayName: a.exchDisp,
@@ -108,7 +124,7 @@ export const searchYahooInstruments = async (
         return aExchangePriority - bExchangePriority;
       }
 
-      return (b.score ?? 0) - (a.score ?? 0);
+      return 0;
     });
 
   const symbols = Array.from(

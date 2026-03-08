@@ -44,7 +44,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Active desktop sidebar items use an editorial anchor marker: a 2px vertical left rule on the active row in addition to active background/ring states.
 - Desktop sidebar portfolio rows expose per-item actions via a 3-dot popover; `Usuń` opens a compact confirmation dialog before portfolio deletion.
 - Sidebar `Nowy portfel` create flow navigates to `/portfolio/<id>` after server action success; refresh is handled by App Router revalidation.
-- Sidebar portfolio delete (`PortfolioSidebarItem`) executes server action (`delete-portfolio-action`) and redirects to `/portfolio` when the active portfolio is removed.
+- Sidebar portfolio delete (`PortfolioSidebarItem`) uses optimistic hide with rollback + toast feedback, executes server action (`delete-portfolio-action`) in the background, eagerly prefetches `/portfolio` while a detail wallet is active, and immediately `replace`s to `/portfolio` when the active portfolio is removed.
 - Sidebar navigation is optimistic: on plain left-click, active highlight switches immediately to intended destination (including portfolio rows) before pathname commit, then resets to canonical pathname when navigation completes.
 - Sidebar links explicitly prefetch on hover intent (`router.prefetch`) and keep `next/link` prefetch enabled, so desktop navigation warms RSC payloads before click.
 - Guest users now get a sidebar settings badge driven by server state: normal guests see the existing upgrade pill, while demo guests see a simple `DEMO` badge instead of upgrade pressure.

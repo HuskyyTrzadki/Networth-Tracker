@@ -116,6 +116,35 @@ describe("validateTransactionGuards", () => {
     ).rejects.toThrow("Ilość sprzedaży przekracza pozycję");
   });
 
+  it("skips oversell guard in import mode", async () => {
+    const { client } = createSupabaseAdminMock([
+      {
+        instrument_id: "asset-1",
+        currency: "USD",
+        provider: "yahoo",
+        provider_key: "AAPL",
+        instrument_type: "EQUITY",
+        quantity: "0",
+      },
+    ]);
+
+    await expect(
+      validateTransactionGuards({
+        supabaseAdmin: client,
+        userId: "user-1",
+        portfolioId: "portfolio-1",
+        tradeDate: "2026-02-08",
+        intent: "ASSET_SELL",
+        isCashInstrument: false,
+        assetInstrumentId: "asset-1",
+        requestedAssetQuantity: "3",
+        consumeCash: false,
+        settlementLegs: [],
+        guardMode: "IMPORT",
+      })
+    ).resolves.toBeUndefined();
+  });
+
   it("blocks cash withdrawal over available cash", async () => {
     const { client } = createSupabaseAdminMock([
       {
@@ -143,6 +172,67 @@ describe("validateTransactionGuards", () => {
         settlementLegs: [],
       })
     ).rejects.toThrow("Nie możesz wypłacić");
+  });
+
+  it("allows import-mode cash withdrawal without historical cash snapshot", async () => {
+    const { client, rpc } = createSupabaseAdminMock([
+      {
+        instrument_id: "cash-usd",
+        currency: "USD",
+        provider: "system",
+        provider_key: "USD",
+        instrument_type: "CURRENCY",
+        quantity: "0",
+      },
+    ]);
+
+    await expect(
+      validateTransactionGuards({
+        supabaseAdmin: client,
+        userId: "user-1",
+        portfolioId: "portfolio-1",
+        tradeDate: "2024-12-19",
+        intent: "CASH_WITHDRAWAL",
+        isCashInstrument: true,
+        assetInstrumentId: "cash-usd",
+        requestedAssetQuantity: "4128.86",
+        consumeCash: false,
+        cashCurrency: "PLN",
+        settlementLegs: [],
+        guardMode: "IMPORT",
+      })
+    ).resolves.toBeUndefined();
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("allows cash withdrawal shortfall inside rounding tolerance", async () => {
+    const { client } = createSupabaseAdminMock([
+      {
+        instrument_id: "cash-pln",
+        currency: "PLN",
+        provider: "system",
+        provider_key: "PLN",
+        instrument_type: "CURRENCY",
+        quantity: "35568.40320000417",
+      },
+    ]);
+
+    await expect(
+      validateTransactionGuards({
+        supabaseAdmin: client,
+        userId: "user-1",
+        portfolioId: "portfolio-1",
+        tradeDate: "2025-01-30",
+        intent: "CASH_WITHDRAWAL",
+        isCashInstrument: true,
+        assetInstrumentId: "cash-pln",
+        requestedAssetQuantity: "35568.44",
+        consumeCash: false,
+        cashCurrency: "PLN",
+        settlementLegs: [],
+      })
+    ).resolves.toBeUndefined();
   });
 
   it("blocks trade settlement when cash would go negative", async () => {
@@ -180,6 +270,81 @@ describe("validateTransactionGuards", () => {
         ],
       })
     ).rejects.toThrow("Brak gotówki");
+  });
+
+  it("allows trade settlement shortfall inside rounding tolerance", async () => {
+    const { client } = createSupabaseAdminMock([
+      {
+        instrument_id: "cash-pln",
+        currency: "PLN",
+        provider: "system",
+        provider_key: "PLN",
+        instrument_type: "CURRENCY",
+        quantity: "35568.40320000417",
+      },
+    ]);
+
+    await expect(
+      validateTransactionGuards({
+        supabaseAdmin: client,
+        userId: "user-1",
+        portfolioId: "portfolio-1",
+        tradeDate: "2025-01-30",
+        intent: "ASSET_BUY",
+        isCashInstrument: false,
+        assetInstrumentId: "asset-1",
+        requestedAssetQuantity: "1",
+        consumeCash: true,
+        cashCurrency: "PLN",
+        settlementLegs: [
+          {
+            side: "SELL",
+            quantity: "35568.44",
+            price: "1",
+            cashflowType: "TRADE_SETTLEMENT",
+            legKey: "CASH_SETTLEMENT",
+          },
+        ],
+      })
+    ).resolves.toBeUndefined();
+  });
+
+  it("skips settlement cash guard in import mode", async () => {
+    const { client } = createSupabaseAdminMock([
+      {
+        instrument_id: "cash-pln",
+        currency: "PLN",
+        provider: "system",
+        provider_key: "PLN",
+        instrument_type: "CURRENCY",
+        quantity: "0",
+      },
+    ]);
+
+    await expect(
+      validateTransactionGuards({
+        supabaseAdmin: client,
+        userId: "user-1",
+        portfolioId: "portfolio-1",
+        tradeDate: "2025-01-03",
+        intent: "ASSET_BUY",
+        isCashInstrument: false,
+        assetInstrumentId: "asset-1",
+        requestedAssetQuantity: "1",
+        consumeCash: true,
+        cashCurrency: "PLN",
+        settlementLegs: [
+          {
+            side: "SELL",
+            quantity: "2950.4",
+            price: "1",
+            cashflowType: "TRADE_SETTLEMENT",
+            legKey: "CASH_SETTLEMENT",
+          },
+        ],
+        guardMode: "IMPORT",
+      })
+    ).resolves.toBeUndefined();
   });
 
   it("passes when guards are satisfied", async () => {

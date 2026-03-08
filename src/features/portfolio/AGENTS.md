@@ -110,6 +110,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - UI plus server helpers; valuation calculations live in `server/valuation.ts`.
 - Snapshoty dzienne (PLN/USD/EUR) są liczone backendowo i używane do wykresu wartości, zainwestowanego kapitału i performance (TWR).
 - Snapshoty zawierają przepływy: external cashflow (DEPOSIT/WITHDRAWAL) + implicit transfer (asset bez cash legs).
+- Rebuild snapshotów nie może pomijać dni z przepływem gotówki tylko dlatego, że po transakcjach holdings są puste. Dzień `flow-only` musi zapisać wiersz snapshotu z `total_value_* = 0`, inaczej `ALL` performance przeskakuje przez cashflow i robi fałszywy wynik.
 - TWR liczy zwrot dzienny: (V_D - CF_D - V_{D-1}) / V_{D-1}, z restartem serii przy brakach.
 - W trybie wartości dla zakresów >=7D renderujemy dwie linie: wartość portfela (smooth) + zainwestowany kapitał (step).
 - Wykres performance pokazuje linię zwrotu skumulowanego (TWR) dla zakresów >=7D.
@@ -157,7 +158,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Portfolio create flows (`sidebar`, `mobile header`, transactions modal, onboarding) use server action `create-portfolio-action` (`create + revalidatePath`) and only navigate client-side after success.
 - `create-portfolio` server helper uses typed `AppError` mapping (`PORTFOLIO_NAME_CONFLICT` -> `409`, other failures -> internal) so route handlers can return stable machine-readable errors.
 - Portfolio create/edit model includes tax profile flag `is_tax_advantaged` (UI label: `Konto emerytalne (IKE/IKZE)`), used by dividend smart-default hints.
-- Portfolio delete flow (desktop sidebar 3-dot menu) uses server action `delete-portfolio-action` (`delete + revalidate`) and removes the portfolio plus its transactions.
+- Portfolio delete flow (desktop sidebar 3-dot menu) uses server action `delete-portfolio-action` (`delete + revalidate`) with optimistic sidebar removal, rollback on failure, eager `/portfolio` prefetch on active detail view, and immediate fallback `replace("/portfolio")` when the deleted row is active.
+- Single-portfolio page may render an import progress banner keyed by `?xtbImportRun=`; the banner polls async XTB run state, triggers only the target `PORTFOLIO` snapshot rebuild on completion, and should disappear automatically after success.
 - Dividend inbox is split by scope: `/portfolio/<id>` is actionable (`Zaksięguj`), while aggregate `/portfolio` is awareness-only (upcoming list without booking action).
 - Dividend inbox is server-first on dashboard render; booking action/modal uses server action `book-dividend-action` (`book + revalidatePath`) with optimistic submit state in client controls.
 - Dividend inbox provider fetch is abstracted behind `market-data` (`getInstrumentDividendSignalsCached`); portfolio layer composes holdings/tax/idempotency only and does not call Yahoo directly.
@@ -212,6 +214,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Rebuild loading state is also shown in `Alokacja i pozycje` (same `queued/running` source, with percent + date range), so allocation/holdings does not look stale during rebuild.
 - Rebuild status API also returns backend-computed `progressPercent` derived from (`fromDate`, `toDate`, `processedUntil`) so UI does not own progress math.
 - Rebuild API `POST /api/portfolio-snapshots/rebuild` logs chunk lifecycle (`post-start`, `post-finish`, `post-error`) for operational debugging.
+- Snapshot rebuild worker also logs per-run/per-chunk timing (`[snapshot-rebuild][run]`) so long imports can be split between import-write time and rebuild time during diagnosis.
 - Rebuild route (`/api/portfolio-snapshots/rebuild`) keeps handler thin and delegates parse/access/response-shaping helpers to `server/snapshots/rebuild-route-service.ts`.
 - Snapshot bootstrap/rebuild APIs share auth/body/error helper primitives from `src/lib/http/route-handler.ts` to keep route handlers thin and consistent.
 - Rebuild client hook is split by responsibility (`events`, `state polling`, `runner`) and orchestrated by `useSnapshotRebuild.ts` to reduce side-effect complexity.

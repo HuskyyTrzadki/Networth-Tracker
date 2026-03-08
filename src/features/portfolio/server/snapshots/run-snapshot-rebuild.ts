@@ -26,6 +26,17 @@ export type SnapshotRebuildRunResult = Readonly<{
 
 const RUNNING_STALE_AFTER_MS = 90_000;
 
+const logSnapshotRebuildEvent = (
+  event: string,
+  details: Readonly<Record<string, string | number | null>>
+) => {
+  if (process.env.NODE_ENV === "test") {
+    return;
+  }
+
+  console.info(`[snapshot-rebuild][run] ${event}`, details);
+};
+
 const isRunningStale = (updatedAt: string) => {
   const updatedAtMs = Date.parse(updatedAt);
   if (!Number.isFinite(updatedAtMs)) {
@@ -161,6 +172,7 @@ export async function runSnapshotRebuild(
   supabase: SupabaseClient,
   input: RunInput
 ): Promise<SnapshotRebuildRunResult> {
+  const runStartedAt = performance.now();
   // Backend worker: rebuild dirty range in deterministic chunks until time budget is consumed.
   const state = await getSnapshotRebuildState(
     supabase,
@@ -229,6 +241,7 @@ export async function runSnapshotRebuild(
       const rowsToInsert = chunk.dayResults
         .map((dayResult) => dayResult.row)
         .filter((row): row is NonNullable<typeof row> => Boolean(row));
+      const chunkStartedAt = performance.now();
 
       await replaceSnapshotChunk(
         supabase,
@@ -239,6 +252,16 @@ export async function runSnapshotRebuild(
         chunk.chunkToDate,
         rowsToInsert
       );
+
+      logSnapshotRebuildEvent("chunk-finished", {
+        scope: input.scope,
+        portfolioId: input.portfolioId,
+        chunkFromDate: chunk.chunkFromDate,
+        chunkToDate: chunk.chunkToDate,
+        processedDays: chunk.processedDays,
+        insertedRows: rowsToInsert.length,
+        durationMs: Math.round(performance.now() - chunkStartedAt),
+      });
 
       processedDaysTotal += chunk.processedDays;
 
@@ -281,6 +304,14 @@ export async function runSnapshotRebuild(
         break;
       }
     }
+
+    logSnapshotRebuildEvent("run-finished", {
+      scope: input.scope,
+      portfolioId: input.portfolioId,
+      processedDays: processedDaysTotal,
+      status: latestRunState?.status ?? null,
+      totalMs: Math.round(performance.now() - runStartedAt),
+    });
 
     return {
       state: latestRunState,

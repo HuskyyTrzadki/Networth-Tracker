@@ -9,6 +9,7 @@ import {
   upsertInstrumentAndGetId,
 } from "./create-transaction-context";
 import type { CreateTransactionRequest } from "./schema";
+import type { SettlementFx } from "./settlement";
 import { resolveTransactionIntent } from "./transaction-intent";
 import { validateTransactionGuards } from "./transaction-guards";
 import {
@@ -90,7 +91,15 @@ export async function createTransaction(
   supabaseUser: SupabaseServerClient,
   supabaseAdmin: SupabaseServerClient,
   userId: string,
-  input: CreateTransactionRequest
+  input: CreateTransactionRequest,
+  options: Readonly<{
+    guardMode?: "STRICT" | "IMPORT";
+    skipPostWriteSideEffects?: boolean;
+    settlementOverride?: Readonly<{
+      cashQuantity: string;
+      fx?: SettlementFx | null;
+    }> | null;
+  }> = {}
 ): Promise<CreateTransactionResult> {
   if (!input.instrument && !input.customInstrument) {
     throw badRequestError("Missing instrument payload.", {
@@ -157,6 +166,7 @@ export async function createTransaction(
     assetCurrency,
     isCashInstrument,
     updatedAt,
+    settlementOverride: options.settlementOverride ?? null,
   });
 
   // Server-side guardrails: prevent oversell and negative cash from settlement.
@@ -174,6 +184,7 @@ export async function createTransaction(
       settlementContext.requestedCashCurrency ??
       (isCashInstrument ? assetCurrency : undefined),
     settlementLegs: settlementContext.settlementLegs,
+    guardMode: options.guardMode,
   });
 
   const persisted = await insertTransactionRows({
@@ -183,13 +194,15 @@ export async function createTransaction(
     clientRequestId: input.clientRequestId,
   });
 
-  await runPostWriteSideEffects({
-    supabaseUser,
-    supabaseAdmin,
-    userId,
-    portfolioId: input.portfolioId,
-    tradeDate: input.date,
-  });
+  if (!options.skipPostWriteSideEffects) {
+    await runPostWriteSideEffects({
+      supabaseUser,
+      supabaseAdmin,
+      userId,
+      portfolioId: input.portfolioId,
+      tradeDate: input.date,
+    });
+  }
 
   return {
     transactionId: persisted.assetRow.id,

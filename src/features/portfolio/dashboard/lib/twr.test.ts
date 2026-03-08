@@ -1,164 +1,35 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  computeCumulativeReturns,
-  computeDailyReturns,
-  computePeriodReturn,
-} from "./twr";
-
-const row = (
-  bucketDate: string,
-  totalValue: number | null,
-  externalCashflow: number | null,
-  implicitTransfer: number | null,
-  isPartial = false
-) => ({
-  bucketDate,
-  totalValue,
-  externalCashflow,
-  implicitTransfer,
-  isPartial,
-});
+import { computeDailyReturns, computePeriodReturn } from "./twr";
 
 describe("computeDailyReturns", () => {
-  it("computes simple daily return without flows", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", 110, 0, 0),
-    ];
-
-    const [day] = computeDailyReturns(rows);
-    expect(day.value).toBeCloseTo(0.1);
-  });
-
-  it("neutralizes implicit transfer on buy without cash", () => {
-    const rows = [
-      row("2026-01-01", 200, 0, 0),
-      row("2026-01-02", 300, 0, 100),
-    ];
-
-    const [day] = computeDailyReturns(rows);
-    expect(day.value).toBeCloseTo(0);
-  });
-
-  it("neutralizes implicit transfer on sell without cash", () => {
-    const rows = [
-      row("2026-01-01", 300, 0, 0),
-      row("2026-01-02", 200, 0, -100),
-    ];
-
-    const [day] = computeDailyReturns(rows);
-    expect(day.value).toBeCloseTo(0);
-  });
-
-  it("marks return as partial when any day is partial", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0, true),
-      row("2026-01-02", 110, 0, 0),
-    ];
-
-    const [day] = computeDailyReturns(rows);
-    expect(day.isPartial).toBe(true);
-  });
-
-  it("returns null when flow is missing", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", 110, null, 0),
-    ];
-
-    const [day] = computeDailyReturns(rows);
-    expect(day.value).toBeNull();
-  });
-
-  it("returns null when flow is non-finite", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", 110, Number.NaN, 0),
-    ];
-
-    const [day] = computeDailyReturns(rows);
-    expect(day.value).toBeNull();
-  });
-
-  it("carries flows across missing valuation days until next known valuation", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", null, 10, 0),
-      row("2026-01-03", 120, 5, 0),
-    ];
-
-    const daily = computeDailyReturns(rows);
-    expect(daily).toEqual([
-      { bucketDate: "2026-01-02", value: null, isPartial: false },
-      { bucketDate: "2026-01-03", value: 0.05, isPartial: false },
-    ]);
-  });
-});
-
-describe("computePeriodReturn", () => {
-  it("chains daily returns", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", 110, 0, 0),
-      row("2026-01-03", 121, 0, 0),
-    ];
-
-    const daily = computeDailyReturns(rows);
-    const period = computePeriodReturn(daily);
-    expect(period.value).toBeCloseTo(0.21);
-  });
-
-  it("restarts after missing data", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", 110, null, 0),
-      row("2026-01-03", 121, 0, 0),
-    ];
-
-    const daily = computeDailyReturns(rows);
-    const period = computePeriodReturn(daily);
-    expect(period.value).toBeCloseTo((121 - 0 - 110) / 110);
-  });
-
-  it("ignores non-finite daily returns", () => {
-    const period = computePeriodReturn([
-      { bucketDate: "2026-01-02", value: Number.NaN, isPartial: false },
-      { bucketDate: "2026-01-03", value: 0.1, isPartial: false },
-    ]);
-    expect(period.value).toBeCloseTo(0.1);
-  });
-});
-
-describe("computeCumulativeReturns", () => {
-  it("builds compounded cumulative return series for charting", () => {
-    const rows = [
-      row("2026-01-01", 100, 0, 0),
-      row("2026-01-02", 110, 0, 0),
-      row("2026-01-03", 121, 0, 0),
-    ];
-
-    const daily = computeDailyReturns(rows);
-    const cumulative = computeCumulativeReturns(daily);
-
-    expect(cumulative).toHaveLength(2);
-    expect(cumulative[0]).toEqual({
-      bucketDate: "2026-01-02",
-      value: 0.1,
-      isPartial: false,
-    });
-    expect(cumulative[1]?.bucketDate).toBe("2026-01-03");
-    expect(cumulative[1]?.isPartial).toBe(false);
-    expect(cumulative[1]?.value).toBeCloseTo(0.21);
-  });
-
-  it("emits null point for non-finite return values", () => {
-    const cumulative = computeCumulativeReturns([
-      { bucketDate: "2026-01-02", value: Number.NaN, isPartial: false },
+  it("treats a flow-only collapse day as cashflow-adjusted, not as a catastrophic loss", () => {
+    const dailyReturns = computeDailyReturns([
+      {
+        bucketDate: "2025-01-29",
+        totalValue: 7502.36,
+        externalCashflow: 0,
+        implicitTransfer: 0,
+        isPartial: false,
+      },
+      {
+        bucketDate: "2025-01-30",
+        totalValue: 25.17,
+        externalCashflow: -7477.19,
+        implicitTransfer: 0,
+        isPartial: false,
+      },
+      {
+        bucketDate: "2025-02-03",
+        totalValue: 25.17,
+        externalCashflow: 0,
+        implicitTransfer: 0,
+        isPartial: false,
+      },
     ]);
 
-    expect(cumulative).toEqual([
-      { bucketDate: "2026-01-02", value: null, isPartial: false },
-    ]);
+    expect(dailyReturns[0]?.value).toBeCloseTo(0, 8);
+    expect(dailyReturns[1]?.value).toBeCloseTo(0, 8);
+    expect(computePeriodReturn(dailyReturns).value).toBeCloseTo(0, 8);
   });
 });

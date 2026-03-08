@@ -1,10 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { searchLocalInstruments } from "./search/local-search";
+import { searchYahooInstruments } from "./search/yahoo-search";
 
 import {
+  searchInstruments,
   getDisplayTicker,
   __test__,
 } from "./search-instruments";
 import type { InstrumentSearchResult } from "../lib/instrument-search";
+
+vi.mock("./search/local-search", () => ({
+  searchLocalInstruments: vi.fn(),
+}));
+
+vi.mock("./search/yahoo-search", () => ({
+  searchYahooInstruments: vi.fn(),
+}));
 
 const baseInstrument = (overrides: Partial<InstrumentSearchResult>) =>
   ({
@@ -17,6 +29,98 @@ const baseInstrument = (overrides: Partial<InstrumentSearchResult>) =>
     currency: "USD",
     ...overrides,
   }) satisfies InstrumentSearchResult;
+
+describe("searchInstruments", () => {
+  const supabase = {} as never;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("keeps auto mode cache-only when the local cache has any matches", async () => {
+    vi.mocked(searchLocalInstruments).mockResolvedValueOnce([
+      baseInstrument({
+        id: "yahoo:PKN.WA",
+        providerKey: "PKN.WA",
+        symbol: "PKN.WA",
+        ticker: "PKN",
+        name: "ORLEN",
+      }),
+    ]);
+
+    const response = await searchInstruments(supabase, {
+      query: "cyberfolks",
+      mode: "auto",
+      limit: 3,
+      timeoutMs: 2000,
+    });
+
+    expect(searchYahooInstruments).not.toHaveBeenCalled();
+    expect(response.results.map((item) => item.providerKey)).toEqual(["PKN.WA"]);
+  });
+
+  it("returns only the exact cached instrument match for compact local results", async () => {
+    const local = [
+      baseInstrument({
+        id: "yahoo:AMZN",
+        providerKey: "AMZN",
+        symbol: "AMZN",
+        ticker: "AMZN",
+        name: "Amazon.com, Inc.",
+      }),
+      baseInstrument({
+        id: "yahoo:AMZP",
+        providerKey: "AMZP",
+        symbol: "AMZP",
+        ticker: "AMZP",
+        name: "Amazonas Energia",
+      }),
+    ];
+
+    expect(__test__.buildCompactLocalResults("amzn", local, 3)).toEqual([
+      local[0],
+    ]);
+  });
+
+  it("fetches Yahoo for show-more mode even when local cache already has matches", async () => {
+    vi.mocked(searchLocalInstruments).mockResolvedValueOnce([
+      baseInstrument({ id: "yahoo:A", providerKey: "A" }),
+      baseInstrument({ id: "yahoo:B", providerKey: "B" }),
+    ]);
+    vi.mocked(searchYahooInstruments).mockResolvedValueOnce([
+      baseInstrument({ id: "yahoo:C", providerKey: "C" }),
+    ]);
+
+    const response = await searchInstruments(supabase, {
+      query: "or",
+      mode: "all",
+      limit: 3,
+      timeoutMs: 2000,
+    });
+
+    expect(searchYahooInstruments).toHaveBeenCalledWith("or", 3, 2000, null);
+    expect(response.results).toHaveLength(3);
+  });
+
+  it("extends timeout and widens Yahoo candidate fetch when auto mode has no local matches", async () => {
+    vi.mocked(searchLocalInstruments).mockResolvedValueOnce([]);
+    vi.mocked(searchYahooInstruments).mockResolvedValueOnce([]);
+
+    await searchInstruments(supabase, {
+      query: "cyberfolks",
+      mode: "auto",
+      limit: 3,
+      timeoutMs: 2000,
+    });
+
+    expect(searchYahooInstruments).toHaveBeenCalledWith(
+      "cyberfolks",
+      10,
+      4000,
+      null
+    );
+  });
+});
 
 describe("getDisplayTicker", () => {
   it("strips GPW suffix .WA", () => {

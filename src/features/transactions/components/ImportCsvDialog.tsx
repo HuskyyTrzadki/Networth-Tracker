@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
 import {
@@ -11,27 +12,35 @@ import {
   DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
 
-import { ImportCsvPlaceholder } from "./ImportCsvPlaceholder";
+import { XtbImportWorkspace } from "./XtbImportWorkspace";
 
 export function ImportCsvDialog({
   open,
   onOpenChange,
+  portfolios,
+  initialPortfolioId,
+  forcedPortfolioId,
 }: Readonly<{
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
+  portfolios: readonly { id: string; name: string; baseCurrency: string }[];
+  initialPortfolioId: string;
+  forcedPortfolioId: string | null;
 }>) {
+  const router = useRouter();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90dvh] border border-border/70 bg-card p-0 shadow-[var(--surface-shadow)] sm:max-w-xl">
+      <DialogContent className="max-h-[90dvh] border border-border/70 bg-card p-0 shadow-[var(--surface-shadow)] sm:max-w-6xl">
         <div className="flex max-h-[90dvh] flex-col bg-card/96">
           <header className="flex items-start justify-between gap-4 border-b border-dashed border-border/60 bg-card/92 px-5 py-4 md:px-6 md:py-5">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
                 Narzędzie importu
               </p>
-              <DialogTitle className="truncate tracking-tight">Importuj CSV</DialogTitle>
+              <DialogTitle className="truncate tracking-tight">Importuj z XTB</DialogTitle>
               <DialogDescription className="mt-1 text-[11px] text-muted-foreground/90">
-                Import transakcji z pliku CSV (wkrótce).
+                Rozpakowane pliki Excel z sekcji Cash Operations.
               </DialogDescription>
             </div>
             <DialogClose asChild>
@@ -47,7 +56,15 @@ export function ImportCsvDialog({
           </header>
 
           <div className="flex-1 overflow-y-auto bg-background/38 px-5 py-4 md:px-6 md:py-5">
-            <ImportCsvPlaceholder />
+            <XtbImportWorkspace
+              portfolios={portfolios}
+              initialPortfolioId={initialPortfolioId}
+              forcedPortfolioId={forcedPortfolioId}
+              onCompleted={({ portfolioId, runId }) => {
+                router.push(`/portfolio/${portfolioId}?xtbImportRun=${runId}`);
+                onOpenChange(false);
+              }}
+            />
           </div>
 
           <footer className="border-t border-dashed border-border/60 bg-card/92 px-5 py-4 md:px-6 md:py-5">

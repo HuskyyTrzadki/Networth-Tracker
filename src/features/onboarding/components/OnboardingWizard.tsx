@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/cn";
 import { openDemoPortfolioAction } from "@/features/onboarding/server/open-demo-portfolio-action";
 
+import { BrokerImportDialog } from "./BrokerImportDialog";
 import { OnboardingPortfolioSetupCard } from "./OnboardingPortfolioSetupCard";
 import { ScreenshotImportDialog } from "./ScreenshotImportDialog";
 
@@ -25,6 +26,8 @@ type CreatedPortfolio = Readonly<{
   baseCurrency: string;
   isTaxAdvantaged: boolean;
 }>;
+
+type BrokerImportTarget = "ibkr" | "xtb";
 
 export function OnboardingWizard({
   initialMode = "choice",
@@ -36,6 +39,7 @@ export function OnboardingWizard({
   const router = useRouter();
   const [createdPortfolio, setCreatedPortfolio] = useState<CreatedPortfolio | null>(null);
   const [isScreenshotOpen, setIsScreenshotOpen] = useState(false);
+  const [brokerImportTarget, setBrokerImportTarget] = useState<BrokerImportTarget | null>(null);
   const [demoError, setDemoError] = useState<string | null>(null);
   const [isDemoPending, startDemoTransition] = useTransition();
 
@@ -152,22 +156,41 @@ export function OnboardingWizard({
                 <div className="space-y-3">
                   <CardTitle className="text-2xl">Pełna analityka i historia</CardTitle>
                   <CardDescription className="max-w-[42ch] text-sm leading-6">
-                    Dodaj transakcje ręcznie, aby odblokować pełną historię, wpływ FX na
-                    wynik i śledzenie dywidend.
+                    Wybierz sposób dodania historii: ręcznie albo przez import pliku z
+                    brokera.
                   </CardDescription>
                 </div>
 
-                <div className="mt-auto flex">
+                <div className="mt-auto space-y-3">
                   <Button
                     type="button"
-                    className="h-14 min-w-[220px] rounded-xl px-7 text-sm shadow-sm"
+                    className="h-14 w-full rounded-xl px-7 text-sm shadow-sm"
                     onClick={() => {
                       router.push(`/transactions/new?portfolio=${createdPortfolio.id}`);
                       router.refresh();
                     }}
                   >
-                    Dodaj transakcję
+                    Dodaj transakcję ręcznie
                   </Button>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Button
+                      type="button"
+                      className="h-12 w-full rounded-xl px-5 text-sm"
+                      disabled
+                      variant="outline"
+                    >
+                      IBKR wkrótce
+                    </Button>
+                    <Button
+                      type="button"
+                      className="h-12 w-full rounded-xl px-5 text-sm"
+                      onClick={() => setBrokerImportTarget("xtb")}
+                      variant="outline"
+                    >
+                      Importuj z XTB
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -213,6 +236,18 @@ export function OnboardingWizard({
         onBack={() => setIsScreenshotOpen(false)}
         portfolio={createdPortfolio}
       />
+      {brokerImportTarget ? (
+        <BrokerImportDialog
+          broker={brokerImportTarget}
+          open
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) {
+              setBrokerImportTarget(null);
+            }
+          }}
+          portfolio={createdPortfolio ?? undefined}
+        />
+      ) : null}
     </div>
   );
 }

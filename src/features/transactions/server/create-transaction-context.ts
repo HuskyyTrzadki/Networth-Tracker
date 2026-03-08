@@ -7,6 +7,7 @@ import {
   isSupportedCashCurrency,
   type CashCurrency,
 } from "@/features/transactions/lib/system-currencies";
+import { parseDecimalString } from "@/lib/decimal";
 import {
   badRequestError,
   internalServerError,
@@ -251,6 +252,10 @@ export const buildSettlementContext = async (input: Readonly<{
   assetCurrency: string;
   isCashInstrument: boolean;
   updatedAt: string;
+  settlementOverride?: Readonly<{
+    cashQuantity: string;
+    fx?: SettlementFx | null;
+  }> | null;
 }>) => {
   if (input.isCashInstrument || !input.request.consumeCash) {
     return {
@@ -273,6 +278,53 @@ export const buildSettlementContext = async (input: Readonly<{
     buildCashInstrumentUpsertPayload(requestedCashCurrency, input.updatedAt),
     "Cash instrument save failed."
   );
+
+  if (input.settlementOverride) {
+    const settlementQuantity = parseDecimalString(input.settlementOverride.cashQuantity);
+    if (!settlementQuantity || settlementQuantity.lte(0)) {
+      throw unprocessableEntityError("Nieprawidłowa kwota rozliczenia gotówki.", {
+        code: "TRANSACTION_INVALID_SETTLEMENT_INPUT",
+      });
+    }
+
+    const settlementLegs: ReturnType<typeof buildSettlementLegs> = [
+      {
+        side: input.request.type === "BUY" ? "SELL" : "BUY",
+        quantity: settlementQuantity.toString(),
+        price: "1",
+        cashflowType: "TRADE_SETTLEMENT",
+        legKey: "CASH_SETTLEMENT",
+        settlementFx: input.settlementOverride.fx ?? undefined,
+      },
+    ];
+
+    const settlementRows: TransactionRow[] = settlementLegs.map((leg) => ({
+      user_id: input.userId,
+      instrument_id: cashInstrumentId,
+      custom_instrument_id: null,
+      portfolio_id: input.request.portfolioId,
+      side: leg.side,
+      trade_date: input.request.date,
+      quantity: leg.quantity,
+      price: leg.price,
+      fee: "0",
+      notes: input.notes,
+      client_request_id: input.request.clientRequestId,
+      group_id: input.groupId,
+      leg_role: "CASH",
+      leg_key: leg.legKey,
+      cashflow_type: leg.cashflowType,
+      settlement_fx_rate: leg.settlementFx?.rate ?? null,
+      settlement_fx_as_of: leg.settlementFx?.asOf ?? null,
+      settlement_fx_provider: leg.settlementFx?.provider ?? null,
+    }));
+
+    return {
+      settlementLegs,
+      settlementRows,
+      requestedCashCurrency,
+    };
+  }
 
   const settlementFx = await resolveSettlementFxMeta({
     supabaseUser: input.supabaseUser,

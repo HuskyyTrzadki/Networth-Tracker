@@ -3,7 +3,13 @@
 import { BriefcaseBusiness, CircleAlert, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type MouseEvent, useState } from "react";
+import {
+  type MouseEvent,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useState,
+} from "react";
 
 import { CreatePortfolioDialog } from "@/features/portfolio/components/CreatePortfolioDialog";
 import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
@@ -47,6 +53,29 @@ type Props = Readonly<{
   settingsBadge?: "guest" | "demo" | null;
 }>;
 
+type SidebarPortfolio = Props["portfolios"][number];
+type OptimisticPortfolioVisibilityAction = Readonly<{
+  type: "hide" | "show";
+  portfolioId: string;
+}>;
+
+const EMPTY_HIDDEN_PORTFOLIO_IDS: ReadonlySet<string> = new Set<string>();
+
+export const reduceOptimisticHiddenPortfolioIds = (
+  current: ReadonlySet<string>,
+  action: OptimisticPortfolioVisibilityAction
+) => {
+  const next = new Set(current);
+
+  if (action.type === "hide") {
+    next.add(action.portfolioId);
+  } else {
+    next.delete(action.portfolioId);
+  }
+
+  return next;
+};
+
 export function AppSidebar({
   className,
   portfolios,
@@ -64,7 +93,26 @@ export function AppSidebar({
   const activePortfolioId = getPortfolioIdFromPathname(activePathname);
   const isPortfolioActive = isHrefActive(activePathname, "/portfolio");
   const isOverviewActive = isPortfolioActive && !activePortfolioId;
-  const activePortfolioIdFromPath = getPortfolioIdFromPathname(pathname);
+  const [optimisticHiddenPortfolioIds, applyOptimisticHiddenPortfolioIds] =
+    useOptimistic(
+      EMPTY_HIDDEN_PORTFOLIO_IDS,
+      reduceOptimisticHiddenPortfolioIds
+    );
+  const visiblePortfolios = useMemo(
+    () =>
+      portfolios.filter(
+        (portfolio) => !optimisticHiddenPortfolioIds.has(portfolio.id)
+      ),
+    [optimisticHiddenPortfolioIds, portfolios]
+  );
+
+  useEffect(() => {
+    if (!activePortfolioId) {
+      return;
+    }
+
+    void router.prefetch("/portfolio");
+  }, [activePortfolioId, router]);
 
   const handleSidebarLinkHover = (href: string) => {
     void router.prefetch(href);
@@ -83,6 +131,31 @@ export function AppSidebar({
     }
 
     setOptimisticPathname(href);
+  };
+
+  const handlePortfolioDeleteOptimistic = (portfolioId: SidebarPortfolio["id"]) => {
+    applyOptimisticHiddenPortfolioIds({
+      type: "hide",
+      portfolioId,
+    });
+
+    if (activePortfolioId !== portfolioId) {
+      return;
+    }
+
+    setOptimisticPathname("/portfolio");
+    router.replace("/portfolio", { scroll: false });
+  };
+
+  const handlePortfolioDeleteRollback = (portfolioId: SidebarPortfolio["id"]) => {
+    applyOptimisticHiddenPortfolioIds({
+      type: "show",
+      portfolioId,
+    });
+
+    if (activePortfolioId === portfolioId) {
+      setOptimisticPathname(null);
+    }
   };
 
   return (
@@ -156,20 +229,17 @@ export function AppSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenuSub className="mx-0 translate-x-0 border-l-0 px-1 py-1">
-              {portfolios.map((portfolio) => (
+              {visiblePortfolios.map((portfolio) => (
                 <PortfolioSidebarItem
                   key={portfolio.id}
                   isActive={activePortfolioId === portfolio.id}
+                  onDeleteOptimistic={handlePortfolioDeleteOptimistic}
+                  onDeleteRollback={handlePortfolioDeleteRollback}
                   onNavigateIntent={(href) => {
                     setOptimisticPathname(href);
                   }}
                   onPrefetchIntent={(href) => {
                     void router.prefetch(href);
-                  }}
-                  onDeleted={(deletedPortfolioId) => {
-                    if (activePortfolioIdFromPath === deletedPortfolioId) {
-                      router.push("/portfolio", { scroll: false });
-                    }
                   }}
                   portfolio={portfolio}
                 />

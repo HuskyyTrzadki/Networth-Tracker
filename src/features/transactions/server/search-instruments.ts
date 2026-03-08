@@ -16,6 +16,30 @@ type SearchInput = Readonly<Partial<SearchParams> & { query: string }>;
 
 export { getDisplayTicker, MIN_QUERY_LENGTH };
 
+const AUTO_REMOTE_CANDIDATE_LIMIT = 10;
+
+const normalizeExactMatchValue = (value: string | null | undefined) =>
+  value?.trim().toUpperCase() ?? "";
+
+const buildCompactLocalResults = (
+  query: string,
+  localResults: readonly InstrumentSearchResult[],
+  limit: number
+) => {
+  const normalizedQuery = normalizeExactMatchValue(query);
+  const exactMatch = localResults.find((item) =>
+    [item.providerKey, item.symbol, item.ticker].some(
+      (candidate) => normalizeExactMatchValue(candidate) === normalizedQuery
+    )
+  );
+
+  if (exactMatch) {
+    return [exactMatch];
+  }
+
+  return localResults.slice(0, limit);
+};
+
 export async function searchInstruments(
   supabase: SupabaseServerClient,
   params: SearchInput
@@ -33,29 +57,28 @@ export async function searchInstruments(
     limit,
     types
   );
+  const compactLocalResults = buildCompactLocalResults(query, localResults, limit);
 
   if (mode === "local") {
-    return { query, results: localResults.slice(0, limit) };
+    return { query, results: compactLocalResults };
   }
 
   if (mode === "auto" && localResults.length > 0) {
-    return { query, results: localResults.slice(0, limit) };
+    return { query, results: compactLocalResults };
   }
 
   const effectiveTimeoutMs =
     mode === "auto" && localResults.length === 0
       ? Math.max(timeoutMs, 4000)
       : timeoutMs;
-
-  if (localResults.length >= limit) {
-    return { query, results: localResults.slice(0, limit) };
-  }
+  const yahooLimit =
+    mode === "all" ? limit : Math.max(limit, AUTO_REMOTE_CANDIDATE_LIMIT);
 
   let yahooResults: InstrumentSearchResult[] = [];
   try {
     yahooResults = await searchYahooInstruments(
       query,
-      limit,
+      yahooLimit,
       effectiveTimeoutMs,
       types
     );
@@ -71,6 +94,7 @@ export async function searchInstruments(
 }
 
 export const __test__ = {
+  buildCompactLocalResults,
   buildInstrumentId,
   mergeInstrumentResults,
 };

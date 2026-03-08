@@ -4,6 +4,7 @@ import { MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import { type MouseEvent, useState, useTransition } from "react";
 
+import { dispatchAppToast } from "@/features/app-shell/lib/app-toast-events";
 import { deletePortfolioAction } from "@/features/portfolio/server/delete-portfolio-action";
 import { Button } from "@/features/design-system/components/ui/button";
 import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
@@ -37,7 +38,8 @@ type Props = Readonly<{
     isDemo: boolean;
   };
   isActive: boolean;
-  onDeleted: (portfolioId: string) => void;
+  onDeleteOptimistic: (portfolioId: string) => void;
+  onDeleteRollback: (portfolioId: string) => void;
   onNavigateIntent: (href: string) => void;
   onPrefetchIntent: (href: string) => void;
 }>;
@@ -48,32 +50,37 @@ const menuItemClasses =
 export function PortfolioSidebarItem({
   portfolio,
   isActive,
-  onDeleted,
+  onDeleteOptimistic,
+  onDeleteRollback,
   onNavigateIntent,
   onPrefetchIntent,
 }: Props) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    setErrorMessage(null);
+  const handleDelete = () => {
+    setIsDialogOpen(false);
     startTransition(() => {
+      onDeleteOptimistic(portfolio.id);
       void deletePortfolioAction(portfolio.id)
         .then(() => {
-          setIsDialogOpen(false);
-          onDeleted(portfolio.id);
+          dispatchAppToast({
+            title: "Portfel usunięty.",
+            description: "Zmiany zostały zapisane.",
+            tone: "success",
+          });
         })
         .catch((error: unknown) => {
-          setErrorMessage(
-            error instanceof Error ? error.message : "Nie udało się usunąć portfela."
-          );
-        })
-        .finally(() => {
-          setIsDeleting(false);
+          onDeleteRollback(portfolio.id);
+          dispatchAppToast({
+            title: "Nie udało się usunąć portfela.",
+            description:
+              error instanceof Error && error.message.length > 0
+                ? error.message
+                : "Spróbuj ponownie za chwilę.",
+            tone: "destructive",
+          });
         });
     });
   };
@@ -156,7 +163,6 @@ export function PortfolioSidebarItem({
             className={cn(menuItemClasses, "text-destructive")}
             onClick={() => {
               setIsPopoverOpen(false);
-              setErrorMessage(null);
               setIsDialogOpen(true);
             }}
             type="button"
@@ -169,13 +175,10 @@ export function PortfolioSidebarItem({
       <Dialog
         open={isDialogOpen}
         onOpenChange={(nextOpen) => {
-          if (isDeleting) {
+          if (isPending) {
             return;
           }
           setIsDialogOpen(nextOpen);
-          if (!nextOpen) {
-            setErrorMessage(null);
-          }
         }}
       >
         <DialogContent className="sm:max-w-sm">
@@ -186,13 +189,9 @@ export function PortfolioSidebarItem({
             </DialogDescription>
           </DialogHeader>
 
-          {errorMessage ? (
-            <p className="text-sm text-destructive">{errorMessage}</p>
-          ) : null}
-
           <DialogFooter>
             <Button
-              disabled={isDeleting}
+              disabled={isPending}
               onClick={() => setIsDialogOpen(false)}
               type="button"
               variant="ghost"
@@ -200,12 +199,12 @@ export function PortfolioSidebarItem({
               Anuluj
             </Button>
             <Button
-              disabled={isDeleting}
+              disabled={isPending}
               onClick={handleDelete}
               type="button"
               variant="destructive"
             >
-              {isDeleting || isPending ? "Usuwanie..." : "Usuń portfel"}
+              {isPending ? "Usuwanie..." : "Usuń portfel"}
             </Button>
           </DialogFooter>
         </DialogContent>

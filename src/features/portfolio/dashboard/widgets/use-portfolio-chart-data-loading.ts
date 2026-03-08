@@ -10,6 +10,7 @@ import type {
 } from "../lib/benchmark-config";
 
 type BootstrapPayload = Readonly<{ scope: SnapshotScope; portfolioId?: string | null }>;
+type Updater<T> = T | ((current: T) => T);
 
 type Input = Readonly<{
   scope: SnapshotScope;
@@ -19,16 +20,18 @@ type Input = Readonly<{
   shouldBootstrap: boolean;
   bootstrapPending: boolean;
   isAllHistoryLoading: boolean;
-  loadingBenchmarkIds: readonly BenchmarkId[];
   loadedBenchmarkDatesById: Record<BenchmarkId, readonly string[]>;
-  benchmarkSeriesOverrides: Partial<DashboardBenchmarkSeries>;
   setBootstrapPending: (pending: boolean) => void;
   setBootstrapped: (bootstrapped: boolean) => void;
   setIsAllHistoryLoading: (isLoading: boolean) => void;
   setFullHistoryRows: (rows: readonly SnapshotChartRow[] | null) => void;
-  setLoadingBenchmarkIds: (ids: readonly BenchmarkId[]) => void;
-  setLoadedBenchmarkDates: (dates: Record<BenchmarkId, readonly string[]>) => void;
-  setBenchmarkSeriesOverrides: (overrides: Partial<DashboardBenchmarkSeries>) => void;
+  setLoadingBenchmarkIds: (ids: Updater<readonly BenchmarkId[]>) => void;
+  setLoadedBenchmarkDates: (
+    dates: Updater<Record<BenchmarkId, readonly string[]>>
+  ) => void;
+  setBenchmarkSeriesOverrides: (
+    overrides: Updater<Partial<DashboardBenchmarkSeries>>
+  ) => void;
 }>;
 
 const bootstrapSnapshots = async (payload: BootstrapPayload) => {
@@ -47,9 +50,7 @@ export function usePortfolioChartDataLoading({
   shouldBootstrap,
   bootstrapPending,
   isAllHistoryLoading,
-  loadingBenchmarkIds,
   loadedBenchmarkDatesById,
-  benchmarkSeriesOverrides,
   setBootstrapPending,
   setBootstrapped,
   setIsAllHistoryLoading,
@@ -70,10 +71,8 @@ export function usePortfolioChartDataLoading({
     const hasAllRequiredDates = requiredDates.every((date) => loadedDates.has(date));
     if (hasAllRequiredDates) return;
 
-    setLoadingBenchmarkIds(
-      loadingBenchmarkIds.includes(benchmarkId)
-        ? loadingBenchmarkIds
-        : [...loadingBenchmarkIds, benchmarkId]
+    setLoadingBenchmarkIds((current) =>
+      current.includes(benchmarkId) ? current : [...current, benchmarkId]
     );
 
     const response = await fetch("/api/benchmarks/series", {
@@ -86,7 +85,7 @@ export function usePortfolioChartDataLoading({
     }).catch(() => null);
 
     if (!response?.ok) {
-      setLoadingBenchmarkIds(loadingBenchmarkIds.filter((id) => id !== benchmarkId));
+      setLoadingBenchmarkIds((current) => current.filter((id) => id !== benchmarkId));
       return;
     }
 
@@ -96,21 +95,21 @@ export function usePortfolioChartDataLoading({
     };
 
     if (payload.benchmarkId !== benchmarkId || !payload.points) {
-      setLoadingBenchmarkIds(loadingBenchmarkIds.filter((id) => id !== benchmarkId));
+      setLoadingBenchmarkIds((current) => current.filter((id) => id !== benchmarkId));
       return;
     }
 
-    setBenchmarkSeriesOverrides({
-      ...benchmarkSeriesOverrides,
+    setBenchmarkSeriesOverrides((current) => ({
+      ...current,
       [benchmarkId]: payload.points,
-    });
-    setLoadedBenchmarkDates({
-      ...loadedBenchmarkDatesById,
+    }));
+    setLoadedBenchmarkDates((current) => ({
+      ...current,
       [benchmarkId]: Array.from(
-        new Set([...loadedBenchmarkDatesById[benchmarkId], ...requiredDates])
+        new Set([...(current[benchmarkId] ?? []), ...requiredDates])
       ),
-    });
-    setLoadingBenchmarkIds(loadingBenchmarkIds.filter((id) => id !== benchmarkId));
+    }));
+    setLoadingBenchmarkIds((current) => current.filter((id) => id !== benchmarkId));
   };
 
   const ensureAllHistoryLoaded = async (): Promise<readonly SnapshotChartRow[] | null> => {
