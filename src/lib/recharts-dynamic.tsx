@@ -12,6 +12,7 @@ export {
   Cell,
   ComposedChart,
   LabelList,
+  Legend,
   Line,
   LineChart,
   Pie,

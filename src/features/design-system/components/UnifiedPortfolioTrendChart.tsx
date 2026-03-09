@@ -273,6 +273,7 @@ export function UnifiedPortfolioTrendChart({
                     dataKey="primary"
                     stroke={resolvedPrimaryColor}
                     strokeWidth={PRIMARY_STROKE_WIDTH}
+                    isAnimationActive={false}
                     fill={`url(#trend-fill-${gradientId})`}
                     fillOpacity={1}
                     dot={false}
@@ -287,6 +288,7 @@ export function UnifiedPortfolioTrendChart({
                       name={line.id}
                       stroke={line.color}
                       strokeWidth={SHARED_CHART_SECONDARY_LINE_WIDTH}
+                      isAnimationActive={false}
                       dot={false}
                       activeDot={{ r: SHARED_CHART_ACTIVE_DOT_RADIUS, fill: line.color }}
                       connectNulls={false}

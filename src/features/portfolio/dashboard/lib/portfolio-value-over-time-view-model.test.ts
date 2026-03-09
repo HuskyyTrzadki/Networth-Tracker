@@ -123,4 +123,64 @@ describe("buildPortfolioValueOverTimeViewModel", () => {
     expect(result.cumulativeChartData).toHaveLength(0);
     expect(result.selectedPeriodPerformanceAbsoluteChange).toBeNull();
   });
+
+  it("keeps benchmark-only points so selected overlays can render across primary gaps", () => {
+    const benchmarkSeries = emptyDashboardBenchmarkSeries([
+      "2026-02-09",
+      "2026-02-10",
+      "2026-02-11",
+    ]);
+
+    const result = buildPortfolioValueOverTimeViewModel({
+      rowsWithLiveAnchor: [
+        row({
+          bucketDate: "2026-02-09",
+          totalValuePln: 0,
+          netExternalCashflowPln: 0,
+          netImplicitTransferPln: 0,
+        }),
+        row({
+          bucketDate: "2026-02-10",
+          totalValuePln: 1000,
+          netExternalCashflowPln: null,
+          netImplicitTransferPln: 0,
+        }),
+        row({
+          bucketDate: "2026-02-11",
+          totalValuePln: 1100,
+          netExternalCashflowPln: 0,
+          netImplicitTransferPln: 0,
+        }),
+      ],
+      range: "ALL",
+      mode: "PERFORMANCE",
+      currency: "PLN",
+      todayBucketDate: "2026-02-11",
+      liveTotals: {
+        totalValue: 1100,
+        isPartial: false,
+        missingQuotes: 0,
+        missingFx: 0,
+        asOf: "2026-02-11T20:00:00.000Z",
+      },
+      canUseLiveEndpoint: false,
+      polishCpiSeries: [],
+      benchmarkSeriesState: {
+        ...benchmarkSeries,
+        WIG20: [
+          { date: "2026-02-09", PLN: 100, USD: 100, EUR: 100 },
+          { date: "2026-02-10", PLN: 102, USD: 102, EUR: 102 },
+          { date: "2026-02-11", PLN: 104, USD: 104, EUR: 104 },
+        ],
+      },
+      selectedComparisons: ["WIG20"],
+    });
+
+    expect(result.cumulativeChartData).toHaveLength(2);
+    expect(
+      result.cumulativeChartData.every(
+        (point) => point.comparisons.WIG20 !== null && point.comparisons.WIG20 !== undefined
+      )
+    ).toBe(true);
+  });
 });

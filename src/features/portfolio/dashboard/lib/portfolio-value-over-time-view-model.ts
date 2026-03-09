@@ -137,10 +137,6 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
   };
 
   const cumulativeChartData = nominalCumulativeSeries
-    .map((entry) => ({ ...entry, value: toFiniteOrNull(entry.value) }))
-    .filter((entry): entry is (typeof nominalCumulativeSeries)[number] & { value: number } =>
-      entry.value !== null
-    )
     .map((entry) => {
       const comparisons: Record<string, number | null> = {};
 
@@ -158,11 +154,20 @@ export function buildPortfolioValueOverTimeViewModel(input: Input) {
         );
       });
 
+      const value = toFiniteOrNull(entry.value);
+
       return {
         label: entry.label,
-        value: entry.value,
+        value,
         comparisons,
       };
+    })
+    .filter((entry) => {
+      if (entry.value !== null) return true;
+
+      return Object.values(entry.comparisons).some(
+        (value) => typeof value === "number" && Number.isFinite(value)
+      );
     });
 
   const hasPerformanceData = cumulativeChartData.length > 0;

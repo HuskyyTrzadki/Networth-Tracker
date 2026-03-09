@@ -1,13 +1,22 @@
 "use client";
 
 import {
-  UnifiedPortfolioTrendChart,
-  type UnifiedTrendLine,
-} from "./UnifiedPortfolioTrendChart";
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "@/lib/recharts-dynamic";
+
+import { buildPaddedDomain } from "../lib/chart-domain";
 
 type Point = Readonly<{
   label: string;
-  value: number;
+  value: number | null;
   comparisons?: Readonly<Record<string, number | null | undefined>>;
 }>;
 
@@ -35,6 +44,12 @@ const formatPercent = (value: number) =>
       }).format(value)
     : "—";
 
+const formatXAxisDate = (value: string) =>
+  new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(value));
+
 const formatTooltipDate = (value: string) =>
   new Intl.DateTimeFormat("pl-PL", {
     day: "2-digit",
@@ -42,66 +57,109 @@ const formatTooltipDate = (value: string) =>
     year: "numeric",
   }).format(new Date(value));
 
-const formatAxisPercent = (value: number) =>
-  Number.isFinite(value)
-    ? new Intl.NumberFormat("pl-PL", {
-        style: "percent",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-        signDisplay: "exceptZero",
-      }).format(value)
-    : "—";
-
-const buildYAxisTicks = (domain: readonly [number, number] | null) => {
-  if (!domain) return undefined;
-
-  const [min, max] = domain;
-  if (!(Number.isFinite(min) && Number.isFinite(max))) return undefined;
-  if (min >= 0 || max <= 0) return undefined;
-
-  const segments = 4;
-  const step = (max - min) / segments;
-  if (!Number.isFinite(step) || step <= 0) return undefined;
-
-  const ticks = Array.from({ length: segments + 1 }, (_, index) => min + step * index);
-  ticks.push(0);
-
-  const uniqueTicks = Array.from(new Set(ticks.map((tick) => tick.toFixed(8))))
-    .map(Number)
-    .sort((a, b) => a - b);
-
-  return uniqueTicks;
-};
-
 export function DailyReturnsLineChart({
   data,
   comparisonLines = EMPTY_COMPARISON_LINES,
 }: Props) {
-  const chartData = data.map((entry) => ({
-    label: entry.label,
-    primary: entry.value,
-    lines: entry.comparisons,
-  }));
-  const activeComparisonLines: readonly UnifiedTrendLine[] = comparisonLines.filter((line) =>
-    data.some((entry) => {
+  const chartData = [...data];
+  const activeComparisonLines = comparisonLines.filter((line) =>
+    chartData.some((entry) => {
       const value = entry.comparisons?.[line.id];
       return typeof value === "number" && Number.isFinite(value);
     })
   );
+  const yDomain = buildPaddedDomain(
+    chartData.flatMap((entry) => [
+      entry.value,
+      ...activeComparisonLines.map((line) => entry.comparisons?.[line.id] ?? null),
+    ]),
+    {
+      paddingRatio: 0.15,
+      minAbsolutePadding: 0.0025,
+      includeZero: true,
+    }
+  );
+  const count = chartData.length;
+  const shouldShowTicks = count <= 16;
+  const tick = shouldShowTicks
+    ? { fill: "var(--muted-foreground)", fillOpacity: 0.85, fontSize: 11 }
+    : false;
+  const interval = shouldShowTicks ? 0 : Math.ceil(count / 8);
+  const yAxisDomain = yDomain
+    ? ([yDomain[0], yDomain[1]] as [number, number])
+    : (["auto", "auto"] as [string, string]);
 
   return (
-    <div className="h-full min-h-0">
-      <UnifiedPortfolioTrendChart
-        data={chartData}
-        variant="performance"
-        primaryFormatter={formatPercent}
-        yAxisFormatter={formatAxisPercent}
-        lines={activeComparisonLines}
-        tooltipLabelFormatter={formatTooltipDate}
-        showLegend
-        showPrimaryInLegend
-        yTickBuilder={buildYAxisTicks}
-      />
+    <div className="min-w-0 w-full h-full">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <LineChart data={chartData} margin={{ top: 12, right: 8, bottom: 0, left: 8 }}>
+          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="label"
+            tickFormatter={(value) => formatXAxisDate(String(value))}
+            tick={tick}
+            interval={interval}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis hide domain={yAxisDomain} />
+          <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="3 3" />
+          <Tooltip
+            cursor={{ stroke: "var(--ring)" }}
+            labelFormatter={(value) => formatTooltipDate(String(value))}
+            formatter={(value, name) => [
+              formatPercent(Number(value)),
+              name === "value"
+                ? "Zwrot skumulowany"
+                : activeComparisonLines.find((line) => line.id === name)?.label ?? String(name),
+            ]}
+            contentStyle={{
+              background: "var(--popover)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius)",
+              boxShadow: "var(--shadow)",
+              color: "var(--popover-foreground)",
+            }}
+            labelStyle={{ color: "var(--muted-foreground)" }}
+            itemStyle={{ color: "var(--popover-foreground)" }}
+          />
+          <Line
+            isAnimationActive={false}
+            type="monotone"
+            dataKey="value"
+            stroke="var(--chart-1)"
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 3, fill: "var(--chart-1)" }}
+          />
+          {activeComparisonLines.map((line) => (
+            <Line
+              key={line.id}
+              isAnimationActive={false}
+              type={line.strokeStyle ?? "monotone"}
+              dataKey={(entry: Point) => entry.comparisons?.[line.id] ?? null}
+              name={line.id}
+              stroke={line.color}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 3, fill: line.color }}
+              connectNulls={false}
+            />
+          ))}
+          {activeComparisonLines.length > 0 ? (
+            <Legend
+              verticalAlign="top"
+              align="left"
+              wrapperStyle={{ fontSize: 11, color: "var(--muted-foreground)" }}
+              formatter={(value: string) =>
+                value === "value"
+                  ? "Zwrot skumulowany"
+                  : activeComparisonLines.find((line) => line.id === value)?.label ?? value
+              }
+            />
+          ) : null}
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }

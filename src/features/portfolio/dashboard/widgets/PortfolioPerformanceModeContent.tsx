@@ -32,7 +32,7 @@ const DailyReturnsLineChart = dynamic(
 
 type Point = Readonly<{
   label: string;
-  value: number;
+  value: number | null;
   comparisons?: Readonly<Record<string, number | null | undefined>>;
 }>;
 
