@@ -1,65 +1,19 @@
 import { createHash } from "node:crypto";
-import { z } from "zod";
-
-import { instrumentTypes } from "../../lib/instrument-search";
 import { divideDecimals, multiplyDecimals, parseDecimalString } from "@/lib/decimal";
+import {
+  brokerImportInstrumentSchema,
+  brokerImportPreviewRowSchema,
+  brokerImportReadyRowSchema,
+  type BrokerImportPreviewRowInput,
+  type BrokerImportReadyRow,
+} from "../broker-import/shared";
 
-export const xtbImportInstrumentSchema = z.object({
-  id: z.string().trim().min(1),
-  provider: z.enum(["yahoo", "system"]),
-  providerKey: z.string().trim().min(1),
-  symbol: z.string().trim().min(1),
-  ticker: z.string().trim().min(1),
-  name: z.string().trim().min(1),
-  currency: z.string().trim().length(3),
-  instrumentType: z.enum(instrumentTypes).optional(),
-  exchange: z.string().trim().optional(),
-  region: z.string().trim().optional(),
-  logoUrl: z.string().nullable().optional(),
-});
+export const xtbImportInstrumentSchema = brokerImportInstrumentSchema;
+export const xtbImportReadyRowSchema = brokerImportReadyRowSchema;
+export const xtbImportPreviewRowSchema = brokerImportPreviewRowSchema;
 
-export const xtbImportReadyRowSchema = z.object({
-  previewId: z.string().min(1),
-  xtbRowId: z.string().min(1),
-  sourceFileName: z.string().min(1),
-  sourceType: z.string().min(1),
-  executedAtUtc: z.string().nullable(),
-  sourceOrder: z.number().int().nonnegative(),
-  kind: z.enum([
-    "TRADE_BUY",
-    "TRADE_SELL",
-    "CASH_DEPOSIT",
-    "CASH_WITHDRAWAL",
-    "DIVIDEND",
-    "INTEREST",
-    "TAX",
-  ]),
-  status: z.literal("READY"),
-  tradeDate: z.string().min(1),
-  accountCurrency: z.enum(["USD", "EUR", "PLN", "GBP", "CHF"]),
-  accountNumber: z.string().trim().min(1),
-  amount: z.string().trim().min(1),
-  instrumentLabel: z.string().nullable(),
-  comment: z.string().nullable(),
-  quantity: z.string().trim().min(1),
-  price: z.string().trim().min(1),
-  fee: z.string().trim().min(1),
-  cashflowType: z
-    .enum(["DEPOSIT", "WITHDRAWAL", "DIVIDEND", "INTEREST", "FEE", "TAX", "TRADE_SETTLEMENT"])
-    .nullable(),
-  side: z.enum(["BUY", "SELL"]),
-  requiresInstrument: z.boolean(),
-  commentTicker: z.string().nullable(),
-  instrument: xtbImportInstrumentSchema.nullable(),
-});
-
-export const xtbImportPreviewRowSchema = xtbImportReadyRowSchema.extend({
-  status: z.enum(["READY", "NEEDS_INSTRUMENT", "SKIPPED"]),
-  skipReason: z.string().nullable(),
-});
-
-export type XtbImportReadyRow = z.infer<typeof xtbImportReadyRowSchema>;
-export type XtbImportPreviewRowInput = z.infer<typeof xtbImportPreviewRowSchema>;
+export type XtbImportReadyRow = BrokerImportReadyRow;
+export type XtbImportPreviewRowInput = BrokerImportPreviewRowInput;
 
 export type XtbImportSettlementOverride = Readonly<{
   cashQuantity: string;

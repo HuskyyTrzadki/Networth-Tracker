@@ -4,6 +4,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/features/design-system/components/ui/button";
+import {
+  DEFAULT_BROKER_IMPORT_PROVIDER,
+  brokerImportUiConfig,
+  isBrokerImportProviderId,
+} from "@/features/transactions/lib/broker-import-providers";
 import { ImportCsvDialogSkeleton } from "@/features/transactions/components/ImportCsvDialogSkeleton";
 import { ImportCsvDialogStandaloneRoute } from "@/features/transactions/components/ImportCsvDialogStandaloneRoute";
 import { getImportDialogData } from "@/features/transactions/server/get-import-dialog-data";
@@ -13,11 +18,16 @@ type Props = Readonly<{
 }>;
 
 export const metadata: Metadata = {
-  title: "Importuj z XTB",
+  title: "Importuj od brokera",
 };
 
 export default async function TransactionsImportPage({ searchParams }: Props) {
   const params = await searchParams;
+  const providerParam = Array.isArray(params.provider) ? params.provider[0] : params.provider;
+  const provider = isBrokerImportProviderId(providerParam)
+    ? providerParam
+    : DEFAULT_BROKER_IMPORT_PROVIDER;
+  const ui = brokerImportUiConfig[provider];
   const dialogData = await getImportDialogData(params);
 
   if (dialogData.status === "unauthenticated") {
@@ -27,15 +37,13 @@ export default async function TransactionsImportPage({ searchParams }: Props) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
             Dostęp wymagany
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            Import historii z XTB
-          </h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">{ui.unauthenticatedTitle}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Zaloguj się, aby zaimportować transakcje z XTB.
+            {ui.unauthenticatedDescription}
           </p>
           <Button asChild className="mt-5 h-11">
             <Link href={{ pathname: "/login", query: { next: "/transactions/import" } }}>
-              Zaloguj się
+              {ui.unauthenticatedButtonLabel}
             </Link>
           </Button>
         </section>
@@ -50,6 +58,7 @@ export default async function TransactionsImportPage({ searchParams }: Props) {
   return (
     <Suspense fallback={<ImportCsvDialogSkeleton />}>
       <ImportCsvDialogStandaloneRoute
+        provider={provider}
         portfolios={dialogData.portfolios}
         initialPortfolioId={dialogData.initialPortfolioId}
         forcedPortfolioId={dialogData.forcedPortfolioId}

@@ -7,6 +7,7 @@ import { buildXtbSettlementOverride } from "./shared";
 describe("buildXtbSettlementOverride", () => {
   it("uses broker cash amount as exact settlement for cross-currency trades", () => {
     const result = buildXtbSettlementOverride({
+      provider: "xtb",
       previewId: "preview-1",
       xtbRowId: "777157575",
       sourceFileName: "PLN_51420076_2006-01-01_2026-03-06.xlsx",

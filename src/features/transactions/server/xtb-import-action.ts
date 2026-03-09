@@ -14,6 +14,7 @@ import { buildXtbSettlementOverride, xtbImportInstrumentSchema } from "./xtb-imp
 import { sortXtbImportRows } from "./xtb-import/sort-xtb-import-rows";
 
 const rowSchema = z.object({
+  provider: z.literal("xtb"),
   previewId: z.string().min(1),
   xtbRowId: z.string().min(1),
   sourceFileName: z.string().min(1),

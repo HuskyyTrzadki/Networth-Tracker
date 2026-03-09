@@ -26,7 +26,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
-import { XtbImportWorkspace } from "@/features/transactions/components/XtbImportWorkspace";
+import { BrokerImportWorkspace } from "@/features/transactions/components/BrokerImportWorkspace";
 import { cn } from "@/lib/cn";
 import xtbInstructionImage from "../../../../public/onboarding/xtb.webp";
 import { BrokerInstructionPlaceholder } from "./BrokerInstructionPlaceholder";
@@ -195,13 +195,16 @@ export function BrokerImportDialog({
                 steps={content.steps}
                 imageSrc={xtbInstructionImage}
               />
-              <XtbImportWorkspace
+              <BrokerImportWorkspace
+                provider="xtb"
                 portfolios={[portfolio]}
                 initialPortfolioId={portfolio.id}
                 forcedPortfolioId={portfolio.id}
                 showHeader={false}
-                onCompleted={({ portfolioId, runId }) => {
-                  router.push(`/portfolio/${portfolioId}?xtbImportRun=${runId}`);
+                onCompleted={({ provider, portfolioId, runId }) => {
+                  router.push(
+                    `/portfolio/${portfolioId}?importRun=${runId}&importProvider=${provider}`
+                  );
                   onOpenChange(false);
                 }}
               />

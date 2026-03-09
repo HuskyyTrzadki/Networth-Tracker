@@ -14,6 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
+      broker_import_run_rows: {
+        Row: {
+          asset_transaction_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          requires_instrument: boolean
+          row_index: number
+          row_payload: Json
+          run_id: string
+          source_file_name: string
+          source_row_id: string
+          source_type: string
+          status: string
+          trade_date: string
+          updated_at: string
+          user_id: string
+          was_deduped: boolean
+        }
+        Insert: {
+          asset_transaction_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          requires_instrument?: boolean
+          row_index: number
+          row_payload?: Json
+          run_id: string
+          source_file_name: string
+          source_row_id: string
+          source_type: string
+          status?: string
+          trade_date: string
+          updated_at?: string
+          user_id?: string
+          was_deduped?: boolean
+        }
+        Update: {
+          asset_transaction_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          requires_instrument?: boolean
+          row_index?: number
+          row_payload?: Json
+          run_id?: string
+          source_file_name?: string
+          source_row_id?: string
+          source_type?: string
+          status?: string
+          trade_date?: string
+          updated_at?: string
+          user_id?: string
+          was_deduped?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broker_import_run_rows_asset_transaction_id_fkey"
+            columns: ["asset_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broker_import_run_rows_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "broker_import_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broker_import_runs: {
+        Row: {
+          blocked_rows: number
+          completed_rows: number
+          created_at: string
+          deduped_rows: number
+          failed_rows: number
+          finished_at: string | null
+          id: string
+          message: string | null
+          portfolio_id: string
+          provider: string
+          source_summary: Json
+          started_at: string | null
+          status: string
+          total_rows: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blocked_rows?: number
+          completed_rows?: number
+          created_at?: string
+          deduped_rows?: number
+          failed_rows?: number
+          finished_at?: string | null
+          id?: string
+          message?: string | null
+          portfolio_id: string
+          provider?: string
+          source_summary?: Json
+          started_at?: string | null
+          status?: string
+          total_rows?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          blocked_rows?: number
+          completed_rows?: number
+          created_at?: string
+          deduped_rows?: number
+          failed_rows?: number
+          finished_at?: string | null
+          id?: string
+          message?: string | null
+          portfolio_id?: string
+          provider?: string
+          source_summary?: Json
+          started_at?: string | null
+          status?: string
+          total_rows?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broker_import_runs_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cron_portfolio_snapshots_state: {
         Row: {
           cursor_user_id: string | null
@@ -1237,140 +1374,6 @@ export type Database = {
           },
           {
             foreignKeyName: "transactions_portfolio_id_fkey"
-            columns: ["portfolio_id"]
-            isOneToOne: false
-            referencedRelation: "portfolios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      xtb_import_run_rows: {
-        Row: {
-          asset_transaction_id: string | null
-          created_at: string
-          error_message: string | null
-          id: string
-          requires_instrument: boolean
-          row_index: number
-          row_payload: Json
-          run_id: string
-          source_file_name: string
-          source_type: string
-          status: string
-          trade_date: string
-          updated_at: string
-          user_id: string
-          was_deduped: boolean
-          xtb_row_id: string
-        }
-        Insert: {
-          asset_transaction_id?: string | null
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          requires_instrument?: boolean
-          row_index: number
-          row_payload?: Json
-          run_id: string
-          source_file_name: string
-          source_type: string
-          status?: string
-          trade_date: string
-          updated_at?: string
-          user_id?: string
-          was_deduped?: boolean
-          xtb_row_id: string
-        }
-        Update: {
-          asset_transaction_id?: string | null
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          requires_instrument?: boolean
-          row_index?: number
-          row_payload?: Json
-          run_id?: string
-          source_file_name?: string
-          source_type?: string
-          status?: string
-          trade_date?: string
-          updated_at?: string
-          user_id?: string
-          was_deduped?: boolean
-          xtb_row_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "xtb_import_run_rows_asset_transaction_id_fkey"
-            columns: ["asset_transaction_id"]
-            isOneToOne: false
-            referencedRelation: "transactions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "xtb_import_run_rows_run_id_fkey"
-            columns: ["run_id"]
-            isOneToOne: false
-            referencedRelation: "xtb_import_runs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      xtb_import_runs: {
-        Row: {
-          blocked_rows: number
-          completed_rows: number
-          created_at: string
-          deduped_rows: number
-          failed_rows: number
-          finished_at: string | null
-          id: string
-          message: string | null
-          portfolio_id: string
-          source_summary: Json
-          started_at: string | null
-          status: string
-          total_rows: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          blocked_rows?: number
-          completed_rows?: number
-          created_at?: string
-          deduped_rows?: number
-          failed_rows?: number
-          finished_at?: string | null
-          id?: string
-          message?: string | null
-          portfolio_id: string
-          source_summary?: Json
-          started_at?: string | null
-          status?: string
-          total_rows?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Update: {
-          blocked_rows?: number
-          completed_rows?: number
-          created_at?: string
-          deduped_rows?: number
-          failed_rows?: number
-          finished_at?: string | null
-          id?: string
-          message?: string | null
-          portfolio_id?: string
-          source_summary?: Json
-          started_at?: string | null
-          status?: string
-          total_rows?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "xtb_import_runs_portfolio_id_fkey"
             columns: ["portfolio_id"]
             isOneToOne: false
             referencedRelation: "portfolios"

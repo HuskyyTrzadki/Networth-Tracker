@@ -1,13 +1,4 @@
-import { requestJson } from "@/lib/http/client-request";
+import { getBrokerImportJob } from "./get-broker-import-job";
 
-import type { XtbImportRunSummary } from "../lib/xtb-import-types";
-
-export async function getXtbImportJob(runId: string, signal?: AbortSignal) {
-  const { payload } = await requestJson(`/api/transactions/import/xtb/jobs/${runId}`, {
-    method: "GET",
-    signal,
-    fallbackMessage: "Nie udało się odczytać statusu importu XTB.",
-  });
-
-  return (payload as { run: XtbImportRunSummary }).run;
-}
+export const getXtbImportJob = (runId: string, signal?: AbortSignal) =>
+  getBrokerImportJob("xtb", runId, signal);

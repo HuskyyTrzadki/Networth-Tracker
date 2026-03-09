@@ -11,16 +11,23 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
+import {
+  DEFAULT_BROKER_IMPORT_PROVIDER,
+  brokerImportUiConfig,
+  type BrokerImportProviderId,
+} from "@/features/transactions/lib/broker-import-providers";
 
-import { XtbImportWorkspace } from "./XtbImportWorkspace";
+import { BrokerImportWorkspace } from "./BrokerImportWorkspace";
 
 export function ImportCsvDialog({
+  provider = DEFAULT_BROKER_IMPORT_PROVIDER,
   open,
   onOpenChange,
   portfolios,
   initialPortfolioId,
   forcedPortfolioId,
 }: Readonly<{
+  provider?: BrokerImportProviderId;
   open: boolean;
   onOpenChange: (nextOpen: boolean) => void;
   portfolios: readonly { id: string; name: string; baseCurrency: string }[];
@@ -28,6 +35,7 @@ export function ImportCsvDialog({
   forcedPortfolioId: string | null;
 }>) {
   const router = useRouter();
+  const ui = brokerImportUiConfig[provider];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,9 +46,9 @@ export function ImportCsvDialog({
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
                 Narzędzie importu
               </p>
-              <DialogTitle className="truncate tracking-tight">Importuj z XTB</DialogTitle>
+              <DialogTitle className="truncate tracking-tight">{ui.title}</DialogTitle>
               <DialogDescription className="mt-1 text-[11px] text-muted-foreground/90">
-                Rozpakowane pliki Excel z sekcji Cash Operations.
+                Wspierane pliki eksportu z sekcji {ui.sourceLabel}.
               </DialogDescription>
             </div>
             <DialogClose asChild>
@@ -56,12 +64,15 @@ export function ImportCsvDialog({
           </header>
 
           <div className="flex-1 overflow-y-auto bg-background/38 px-5 py-4 md:px-6 md:py-5">
-            <XtbImportWorkspace
+            <BrokerImportWorkspace
+              provider={provider}
               portfolios={portfolios}
               initialPortfolioId={initialPortfolioId}
               forcedPortfolioId={forcedPortfolioId}
-              onCompleted={({ portfolioId, runId }) => {
-                router.push(`/portfolio/${portfolioId}?xtbImportRun=${runId}`);
+              onCompleted={({ provider: completedProvider, portfolioId, runId }) => {
+                router.push(
+                  `/portfolio/${portfolioId}?importRun=${runId}&importProvider=${completedProvider}`
+                );
                 onOpenChange(false);
               }}
             />

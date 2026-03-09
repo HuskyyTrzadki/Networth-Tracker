@@ -317,6 +317,7 @@ export async function buildXtbImportPreview(
       }
 
       rows.push({
+        provider: "xtb",
         previewId: row.previewId,
         xtbRowId: row.xtbRowId,
         sourceFileName: row.sourceFileName,
@@ -370,6 +371,7 @@ export async function buildXtbImportPreview(
   });
 
   return {
+    provider: "xtb",
     files: fileSummaries,
     rows,
     skippedRows,

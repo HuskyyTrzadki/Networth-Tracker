@@ -6,6 +6,7 @@ import type { XtbImportPreviewRow } from "../../lib/xtb-import-types";
 const baseTradeRow = (
   overrides: Partial<XtbImportPreviewRow>
 ): XtbImportPreviewRow => ({
+  provider: "xtb",
   previewId: "preview-1",
   xtbRowId: "row-1",
   sourceFileName: "PLN_1.xlsx",

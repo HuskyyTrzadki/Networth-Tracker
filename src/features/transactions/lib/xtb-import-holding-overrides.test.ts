@@ -38,6 +38,7 @@ const replacementInstrument: InstrumentSearchResult = {
 const makeRow = (
   overrides: Partial<XtbImportPreviewRow>
 ): XtbImportPreviewRow => ({
+  provider: "xtb",
   previewId: "row-1",
   xtbRowId: "1",
   sourceFileName: "IKE.xlsx",

@@ -9,7 +9,7 @@ import { APP_CONTENT_MAX_WIDTH_CLASS } from "@/features/app-shell/lib/layout";
 import { DemoPortfolioBadge } from "@/features/portfolio/components/DemoPortfolioBadge";
 import { PortfolioDashboardSkeleton } from "@/features/portfolio/components/PortfolioDashboardSkeleton";
 import { PortfolioMobileHeaderActions } from "@/features/portfolio/components/PortfolioMobileHeaderActions";
-import { XtbImportRunBanner } from "@/features/transactions/components/XtbImportRunBanner";
+import { BrokerImportRunBanner } from "@/features/transactions/components/BrokerImportRunBanner";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 import PortfolioDashboardSection from "./PortfolioDashboardSection";
@@ -106,7 +106,7 @@ export async function PortfolioPageView({ selectedPortfolioId }: Props) {
       </AnimatedReveal>
       <AnimatedReveal className="mt-5" delay={0.05}>
         <div className="space-y-4">
-          <XtbImportRunBanner portfolioId={selectedPortfolioId} />
+          <BrokerImportRunBanner portfolioId={selectedPortfolioId} />
           <Suspense fallback={<PortfolioDashboardSkeleton />}>
             <PortfolioDashboardSection
               baseCurrency={baseCurrency}

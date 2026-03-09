@@ -181,12 +181,12 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - shell data (`portfolios` for header/filter chrome) resolves first,
   - the heavy transactions list/table resolves in a separate Suspense section,
   - keep new transaction-page work in that shape so filter chrome can stream before the ledger payload.
-- Transactions import routes (`/transactions/import` standalone + intercepted modal) now host the real XTB-first importer:
+- Transactions import routes (`/transactions/import` standalone + intercepted modal) now host the shared broker-import shell:
   - server page should preload user portfolios and redirect empty-state users to `/onboarding`,
-  - importer accepts only unpacked XTB Excel files (`.xlsx` / `.xls`) from `Cash Operations`,
-  - preview runs through `POST /api/transactions/import/xtb/preview`,
-  - manual instrument overrides inside preview should refresh valuation in place through `POST /api/transactions/import/xtb/valuation` instead of forcing a full file reparse,
-  - commit creates an async import run through `/api/transactions/import/xtb/jobs`, then processes chunked writes through `/api/transactions/import/xtb/jobs/[runId]/run`.
+  - public API is broker-scoped: `POST /api/transactions/import/[provider]/preview`, `valuation`, `jobs`, `jobs/[runId]`, `jobs/[runId]/run`,
+  - current production provider is still `xtb`; other brokers should plug in through the provider registry instead of cloning the whole flow,
+  - manual instrument overrides inside preview should refresh valuation in place through the generic broker valuation route instead of forcing a full file reparse,
+  - commit creates an async broker import run and processes chunked writes through the shared job service.
 - XTB row mapping v1:
   - trades: `Stock purchase`, `Stock sell`,
   - cash flows: `Deposit`, `Withdrawal`, `Transfer`, `IKE deposit`, `IKE return partial`, `Dividend`, `Withholding tax`, `Free funds interest`, `Free funds interest tax`,
@@ -196,7 +196,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - XTB filename parsing must accept `IKE_...` account exports as PLN accounts. The portfolio/base-currency dropdown does not replace this; `accountCurrency` still comes from broker file naming and drives imported cash rows.
 - XTB trade import should keep cash close to broker reality by treating XTB `Amount` as settlement truth and deriving stored `price`/`fee` from `Comment` + `Amount` when necessary.
 - When XTB `Amount` is far larger than `quantity * display price`, treat that as cross-currency settlement rather than as a gigantic fee. Infer `fee` only for small plausible deltas; otherwise keep the displayed trade price and let settlement FX explain the account-currency amount.
-- XTB commit uses a persisted run/row state model (`xtb_import_runs`, `xtb_import_run_rows`) so heavy imports are resumable, debuggable, and not tied to the current page route lifecycle.
+- Broker import commit uses a persisted run/row state model (`broker_import_runs`, `broker_import_run_rows`) so heavy imports are resumable, debuggable, and not tied to the current page route lifecycle.
+- Shared broker-import architecture now owns the async shell, routes, run banner, valuation refresh, and persistence; provider-specific code should live under a provider adapter (`server/broker-import/providers/<provider>`) and be limited to parsing, row normalization, sorting, notes/debug labels, and import-request mapping.
 - XTB async run rows must be sorted with the same `sortXtbImportRows(...)` ordering the legacy server action used before persisting `row_index`; chunked job execution relies on that stored order.
 - `sortXtbImportRows(...)` should trust XTB `executedAtUtc` first within the same trade date, and use cash/trade side priorities only as a tie-breaker when timestamps are equal or missing. Do not force same-day buys ahead of earlier sells; that creates false cash-balance failures for broker-accurate `sell -> buy` sequences.
 - XTB preview/job paths now emit lightweight timing logs (`[xtb-import][preview]`, `[xtb-import][job]`) for parse/resolve/valuation, row commit duration, and dirty-mark timing so slow imports can be profiled from app logs without adding ad-hoc debug code.

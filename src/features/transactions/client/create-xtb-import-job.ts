@@ -1,22 +1,6 @@
-import { requestJson } from "@/lib/http/client-request";
+import { createBrokerImportJob } from "./create-broker-import-job";
 
-import type {
-  CreateXtbImportJobResponse,
-  XtbImportPreviewRow,
-} from "../lib/xtb-import-types";
-
-export async function createXtbImportJob(
+export const createXtbImportJob = (
   portfolioId: string,
-  rows: readonly (XtbImportPreviewRow & { status: "READY" })[]
-): Promise<CreateXtbImportJobResponse> {
-  const { payload } = await requestJson("/api/transactions/import/xtb/jobs", {
-    method: "POST",
-    json: {
-      portfolioId,
-      rows,
-    },
-    fallbackMessage: "Nie udało się uruchomić importu XTB.",
-  });
-
-  return payload as CreateXtbImportJobResponse;
-}
+  rows: Parameters<typeof createBrokerImportJob>[2]
+) => createBrokerImportJob("xtb", portfolioId, rows);
