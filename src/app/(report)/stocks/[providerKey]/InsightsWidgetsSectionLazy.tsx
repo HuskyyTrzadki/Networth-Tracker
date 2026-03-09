@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 
+import type { RevenueInsightWidget } from "./stock-insights-widget-types";
+
 function InsightsWidgetsSkeleton() {
   return (
     <div
@@ -28,6 +30,10 @@ const InsightsWidgetsSection = dynamic(
   }
 );
 
-export default function InsightsWidgetsSectionLazy() {
-  return <InsightsWidgetsSection />;
+export default function InsightsWidgetsSectionLazy({
+  revenueWidget,
+}: Readonly<{
+  revenueWidget: RevenueInsightWidget | null;
+}>) {
+  return <InsightsWidgetsSection revenueWidget={revenueWidget} />;
 }

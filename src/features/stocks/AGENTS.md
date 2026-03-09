@@ -13,6 +13,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/app/(report)/stocks/[providerKey]/page.tsx`
   - `src/app/(report)/stocks/[providerKey]/ReportRows.tsx`
   - `src/app/(report)/stocks/[providerKey]/InsightsWidgetsSection.tsx`
+  - `src/app/(report)/stocks/[providerKey]/InsightsWidgetsSectionSlot.tsx`
+  - `src/app/(report)/stocks/[providerKey]/RevenueInsightWidgetDialog.tsx`
+  - `src/app/(report)/stocks/[providerKey]/InsightWidgetChart.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportSidebar.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportMainContent.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportLeadershipSection.tsx`
@@ -22,6 +25,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/app/(report)/stocks/[providerKey]/stock-report-revenue-sankey-helpers.ts`
   - `src/app/(report)/stocks/[providerKey]/stock-report-balance-summary.ts`
   - `src/app/(report)/stocks/[providerKey]/stock-insights-widgets-data.ts`
+  - `src/app/(report)/stocks/[providerKey]/stock-report-revenue-insight.ts`
 - App API:
   - `src/app/api/public/stocks/[providerKey]/chart/route.ts`
   - `src/app/api/stocks/[providerKey]/chart/route.ts`
@@ -200,6 +204,13 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Desktop micro-pass for `/stocks/[providerKey]` refined chart controls and typography: grouped range/mode/overlay controls into clearer desktop panels, reduced chart-axis typographic noise, and tightened heading/row scale in valuation/sidebar blocks.
 - Desktop report typography pass further aligned long-form sections (`StockReportMainContent`, `StockReportRevenueMixSection`, `StockReportFiveYearTrendAnalysisSection`, `StockReportConceptSections`): section titles normalized to a calmer scale, uppercase helper labels softened, and key financial values switched to `font-mono tabular-nums` for faster scan/comparison.
 - Desktop follow-up pass on `InsightsWidgetsSection` aligned widget-card and modal rhythm with the report system: flatter modal chrome (`rounded-sm`), calmer micro-typography/tracking, denser card spacing on large screens, and reduced chart axis noise in both compact and expanded widget charts.
+- `InsightsWidgetsSection` now supports one server-backed real-data widget mixed with legacy/demo cards:
+  - `InsightsWidgetsSectionSlot` resolves public cached data on the server and passes a serializable widget model into the client section,
+  - the first real widget is `Revenue`, powered by Yahoo fundamentals with annual bars derived from full quarterly years first and Yahoo annual-proxy rows used only as fallback for years without full quarterly coverage,
+  - revenue widget freshness is intentionally tighter than the generic fundamentals default: the outer widget cache uses `cacheLife("minutes")`, quarterly revenue uses a `12h` raw-series TTL, and annual revenue uses a `6h` raw-series TTL so new annual filings propagate faster,
+  - collapsed revenue card uses a bounded default history window (longest available up to `10Y`) instead of raw full history,
+  - expanded revenue modal uses a split layout (`chart left + settings rail right`) with minimal controls only: `Quarterly/Annual` and time period,
+  - do not fake revenue data when Yahoo coverage is missing; show an honest empty state and leave other widgets unchanged until they get real loaders.
 - `StockMetricsSection` now reads summary + cached 5Y valuation history and renders contextual valuation instead of only raw rows:
   - the active metric (`P/E`, `P/S`, or `P/B`) is shown on a range bar with min/max/median markers,
   - additional multiples and fundamentals moved into calmer supporting lists.
@@ -248,5 +259,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/stocks/server/parse-stock-chart-query.test.ts`
 - `src/features/stocks/server/valuation-range-context.test.ts`
 - `src/app/(report)/stocks/[providerKey]/stock-report-revenue-sankey-helpers.test.ts`
+- `src/app/(report)/stocks/[providerKey]/stock-report-revenue-insight.test.ts`
 - `src/app/api/public/stocks/[providerKey]/chart/route.test.ts`
 - `src/app/api/stocks/[providerKey]/chart/route.test.ts`

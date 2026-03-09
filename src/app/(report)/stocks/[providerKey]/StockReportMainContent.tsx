@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, Check } from "lucide-react";
 
-import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
+import InsightsWidgetsSectionSlot from "./InsightsWidgetsSectionSlot";
 import StockChartSection from "./StockChartSection";
 import StockReportCollapsible from "./StockReportCollapsible";
 import StockReportConceptSectionsLazy from "./StockReportConceptSectionsLazy";
@@ -292,7 +292,11 @@ function DeepDivesSection() {
   );
 }
 
-function AdvancedSection() {
+function AdvancedSection({
+  providerKey,
+}: Readonly<{
+  providerKey: string;
+}>) {
   const sectionGroups = [
     "Bilans i odpornosc finansowa",
     "Zarzad, insiderzy i sygnaly z wynikow",
@@ -324,7 +328,7 @@ function AdvancedSection() {
           <BalanceSnapshotSection />
           <StockReportLeadershipSection />
           <section id="sekcja-widzety">
-            <InsightsWidgetsSectionLazy />
+            <InsightsWidgetsSectionSlot providerKey={providerKey} />
           </section>
           <EarningsSummarySection />
           <StockReportFiveYearTrendAnalysisSection />
@@ -368,7 +372,7 @@ export default function StockReportMainContent({
       <section id="sekcja-jak-zarabia">
         <StockReportRevenueMixSectionSlot providerKey={providerKey} />
       </section>
-      <AdvancedSection />
+      <AdvancedSection providerKey={providerKey} />
     </section>
   );
 }

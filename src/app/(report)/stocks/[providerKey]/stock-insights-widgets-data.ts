@@ -1,41 +1,7 @@
-export type InsightSeriesKey = "primary" | "secondary" | "tertiary";
-
-export type InsightValueFormat =
-  | "usd_billions"
-  | "usd_per_share"
-  | "ratio"
-  | "shares_billions";
-
-export type InsightChartLayer = "bar" | "line" | "area";
-
-export type InsightChartPoint = Readonly<{
-  period: string;
-  primary: number;
-  secondary?: number;
-  tertiary?: number;
-}>;
-
-export type InsightSeries = Readonly<{
-  key: InsightSeriesKey;
-  label: string;
-  color: string;
-  layer: InsightChartLayer;
-  valueFormat?: InsightValueFormat;
-  stackId?: "total";
-}>;
-
-export type InsightWidget = Readonly<{
-  id: string;
-  title: string;
-  subtitle: string;
-  badge: string;
-  description: string;
-  implication: string;
-  nextFocus: string;
-  valueFormat: InsightValueFormat;
-  points: readonly InsightChartPoint[];
-  series: readonly InsightSeries[];
-}>;
+import type {
+  InsightChartPoint,
+  StaticInsightWidget,
+} from "./stock-insights-widget-types";
 
 const QUARTERS = [
   "Q1 2023",
@@ -64,8 +30,9 @@ const toPoints = (
     tertiary: tertiary?.[index],
   }));
 
-export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
+export const STATIC_STOCK_INSIGHT_WIDGETS: readonly StaticInsightWidget[] = [
   {
+    kind: "static",
     id: "free-cash-flow",
     title: "Wolne przeplywy pieniezne",
     subtitle: "Wolna gotowka po inwestycjach",
@@ -88,6 +55,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     ],
   },
   {
+    kind: "static",
     id: "cash-debt",
     title: "Gotowka i dlug",
     subtitle: "Gotowka vs zadluzenie",
@@ -96,8 +64,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
       "Gotowka rosnie szybciej niz dlug, wiec bilans wyglada coraz bezpieczniej.",
     implication:
       "To daje miejsce na inwestycje bez mocnego podnoszenia ryzyka finansowego.",
-    nextFocus:
-      "Pilnuj relacji gotowki do dlugu i kosztu odsetek.",
+    nextFocus: "Pilnuj relacji gotowki do dlugu i kosztu odsetek.",
     valueFormat: "usd_billions",
     points: toPoints(
       [45, 46, 47, 48, 50, 52, 53, 55, 57, 59, 60, 62],
@@ -119,6 +86,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     ],
   },
   {
+    kind: "static",
     id: "dividends",
     title: "Dywidendy",
     subtitle: "Dywidenda na akcje",
@@ -130,7 +98,20 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     nextFocus:
       "Sprawdz, czy wskaznik wyplaty nie rosnie szybciej niz zysk netto.",
     valueFormat: "usd_per_share",
-    points: toPoints([0.42, 0.43, 0.44, 0.45, 0.47, 0.49, 0.5, 0.52, 0.55, 0.57, 0.59, 0.62]),
+    points: toPoints([
+      0.42,
+      0.43,
+      0.44,
+      0.45,
+      0.47,
+      0.49,
+      0.5,
+      0.52,
+      0.55,
+      0.57,
+      0.59,
+      0.62,
+    ]),
     series: [
       {
         key: "primary",
@@ -141,6 +122,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     ],
   },
   {
+    kind: "static",
     id: "shares-outstanding",
     title: "Akcje w obiegu",
     subtitle: "Liczba akcji w obiegu",
@@ -152,7 +134,20 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     nextFocus:
       "Porownaj skale skupu akcji z tempem generowania wolnej gotowki.",
     valueFormat: "shares_billions",
-    points: toPoints([2.62, 2.61, 2.6, 2.59, 2.58, 2.57, 2.56, 2.55, 2.54, 2.53, 2.52, 2.51]),
+    points: toPoints([
+      2.62,
+      2.61,
+      2.6,
+      2.59,
+      2.58,
+      2.57,
+      2.56,
+      2.55,
+      2.54,
+      2.53,
+      2.52,
+      2.51,
+    ]),
     series: [
       {
         key: "primary",
@@ -163,6 +158,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     ],
   },
   {
+    kind: "static",
     id: "expenses",
     title: "Koszty",
     subtitle: "Koszty operacyjne i sprzedazy",
@@ -171,8 +167,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
       "Koszty rosna, ale na razie wolniej niz przychody, wiec marza sie broni.",
     implication:
       "Jesli wzrost spowolni, to wlasnie koszty beda pierwszym miejscem presji na wynik.",
-    nextFocus:
-      "Pilnuj relacji kosztow operacyjnych do marzy brutto.",
+    nextFocus: "Pilnuj relacji kosztow operacyjnych do marzy brutto.",
     valueFormat: "usd_billions",
     points: toPoints(
       [18.8, 19.1, 19.4, 19.8, 20.4, 20.9, 21.7, 22.2, 23.1, 23.8, 24.4, 25.1],
@@ -196,6 +191,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
     ],
   },
   {
+    kind: "static",
     id: "valuation",
     title: "Wycena",
     subtitle: "Mnozniki wyceny",
@@ -204,8 +200,7 @@ export const STOCK_INSIGHTS_WIDGETS: readonly InsightWidget[] = [
       "Wycena jest wymagajaca, ale nie oderwana od historii. Rynek dalej placi za utrzymanie wzrostu.",
     implication:
       "Im wyzszy mnoznik, tym mniej miejsca na jeden slabszy raport.",
-    nextFocus:
-      "Obserwuj PE i EV/EBITDA razem z tempem wzrostu EPS.",
+    nextFocus: "Obserwuj PE i EV/EBITDA razem z tempem wzrostu EPS.",
     valueFormat: "ratio",
     points: toPoints(
       [23.5, 22.1, 21.4, 22.8, 24.2, 25.7, 26.9, 26.4, 25.8, 26.2, 27.1, 26.7],
