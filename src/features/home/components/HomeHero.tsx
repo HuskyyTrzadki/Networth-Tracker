@@ -50,10 +50,10 @@ export function HomeHero() {
           <div className="space-y-6">
             <div className="space-y-3">
               <h1 className="max-w-2xl font-serif text-5xl font-semibold tracking-tight text-foreground sm:text-6xl">
-                Szukaj akcji. Czytaj dane jak gazete.
+                Szukaj akcji. Czytaj dane jak gazetę.
               </h1>
               <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-                Raporty spolek i portfolio w jednym miejscu. Bez dashboardowego halasu.
+                Raporty spółek i portfolio w jednym miejscu. Bez dashboardowego hałasu.
               </p>
             </div>
 
@@ -69,7 +69,7 @@ export function HomeHero() {
                   Wypróbuj jako gość
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  Bez konta. Uaktualnisz profil pozniej.
+                  Bez konta. Uaktualnisz profil później.
                 </p>
                 {notice ? (
                   <div
@@ -87,16 +87,16 @@ export function HomeHero() {
             <Card className="border-black/5 bg-white">
               <CardContent className="p-5">
                 <h2 className="mt-3 font-serif text-2xl font-semibold tracking-tight text-foreground">
-                  Astronauta czytajacy raport
+                  Podgląd raportu spółki
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Miejsce na ilustracje redakcyjna.
+                  Tutaj pokażemy ilustrację albo podgląd raportu.
                 </p>
                 <div className="mt-5 h-[360px] rounded-sm border border-dashed border-black/15 bg-[#f7f4ec]" />
               </CardContent>
             </Card>
             <div className="grid gap-3 sm:grid-cols-3">
-              {["Opoznione notowania", "PLN + USD", "Cache-first"].map((item) => (
+              {["Opóźnione notowania", "PLN + USD", "Cache-first"].map((item) => (
                 <Card key={item} className="rounded-sm border-black/5 bg-white">
                   <CardContent className="p-3 text-sm">{item}</CardContent>
                 </Card>

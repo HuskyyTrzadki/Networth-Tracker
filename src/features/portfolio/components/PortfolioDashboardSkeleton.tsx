@@ -20,49 +20,33 @@ export function PortfolioDashboardSkeleton({ className }: Props) {
       className={cn("space-y-5", className)}
       data-testid="portfolio-dashboard-skeleton"
     >
-      <div className="hidden md:block">
-        <div className="inline-flex rounded-lg border border-dashed border-border/70 bg-card/92 px-3 py-2.5 shadow-[var(--surface-shadow)]">
-          <div className="flex items-center gap-2.5">
-            <SkeletonLine className="h-3 w-14" />
-            <SkeletonLine className="h-6 w-28 rounded-md" />
-            <SkeletonLine className="h-6 w-28 rounded-md" />
-          </div>
-        </div>
-      </div>
-
-      <section className="min-h-[560px] rounded-lg border border-border/75 bg-card/94 shadow-[var(--surface-shadow)]">
+      <section className="rounded-lg border border-border/75 bg-card/94 shadow-[var(--surface-shadow)]">
         <div className="space-y-4 p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <SkeletonLine className="h-4 w-44" />
-              <SkeletonLine className="h-3 w-52" />
+              <SkeletonLine className="h-3 w-14" />
+              <SkeletonLine className="h-8 w-56" />
+              <SkeletonLine className="h-3 w-28" />
             </div>
             <SkeletonLine className="h-8 w-36 rounded-md" />
           </div>
 
-          <div className="rounded-md border border-dashed border-border/70 bg-background/68 p-3">
-            <div className="flex flex-wrap gap-2 border-b border-dashed border-border/70 pb-3">
-              <SkeletonLine className="h-7 w-28 rounded-md" />
-              <SkeletonLine className="h-7 w-24 rounded-md" />
-              <SkeletonLine className="h-7 w-24 rounded-md" />
-            </div>
-            <div className="mt-3 rounded-md border border-dashed border-border/65 bg-card/88 p-3">
-              <div className="h-[332px] rounded-md bg-foreground/[0.07]" />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <SkeletonLine className="h-7 w-24 rounded-md" />
-              <SkeletonLine className="h-7 w-24 rounded-md" />
-              <SkeletonLine className="h-7 w-24 rounded-md" />
-              <SkeletonLine className="h-7 w-24 rounded-md" />
-            </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <SkeletonLine className="h-10 w-64" />
+            <SkeletonLine className="h-4 w-32" />
           </div>
-          <div className="flex justify-end">
-            <SkeletonLine className="h-8 w-44 rounded-md" />
+          <div className="flex flex-wrap gap-3">
+            <SkeletonLine className="h-3 w-40" />
+            <SkeletonLine className="h-3 w-36" />
+            <SkeletonLine className="h-3 w-44" />
+          </div>
+          <div className="max-w-sm">
+            <SkeletonLine className="h-9 w-full rounded-md" />
           </div>
         </div>
       </section>
 
-      <section className="rounded-lg border border-border/75 bg-card/94 shadow-[var(--surface-shadow)]">
+      <section className="min-h-[560px] rounded-lg border border-border/75 bg-card/94 shadow-[var(--surface-shadow)]">
         <div className="space-y-5 p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">

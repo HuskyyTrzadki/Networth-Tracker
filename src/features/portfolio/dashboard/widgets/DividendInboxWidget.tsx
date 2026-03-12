@@ -1,5 +1,4 @@
 import { ChartCard } from "@/features/design-system/components/ChartCard";
-import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Badge } from "@/features/design-system/components/ui/badge";
 import type { DividendInboxItem, DividendInboxResult } from "@/features/portfolio/lib/dividend-inbox";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
@@ -24,11 +23,13 @@ const Section = ({
   items,
   isReadOnly,
   portfolioId,
+  emptyState,
 }: Readonly<{
   title: string;
   items: readonly DividendInboxItem[];
   isReadOnly: boolean;
   portfolioId: string | null;
+  emptyState: string;
 }>) => (
   <section className="space-y-2">
     <h4 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
@@ -97,7 +98,7 @@ const Section = ({
       </ul>
     ) : (
       <div className="rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-4 text-sm text-muted-foreground">
-        Brak zdarzeń.
+        {emptyState}
       </div>
     )}
   </section>
@@ -105,33 +106,28 @@ const Section = ({
 
 export function DividendInboxWidget({ selectedPortfolioId, data }: Props) {
   const isReadOnly = data.isReadOnly;
-  const statusLabel = isReadOnly ? "Status: podgląd" : "Status: księgowanie";
 
   return (
     <ChartCard
       className="border-border/75 bg-card/94"
       title="Skrzynka dywidend"
-      subtitle={isReadOnly ? "Widok globalny" : undefined}
-      right={
-        <StatusStrip
-          hint={
-            isReadOnly
-              ? "W widoku zbiorczym nie można księgować zdarzeń."
-              : "W tym widoku możesz księgować dywidendy dla wybranego portfela."
-          }
-          label={statusLabel}
-        />
+      subtitle={
+        isReadOnly
+          ? "Widok globalny. Księgowanie odblokuje się w konkretnym portfelu."
+          : undefined
       }
     >
       <div className="space-y-4">
         <Section
           title="60 dni wstecz"
+          emptyState="Brak niezaksięgowanych dywidend z ostatnich 60 dni."
           items={data.pastItems}
           isReadOnly={isReadOnly}
           portfolioId={selectedPortfolioId}
         />
         <Section
           title="60 dni naprzód"
+          emptyState="Na razie nic nie wpada w kolejnych 60 dniach."
           items={data.upcomingItems}
           isReadOnly={true}
           portfolioId={selectedPortfolioId}

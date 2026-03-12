@@ -2,7 +2,6 @@
 
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 
-import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 import { Button } from "@/features/design-system/components/ui/button";
 import {
   ToggleGroup,
@@ -15,10 +14,18 @@ import {
   PopoverTrigger,
 } from "@/features/design-system/components/ui/popover";
 import { cn } from "@/lib/cn";
-import type { ComparisonLineDefinition, ComparisonOptionId } from "../lib/benchmark-config";
+import type {
+  ComparisonLineDefinition,
+  ComparisonOptionId,
+} from "../lib/benchmark-config";
 import type { SnapshotCurrency } from "../../lib/supported-currencies";
 
-import { type ChartMode, type ChartRange, formatRangeLabel, rangeOptions } from "../lib/chart-helpers";
+import {
+  type ChartMode,
+  type ChartRange,
+  formatRangeLabel,
+  rangeOptions,
+} from "../lib/chart-helpers";
 
 type Props = Readonly<{
   mode: ChartMode;
@@ -44,16 +51,28 @@ type Props = Readonly<{
 const EMPTY_COMPARISON_OPTIONS: readonly ComparisonLineDefinition[] = [];
 const EMPTY_SELECTED_COMPARISONS: readonly ComparisonOptionId[] = [];
 const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
-const PRIMARY_BOARD_CLASS =
-  "flex flex-wrap items-end gap-2 rounded-md border border-dashed border-border/65 bg-background/68 p-2";
-const PRIMARY_PANEL_CLASS = "space-y-1 rounded-md border border-border/60 bg-background/80 p-1.5";
-const SECONDARY_BOARD_CLASS = "flex flex-wrap items-center gap-2";
-const SECONDARY_PANEL_CLASS = "space-y-1";
+const CONTROLS_ROW_CLASS = "flex flex-wrap items-center gap-x-5 gap-y-2";
+const CONTROL_GROUP_CLASS = "flex flex-wrap items-center gap-2.5";
 const CONTROL_LABEL_CLASS =
-  "px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85";
+  "text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/82";
 const LEDGER_TOGGLE_GROUP_CLASS =
-  "inline-flex flex-wrap items-center gap-1 rounded-md border border-border/65 bg-background/72 p-0.5";
+  "inline-flex flex-wrap items-center gap-1 rounded-md bg-background/72 p-0.5";
 const LEDGER_TOGGLE_ITEM_CLASS = "h-7 px-2.5 font-sans text-[11px]";
+
+function ControlGroup({
+  label,
+  children,
+}: Readonly<{
+  label: string;
+  children: React.ReactNode;
+}>) {
+  return (
+    <div className={CONTROL_GROUP_CLASS}>
+      <span className={CONTROL_LABEL_CLASS}>{label}</span>
+      {children}
+    </div>
+  );
+}
 
 export function PortfolioValueOverTimeHeader({
   mode,
@@ -76,9 +95,8 @@ export function PortfolioValueOverTimeHeader({
 
   return (
     <div className="space-y-3">
-      <div className={PRIMARY_BOARD_CLASS}>
-        <div className={PRIMARY_PANEL_CLASS}>
-          <div className={CONTROL_LABEL_CLASS}>Tryb</div>
+      <div className={CONTROLS_ROW_CLASS}>
+        <ControlGroup label="Tryb">
           <ToggleGroup
             type="single"
             value={mode}
@@ -107,10 +125,9 @@ export function PortfolioValueOverTimeHeader({
               Wartość
             </ToggleGroupItem>
           </ToggleGroup>
-        </div>
+        </ControlGroup>
 
-        <div className={PRIMARY_PANEL_CLASS}>
-          <div className={CONTROL_LABEL_CLASS}>Zakres</div>
+        <ControlGroup label="Zakres">
           <ToggleGroup
             type="single"
             value={range}
@@ -135,12 +152,11 @@ export function PortfolioValueOverTimeHeader({
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-        </div>
+        </ControlGroup>
       </div>
 
-      <div className={SECONDARY_BOARD_CLASS}>
-        <div className={SECONDARY_PANEL_CLASS}>
-          <div className={CONTROL_LABEL_CLASS}>Waluta</div>
+      <div className={CONTROLS_ROW_CLASS}>
+        <ControlGroup label="Waluta">
           <ToggleGroup
             type="single"
             value={currency}
@@ -177,19 +193,18 @@ export function PortfolioValueOverTimeHeader({
               EUR
             </ToggleGroupItem>
           </ToggleGroup>
-        </div>
+        </ControlGroup>
 
         {mode === "PERFORMANCE" && comparisonOptions.length > 0 ? (
-          <div className={SECONDARY_PANEL_CLASS}>
-            <div className={CONTROL_LABEL_CLASS}>Porównania</div>
+          <ControlGroup label="Porównania">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  className="h-7 gap-1.5 rounded-full border-dashed px-2.5 text-[11px]"
+                  className="h-7 gap-1.5 rounded-full px-2.5 text-[11px]"
                   type="button"
                   variant="outline"
                 >
-                  Porównaj
+                  Dodaj linię
                   {selectedComparisonsCount > 0 ? ` (${selectedComparisonsCount})` : ""}
                   <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
@@ -231,24 +246,25 @@ export function PortfolioValueOverTimeHeader({
                 </div>
               </PopoverContent>
             </Popover>
-          </div>
+          </ControlGroup>
         ) : null}
       </div>
 
-      {rebuildStatus === "failed" && rebuildMessage ? (
-        <div className="rounded-sm border border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 px-2.5 py-1.5 text-xs text-destructive">
-          Błąd przebudowy: {rebuildMessage}
+      {rebuildStatus === "failed" || isAllHistoryLoading || isAllHistoryTruncated ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          {rebuildStatus === "failed" && rebuildMessage ? (
+            <span className="text-destructive">Błąd przebudowy: {rebuildMessage}</span>
+          ) : null}
+          {isAllHistoryLoading ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+              Pobieram pełną historię dla zakresu ALL.
+            </span>
+          ) : null}
+          {isAllHistoryTruncated && !isAllHistoryLoading ? (
+            <span>Zakres ALL pobiera pełną historię dopiero po wybraniu tego widoku.</span>
+          ) : null}
         </div>
-      ) : null}
-
-      {isAllHistoryLoading ? (
-        <StatusStrip label="Status: wczytywanie ALL" />
-      ) : null}
-      {isAllHistoryTruncated && !isAllHistoryLoading ? (
-        <StatusStrip
-          hint="Przełącz zakres na ALL, aby pobrać pełną historię."
-          label="Status: skrócona historia"
-        />
       ) : null}
     </div>
   );

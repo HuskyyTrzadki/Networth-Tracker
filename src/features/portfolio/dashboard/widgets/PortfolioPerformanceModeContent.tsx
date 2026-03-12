@@ -128,7 +128,7 @@ export function PortfolioPerformanceModeContent({
             ? shouldBootstrap
               ? "Tworzymy pierwszy punkt."
               : "Za mało danych (min. 2 dni)."
-            : "Dodaj transakcję, aby zobaczyć performance."}
+            : "Dodaj transakcję, aby zobaczyć wynik portfela."}
         </p>
         {!hasHoldings ? (
           <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">

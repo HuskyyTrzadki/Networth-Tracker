@@ -2,7 +2,6 @@
 
 import { ChartCard } from "@/features/design-system/components/ChartCard";
 import { InfoHint } from "@/features/design-system/components/InfoHint";
-import { StatusStrip } from "@/features/design-system/components/StatusStrip";
 
 import type { PortfolioAllocationDonutCard } from "../../server/get-portfolio-allocation-donut-cards";
 
@@ -108,12 +107,9 @@ export function PortfolioAllocationsByPortfolioWidget({ items }: Props) {
               )}
 
               {item.isPartial ? (
-                <StatusStrip
-                  className="mt-3"
-                  hint={`Braki danych: ceny ${item.missingQuotes}, FX ${item.missingFx}.`}
-                  label="Status: częściowe"
-                  tone="warning"
-                />
+                <p className="mt-3 text-xs text-[color:var(--chart-3)]">
+                  Dane częściowe: ceny {item.missingQuotes}, FX {item.missingFx}.
+                </p>
               ) : null}
             </article>
           );

@@ -34,7 +34,7 @@ export function AuthLoginPanel() {
         const redirectUrl = await startGoogleSignIn("/portfolio");
         window.location.assign(redirectUrl);
       },
-      onError: () => setErrorNotice("Nie udalo sie uruchomic logowania Google."),
+      onError: () => setErrorNotice("Nie udało się uruchomić logowania przez Google."),
     });
   };
 
@@ -63,14 +63,14 @@ export function AuthLoginPanel() {
           return;
         }
 
-        setSuccessNotice("Sprawdz skrzynke e-mail, aby potwierdzic konto.");
+        setSuccessNotice("Sprawdź skrzynkę e-mail, aby potwierdzić konto.");
       },
       onError: (error) => {
         const message = readAuthErrorMessage(
           error,
           mode === "signin"
-            ? "Nie udalo sie zalogowac. Sprawdz dane."
-            : "Nie udalo sie utworzyc konta. Sprawdz dane."
+            ? "Nie udało się zalogować. Sprawdź dane."
+            : "Nie udało się utworzyć konta. Sprawdź dane."
         );
         setErrorNotice(message);
       },
@@ -85,7 +85,7 @@ export function AuthLoginPanel() {
             Logowanie
           </h1>
           <p className="text-sm text-muted-foreground">
-            Dostep do raportow i portfela.
+            Dostęp do portfela i raportów.
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export function AuthLoginPanel() {
             </label>
             <label className="block space-y-1.5" htmlFor="auth-login-password">
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                Haslo
+                Hasło
               </span>
               <Input
                 id="auth-login-password"
@@ -156,7 +156,7 @@ export function AuthLoginPanel() {
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Minimum 8 znakow"
+                placeholder="Minimum 8 znaków"
               />
             </label>
             <Button
@@ -164,7 +164,7 @@ export function AuthLoginPanel() {
               onClick={onSubmit}
               disabled={pendingAction === "signin" || pendingAction === "signup"}
             >
-              {mode === "signin" ? "Zaloguj" : "Utworz konto"}
+              {mode === "signin" ? "Zaloguj się" : "Utwórz konto"}
             </Button>
           </div>
 
@@ -183,13 +183,13 @@ export function AuthLoginPanel() {
           ) : null}
 
           <p className="text-xs text-muted-foreground">
-            Kontynuujac, akceptujesz{" "}
+            Kontynuując, akceptujesz{" "}
             <Link href="/terms" className="underline">
               regulamin
             </Link>{" "}
             i{" "}
             <Link href="/privacy" className="underline">
-              polityke prywatnosci
+              politykę prywatności
             </Link>
             .
           </p>

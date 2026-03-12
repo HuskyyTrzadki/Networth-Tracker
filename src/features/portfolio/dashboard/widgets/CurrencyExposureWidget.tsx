@@ -204,43 +204,40 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
     <ChartCard
       className="border-border/75 bg-card/94"
       surface="subtle"
-      title={
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <span>Ekspozycja walutowa</span>
-          <ToggleGroup
-            className="rounded-md border border-border/65 bg-background/70 p-1"
-            type="single"
-            value={mode}
-            onValueChange={(value) => {
-              const parsedMode = parseCurrencyExposureMode(value);
-              if (!parsedMode) {
-                return;
-              }
+      title="Ekspozycja walutowa"
+      right={
+        <ToggleGroup
+          className="rounded-md bg-background/70 p-1"
+          type="single"
+          value={mode}
+          onValueChange={(value) => {
+            const parsedMode = parseCurrencyExposureMode(value);
+            if (!parsedMode) {
+              return;
+            }
 
-              setMode(parsedMode);
-              if (parsedMode === "GOSPODARCZA") {
-                void loadEconomicExposure({ allowCachedResponse: true });
-              }
-            }}
+            setMode(parsedMode);
+            if (parsedMode === "GOSPODARCZA") {
+              void loadEconomicExposure({ allowCachedResponse: true });
+            }
+          }}
+        >
+          <ToggleGroupItem value="NOTOWANIA" variant="ledger" className="h-8 px-3 text-sm">
+            Notowania
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="GOSPODARCZA"
+            variant="ledger"
+            className="h-8 px-3 text-sm"
           >
-            <ToggleGroupItem value="NOTOWANIA" variant="ledger" className="h-8 px-3 text-sm">
-              Notowania
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="GOSPODARCZA"
-              variant="ledger"
-              className="h-8 px-3 text-sm"
-            >
-              Gospodarcza
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+            Gospodarcza
+          </ToggleGroupItem>
+        </ToggleGroup>
       }
-      subtitle="Notowania vs gospodarcza"
     >
       <div className="space-y-4">
         {deltaChips.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
               {deltaReferenceLabel}
             </span>
@@ -248,10 +245,10 @@ export function CurrencyExposureWidget({ summary, selectedPortfolioId }: Props) 
               <span
                 key={`${mode}:${chip.currencyCode}`}
                 className={cn(
-                  "inline-flex rounded-sm border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em]",
+                  "font-mono text-[11px]",
                   chip.delta > 0
-                    ? "border-[color:var(--profit)]/40 bg-[color:var(--profit)]/10 text-[color:var(--profit)]"
-                    : "border-[color:var(--loss)]/40 bg-[color:var(--loss)]/10 text-[color:var(--loss)]"
+                    ? "text-[color:var(--profit)]"
+                    : "text-[color:var(--loss)]"
                 )}
               >
                 {chip.currencyCode} {formatDelta(chip.delta)}

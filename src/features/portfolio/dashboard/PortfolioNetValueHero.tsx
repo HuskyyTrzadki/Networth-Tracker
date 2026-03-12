@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { DemoPortfolioBadge } from "../components/DemoPortfolioBadge";
-import { InfoHint } from "@/features/design-system/components/InfoHint";
+import { Button } from "@/features/design-system/components/ui/button";
 import {
   formatCurrencyString,
   getCurrencyFormatter,
@@ -14,19 +15,27 @@ import { cn } from "@/lib/cn";
 type Props = Readonly<{
   portfolioLabel: string;
   isDemo?: boolean;
+  addTransactionHref: string;
   baseCurrency: string;
   totalValueBase: string | null;
   dailyChangeBase: string | null;
   asOf: string | null;
+  valuationSummary: string;
+  valuationTone: "positive" | "warning";
+  portfolioSwitcher?: React.ReactNode;
 }>;
 
 export function PortfolioNetValueHero({
   portfolioLabel,
   isDemo = false,
+  addTransactionHref,
   baseCurrency,
   totalValueBase,
   dailyChangeBase,
   asOf,
+  valuationSummary,
+  valuationTone,
+  portfolioSwitcher,
 }: Props) {
   const formatter = getCurrencyFormatter(baseCurrency);
   const formattedTotalValue =
@@ -114,76 +123,85 @@ export function PortfolioNetValueHero({
     };
   }, [targetAmount]);
 
-  const animatedTotalLabel = useMemo(() => {
-    const resolvedAmount =
-      targetAmount === null || !Number.isFinite(targetAmount)
-        ? targetAmount
-        : animatedAmount;
-
-    if (resolvedAmount === null || !Number.isFinite(resolvedAmount)) {
-      return totalValueLabel;
-    }
-
-    if (formatter) {
-      return formatter.format(resolvedAmount);
-    }
-
-    return `${resolvedAmount.toFixed(2)} ${baseCurrency}`;
-  }, [
-    animatedAmount,
-    baseCurrency,
-    formatter,
-    targetAmount,
-    totalValueLabel,
-  ]);
+  const resolvedAnimatedAmount =
+    targetAmount === null || !Number.isFinite(targetAmount) ? targetAmount : animatedAmount;
+  const animatedTotalLabel =
+    resolvedAnimatedAmount === null || !Number.isFinite(resolvedAnimatedAmount)
+      ? totalValueLabel
+      : formatter
+        ? formatter.format(resolvedAnimatedAmount)
+        : `${resolvedAnimatedAmount.toFixed(2)} ${baseCurrency}`;
 
   const { amount: totalValueAmount, currency: totalValueCurrency } =
     splitCurrencyLabel(animatedTotalLabel);
-  const netValueHint = asOf ? `Stan na ${asOf}` : "Brak znacznika czasu dla tej wyceny.";
+  const valuationToneClass =
+    valuationTone === "warning" ? "text-[color:var(--chart-3)]" : "text-[color:var(--profit)]";
+  const metadataItems = [
+    valuationSummary,
+    "Notowania opóźnione 10 minut",
+    asOf ? `Stan na ${asOf}` : null,
+  ].filter(Boolean) as string[];
 
   return (
-    <section className="rounded-lg border border-border/72 bg-card/94 px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-sm border border-border/65 bg-background/72 px-2 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-[0.11em] text-muted-foreground/80">
-            {portfolioLabel}
+    <section className="rounded-xl border border-border/60 bg-card/96 px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 space-y-3">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/78">
+            Portfel
           </div>
-          {isDemo ? <DemoPortfolioBadge className="px-3 py-1.5 text-xs" /> : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              {portfolioLabel}
+            </h1>
+            {isDemo ? <DemoPortfolioBadge className="px-3 py-1.5 text-xs" /> : null}
+          </div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+            Waluta bazowa: {baseCurrency}
+          </div>
         </div>
-        <div className="inline-flex rounded-sm border border-border/60 bg-background/72 px-2 py-0.5 font-mono text-[11px] font-medium tabular-nums text-muted-foreground/90">
-          {baseCurrency}
+        <div className="flex w-full items-start justify-start lg:w-auto lg:justify-end">
+          <Button asChild size="lg" className="h-11 w-full lg:w-auto">
+            <Link href={addTransactionHref} scroll={false} data-testid="portfolio-add-transaction-cta">
+              Dodaj transakcję
+            </Link>
+          </Button>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border/60 pt-2">
-        <div className="flex items-center gap-1.5 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
-          <span>Wartość netto</span>
-          <InfoHint
-            text={netValueHint}
-            ariaLabel="Informacja o czasie wyceny wartości netto"
-            className="size-4 border-border/60 bg-background/72"
-          />
+
+      <div className="mt-5 border-t border-dashed border-border/60 pt-4">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/82">
+          Wartość netto
         </div>
-      </div>
-      <div className="mb-4 mt-1 flex flex-wrap items-end gap-3">
-        <div
-          className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
-          data-testid="portfolio-net-value"
-        >
-          <span>{totalValueAmount}</span>
-          {totalValueCurrency ? (
-            <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
-              {totalValueCurrency}
+        <div className="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
+          <div
+            className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
+            data-testid="portfolio-net-value"
+          >
+            <span>{totalValueAmount}</span>
+            {totalValueCurrency ? (
+              <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
+                {totalValueCurrency}
+              </span>
+            ) : null}
+          </div>
+          <div className="mb-1 flex items-baseline gap-2 text-sm">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
+              Dzisiaj
             </span>
-          ) : null}
+            <span className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
+              {dailyChangeCombined ?? "—"}
+            </span>
+          </div>
         </div>
-        <div className="mb-1 inline-flex items-baseline gap-2 rounded-sm border border-border/60 bg-background/70 px-2.5 py-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-            Dzisiaj
-          </p>
-          <p className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
-            {dailyChangeCombined ?? "—"}
-          </p>
+
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span className={cn("font-medium", valuationToneClass)}>{valuationSummary}</span>
+          {metadataItems.slice(1).map((item) => (
+            <span key={item}>{item}</span>
+          ))}
         </div>
+
+        {portfolioSwitcher ? <div className="mt-4 max-w-md">{portfolioSwitcher}</div> : null}
       </div>
     </section>
   );

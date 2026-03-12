@@ -28,7 +28,7 @@ export function AuthGuestUpgradeForm({
           Przez e-mail
         </p>
         <p className="text-sm leading-6 text-muted-foreground">
-          Jeśli nie chcesz używać Google, zapisz konto przez e-mail i hasło.
+          Jeśli nie chcesz używać Google, ustaw logowanie przez e-mail i hasło.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -61,7 +61,7 @@ export function AuthGuestUpgradeForm({
           onClick={onSubmit}
           disabled={pendingAction === "upgrade"}
         >
-          Zapisz przez e-mail
+          Zapisz konto przez e-mail
         </Button>
       </div>
     </div>

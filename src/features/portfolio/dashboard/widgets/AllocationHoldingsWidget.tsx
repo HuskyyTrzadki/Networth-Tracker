@@ -71,11 +71,11 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   const concentrationWarning = getConcentrationWarning(summary);
   const concentrationTone =
     concentrationWarning?.severity === "CRITICAL"
-      ? "border-l-[color:var(--loss)] bg-[color:var(--loss)]/16 text-[color:var(--loss)]"
+      ? "text-[color:var(--loss)]"
     : concentrationWarning?.severity === "HARD"
-        ? "border-l-[color:var(--loss)] bg-destructive/12 text-[color:var(--loss)]"
-        : concentrationWarning
-          ? "border-l-[color:var(--chart-3)] bg-muted/24 text-[color:var(--chart-3)]"
+        ? "text-[color:var(--loss)]"
+    : concentrationWarning
+          ? "text-[color:var(--chart-3)]"
           : "";
 
   const totalLabel =
@@ -134,7 +134,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         right={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ToggleGroup
-              className="rounded-md border border-border/65 bg-background/70 p-1"
+              className="rounded-md bg-background/70 p-1"
               onValueChange={(value) => {
                 if (shouldForceTable) return;
                 if (!isTreemapEligible && value === "TREEMAP") return;
@@ -212,7 +212,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         !isConcentrationWarningDismissed ? (
           <div
             className={cn(
-              "mt-3 flex items-start justify-between gap-3 rounded-sm border border-dashed border-border/70 border-l-[3px] px-3 py-2 text-[12px] leading-5",
+              "mt-3 flex items-start justify-between gap-3 border-t border-dashed border-border/60 pt-3 text-[12px] leading-5",
               concentrationTone
             )}
           >
@@ -222,7 +222,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
             </p>
             <button
               aria-label="Zamknij ostrzeżenie o koncentracji"
-              className="shrink-0 rounded-sm p-1 transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/35"
+              className="shrink-0 rounded-sm p-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/35"
               onClick={() => {
                 setIsConcentrationWarningDismissedByUser(true);
                 window.localStorage.setItem(CONCENTRATION_WARNING_DISMISSED_KEY, "1");

@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { getGuestUpgradeNudgeState } from "@/features/auth/server/guest-upgrade-nudges";
 import { AppShell } from "@/features/app-shell/components/AppShell";
 import { DemoAccountCallout } from "@/features/app-shell/components/DemoAccountCallout";
-import { DemoAccountPageFooter } from "@/features/app-shell/components/DemoAccountPageFooter";
 import { getUserPortfoliosPrivateCached } from "@/features/portfolio/server/get-user-portfolios-private-cached";
 
 type Props = Readonly<{
@@ -43,16 +42,7 @@ async function AuthenticatedAppShell({ children }: AuthenticatedAppShellProps) {
       guestUpgradeBanner={guestUpgradeState.banner}
       settingsBadge={guestUpgradeState.settingsBadge}
     >
-      <>
-        {children}
-        {guestUpgradeState.settingsBadge === "demo" ? (
-          <DemoAccountPageFooter>
-            <div className="px-6 pb-10 pt-6">
-              <DemoAccountCallout className="max-w-sm" />
-            </div>
-          </DemoAccountPageFooter>
-        ) : null}
-      </>
+      {children}
     </AppShell>
   );
 }

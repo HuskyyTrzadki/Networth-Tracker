@@ -19,20 +19,20 @@ export default function AppError({ error, reset }: Props) {
     <main className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1560px] items-center px-5 py-6 sm:px-6 sm:py-8">
       <section className="w-full max-w-xl rounded-lg border border-border bg-card px-6 py-8 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
-          Blad
+          Błąd
         </p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          Nie udalo sie zaladowac widoku
+          Nie udało się załadować widoku
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sprobuj ponownie albo przejdz do glownego dashboardu.
+          Spróbuj ponownie albo wróć do portfeli.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button className="h-11 w-full sm:w-auto" onClick={reset} type="button">
-            Sprobuj ponownie
+            Spróbuj ponownie
           </Button>
           <Button asChild className="h-11 w-full sm:w-auto" variant="outline">
-            <Link href="/portfolio">Przejdz do portfeli</Link>
+            <Link href="/portfolio">Przejdź do portfeli</Link>
           </Button>
         </div>
       </section>

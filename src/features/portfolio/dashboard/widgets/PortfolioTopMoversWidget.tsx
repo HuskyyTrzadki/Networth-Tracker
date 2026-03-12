@@ -3,8 +3,6 @@
 import Link from "next/link";
 
 import { ChartCard } from "@/features/design-system/components/ChartCard";
-import { StatusStrip } from "@/features/design-system/components/StatusStrip";
-import { Badge } from "@/features/design-system/components/ui/badge";
 import { InstrumentLogoImage } from "@/features/transactions/components/InstrumentLogoImage";
 import { resolveInstrumentVisual } from "@/features/transactions/lib/instrument-visual";
 import { cn } from "@/lib/cn";
@@ -62,13 +60,8 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
     <ChartCard
       className="border-border/75 bg-card/94"
       title="Największe ruchy"
-      subtitle="Dziś"
+      subtitle="Dziś · notowania opóźnione"
     >
-      <StatusStrip
-        className="mb-3"
-        hint="Zmiany dzienne bazują na notowaniach opóźnionych."
-        label="Status: opóźnione"
-      />
       {movers.length > 0 ? (
         <ul className="grid gap-2 sm:grid-cols-2">
           {movers.map((mover) => {
@@ -87,15 +80,11 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
               mover.trend === "UP"
                 ? "text-[color:var(--profit)]"
                 : "text-[color:var(--loss)]";
-            const badgeTone =
-              mover.trend === "UP"
-                ? "border-[color:var(--profit)]/35 bg-[color:var(--profit)]/10 text-[color:var(--profit)]"
-                : "border-[color:var(--loss)]/35 bg-[color:var(--loss)]/10 text-[color:var(--loss)]";
 
             return (
               <li key={mover.instrumentId}>
                 <Link
-                  className="group block rounded-md border border-dashed border-border/70 bg-background/68 px-3 py-2 transition-colors hover:border-border hover:bg-background/84 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  className="group block rounded-md border border-border/60 bg-background/60 px-3 py-2.5 transition-colors hover:border-border/80 hover:bg-background/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                   href={`/stocks/${encodeURIComponent(mover.providerKey)}`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -124,21 +113,18 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <Badge className={cn("rounded-md border px-2 py-0.5", badgeTone)}>
-                          {trendLabel} {percentLabel}
-                        </Badge>
                         <div
                           className={cn(
-                            "mt-1 font-mono text-[12px] font-semibold tabular-nums",
+                            "font-mono text-[12px] font-semibold tabular-nums",
                             trendTone
                           )}
                         >
+                          {trendLabel} {percentLabel}
+                        </div>
+                        <div className={cn("mt-1 font-mono text-[12px] tabular-nums", trendTone)}>
                           {changeLabel ?? "—"}
                         </div>
                       </div>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground transition-colors group-hover:text-foreground/75">
-                        Raport
-                      </span>
                     </div>
                   </div>
                 </Link>

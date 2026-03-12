@@ -27,6 +27,7 @@ type Props = Readonly<{
   portfolios: readonly PortfolioOption[];
   selectedPortfolioId: string | null;
   baseCurrency: string;
+  addTransactionHref: string;
 }>;
 
 type DashboardCoreData = Readonly<{
@@ -43,6 +44,7 @@ export default async function PortfolioDashboardSection({
   portfolios,
   selectedPortfolioId,
   baseCurrency,
+  addTransactionHref,
 }: Props) {
   const coreData = await getPortfolioDashboardCoreDataCached(
     selectedPortfolioId,
@@ -51,6 +53,7 @@ export default async function PortfolioDashboardSection({
 
   return (
     <PortfolioDashboard
+      addTransactionHref={addTransactionHref}
       portfolios={portfolios}
       selectedPortfolioId={selectedPortfolioId}
       {...coreData}
@@ -209,7 +212,7 @@ const getPortfolioRecentTransactionsCached = async (
     type: null,
     sort: "date_desc",
     page: 1,
-    pageSize: 10,
+    pageSize: 6,
     portfolioId: selectedPortfolioId,
   });
 

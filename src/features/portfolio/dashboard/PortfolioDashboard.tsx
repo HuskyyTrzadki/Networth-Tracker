@@ -1,9 +1,6 @@
 import { cn } from "@/lib/cn";
 import { addDecimals, decimalZero, parseDecimalString } from "@/lib/decimal";
 import { AnimatedReveal } from "@/features/design-system/components/AnimatedReveal";
-import { StatusStrip } from "@/features/design-system/components/StatusStrip";
-import { Alert } from "@/features/design-system/components/ui/alert";
-import { AlertTriangle, ShieldCheck } from "lucide-react";
 
 import type { PolishCpiPoint } from "@/features/market-data";
 import type { DashboardBenchmarkSeries } from "./lib/benchmark-config";
@@ -23,6 +20,7 @@ type Props = Readonly<{
     isDemo: boolean;
   }[];
   selectedPortfolioId: string | null;
+  addTransactionHref: string;
   summary: PortfolioSummary;
   snapshotRows: Readonly<{
     hasSnapshots: boolean;
@@ -56,6 +54,7 @@ const resolveDailyChangeBase = (
 export function PortfolioDashboard({
   portfolios,
   selectedPortfolioId,
+  addTransactionHref,
   summary,
   snapshotRows,
   liveTotals,
@@ -76,64 +75,34 @@ export function PortfolioDashboard({
   const portfolioLabel = selectedPortfolioName;
   const dailyChangeBase = resolveDailyChangeBase(summary.holdings);
   const asOfLabel = summary.asOf ? formatDashboardAsOf(summary.asOf) : null;
-  const healthLabel = summary.isPartial ? "Dane częściowe" : "Dane kompletne";
-  const healthTone = summary.isPartial ? "warning" : "positive";
-  const healthHint = summary.isPartial
-    ? `Braki danych: ceny ${summary.missingQuotes}, FX ${summary.missingFx}. Wyniki mogą być zaniżone.`
-    : "Wycena obejmuje komplet notowań i kursów FX dla bieżącego widoku.";
+  const valuationSummary = summary.isPartial
+    ? `Dane częściowe: brak cen dla ${summary.missingQuotes} pozycji i FX dla ${summary.missingFx}.`
+    : "Dane kompletne dla bieżącego widoku.";
 
   return (
     <div className={cn("mx-auto w-full max-w-7xl space-y-5", className)}>
       <AnimatedReveal>
         <PortfolioNetValueHero
+          addTransactionHref={addTransactionHref}
+          asOf={asOfLabel}
           portfolioLabel={portfolioLabel}
           isDemo={isDemo}
           baseCurrency={summary.baseCurrency}
           totalValueBase={summary.totalValueBase}
           dailyChangeBase={dailyChangeBase}
-          asOf={asOfLabel}
+          valuationSummary={valuationSummary}
+          valuationTone={summary.isPartial ? "warning" : "positive"}
+          portfolioSwitcher={
+            selectedPortfolioId === null ? (
+              <PortfolioSwitcher
+                className="sm:gap-2.5"
+                portfolios={portfolios}
+                selectedId={selectedPortfolioId}
+              />
+            ) : null
+          }
         />
       </AnimatedReveal>
-      <AnimatedReveal delay={0.03}>
-        <Alert className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-border/70 bg-background/72 px-3 py-2.5 text-foreground shadow-[var(--surface-shadow)]">
-          <div className="flex min-w-0 items-start gap-2">
-            {summary.isPartial ? (
-              <AlertTriangle
-                className="mt-0.5 size-4 shrink-0 text-[color:var(--chart-3)]"
-                aria-hidden
-              />
-            ) : (
-              <ShieldCheck
-                className="mt-0.5 size-4 shrink-0 text-[color:var(--profit)]"
-                aria-hidden
-              />
-            )}
-            <div className="min-w-0">
-              <p className="text-sm text-foreground/90">
-                {summary.isPartial
-                  ? `Dane wyceny są częściowe: brak cen dla ${summary.missingQuotes} pozycji i brak FX dla ${summary.missingFx}.`
-                  : "Wycena kompletna dla bieżącego widoku."}
-              </p>
-              <p className="text-xs text-muted-foreground">Notowania opóźnione 10 minut</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusStrip hint={healthHint} label={healthLabel} tone={healthTone} />
-            {asOfLabel ? <StatusStrip label={asOfLabel} /> : null}
-          </div>
-        </Alert>
-      </AnimatedReveal>
-      {selectedPortfolioId === null ? (
-        <AnimatedReveal className="hidden md:block" delay={0.04}>
-          <div className="inline-flex rounded-lg border border-dashed border-border/75 bg-card/92 px-2.5 py-3 shadow-[var(--surface-shadow)]">
-            <PortfolioSwitcher
-              className="sm:gap-2.5"
-              portfolios={portfolios}
-              selectedId={selectedPortfolioId}
-            />
-          </div>
-        </AnimatedReveal>
-      ) : null}
       <AnimatedReveal delay={0.06}>
         <div className="space-y-6">
           <PortfolioDashboardClientWidgets
