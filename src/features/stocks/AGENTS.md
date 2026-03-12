@@ -193,6 +193,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Instrument search dropdown (`InstrumentCombobox`) no longer renders grouped headings (`Najtrafniejsze` / `Wyniki globalne`) to keep result lists plain and compact across the app.
 - `/stocks` top section now follows the standard app header card pattern (`title/description` on the left, primary action slot on the right) with `StockSearchBar` as the right-side action; the old bottom-of-page `Szukasz czegoś innego?` search block was removed.
 - `/stocks` route copy should stay compact: keep `Akcje` as the sole title, a short combined scope line (`z portfeli i obserwowanych`), and no extra search prompt above the search field.
+- Watchlist/favorite copy should use `obserwowane` in UI, tooltips, and errors; avoid vague `widok` wording.
 - Stock report section intros should be short and functional; avoid descriptive subtitles that restate the section heading in longer words.
 - Stock report copy must stay utility-first:
   - delete sentences that only restate the heading,

@@ -102,7 +102,7 @@ export function StocksScreenerInteractive({
         applyOptimistic({ type: "restore", card });
         dispatchAppToast({
           tone: "destructive",
-          title: "Nie udało się usunąć spółki.",
+          title: "Nie udało się usunąć spółki z obserwowanych.",
           description:
             error instanceof Error && error.message.length > 0
               ? error.message

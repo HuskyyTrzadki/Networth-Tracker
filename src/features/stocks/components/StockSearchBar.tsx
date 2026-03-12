@@ -122,8 +122,8 @@ export function StockSearchBar({
           dispatchAppToast({
             tone: "destructive",
             title: wasFavorite
-              ? "Nie udało się usunąć spółki."
-              : "Nie udało się dodać spółki.",
+              ? "Nie udało się usunąć spółki z obserwowanych."
+              : "Nie udało się dodać spółki do obserwowanych.",
             description: message || "Spróbuj ponownie za chwilę.",
           });
         }).finally(() => {
@@ -152,13 +152,13 @@ export function StockSearchBar({
           className="size-7 cursor-pointer text-muted-foreground hover:text-amber-500"
           aria-label={
             favoriteProviderKeys.includes(option.providerKey)
-              ? `Usuń ${option.ticker} z widoku`
-              : `Dodaj ${option.ticker} do widoku`
+              ? `Usuń ${option.ticker} z obserwowanych`
+              : `Dodaj ${option.ticker} do obserwowanych`
           }
           title={
             favoriteProviderKeys.includes(option.providerKey)
-              ? "Usuń z widoku"
-              : "Dodaj do widoku"
+              ? "Usuń z obserwowanych"
+              : "Dodaj do obserwowanych"
           }
           disabled={pendingProviderKeys.has(option.providerKey)}
           onMouseDown={(event) => {

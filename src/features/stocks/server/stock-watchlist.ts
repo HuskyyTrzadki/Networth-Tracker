@@ -88,7 +88,7 @@ export async function addStockToWatchlist(
   });
 
   if (error) {
-    throw new Error("Nie udało się dodać spółki do widoku.");
+    throw new Error("Nie udało się dodać spółki do obserwowanych.");
   }
 
   try {
@@ -170,6 +170,6 @@ export async function removeStockFromWatchlist(
     .eq("provider_key", providerKey);
 
   if (error) {
-    throw new Error("Nie udało się usunąć spółki z widoku.");
+    throw new Error("Nie udało się usunąć spółki z obserwowanych.");
   }
 }

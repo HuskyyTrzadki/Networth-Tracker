@@ -18,8 +18,8 @@ export function AddTransactionNotesField({
   const label = variant === "custom" ? "Opis" : "Notatka";
   const placeholder =
     variant === "custom"
-      ? "Adres/miasto, metraz, standard, okolica, wszystko co pomoze wycenic…"
-      : "Dlaczego to kupiłem? (np. Spadło o 10% po wynikach)";
+      ? "Adres, miasto, metraż, standard, okolica. Wszystko, co pomoże później wycenić aktywo."
+      : "Krótko: dlaczego kupujesz albo sprzedajesz? Np. po wynikach, pod dywidendę, po wybiciu.";
 
   return (
     <FormField

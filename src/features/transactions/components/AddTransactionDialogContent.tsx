@@ -271,8 +271,8 @@ export function AddTransactionDialogContent({
               </DialogTitle>
               <DialogDescription className="mt-0.5 text-[11px] text-muted-foreground/90">
                 {isEditMode
-                  ? "Edytuj i zapisz."
-                  : "Uzupełnij i zapisz."}
+                  ? "Popraw szczegóły operacji i zapisz zmiany."
+                  : "Uzupełnij szczegóły operacji, aby zapisać ją w portfelu."}
               </DialogDescription>
             </div>
             <DialogClose asChild>

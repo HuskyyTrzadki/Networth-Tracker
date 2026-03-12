@@ -66,7 +66,7 @@ export function StockFavoriteToggleButton({
           }
           dispatchAppToast({
             tone: "destructive",
-            title: "Nie udało się zaktualizować widoku.",
+            title: "Nie udało się zaktualizować obserwowanych.",
             description: message || "Spróbuj ponownie za chwilę.",
           });
         });
@@ -87,8 +87,8 @@ export function StockFavoriteToggleButton({
       )}
       disabled={isPending}
       onClick={onToggle}
-      aria-label={isFavorite ? "Usuń z widoku" : "Dodaj do widoku"}
-      title={isFavorite ? "Usuń z widoku" : "Dodaj do widoku"}
+      aria-label={isFavorite ? "Usuń z obserwowanych" : "Dodaj do obserwowanych"}
+      title={isFavorite ? "Usuń z obserwowanych" : "Dodaj do obserwowanych"}
     >
       {isPending ? (
         <Loader2 className="size-4 animate-spin" aria-hidden />

@@ -14,8 +14,8 @@ export function TransactionsEmptyState({
   query,
 }: Props) {
   const message = query
-    ? `Nie znaleziono transakcji dla "${query}".`
-    : "Brak transakcji do wyświetlenia.";
+    ? `Nie znaleźliśmy transakcji dla "${query}". Spróbuj innej frazy albo wyczyść filtry.`
+    : "Nie masz jeszcze żadnych transakcji. Dodaj pierwszą, aby zobaczyć historię operacji.";
 
   return (
     <div
@@ -25,7 +25,7 @@ export function TransactionsEmptyState({
       )}
     >
       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
-        Brak wpisów
+        Brak transakcji
       </p>
       <p className="mt-2 text-sm text-muted-foreground">{message}</p>
       <div className="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">
@@ -37,7 +37,7 @@ export function TransactionsEmptyState({
             })}
             href={clearSearchHref}
           >
-            Wyczyść
+            Wyczyść filtry
           </Link>
         ) : null}
         <Link

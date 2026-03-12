@@ -112,8 +112,8 @@ export function StockScreenerGrid({
                   type="button"
                   size="icon"
                   variant="outline"
-                  title="Usuń z widoku"
-                  aria-label={`Usuń ${card.symbol} z widoku`}
+                  title="Usuń z obserwowanych"
+                  aria-label={`Usuń ${card.symbol} z obserwowanych`}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
