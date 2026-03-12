@@ -21,6 +21,7 @@
     "supabase:types": "npx --yes supabase gen types typescript --project-id ayeeksbqwyqkevbpdlef --schema public > src/lib/supabase/database.types.ts",
     "tradingview:revenue-geo:batch": "node scripts/tradingview-revenue-geo-batch.mjs",
     "tradingview:revenue-geo:all-stocks": "node scripts/tradingview-revenue-geo-batch.mjs --all-exchanges --instrument-type=EQUITY",
+    "companiesmarketcap:batch": "node scripts/companiesmarketcap-batch.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "knip": "knip"

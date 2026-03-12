@@ -1,20 +1,12 @@
 import type { FundamentalSeriesEvent } from "@/features/stocks/server/types";
+import type { CompaniesMarketCapAnnualHistoryPoint } from "@/features/market-data/server/companiesmarketcap/types";
+import { mergeAnnualNumericHistory } from "@/features/stocks/server/annual-history-merge";
 
 import type {
+  HistoricalInsightWidget,
   InsightChartPoint,
-  InsightWidgetPeriod,
-  RevenueInsightDataset,
-  RevenueInsightFrequency,
-  RevenueInsightWidget,
+  HistoricalInsightDataset,
 } from "./stock-insights-widget-types";
-
-const PERIOD_YEAR_MAP: Readonly<Record<Exclude<InsightWidgetPeriod, "ALL">, number>> = {
-  "1Y": 1,
-  "2Y": 2,
-  "3Y": 3,
-  "5Y": 5,
-  "10Y": 10,
-};
 
 const REVENUE_SERIES = [
   {
@@ -35,14 +27,15 @@ const formatQuarterLabel = (periodEndDate: string) => {
   return `Q${quarter} ${String(date.getUTCFullYear()).slice(-2)}`;
 };
 
-const formatAnnualLabel = (periodEndDate: string) => {
+const formatAnnualLabel = (periodEndDate: string, isTtm = false) => {
   const date = parseIsoDate(periodEndDate);
-  return `FY ${String(date.getUTCFullYear()).slice(-2)}`;
+  const year = String(date.getUTCFullYear()).slice(-2);
+  return isTtm ? `TTM ${year}` : `FY ${year}`;
 };
 
 const toPoint = (
   event: FundamentalSeriesEvent,
-  frequency: RevenueInsightFrequency
+  frequency: HistoricalInsightDataset["frequency"]
 ): InsightChartPoint | null => {
   if (typeof event.value !== "number" || !Number.isFinite(event.value) || event.value <= 0) {
     return null;
@@ -59,9 +52,9 @@ const toPoint = (
 };
 
 const toRevenueDataset = (
-  frequency: RevenueInsightFrequency,
+  frequency: HistoricalInsightDataset["frequency"],
   events: readonly FundamentalSeriesEvent[]
-): RevenueInsightDataset => ({
+): HistoricalInsightDataset => ({
   frequency,
   points: events
     .map((event) => toPoint(event, frequency))
@@ -123,7 +116,8 @@ const deriveAnnualEventsFromQuarterly = (
 
 const mergeAnnualRevenueEvents = (
   quarterlyEvents: readonly FundamentalSeriesEvent[],
-  annualEvents: readonly FundamentalSeriesEvent[]
+  annualEvents: readonly FundamentalSeriesEvent[],
+  fallbackAnnualHistory: readonly CompaniesMarketCapAnnualHistoryPoint[]
 ) => {
   const byYear = new Map<string, FundamentalSeriesEvent>();
 
@@ -135,123 +129,87 @@ const mergeAnnualRevenueEvents = (
     byYear.set(toYearKey(event.periodEndDate), event);
   });
 
+  fallbackAnnualHistory.forEach((point) => {
+    if (typeof point.value !== "number" || !Number.isFinite(point.value) || point.value <= 0) {
+      return;
+    }
+
+    const periodEndDate = `${point.year}-12-31`;
+    byYear.set(String(point.year), {
+      periodEndDate,
+      value: point.value,
+      periodType: "TTM_PROXY_ANNUAL",
+      source: point.isTtm ? "trailing" : "annual_proxy",
+    });
+  });
+
   return Array.from(byYear.values()).sort((left, right) =>
     left.periodEndDate.localeCompare(right.periodEndDate)
   );
 };
 
-const fallbackFrequency = (
-  widget: RevenueInsightWidget
-): RevenueInsightFrequency =>
-  widget.datasets.some((dataset) => dataset.frequency === "quarterly" && dataset.points.length > 0)
-    ? "quarterly"
-    : "annual";
-
-const datasetByFrequency = (
-  widget: RevenueInsightWidget,
-  frequency: RevenueInsightFrequency
-) =>
-  widget.datasets.find((dataset) => dataset.frequency === frequency) ??
-  widget.datasets.find((dataset) => dataset.points.length > 0) ??
-  null;
-
-const getRequiredPointsForPeriod = (
-  frequency: RevenueInsightFrequency,
-  period: Exclude<InsightWidgetPeriod, "ALL">
+const mergeAnnualRevenuePoints = (
+  yahooPoints: readonly InsightChartPoint[],
+  fallbackAnnualHistory: readonly CompaniesMarketCapAnnualHistoryPoint[]
 ) => {
-  const years = PERIOD_YEAR_MAP[period];
-  return frequency === "quarterly" ? years * 4 : years;
+  return mergeAnnualNumericHistory(
+    yahooPoints.map((point) => ({
+      year: Number((point.date ?? "").slice(0, 4)),
+      date: point.date ?? "",
+      value: point.primary * 1_000_000_000,
+      isTtm: false,
+      source: "primary" as const,
+    })),
+    fallbackAnnualHistory
+  ).map((point) => ({
+    period: formatAnnualLabel(point.date, point.isTtm),
+    primary: toBillions(point.value),
+    date: point.date,
+  }));
 };
 
 export function buildRevenueInsightWidget(input: Readonly<{
   quarterlyEvents: readonly FundamentalSeriesEvent[];
   annualEvents: readonly FundamentalSeriesEvent[];
-}>): RevenueInsightWidget | null {
+  fallbackAnnualHistory?: readonly CompaniesMarketCapAnnualHistoryPoint[];
+}>): HistoricalInsightWidget | null {
+  const hasAnnualFallback = (input.fallbackAnnualHistory?.length ?? 0) > 0;
   const quarterly = toRevenueDataset("quarterly", input.quarterlyEvents);
   const annual = toRevenueDataset(
     "annual",
-    mergeAnnualRevenueEvents(input.quarterlyEvents, input.annualEvents)
+    mergeAnnualRevenueEvents(
+      input.quarterlyEvents,
+      input.annualEvents,
+      input.fallbackAnnualHistory ?? []
+    )
   );
+  const annualPoints = mergeAnnualRevenuePoints(annual.points, input.fallbackAnnualHistory ?? []);
 
-  if (quarterly.points.length === 0 && annual.points.length === 0) {
+  if (quarterly.points.length === 0 && annualPoints.length === 0) {
     return null;
   }
 
   return {
-    kind: "revenue",
+    kind: "historical",
     id: "revenue",
     title: "Revenue",
     subtitle: "Przychody kwartalne i roczne",
     badge: "Przychody",
     valueFormat: "usd_billions",
-    sourceLabel: "Yahoo Finance",
-    emptyState: "Brak historii przychodow z Yahoo dla tej spolki.",
+    sourceLabel: hasAnnualFallback
+      ? "Yahoo Finance + CompaniesMarketCap"
+      : "Yahoo Finance",
+    emptyState: "Brak historii przychodow dla tej spolki.",
     datasets: [
       {
         ...quarterly,
-        // Keep one shared series definition so the generic chart renderer can stay simple.
         points: quarterly.points,
       },
       {
         ...annual,
-        points: annual.points,
+        points: annualPoints,
       },
     ],
     series: REVENUE_SERIES,
   };
-}
-
-export function resolveDefaultRevenueInsightFrequency(
-  widget: RevenueInsightWidget
-): RevenueInsightFrequency {
-  return fallbackFrequency(widget);
-}
-
-export function getRevenueInsightAvailablePeriods(
-  widget: RevenueInsightWidget,
-  frequency: RevenueInsightFrequency
-): InsightWidgetPeriod[] {
-  const dataset = datasetByFrequency(widget, frequency);
-
-  if (!dataset || dataset.points.length === 0) {
-    return [];
-  }
-
-  const periods = (Object.entries(PERIOD_YEAR_MAP) as Array<
-    [Exclude<InsightWidgetPeriod, "ALL">, number]
-  >)
-    .filter(([period]) => dataset.points.length >= getRequiredPointsForPeriod(frequency, period))
-    .map(([period]) => period);
-
-  return [...periods, "ALL"];
-}
-
-export function resolveDefaultRevenueInsightPeriod(
-  widget: RevenueInsightWidget,
-  frequency: RevenueInsightFrequency
-): InsightWidgetPeriod {
-  const availablePeriods = getRevenueInsightAvailablePeriods(widget, frequency);
-  const longestBoundedPeriod = [...availablePeriods]
-    .reverse()
-    .find((period) => period !== "ALL");
-
-  return longestBoundedPeriod ?? availablePeriods[0] ?? "ALL";
-}
-
-export function resolveVisibleRevenueInsightPoints(
-  widget: RevenueInsightWidget,
-  frequency: RevenueInsightFrequency,
-  period: InsightWidgetPeriod
-): readonly InsightChartPoint[] {
-  const dataset = datasetByFrequency(widget, frequency);
-  const points = dataset?.points ?? [];
-
-  if (points.length === 0 || period === "ALL") {
-    return points;
-  }
-
-  const requiredPoints = getRequiredPointsForPeriod(frequency, period);
-  const visiblePoints = points.slice(-requiredPoints);
-
-  return visiblePoints.length > 0 ? visiblePoints : points;
 }

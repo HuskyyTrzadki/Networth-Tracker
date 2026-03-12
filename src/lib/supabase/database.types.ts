@@ -615,6 +615,87 @@ export type Database = {
         }
         Relationships: []
       }
+      instrument_companiesmarketcap_metric_cache: {
+        Row: {
+          annual_history: Json
+          fetched_at: string
+          id: string
+          metadata: Json
+          metric: string
+          provider: string
+          provider_key: string
+          slug: string
+          source: string
+          source_url: string
+          ttm_label: string | null
+          ttm_value: number | null
+        }
+        Insert: {
+          annual_history?: Json
+          fetched_at?: string
+          id?: string
+          metadata?: Json
+          metric: string
+          provider?: string
+          provider_key: string
+          slug: string
+          source?: string
+          source_url: string
+          ttm_label?: string | null
+          ttm_value?: number | null
+        }
+        Update: {
+          annual_history?: Json
+          fetched_at?: string
+          id?: string
+          metadata?: Json
+          metric?: string
+          provider?: string
+          provider_key?: string
+          slug?: string
+          source?: string
+          source_url?: string
+          ttm_label?: string | null
+          ttm_value?: number | null
+        }
+        Relationships: []
+      }
+      instrument_companiesmarketcap_slug_cache: {
+        Row: {
+          fetched_at: string
+          id: string
+          metadata: Json
+          provider: string
+          provider_key: string
+          resolved_from: string
+          slug: string
+          source: string
+          source_url: string
+        }
+        Insert: {
+          fetched_at?: string
+          id?: string
+          metadata?: Json
+          provider?: string
+          provider_key: string
+          resolved_from?: string
+          slug: string
+          source?: string
+          source_url: string
+        }
+        Update: {
+          fetched_at?: string
+          id?: string
+          metadata?: Json
+          provider?: string
+          provider_key?: string
+          resolved_from?: string
+          slug?: string
+          source?: string
+          source_url?: string
+        }
+        Relationships: []
+      }
       instrument_daily_prices_cache: {
         Row: {
           adj_close: number | null
@@ -1386,6 +1467,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_companiesmarketcap_backfill_candidates: {
+        Args: { p_provider?: string; p_stale_before?: string }
+        Returns: number
+      }
       count_tradingview_revenue_geo_backfill_candidates: {
         Args: { p_provider?: string; p_stale_before?: string }
         Returns: number
@@ -1520,6 +1605,19 @@ export type Database = {
           provider_key: string
           quantity: number
           symbol: string
+        }[]
+      }
+      list_companiesmarketcap_backfill_candidates: {
+        Args: { p_limit?: number; p_provider?: string; p_stale_before?: string }
+        Returns: {
+          cache_fetched_at: string
+          exchange: string
+          instrument_type: Database["public"]["Enums"]["instrument_type"]
+          name: string
+          provider: string
+          provider_key: string
+          symbol: string
+          updated_at: string
         }[]
       }
       list_tradingview_revenue_geo_backfill_candidates: {

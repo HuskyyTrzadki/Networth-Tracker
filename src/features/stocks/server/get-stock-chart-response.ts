@@ -1,9 +1,16 @@
 import type { createClient } from "@/lib/supabase/server";
 
+import { getInstrumentCompaniesMarketCapMetrics } from "@/features/market-data/server/get-instrument-companiesmarketcap-metrics";
+
 import {
   buildOverlayCoverage,
   buildStockOverlaySeries,
 } from "./build-stock-overlay-series";
+import {
+  fillOutsidePrimaryCoverage,
+  mergeAnnualNumericHistory,
+  pickYearEndValuesFromHistory,
+} from "./annual-history-merge";
 import { getFundamentalTimeSeriesCached } from "./get-fundamental-time-series-cached";
 import { getStockChartSeries } from "./get-stock-chart-series";
 import type {
@@ -14,6 +21,39 @@ import type {
 } from "./types";
 
 type SupabaseServerClient = ReturnType<typeof createClient>;
+
+const extendOverlayMetric = (
+  dates: readonly string[],
+  points: readonly StockChartPoint[],
+  options: Readonly<{
+    metric: "pe" | "revenueTtm";
+    fallbackAnnualHistory:
+      | readonly import("@/features/market-data/server/companiesmarketcap/types").CompaniesMarketCapAnnualHistoryPoint[]
+      | undefined;
+  }>
+) => {
+  if (!options.fallbackAnnualHistory || options.fallbackAnnualHistory.length === 0) {
+    return points.map((point) =>
+      options.metric === "pe" ? point.pe : point.revenueTtm
+    );
+  }
+
+  const primaryAnnualHistory = pickYearEndValuesFromHistory(points, {
+    getDate: (point) => point.t.slice(0, 10),
+    getValue: (point) =>
+      options.metric === "pe" ? point.pe : point.revenueTtm,
+  });
+  const mergedAnnualHistory = mergeAnnualNumericHistory(
+    primaryAnnualHistory,
+    options.fallbackAnnualHistory
+  );
+
+  return fillOutsidePrimaryCoverage(
+    dates,
+    points.map((point) => (options.metric === "pe" ? point.pe : point.revenueTtm)),
+    mergedAnnualHistory
+  );
+};
 
 const toDefaultPoints = (
   timesAndPrices: readonly { time: string; price: number | null }[]
@@ -121,11 +161,34 @@ export async function getStockChartResponse(
         )
       : Promise.resolve([]),
   ]);
-  const points = buildStockOverlaySeries(chartSeries.dailyPoints, {
+  const fallbackMetrics =
+    activeOverlays.includes("pe") || activeOverlays.includes("revenueTtm")
+      ? await getInstrumentCompaniesMarketCapMetrics(supabase, providerKey)
+      : null;
+  const yahooPoints = buildStockOverlaySeries(chartSeries.dailyPoints, {
     includePe: activeOverlays.includes("pe"),
     epsEvents,
     revenueEvents,
   });
+  const dates = chartSeries.dailyPoints.map((point) => point.date);
+  const peValues = activeOverlays.includes("pe")
+    ? extendOverlayMetric(dates, yahooPoints, {
+        metric: "pe",
+        fallbackAnnualHistory: fallbackMetrics?.pe_ratio?.annualHistory,
+      })
+    : yahooPoints.map((point) => point.pe);
+  const revenueTtmValues = activeOverlays.includes("revenueTtm")
+    ? extendOverlayMetric(dates, yahooPoints, {
+        metric: "revenueTtm",
+        fallbackAnnualHistory: fallbackMetrics?.revenue?.annualHistory,
+      })
+    : yahooPoints.map((point) => point.revenueTtm);
+  const points = yahooPoints.map((point, index) => ({
+    ...point,
+    pe: peValues[index] ?? null,
+    peLabel: peValues[index] === null ? point.peLabel : null,
+    revenueTtm: revenueTtmValues[index] ?? null,
+  }));
   const coverage = buildOverlayCoverage(points, periodStartDate);
 
   if (

@@ -14,7 +14,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `src/app/(report)/stocks/[providerKey]/ReportRows.tsx`
   - `src/app/(report)/stocks/[providerKey]/InsightsWidgetsSection.tsx`
   - `src/app/(report)/stocks/[providerKey]/InsightsWidgetsSectionSlot.tsx`
-  - `src/app/(report)/stocks/[providerKey]/RevenueInsightWidgetDialog.tsx`
+  - `src/app/(report)/stocks/[providerKey]/HistoricalInsightWidgetDialog.tsx`
   - `src/app/(report)/stocks/[providerKey]/InsightWidgetChart.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportSidebar.tsx`
   - `src/app/(report)/stocks/[providerKey]/StockReportMainContent.tsx`
@@ -114,9 +114,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - five-year analysis,
   - concept/deep-dive blocks.
 - Report route includes an `Insights Widgets` section in the main reading stream:
-  - small quarter-based charts (FCF, cash/debt, dividends, shares outstanding, expenses, valuation),
-  - centered modal drill-down per widget with larger chart and explanatory copy,
-  - v1 data source is intentionally hardcoded and shared across all tickers.
+  - centered modal drill-down per widget with larger chart and a right-side settings rail,
+  - dynamic real-data widgets currently cover `Revenue`, `Earnings`, `P/E`, and `P/S`,
+  - legacy static cards still exist for the remaining demo widgets until their provider wiring is ready.
 - Report content sections (`What They Own & Owe`, `Revenue by Products`, `Earnings Call Summary`, peers, and deep dives) are currently hardcoded mock content pending provider wiring.
 - `Jak firma zarabia` now reads the geography donut from cached TradingView geography data for the latest available period via `get-public-stock-revenue-geo-cached.ts`; the widget keeps the user-facing title `Przychody wedlug regionu`, groups the long tail into `Pozostale` for readability, and must stay fail-soft when cache rows are missing.
 - `Jak firma zarabia` now also reads the segment/source mix from cached TradingView source data via `get-public-stock-revenue-source-cached.ts`; the report uses the user-facing title `Przychody wedlug segmentow`, groups the long tail into `Pozostale`, and must not fall back to hardcoded product rows once cache-backed data is available.
@@ -204,16 +204,21 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Desktop micro-pass for `/stocks/[providerKey]` refined chart controls and typography: grouped range/mode/overlay controls into clearer desktop panels, reduced chart-axis typographic noise, and tightened heading/row scale in valuation/sidebar blocks.
 - Desktop report typography pass further aligned long-form sections (`StockReportMainContent`, `StockReportRevenueMixSection`, `StockReportFiveYearTrendAnalysisSection`, `StockReportConceptSections`): section titles normalized to a calmer scale, uppercase helper labels softened, and key financial values switched to `font-mono tabular-nums` for faster scan/comparison.
 - Desktop follow-up pass on `InsightsWidgetsSection` aligned widget-card and modal rhythm with the report system: flatter modal chrome (`rounded-sm`), calmer micro-typography/tracking, denser card spacing on large screens, and reduced chart axis noise in both compact and expanded widget charts.
-- `InsightsWidgetsSection` now supports one server-backed real-data widget mixed with legacy/demo cards:
-  - `InsightsWidgetsSectionSlot` resolves public cached data on the server and passes a serializable widget model into the client section,
-  - the first real widget is `Revenue`, powered by Yahoo fundamentals with annual bars derived from full quarterly years first and Yahoo annual-proxy rows used only as fallback for years without full quarterly coverage,
-  - revenue widget freshness is intentionally tighter than the generic fundamentals default: the outer widget cache uses `cacheLife("minutes")`, quarterly revenue uses a `12h` raw-series TTL, and annual revenue uses a `6h` raw-series TTL so new annual filings propagate faster,
-  - collapsed revenue card uses a bounded default history window (longest available up to `10Y`) instead of raw full history,
-  - expanded revenue modal uses a split layout (`chart left + settings rail right`) with minimal controls only: `Quarterly/Annual` and time period,
-  - do not fake revenue data when Yahoo coverage is missing; show an honest empty state and leave other widgets unchanged until they get real loaders.
+- `InsightsWidgetsSection` now mixes dynamic and legacy cards through one shared `HistoricalInsightWidget` model:
+  - `InsightsWidgetsSectionSlot` resolves public cached data on the server and passes serializable dynamic widget models into the client section,
+  - `Revenue` and `Earnings` use Yahoo for quarterly history and CompaniesMarketCap only as annual/TTM fallback,
+  - `P/E` and `P/S` are `best-available` widgets: use dense daily Yahoo-derived history for bounded short ranges (`1Y-5Y`) and only fall back to annual Yahoo/CompaniesMarketCap extension for longer views like `10Y` / `ALL`,
+  - CompaniesMarketCap scraping must stay async-only (cron/manual batch -> DB cache -> report read), never request-path,
+  - widget period controls must never pretend annual-only data is a detailed short-horizon series; if the higher-resolution dataset cannot cover the requested window, switch to the coarser dataset honestly,
+  - quarterly mode remains Yahoo-only; if quarterly coverage is short, the widget must show the shorter window honestly instead of faking longer history.
 - `StockMetricsSection` now reads summary + cached 5Y valuation history and renders contextual valuation instead of only raw rows:
   - the active metric (`P/E`, `P/S`, or `P/B`) is shown on a range bar with min/max/median markers,
   - additional multiples and fundamentals moved into calmer supporting lists.
+- Yahoo + CompaniesMarketCap merge rule for historical fundamentals/valuation must stay reusable and consistent:
+  - prefer Yahoo-derived history whenever it exists for a date/year,
+  - use CompaniesMarketCap only to extend older or missing annual coverage,
+  - do not let fallback annual rows overwrite valid Yahoo history for the same year,
+  - the stock chart overlay and the report insight widgets should consume the same merge policy rather than each implementing their own source selection.
 - Valuation context card now uses a segmented switcher (`P/E`, `P/S`, `P/B`) with one active historical view at a time:
   - `P/E`, `P/S`, and `P/B` should all show real 5Y min/median/max context when the required historical inputs are available,
   - `P/S` is derived from historical `revenue_ttm` + `shares_outstanding`,

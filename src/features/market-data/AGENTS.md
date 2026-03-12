@@ -14,6 +14,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Dividend signals cache: `src/features/market-data/server/get-instrument-dividend-signals-cached.ts`
 - Revenue geography read helper: `src/features/market-data/server/get-instrument-revenue-geo-breakdown.ts`
 - Revenue source/segment read helper: `src/features/market-data/server/get-instrument-revenue-source-breakdown.ts`
+- CompaniesMarketCap annual fallback read helper: `src/features/market-data/server/get-instrument-companiesmarketcap-metrics.ts`
 - Polish CPI cache: `src/features/market-data/server/get-polish-cpi-series-cached.ts`
 - Shared types: `src/features/market-data/lib/instrument-types.ts`
 - TradingView revenue breakdown provider helpers:
@@ -34,6 +35,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `scripts/lib/tradingview-revenue-geo-scrape.mjs`
   - `scripts/lib/tradingview-revenue-source-batch-core.mjs`
   - `scripts/lib/tradingview-revenue-source-scrape.mjs`
+- CompaniesMarketCap annual fallback scripts:
+  - `scripts/companiesmarketcap-batch.mjs`
+  - `scripts/lib/companiesmarketcap-batch-core.mjs`
+  - `scripts/lib/companiesmarketcap-scrape.mjs`
 - Yahoo provider helpers:
   - `src/features/market-data/server/providers/yahoo/yahoo-quote.ts`
   - `src/features/market-data/server/providers/yahoo/yahoo-fx.ts`
@@ -56,12 +61,20 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - CPI service logs explicit backend diagnostics for cache-read, missing-table, and fetch/parse failures (`[market-data][cpi-pl] ...`) and gracefully falls back to non-cached fetch or empty overlay data.
 - TradingView revenue geography ingestion is currently batch-only (local Playwright script), not request-path runtime, and persists into `instrument_revenue_geo_breakdown_cache`.
 - TradingView revenue source/segment ingestion is also batch-only and persists into `instrument_revenue_source_breakdown_cache`.
+- CompaniesMarketCap annual fallback ingestion is also async-only and persists into:
+  - `instrument_companiesmarketcap_slug_cache`
+  - `instrument_companiesmarketcap_metric_cache`
 - `instrument_revenue_geo_breakdown_cache` is also read by portfolio economic currency-exposure analysis (`/api/portfolio/currency-exposure/economic`) as an enrichment source for per-asset LLM splits.
 - TradingView revenue breakdown refresh now has cron-safe backfill paths for both `/api/cron/tradingview-revenue-geo/run` and `/api/cron/tradingview-revenue-source/run`; both select Yahoo equities with missing or stale cache via SQL helper functions, then run the shared Playwright batch runner sequentially with a polite fixed delay (`delayMs`, default 2000).
 - Backfill cron runtime loader (`tradingview-revenue-breakdown/run-backfill-cron.ts`) must keep a literal dynamic import path to `scripts/lib/tradingview-revenue-breakdown-batch-core.mjs` to avoid webpack critical-dependency warnings; maintain matching ESM declaration file `scripts/lib/tradingview-revenue-breakdown-batch-core.d.mts` for strict TypeScript builds.
 - Do not add synchronous/on-demand TradingView scraping to request paths. Missing geo or source coverage must degrade gracefully in UI/backend until the next async backfill run.
+- Do not add synchronous/on-demand CompaniesMarketCap scraping to request paths either. Annual fallback rows must be warmed by cron/manual batch and read from DB only.
 - TradingView symbol mapping uses instrument exchanges (`NASDAQ`, `NYSE`, `WSE`) with `WSE` translated to TradingView venue code `GPW` and `.WA` suffix trimmed from Yahoo provider keys.
 - TradingView breakdown values are parsed from hydrated DOM rows (`By country` / `Według kraju` and `By source` / `Według źródła`) and normalized to numeric latest + history payloads by label.
+- CompaniesMarketCap fallback is annual/TTM-only:
+  - metrics: `revenue`, `earnings`, `pe_ratio`, `ps_ratio`,
+  - slug resolution is cached per instrument and based on verified name-derived slug candidates,
+  - the report should use it only to extend annual history when Yahoo is sparse; quarterly views remain Yahoo-only.
 - Public stock reports now consume both cached geography and cached source/segment data; report UI should use the latest mix only until period labels/order are persisted reliably enough for historical chart modes.
 
 ## Tests
@@ -76,4 +89,6 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - `src/features/market-data/server/providers/tradingview/symbol-map.test.ts`
 - `src/features/market-data/server/providers/tradingview/revenue-geo-parser.test.ts`
 - `src/features/market-data/server/providers/tradingview/revenue-source-parser.test.ts`
+- `src/features/market-data/server/companiesmarketcap/parser.test.ts`
+- `src/features/market-data/server/companiesmarketcap/list-backfill-candidates.test.ts`
 - TODO: extend daily cache tests with integration-level cache hit/miss + inversion fallback against mocked Supabase rows.

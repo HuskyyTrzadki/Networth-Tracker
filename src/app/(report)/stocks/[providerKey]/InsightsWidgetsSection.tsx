@@ -11,18 +11,18 @@ import {
   DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
 
-import RevenueInsightWidgetDialog from "./RevenueInsightWidgetDialog";
+import HistoricalInsightWidgetDialog from "./HistoricalInsightWidgetDialog";
 import InsightWidgetChart from "./InsightWidgetChart";
 import { ReportCard, SectionHeader } from "./ReportPrimitives";
 import { STATIC_STOCK_INSIGHT_WIDGETS } from "./stock-insights-widgets-data";
 import {
-  resolveDefaultRevenueInsightFrequency,
-  resolveDefaultRevenueInsightPeriod,
-  resolveVisibleRevenueInsightPoints,
-} from "./stock-report-revenue-insight";
+  resolveDefaultHistoricalInsightFrequency,
+  resolveDefaultHistoricalInsightPeriod,
+  resolveVisibleHistoricalInsightPoints,
+} from "./stock-report-historical-insight";
 import type {
+  HistoricalInsightWidget,
   InsightWidget,
-  RevenueInsightWidget,
   StaticInsightWidget,
 } from "./stock-insights-widget-types";
 import {
@@ -96,13 +96,19 @@ function LegacyInsightWidgetDialog({
 }
 
 export default function InsightsWidgetsSection({
-  revenueWidget,
+  dynamicWidgets,
 }: Readonly<{
-  revenueWidget: RevenueInsightWidget | null;
+  dynamicWidgets: readonly HistoricalInsightWidget[];
 }>) {
-  const widgets: readonly InsightWidget[] = revenueWidget
-    ? [revenueWidget, ...STATIC_STOCK_INSIGHT_WIDGETS]
-    : STATIC_STOCK_INSIGHT_WIDGETS;
+  const hasDynamicValuationWidget = dynamicWidgets.some(
+    (widget) => widget.id === "pe-ratio" || widget.id === "ps-ratio"
+  );
+  const widgets: readonly InsightWidget[] = [
+    ...dynamicWidgets,
+    ...STATIC_STOCK_INSIGHT_WIDGETS.filter((widget) =>
+      hasDynamicValuationWidget ? widget.id !== "valuation" : true
+    ),
+  ];
   const [activeWidgetId, setActiveWidgetId] = useState<string | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -122,22 +128,23 @@ export default function InsightsWidgetsSection({
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
       <SectionHeader
         as="h3"
-        title="Wybrane trendy kwartalne"
+        title="Wybrane trendy finansowe"
         description="Kilka liczb, ktore warto zobaczyc obok glownego raportu."
       />
 
       <ReportCard contentClassName="p-4 sm:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:[&>*:nth-child(odd)]:border-r lg:[&>*:nth-child(odd)]:border-dashed lg:[&>*:nth-child(odd)]:border-black/15">
           {widgets.map((widget) => {
+            const defaultFrequency =
+              widget.kind === "historical" && widget.frequencyMode !== "best-available"
+                ? resolveDefaultHistoricalInsightFrequency(widget)
+                : undefined;
             const cardPoints =
-              widget.kind === "revenue"
-                ? resolveVisibleRevenueInsightPoints(
+              widget.kind === "historical"
+                ? resolveVisibleHistoricalInsightPoints(
                     widget,
-                    resolveDefaultRevenueInsightFrequency(widget),
-                    resolveDefaultRevenueInsightPeriod(
-                      widget,
-                      resolveDefaultRevenueInsightFrequency(widget)
-                    )
+                    defaultFrequency,
+                    resolveDefaultHistoricalInsightPeriod(widget, defaultFrequency)
                   )
                 : widget.points;
             const cardStat = resolveInsightWidgetCardStat(widget, cardPoints);
@@ -204,8 +211,8 @@ export default function InsightsWidgetsSection({
                 </Button>
               </div>
 
-              {activeWidget.kind === "revenue" ? (
-                <RevenueInsightWidgetDialog
+              {activeWidget.kind === "historical" ? (
+                <HistoricalInsightWidgetDialog
                   widget={activeWidget}
                   reducedMotion={prefersReducedMotion}
                 />

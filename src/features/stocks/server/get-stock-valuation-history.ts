@@ -1,5 +1,8 @@
 import type { createClient } from "@/lib/supabase/server";
 
+import { getInstrumentCompaniesMarketCapMetrics } from "@/features/market-data/server/get-instrument-companiesmarketcap-metrics";
+
+import { buildBestAvailableValuationHistory } from "./best-available-valuation-history";
 import { buildStockValuationHistory } from "./build-stock-valuation-history";
 import { getFundamentalTimeSeriesCached } from "./get-fundamental-time-series-cached";
 import { getStockChartSeries } from "./get-stock-chart-series";
@@ -16,7 +19,7 @@ export type StockValuationHistory = Readonly<{
 export async function getStockValuationHistory(
   supabase: SupabaseServerClient,
   providerKey: string,
-  range: Extract<StockChartRange, "5Y">
+  range: Extract<StockChartRange, "5Y" | "10Y" | "ALL">
 ): Promise<StockValuationHistory> {
   const chartSeries = await getStockChartSeries(supabase, providerKey, range);
   const periodStartDate = chartSeries.dailyPoints[0]?.date ?? new Date().toISOString().slice(0, 10);
@@ -33,15 +36,23 @@ export async function getStockValuationHistory(
       ),
       getFundamentalTimeSeriesCached(supabase, providerKey, "book_value", periodStartDate),
     ]);
+  const fallbackMetrics = await getInstrumentCompaniesMarketCapMetrics(
+    supabase,
+    providerKey
+  );
+  const yahooHistory = buildStockValuationHistory(chartSeries.dailyPoints, {
+    epsEvents,
+    revenueEvents,
+    sharesOutstandingEvents,
+    bookValueEvents,
+  });
 
   return {
     requestedRange: chartSeries.requestedRange,
     resolvedRange: chartSeries.resolvedRange,
-    points: buildStockValuationHistory(chartSeries.dailyPoints, {
-      epsEvents,
-      revenueEvents,
-      sharesOutstandingEvents,
-      bookValueEvents,
+    points: buildBestAvailableValuationHistory(chartSeries.dailyPoints, yahooHistory, {
+      pe_ratio: fallbackMetrics.pe_ratio,
+      ps_ratio: fallbackMetrics.ps_ratio,
     }),
   };
 }

@@ -41,6 +41,7 @@ export default function InsightWidgetChart({
 }>) {
   const chartHeight = expanded ? 320 : 152;
   const animationDuration = reducedMotion ? 0 : expanded ? 540 : 360;
+  const isDenseSeries = points.length > (expanded ? 24 : 12);
   const chartConfig = widget.series.reduce<ChartConfig>((acc, series) => {
     acc[series.key] = {
       label: series.label,
@@ -76,8 +77,8 @@ export default function InsightWidgetChart({
               }}
               axisLine={{ stroke: "var(--border)", strokeOpacity: 0.55 }}
               tickLine={false}
-              interval={expanded ? 0 : "preserveStartEnd"}
-              minTickGap={expanded ? 12 : 16}
+              interval={isDenseSeries ? "preserveStartEnd" : 0}
+              minTickGap={expanded ? (isDenseSeries ? 28 : 12) : 16}
             />
             <YAxis
               width={expanded ? 62 : 52}

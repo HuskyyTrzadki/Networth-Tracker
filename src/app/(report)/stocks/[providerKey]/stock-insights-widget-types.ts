@@ -54,20 +54,23 @@ export type StaticInsightWidget = InsightWidgetBase &
     series: readonly InsightSeries[];
   }>;
 
-export type RevenueInsightFrequency = "quarterly" | "annual";
+export type HistoricalInsightFrequency = "daily" | "quarterly" | "annual";
 
-export type RevenueInsightDataset = Readonly<{
-  frequency: RevenueInsightFrequency;
+export type HistoricalInsightFrequencyMode = "manual" | "best-available";
+
+export type HistoricalInsightDataset = Readonly<{
+  frequency: HistoricalInsightFrequency;
   points: readonly InsightChartPoint[];
 }>;
 
-export type RevenueInsightWidget = InsightWidgetBase &
+export type HistoricalInsightWidget = InsightWidgetBase &
   Readonly<{
-    kind: "revenue";
+    kind: "historical";
     series: readonly InsightSeries[];
     sourceLabel: string;
     emptyState: string;
-    datasets: readonly RevenueInsightDataset[];
+    frequencyMode?: HistoricalInsightFrequencyMode;
+    datasets: readonly HistoricalInsightDataset[];
   }>;
 
-export type InsightWidget = StaticInsightWidget | RevenueInsightWidget;
+export type InsightWidget = StaticInsightWidget | HistoricalInsightWidget;

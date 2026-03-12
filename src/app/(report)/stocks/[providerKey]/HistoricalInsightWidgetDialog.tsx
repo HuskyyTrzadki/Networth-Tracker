@@ -6,20 +6,25 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/features/design-system/components/ui/dialog";
-import { ToggleGroup, ToggleGroupItem } from "@/features/design-system/components/ui/toggle-group";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/features/design-system/components/ui/toggle-group";
 
-import type {
-  InsightWidgetPeriod,
-  RevenueInsightFrequency,
-  RevenueInsightWidget,
-} from "./stock-insights-widget-types";
 import InsightWidgetChart from "./InsightWidgetChart";
 import {
-  getRevenueInsightAvailablePeriods,
-  resolveDefaultRevenueInsightFrequency,
-  resolveDefaultRevenueInsightPeriod,
-  resolveVisibleRevenueInsightPoints,
-} from "./stock-report-revenue-insight";
+  getHistoricalInsightAvailablePeriods,
+  hasHistoricalInsightFrequencyToggle,
+  resolveHistoricalInsightFrequencyForPeriod,
+  resolveDefaultHistoricalInsightFrequency,
+  resolveDefaultHistoricalInsightPeriod,
+  resolveVisibleHistoricalInsightPoints,
+} from "./stock-report-historical-insight";
+import type {
+  HistoricalInsightFrequency,
+  HistoricalInsightWidget,
+  InsightWidgetPeriod,
+} from "./stock-insights-widget-types";
 import {
   resolveInsightWidgetCardStat,
   shouldRenderInsightWidgetSubtitle,
@@ -42,30 +47,47 @@ function SettingsGroup({
   );
 }
 
-export default function RevenueInsightWidgetDialog({
+export default function HistoricalInsightWidgetDialog({
   widget,
   reducedMotion,
 }: Readonly<{
-  widget: RevenueInsightWidget;
+  widget: HistoricalInsightWidget;
   reducedMotion: boolean;
 }>) {
-  const [frequency, setFrequency] = useState<RevenueInsightFrequency>(
-    resolveDefaultRevenueInsightFrequency(widget)
+  const showFrequencyToggle = hasHistoricalInsightFrequencyToggle(widget);
+  const [frequency, setFrequency] = useState<HistoricalInsightFrequency>(
+    resolveDefaultHistoricalInsightFrequency(widget)
   );
-  const availablePeriods = getRevenueInsightAvailablePeriods(widget, frequency);
+  const effectiveFrequency = showFrequencyToggle ? frequency : undefined;
+  const availablePeriods = getHistoricalInsightAvailablePeriods(widget, effectiveFrequency);
   const [period, setPeriod] = useState<InsightWidgetPeriod>(() =>
-    resolveDefaultRevenueInsightPeriod(widget, frequency)
+    resolveDefaultHistoricalInsightPeriod(widget, effectiveFrequency)
   );
 
   const normalizedPeriod = availablePeriods.includes(period)
     ? period
     : availablePeriods[0] ?? "ALL";
-  const visiblePoints = resolveVisibleRevenueInsightPoints(
+  const resolvedFrequency = resolveHistoricalInsightFrequencyForPeriod(
     widget,
-    frequency,
+    normalizedPeriod,
+    effectiveFrequency
+  );
+  const visiblePoints = resolveVisibleHistoricalInsightPoints(
+    widget,
+    effectiveFrequency,
     normalizedPeriod
   );
   const headerStat = resolveInsightWidgetCardStat(widget, visiblePoints);
+  const sourceLabel =
+    widget.frequencyMode === "best-available" && resolvedFrequency
+      ? `${widget.sourceLabel} • ${
+          resolvedFrequency === "daily"
+            ? "Dane dzienne"
+            : resolvedFrequency === "quarterly"
+              ? "Dane kwartalne"
+              : "Dane roczne"
+        }`
+      : widget.sourceLabel;
 
   return (
     <article className="space-y-4 lg:space-y-5">
@@ -101,37 +123,44 @@ export default function RevenueInsightWidgetDialog({
           <aside className="space-y-4 border-t border-dashed border-black/15 pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
             <div className="space-y-1">
               <h4 className="text-base font-semibold tracking-tight">Chart Options</h4>
-              <p className="text-xs text-muted-foreground">{widget.sourceLabel}</p>
+              <p className="text-xs text-muted-foreground">{sourceLabel}</p>
             </div>
 
-            <SettingsGroup label="Data Frequency">
-              <ToggleGroup
-                type="single"
-                value={frequency}
-                onValueChange={(value) => {
-                  if (value !== "quarterly" && value !== "annual") {
-                    return;
-                  }
+            {showFrequencyToggle ? (
+              <SettingsGroup label="Data Frequency">
+                <ToggleGroup
+                  type="single"
+                  value={frequency}
+                  onValueChange={(value) => {
+                    if (value !== "quarterly" && value !== "annual") {
+                      return;
+                    }
 
-                  setFrequency(value);
-                  setPeriod(resolveDefaultRevenueInsightPeriod(widget, value));
-                }}
-                className="grid grid-cols-2 gap-2"
-                aria-label="Czestotliwosc danych"
-              >
-                {(["quarterly", "annual"] as const).map((option) => (
-                  <ToggleGroupItem
-                    key={option}
-                    value={option}
-                    variant="outline"
-                    className="h-10 cursor-pointer rounded-sm border-black/15 text-xs text-foreground/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] hover:border-black/25 hover:bg-muted/40 hover:text-foreground data-[state=on]:border-foreground/85 data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:shadow-none"
-                    disabled={!widget.datasets.some((dataset) => dataset.frequency === option && dataset.points.length > 0)}
-                  >
-                    {option === "quarterly" ? "Quarterly" : "Annual"}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </SettingsGroup>
+                    setFrequency(value);
+                    setPeriod(resolveDefaultHistoricalInsightPeriod(widget, value));
+                  }}
+                  className="grid grid-cols-2 gap-2"
+                  aria-label="Czestotliwosc danych"
+                >
+                  {(["quarterly", "annual"] as const).map((option) => (
+                    <ToggleGroupItem
+                      key={option}
+                      value={option}
+                      variant="outline"
+                      className="h-10 cursor-pointer rounded-sm border-black/15 text-xs text-foreground/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] hover:border-black/25 hover:bg-muted/40 hover:text-foreground data-[state=on]:border-foreground/85 data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:shadow-none"
+                      disabled={
+                        !widget.datasets.some(
+                          (dataset) =>
+                            dataset.frequency === option && dataset.points.length > 0
+                        )
+                      }
+                    >
+                      {option === "quarterly" ? "Quarterly" : "Annual"}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </SettingsGroup>
+            ) : null}
 
             <SettingsGroup label="Time Period">
               <ToggleGroup

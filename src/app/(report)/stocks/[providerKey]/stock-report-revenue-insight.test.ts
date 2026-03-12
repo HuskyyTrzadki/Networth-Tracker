@@ -4,11 +4,13 @@ import type { FundamentalSeriesEvent } from "@/features/stocks/server/types";
 
 import {
   buildRevenueInsightWidget,
-  getRevenueInsightAvailablePeriods,
-  resolveDefaultRevenueInsightFrequency,
-  resolveDefaultRevenueInsightPeriod,
-  resolveVisibleRevenueInsightPoints,
 } from "./stock-report-revenue-insight";
+import {
+  getHistoricalInsightAvailablePeriods,
+  resolveDefaultHistoricalInsightFrequency,
+  resolveDefaultHistoricalInsightPeriod,
+  resolveVisibleHistoricalInsightPoints,
+} from "./stock-report-historical-insight";
 
 const createEvent = (
   periodEndDate: string,
@@ -32,7 +34,7 @@ describe("stock-report-revenue-insight", () => {
     });
 
     expect(widget).not.toBeNull();
-    expect(widget?.kind).toBe("revenue");
+    expect(widget?.kind).toBe("historical");
     expect(widget?.datasets[0]?.points).toEqual([
       {
         period: "Q1 25",
@@ -70,8 +72,8 @@ describe("stock-report-revenue-insight", () => {
     });
 
     expect(widget).not.toBeNull();
-    expect(resolveDefaultRevenueInsightFrequency(widget!)).toBe("quarterly");
-    expect(resolveDefaultRevenueInsightPeriod(widget!, "quarterly")).toBe("3Y");
+    expect(resolveDefaultHistoricalInsightFrequency(widget!)).toBe("quarterly");
+    expect(resolveDefaultHistoricalInsightPeriod(widget!, "quarterly")).toBe("3Y");
   });
 
   it("builds annual bars from full quarterly years when annual proxy data lags", () => {
@@ -107,6 +109,29 @@ describe("stock-report-revenue-insight", () => {
     ]);
   });
 
+  it("prefers Yahoo annual rows when available and extends older history from CompaniesMarketCap", () => {
+    const widget = buildRevenueInsightWidget({
+      quarterlyEvents: [
+        createEvent("2024-03-31", 78_000_000_000, "FLOW_QUARTERLY"),
+        createEvent("2024-06-30", 82_000_000_000, "FLOW_QUARTERLY"),
+        createEvent("2024-09-30", 86_000_000_000, "FLOW_QUARTERLY"),
+        createEvent("2024-12-31", 90_000_000_000, "FLOW_QUARTERLY"),
+      ],
+      annualEvents: [],
+      fallbackAnnualHistory: [
+        { year: 2023, value: 290_000_000, changePercent: 0.39, isTtm: false, periodLabel: null },
+        { year: 2024, value: 240_000_000, changePercent: -0.17, isTtm: false, periodLabel: null },
+        { year: 2025, value: 290_000_000, changePercent: 0.2, isTtm: true, periodLabel: null },
+      ],
+    });
+
+    const annualPoints = widget?.datasets.find(
+      (dataset) => dataset.frequency === "annual"
+    )?.points;
+
+    expect(annualPoints?.map((point) => point.period)).toEqual(["FY 23", "FY 24", "FY 25"]);
+  });
+
   it("derives quarterly ranges by point count and slices the last four quarters for 1Y", () => {
     const widget = buildRevenueInsightWidget({
       quarterlyEvents: [
@@ -122,8 +147,8 @@ describe("stock-report-revenue-insight", () => {
       annualEvents: [],
     });
 
-    const available = getRevenueInsightAvailablePeriods(widget!, "quarterly");
-    const visiblePoints = resolveVisibleRevenueInsightPoints(
+    const available = getHistoricalInsightAvailablePeriods(widget!, "quarterly");
+    const visiblePoints = resolveVisibleHistoricalInsightPoints(
       widget!,
       "quarterly",
       "1Y"
