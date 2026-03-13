@@ -17,8 +17,10 @@ type Props = Readonly<{
   form: UseFormReturn<FormValues>;
   displayCurrency: string;
   fee: string;
+  portfolioLabel: string;
   price: string;
   quantity: string;
+  tradeDate: string;
   type: TransactionType;
   isCustomTab: boolean;
   selectedInstrument: InstrumentSearchResult | null;
@@ -28,8 +30,10 @@ export function AddTransactionSidebarSummary({
   form,
   displayCurrency,
   fee,
+  portfolioLabel,
   price,
   quantity,
+  tradeDate,
   type,
   isCustomTab,
   selectedInstrument,
@@ -55,7 +59,7 @@ export function AddTransactionSidebarSummary({
       <section className="rounded-lg border border-border/65 bg-card/94 p-3.5 shadow-[var(--surface-shadow)]">
         <div className="mb-3 space-y-2 border-b border-dashed border-border/65 pb-2.5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
-            Skutek finansowy
+            Podsumowanie wpisu
           </p>
           <div className="space-y-1">
             <p
@@ -77,13 +81,19 @@ export function AddTransactionSidebarSummary({
           </div>
         </div>
 
-        <div className="mb-3 rounded-md border border-dashed border-border/60 bg-background/68 px-2.5 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-            Waluta
-          </p>
-          <p className="mt-1 font-mono text-sm font-medium tabular-nums text-foreground">
-            {displayCurrency || "—"}
-          </p>
+        <div className="mb-3 grid gap-2 rounded-md border border-dashed border-border/60 bg-background/68 px-2.5 py-2.5">
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-muted-foreground">Portfel</span>
+            <span className="truncate text-right text-foreground">{portfolioLabel}</span>
+          </div>
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-muted-foreground">Data</span>
+            <span className="font-mono text-foreground">{tradeDate}</span>
+          </div>
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-muted-foreground">Waluta</span>
+            <span className="font-mono text-foreground">{displayCurrency || "—"}</span>
+          </div>
         </div>
 
         <TransactionLiveSummary

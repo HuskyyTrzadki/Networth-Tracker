@@ -264,15 +264,15 @@ export function AddTransactionDialogContent({
           <header className="flex items-start justify-between gap-3 border-b border-dashed border-border/65 bg-card/94 px-5 py-3.5 md:px-6 md:py-4">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
-                Formularz księgowania
+                Dziennik portfela
               </p>
               <DialogTitle className="truncate text-base font-semibold tracking-tight">
                 {isEditMode ? "Edytuj transakcję" : "Dodaj transakcję"}
               </DialogTitle>
               <DialogDescription className="mt-0.5 text-[11px] text-muted-foreground/90">
                 {isEditMode
-                  ? "Popraw szczegóły operacji i zapisz zmiany."
-                  : "Uzupełnij szczegóły operacji, aby zapisać ją w portfelu."}
+                  ? "Popraw zapis i zachowaj spójną historię decyzji."
+                  : "Zapisz ruch w portfelu ręcznie albo zacznij od importu ze zrzutu."}
               </DialogDescription>
             </div>
             <DialogClose asChild>

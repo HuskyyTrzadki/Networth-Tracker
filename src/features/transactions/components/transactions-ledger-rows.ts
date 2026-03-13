@@ -7,7 +7,14 @@ const sortGroupItems = (items: readonly TransactionListItem[]) =>
     return 1;
   });
 
-const groupTransactions = (items: readonly TransactionListItem[]) => {
+export type TransactionGroup = Readonly<{
+  groupId: string;
+  items: readonly TransactionListItem[];
+}>;
+
+export const groupTransactions = (
+  items: readonly TransactionListItem[]
+): readonly TransactionGroup[] => {
   const groups = new Map<string, TransactionListItem[]>();
   const order: string[] = [];
 

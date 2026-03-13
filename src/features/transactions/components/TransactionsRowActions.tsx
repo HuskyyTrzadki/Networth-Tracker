@@ -96,81 +96,82 @@ export function TransactionsRowActions({
 
   return (
     <>
-    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          aria-label="Więcej akcji"
-          className="h-9 w-9"
-          size="icon"
-          type="button"
-          variant="ghost"
-        >
-          <MoreHorizontal className="size-4" aria-hidden />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-40 p-1.5">
+      <div className="flex items-center gap-1">
         {canEdit ? (
           <Link
-            className={menuItemClasses}
+            className="inline-flex h-8 items-center rounded-full px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted/30"
             href={`/transactions/${transaction.groupId}/edit`}
-            onClick={() => setIsPopoverOpen(false)}
             scroll={false}
           >
             Edytuj
           </Link>
         ) : null}
-        <button
-          className={cn(menuItemClasses, "text-[color:var(--loss)]")}
-          disabled={isDeleting}
-          onClick={() => {
-            setIsPopoverOpen(false);
-            setIsConfirmDeleteOpen(true);
-          }}
-          type="button"
-        >
-          {isDeleting ? (
-            <>
-              <LoaderCircle className="size-4 animate-spin" aria-hidden />
-              Usuwanie...
-            </>
-          ) : (
-            "Usuń"
-          )}
-        </button>
-      </PopoverContent>
-    </Popover>
-    <AlertDialog
-      open={isConfirmDeleteOpen}
-      onOpenChange={(nextOpen) => {
-        if (isDeleting) {
-          return;
-        }
-        setIsConfirmDeleteOpen(nextOpen);
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Usunąć transakcję?</AlertDialogTitle>
-          <AlertDialogDescription>
-            {isAssetRow
-              ? "Operacja usunie też powiązane rozliczenia gotówki."
-              : "Operacja usunie całą grupę transakcji."}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Anuluj</AlertDialogCancel>
-          <AlertDialogAction
-            disabled={isDeleting}
-            onClick={(event) => {
-              event.preventDefault();
-              handleDeleteConfirm();
-            }}
-          >
-            {isDeleting ? "Usuwanie..." : "Usuń"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              aria-label="Więcej akcji"
+              className="h-8 w-8 rounded-full"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <MoreHorizontal className="size-4" aria-hidden />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-40 p-1.5">
+            <button
+              className={cn(menuItemClasses, "text-[color:var(--loss)]")}
+              disabled={isDeleting}
+              onClick={() => {
+                setIsPopoverOpen(false);
+                setIsConfirmDeleteOpen(true);
+              }}
+              type="button"
+            >
+              {isDeleting ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" aria-hidden />
+                  Usuwanie...
+                </>
+              ) : (
+                "Usuń"
+              )}
+            </button>
+          </PopoverContent>
+        </Popover>
+      </div>
+      <AlertDialog
+        open={isConfirmDeleteOpen}
+        onOpenChange={(nextOpen) => {
+          if (isDeleting) {
+            return;
+          }
+          setIsConfirmDeleteOpen(nextOpen);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Usunąć transakcję?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAssetRow
+                ? "Operacja usunie też powiązane rozliczenia gotówki."
+                : "Operacja usunie całą grupę transakcji."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Anuluj</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault();
+                handleDeleteConfirm();
+              }}
+            >
+              {isDeleting ? "Usuwanie..." : "Usuń"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

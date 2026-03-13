@@ -1,12 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
-import { FormControl, FormField, FormItem, FormLabel } from "@/features/design-system/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/features/design-system/components/ui/select";
 import { AddTransactionInstrumentSection } from "./AddTransactionInstrumentSection";
+import { AddTransactionMethodSwitcher } from "./AddTransactionMethodSwitcher";
+import { AddTransactionScreenshotSection } from "./AddTransactionScreenshotSection";
 import { AddTransactionCustomTradeFields } from "./AddTransactionCustomTradeFields";
 import { AddTransactionTradeFields } from "./AddTransactionTradeFields";
 import { AddTransactionSidebarSummary } from "./AddTransactionSidebarSummary";
@@ -23,25 +22,6 @@ import { useAddTransactionFieldsContext } from "./use-add-transaction-fields-con
 
 type PortfolioOption = Readonly<{ id: string; name: string; baseCurrency: string }>;
 
-const ScreenshotImportWizard = dynamic(
-  () =>
-    import("@/features/onboarding/components/ScreenshotImportWizard").then((module) => ({
-      default: module.ScreenshotImportWizard,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="rounded-lg border border-border/70 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
-        <div className="space-y-3">
-          <div className="h-4 w-36 animate-pulse rounded-md bg-muted/35" />
-          <div className="h-10 animate-pulse rounded-md bg-muted/35" />
-          <div className="h-40 animate-pulse rounded-md bg-muted/25" />
-        </div>
-      </div>
-    ),
-  }
-);
-
 const mergePortfolios = (
   portfolios: readonly PortfolioOption[],
   localPortfolios: readonly PortfolioOption[]
@@ -55,6 +35,28 @@ const mergePortfolios = (
   localPortfolios.forEach((portfolio) => merged.set(portfolio.id, portfolio));
   return Array.from(merged.values());
 };
+
+function StepHeader({
+  step,
+  title,
+  description,
+}: Readonly<{
+  step: string;
+  title: string;
+  description: string;
+}>) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/82">
+        {step}
+      </p>
+      <div className="space-y-1">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
 
 export function AddTransactionDialogFields({
   form,
@@ -218,53 +220,48 @@ export function AddTransactionDialogFields({
   return (
     <div className="flex-1 overflow-y-auto bg-background/40 px-3 py-3 sm:px-5 sm:py-4">
       {isScreenshotOpen ? (
-        <section className="rounded-lg border border-border/70 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
-          <div className="mb-4 rounded-md border border-dashed border-border/65 bg-background/72 p-3.5">
-            <FormField
-              control={form.control}
-              name="portfolioId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    Portfel
-                  </FormLabel>
-                  <Select
-                    disabled={Boolean(forcedPortfolioId) || isPortfolioSwitchPending}
-                    onValueChange={(next) => {
-                      field.onChange(next);
-                      handlePortfolioSelection(next);
-                    }}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Wybierz portfel" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {mergedPortfolios.map((portfolio) => (
-                        <SelectItem key={portfolio.id} value={portfolio.id}>
-                          {portfolio.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-          </div>
-          <ScreenshotImportWizard
-            variant="dialog"
+        <section className="space-y-5 rounded-lg border border-border/70 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+          <AddTransactionMethodSwitcher
+            mode="SCREENSHOT"
+            onModeChange={(nextMode) => {
+              if (nextMode === "MANUAL") {
+                closeScreenshotImport();
+              }
+            }}
+          />
+          <AddTransactionScreenshotSection
+            form={form}
+            forcedPortfolioId={forcedPortfolioId}
+            isPortfolioSwitchPending={isPortfolioSwitchPending}
             onClose={closeScreenshotImport}
             onCompleted={onRequestCloseDialog}
+            onPortfolioSelection={handlePortfolioSelection}
+            portfolios={mergedPortfolios}
+            screenshotPortfolio={screenshotPortfolio}
             searchClient={searchClient}
-            portfolio={screenshotPortfolio ?? undefined}
           />
         </section>
       ) : (
-        <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_292px]">
-          <section className="space-y-3.5 rounded-lg border border-border/70 bg-card/95 p-4 shadow-[var(--surface-shadow)]">
-            <div className="rounded-md border border-dashed border-border/65 bg-background/72 p-3.5">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <section className="space-y-5 rounded-lg border border-border/70 bg-card/95 p-4 shadow-[var(--surface-shadow)] sm:p-5">
+            <AddTransactionMethodSwitcher
+              mode="MANUAL"
+              onModeChange={(nextMode) => {
+                if (nextMode === "SCREENSHOT") {
+                  openScreenshotImport();
+                }
+              }}
+            />
+
+            <div className="border-t border-dashed border-border/60 pt-5">
+              <StepHeader
+                step="01"
+                title="Co księgujesz?"
+                description="Najpierw ustaw portfel, stronę transakcji i rodzaj pozycji."
+              />
+            </div>
+
+            <div>
               <AddTransactionInstrumentSection
                 form={form}
                 forcedPortfolioId={forcedPortfolioId}
@@ -288,12 +285,19 @@ export function AddTransactionDialogFields({
                 isPortfolioBalanceLoading={isCurrentPortfolioBalanceLoading}
                 isEditMode={isEditMode}
                 portfolioBalanceErrorMessage={currentPortfolioBalanceErrorMessage}
-                onOpenScreenshot={openScreenshotImport}
                 createPortfolioFn={handleCreatePortfolio}
               />
             </div>
 
-            <div className="rounded-md border border-dashed border-border/65 bg-background/72 p-3.5">
+            <div className="border-t border-dashed border-border/60 pt-5">
+              <StepHeader
+                step="02"
+                title="Szczegóły zapisu"
+                description="Doprecyzuj datę, ilość, cenę i rozliczenie gotówką."
+              />
+            </div>
+
+            <div>
               {isCustomTab ? (
                 <AddTransactionCustomTradeFields
                   form={form}
@@ -336,7 +340,15 @@ export function AddTransactionDialogFields({
               )}
             </div>
 
-            <div className="rounded-md border border-dashed border-border/65 bg-background/72 p-3.5">
+            <div className="border-t border-dashed border-border/60 pt-5">
+              <StepHeader
+                step="03"
+                title="Kontekst decyzji"
+                description="Dodaj krótką notatkę, żeby później łatwiej odczytać intencję."
+              />
+            </div>
+
+            <div>
               <AddTransactionNotesField
                 form={form}
                 variant={isCustomTab ? "custom" : "default"}
@@ -348,8 +360,13 @@ export function AddTransactionDialogFields({
             form={form}
             displayCurrency={displayCurrency}
             fee={fee}
+            portfolioLabel={
+              mergedPortfolios.find((portfolio) => portfolio.id === resolvedPortfolioId)?.name ??
+              "Wybrany portfel"
+            }
             price={price}
             quantity={quantity}
+            tradeDate={date}
             type={type}
             isCustomTab={isCustomTab}
             selectedInstrument={selectedInstrument}

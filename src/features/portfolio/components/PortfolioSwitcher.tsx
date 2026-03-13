@@ -31,6 +31,7 @@ type Props = Readonly<{
   selectedId: string | null;
   resetPageParam?: boolean;
   disabled?: boolean;
+  showLabel?: boolean;
   className?: string;
 }>;
 
@@ -39,6 +40,7 @@ function PortfolioSwitcherInner({
   selectedId,
   resetPageParam = false,
   disabled = false,
+  showLabel = true,
   className,
 }: Props) {
   const router = useRouter();
@@ -87,14 +89,16 @@ function PortfolioSwitcherInner({
         className
       )}
     >
-      <span className="px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
-        <span className="inline-flex items-center gap-1.5">
-          Portfel
-          {isPending ? (
-            <Loader2 className="size-3 animate-spin text-muted-foreground" aria-hidden />
-          ) : null}
+      {showLabel ? (
+        <span className="px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/90">
+          <span className="inline-flex items-center gap-1.5">
+            Portfel
+            {isPending ? (
+              <Loader2 className="size-3 animate-spin text-muted-foreground" aria-hidden />
+            ) : null}
+          </span>
         </span>
-      </span>
+      ) : null}
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Select
           disabled={disabled || isPending}

@@ -63,7 +63,6 @@ type Props = Readonly<{
   isPortfolioBalanceLoading?: boolean;
   isEditMode?: boolean;
   portfolioBalanceErrorMessage?: string | null;
-  onOpenScreenshot: () => void;
   createPortfolioFn: (input: CreatePortfolioInput) => Promise<{ id: string }>;
 }>;
 
@@ -90,7 +89,6 @@ export function AddTransactionInstrumentSection({
   isPortfolioBalanceLoading = false,
   isEditMode = false,
   portfolioBalanceErrorMessage = null,
-  onOpenScreenshot,
   createPortfolioFn,
 }: Props) {
   const fieldLabelClass =
@@ -112,7 +110,6 @@ export function AddTransactionInstrumentSection({
         isPortfolioSwitchPending={isPortfolioSwitchPending}
         onPortfolioChange={onPortfolioChange}
         onTypeChange={onTypeChange}
-        onOpenScreenshot={onOpenScreenshot}
         createPortfolioFn={createPortfolioFn}
       />
 

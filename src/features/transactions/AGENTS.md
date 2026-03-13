@@ -176,11 +176,22 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Add-transaction close guard now uses shared `AlertDialog` shim primitives (`AlertDialogAction`/`AlertDialogCancel`) for clearer destructive-confirm semantics while keeping current dependency set.
 - Add-transaction dialog container marks submit-in-progress semantics on the shell (`aria-busy`, `data-submitting`) to align modal accessibility with async state.
 - Add-transaction footer is intentionally simpler now: create mode uses full-width primary/secondary actions across the modal width and only shows inline error text when needed, without passive status strips.
+- Add-transaction dialog is progressive-disclosure first:
+  - start with `Sposób dodania` (`Ręcznie` vs `Zrzut ekranu`) before the detailed fields,
+  - keep screenshot import visually important, but separate it from the manual controls instead of embedding it as a small helper CTA inside the portfolio selector block,
+  - manual entry should read in three narrative sections: `Co księgujesz?` -> `Szczegóły zapisu` -> `Kontekst decyzji`,
+  - avoid reintroducing multiple nested dashed cards around every subsection; prefer one stronger form surface with section dividers.
+- Add-transaction right rail (`Podsumowanie wpisu`) should earn its width with immediate context (portfolio, date, currency, financial effect). If it becomes passive chrome again, collapse it before adding more decorative badges.
 - Transactions page server payload (list + portfolios for toolbar) uses Cache Components private caching with tags (`transactions:all`, `transactions:portfolio:<id>`, `portfolio:all`) so revisits/filter toggles are warm and transaction/portfolio writes can invalidate deterministically.
 - `/transactions` now splits server reads by priority:
   - shell data (`portfolios` for header/filter chrome) resolves first,
   - the heavy transactions list/table resolves in a separate Suspense section,
   - keep new transaction-page work in that shape so filter chrome can stream before the ledger payload.
+- `/transactions` should read like a journal, not a back-office ledger:
+  - the main trade or cashflow group entry is the primary visible row,
+  - supporting settlement cash legs belong inside a collapsed `Rozliczenie i ruch gotówki` block by default,
+  - preserve group-level edit/delete behavior while keeping the default reading path focused on the investment event,
+  - page chrome should keep one strong CTA and calm filters; do not make filter slabs louder than the transaction history.
 - Transactions import routes (`/transactions/import` standalone + intercepted modal) now host the shared broker-import shell:
   - server page should preload user portfolios and redirect empty-state users to `/onboarding`,
   - public API is broker-scoped: `POST /api/transactions/import/[provider]/preview`, `valuation`, `jobs`, `jobs/[runId]`, `jobs/[runId]/run`,

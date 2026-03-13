@@ -15,7 +15,7 @@ export function TransactionsEmptyState({
 }: Props) {
   const message = query
     ? `Nie znaleźliśmy transakcji dla "${query}". Spróbuj innej frazy albo wyczyść filtry.`
-    : "Nie masz jeszcze żadnych transakcji. Dodaj pierwszą, aby zobaczyć historię operacji.";
+    : "Pierwszy wpis uruchomi dziennik, wycenę portfela i historię decyzji.";
 
   return (
     <div
@@ -25,7 +25,7 @@ export function TransactionsEmptyState({
       )}
     >
       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
-        Brak transakcji
+        Dziennik jest pusty
       </p>
       <p className="mt-2 text-sm text-muted-foreground">{message}</p>
       <div className="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">

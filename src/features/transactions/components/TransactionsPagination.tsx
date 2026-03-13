@@ -49,7 +49,7 @@ export function TransactionsPagination({ filters, hasNextPage }: Props) {
   const nextDisabled = !hasNextPage;
 
   return (
-    <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-border/70 bg-background/62 px-3 py-2.5">
+    <div className="mt-4 flex items-center justify-between border-t border-dashed border-border/60 pt-3">
       {prevDisabled ? (
         <Button
           className="h-8 rounded-full px-3 text-xs"

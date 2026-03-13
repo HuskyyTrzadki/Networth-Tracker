@@ -149,20 +149,26 @@ export default async function TransactionsPage({ searchParams }: Props) {
   return (
     <main className={`mx-auto w-full px-5 py-5 sm:px-6 sm:py-7 ${APP_CONTENT_MAX_WIDTH_CLASS}`}>
       <AnimatedReveal>
-        <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
-          <header className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Transakcje</h1>
+        <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/82">
+              Dziennik portfela
+            </p>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-semibold tracking-tight">Transakcje</h1>
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                Czytaj historię jak zapis decyzji inwestycyjnych, a nie jak techniczny rejestr.
+              </p>
             </div>
+          </div>
 
-            <Button asChild size="lg" className="h-11 md:min-w-44">
-              <Link href={transactionCreateHref}>Dodaj transakcję</Link>
-            </Button>
-          </header>
-        </section>
+          <Button asChild size="lg" className="h-11 md:min-w-44">
+            <Link href={transactionCreateHref}>Dodaj transakcję</Link>
+          </Button>
+        </header>
       </AnimatedReveal>
 
-      <AnimatedReveal className="mt-5" delay={0.05}>
+      <AnimatedReveal className="mt-6" delay={0.05}>
         <TransactionsSearchToolbar
           key={`${filters.query ?? ""}:${filters.type ?? "all"}:${
             filters.sort
@@ -176,9 +182,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
       </AnimatedReveal>
       {activeFilterChips.length > 0 ? (
         <AnimatedReveal className="mt-3" delay={0.06}>
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border/70 bg-card/90 px-3 py-2.5">
-            <span className="pr-1 text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
-              Filtry
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground/82">
+              Aktywne filtry
             </span>
             {activeFilterChips.map((chip) => (
               <Button
@@ -305,13 +311,17 @@ async function TransactionsResultsSection({
 }>) {
   const { transactionsPage } = await getTransactionsPageItemsCached(filters);
   const sortSummary = filters.sort === "date_desc" ? "Najnowsze" : "Najstarsze";
+  const countLabel = `${transactionsPage.items.length} ${
+    transactionsPage.items.length === 1 ? "wpis" : "wpisów"
+  }`;
 
   return (
     <AnimatedReveal className="mt-4" delay={0.08}>
-      <section className="rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
-        <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+      <section className="rounded-xl border border-border/65 bg-card/92 shadow-[var(--surface-shadow)]">
+        <div className="flex flex-col gap-2 border-b border-dashed border-border/60 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">Historia operacji</p>
+            <p className="text-sm font-medium text-foreground">Dziennik operacji</p>
+            <p className="text-xs text-muted-foreground">{countLabel}</p>
           </div>
           <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
         </div>
@@ -345,26 +355,28 @@ function TransactionsResultsSectionSkeleton({
   const sortSummary = sort === "date_desc" ? "Najnowsze" : "Najstarsze";
 
   return (
-    <section className="mt-4 rounded-xl border border-border/75 bg-card/92 shadow-[var(--surface-shadow)]">
-      <div className="flex flex-col gap-2 border-b border-dashed border-border/65 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+    <section className="mt-4 rounded-xl border border-border/65 bg-card/92 shadow-[var(--surface-shadow)]">
+      <div className="flex flex-col gap-2 border-b border-dashed border-border/60 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-foreground">Historia operacji</p>
+          <p className="text-sm font-medium text-foreground">Dziennik operacji</p>
+          <p className="text-xs text-muted-foreground">Ładuję wpisy...</p>
         </div>
         <p className="text-xs text-muted-foreground">Sortowanie: {sortSummary}</p>
       </div>
 
       <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
         <div className="space-y-3">
-          <div className="h-4 w-40 animate-pulse rounded bg-muted/40" />
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={`transactions-skeleton-row-${index}`}
-              className="grid h-14 grid-cols-[minmax(0,1.7fr)_0.75fr_0.9fr_1fr] gap-3 rounded-md border border-dashed border-border/70 px-3 py-3"
+              className="space-y-2 rounded-lg border border-border/60 px-3 py-3"
             >
-              {Array.from({ length: 4 }).map((__, cellIndex) => (
+              {Array.from({ length: 3 }).map((__, cellIndex) => (
                 <div
                   key={`transactions-skeleton-cell-${index}-${cellIndex}`}
-                  className="h-3 animate-pulse rounded bg-muted/35"
+                  className={`h-3 animate-pulse rounded bg-muted/35 ${
+                    cellIndex === 0 ? "w-40" : cellIndex === 1 ? "w-56" : "w-28"
+                  }`}
                 />
               ))}
             </div>

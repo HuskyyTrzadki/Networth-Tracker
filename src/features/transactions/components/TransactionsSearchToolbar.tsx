@@ -96,17 +96,27 @@ function TransactionsSearchToolbarInner({
     return () => window.removeEventListener("app:focus-search", onFocusSearch);
   }, []);
 
+  const segmentedItemClass = cn(
+    "min-w-0 h-full w-full rounded-[6px] border px-1.5 text-[13px]",
+    "data-[state=off]:border-border/55 data-[state=off]:bg-background/65",
+    "data-[state=off]:text-foreground/88 hover:data-[state=off]:border-border/80",
+    "hover:data-[state=off]:bg-background/92"
+  );
+
   return (
     <div
       aria-busy={isPending}
-      className={cn(
-        "flex flex-col gap-3.5 rounded-lg border border-border/75 bg-card/94 px-4 py-3.5 shadow-[var(--surface-shadow)]"
-      )}
+      className={cn("flex flex-col gap-3.5 rounded-xl border border-border/65 bg-card/92 px-4 py-4")}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-border/60 pb-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground/85">
-          Filtry
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/82">
+            Zakres i wyszukiwanie
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Zawężaj dziennik tylko wtedy, kiedy naprawdę tego potrzebujesz.
+          </p>
+        </div>
         <div
           aria-atomic
           aria-live="polite"
@@ -124,47 +134,48 @@ function TransactionsSearchToolbarInner({
         </div>
       </div>
 
-      <div className="rounded-md border border-border/65 bg-background/70 p-2.5">
-        <Label className="sr-only" htmlFor="transactions-portfolio-switcher">
-          Zakres portfela
-        </Label>
-        <div id="transactions-portfolio-switcher">
-          <PortfolioSwitcher
-            disabled={isPending}
-            portfolios={portfolios}
-            resetPageParam
-            selectedId={selectedPortfolioId}
-          />
-        </div>
-      </div>
+      <div className="grid w-full gap-3.5">
+        <div className="grid gap-3.5 xl:grid-cols-[minmax(240px,0.9fr)_minmax(0,1.45fr)] xl:items-end">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
+              Portfel
+            </Label>
+            <PortfolioSwitcher
+              disabled={isPending}
+              portfolios={portfolios}
+              resetPageParam
+              selectedId={selectedPortfolioId}
+              showLabel={false}
+            />
+          </div>
 
-      <div className="grid w-full gap-3.5 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:items-end">
-        <div className="space-y-1.5">
-          <Label
-            className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85"
-            htmlFor={searchInputId}
-          >
-            Szukaj instrumentu
-          </Label>
-          <Input
-            className="h-10 border-input/85 bg-background/92 text-sm"
-            id={searchInputId}
-            ref={searchInputRef}
-            onChange={handleSearchChange}
-            placeholder="Ticker lub nazwa (np. AAPL)"
-            value={searchValue}
-          />
+          <div className="space-y-1.5">
+            <Label
+              className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85"
+              htmlFor={searchInputId}
+            >
+              Szukaj instrumentu
+            </Label>
+            <Input
+              className="h-10 border-input/85 bg-background/92 text-sm"
+              id={searchInputId}
+              ref={searchInputRef}
+              onChange={handleSearchChange}
+              placeholder="Ticker lub nazwa (np. AAPL)"
+              value={searchValue}
+            />
+          </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <fieldset className="space-y-1.5">
+        <div className="grid gap-3.5 xl:grid-cols-[minmax(0,1fr)_minmax(240px,0.8fr)] xl:items-end">
+          <fieldset className="min-w-0 space-y-1.5">
             <legend className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
               Typ operacji
             </legend>
-            <div className="h-10 rounded-md border border-input/85 bg-background/84 p-0.5">
+            <div className="h-10 rounded-md bg-background/84 p-0.5">
               <ToggleGroup
                 aria-label="Typ transakcji"
-                className="grid h-full grid-cols-3 gap-0.5"
+                className="grid h-full w-full grid-cols-3 gap-0.5"
                 onValueChange={(value) => {
                   const nextType =
                     value === "BUY" || value === "SELL" ? value : null;
@@ -174,21 +185,21 @@ function TransactionsSearchToolbarInner({
                 value={type ?? "all"}
               >
                 <ToggleGroupItem
-                  className="h-full w-full rounded-[6px] px-2 text-sm"
+                  className={segmentedItemClass}
                   disabled={isPending}
                   value="all"
                 >
                   Wszystkie
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                  className="h-full w-full rounded-[6px] px-2 text-sm"
+                  className={segmentedItemClass}
                   disabled={isPending}
                   value="BUY"
                 >
                   Kupno
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                  className="h-full w-full rounded-[6px] px-2 text-sm"
+                  className={segmentedItemClass}
                   disabled={isPending}
                   value="SELL"
                 >
@@ -198,7 +209,7 @@ function TransactionsSearchToolbarInner({
             </div>
           </fieldset>
 
-          <div className="space-y-1.5">
+          <div className="min-w-0 space-y-1.5">
             <Label
               className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/85"
               htmlFor={sortSelectId}
@@ -214,7 +225,7 @@ function TransactionsSearchToolbarInner({
               value={sort}
             >
               <SelectTrigger
-                className="h-10 min-w-[180px] border-input/85 bg-background/92"
+                className="h-10 w-full min-w-0 border-input/85 bg-background/92"
                 id={sortSelectId}
               >
                 <SelectValue placeholder="Sortuj" />

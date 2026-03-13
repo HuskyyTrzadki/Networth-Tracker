@@ -76,7 +76,7 @@ export function AddTransactionDialogFooter({
                   Zapisywanie...
                 </>
               ) : (
-                "Dodaj transakcję"
+                "Zapisz wpis"
               )}
             </Button>
             <Button
@@ -93,7 +93,7 @@ export function AddTransactionDialogFooter({
                   Zapisywanie...
                 </>
               ) : (
-                "Zapisz i dodaj kolejną"
+                "Zapisz i dodaj kolejny"
               )}
             </Button>
           </div>

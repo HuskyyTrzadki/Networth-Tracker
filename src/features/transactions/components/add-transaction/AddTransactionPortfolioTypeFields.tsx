@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
-import { Button } from "@/features/design-system/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/features/design-system/components/ui/form";
 import {
   Select,
@@ -31,7 +30,6 @@ export function AddTransactionPortfolioTypeFields({
   isPortfolioSwitchPending = false,
   onPortfolioChange,
   onTypeChange,
-  onOpenScreenshot,
   createPortfolioFn,
 }: Readonly<{
   form: UseFormReturn<FormValues>;
@@ -43,7 +41,6 @@ export function AddTransactionPortfolioTypeFields({
   isPortfolioSwitchPending?: boolean;
   onPortfolioChange: (nextPortfolioId: string) => void;
   onTypeChange: (nextType: "BUY" | "SELL") => void;
-  onOpenScreenshot: () => void;
   createPortfolioFn: (input: CreatePortfolioInput) => Promise<{ id: string }>;
 }>) {
   const fieldLabelClass =
@@ -96,28 +93,6 @@ export function AddTransactionPortfolioTypeFields({
               </SelectContent>
             </Select>
             <FormMessage />
-            {!isEditMode ? (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-border/65 bg-background/72 px-3 py-2.5">
-                <div className="min-w-0 space-y-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
-                    Wgraj zrzut ekranu
-                  </p>
-                  <p className="text-[11px] leading-relaxed text-muted-foreground">
-                    Jeśli nie chcesz uzupełniać manualnie, możesz wgrać zrzut ekranu z brokera.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 rounded-full px-3"
-                  disabled={Boolean(!forcedPortfolioId && !field.value)}
-                  onClick={onOpenScreenshot}
-                >
-                  Wgraj zrzut ekranu
-                </Button>
-              </div>
-            ) : null}
           </FormItem>
         )}
       />
