@@ -193,12 +193,26 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Instrument search dropdown (`InstrumentCombobox`) no longer renders grouped headings (`Najtrafniejsze` / `Wyniki globalne`) to keep result lists plain and compact across the app.
 - `/stocks` top section now follows the standard app header card pattern (`title/description` on the left, primary action slot on the right) with `StockSearchBar` as the right-side action; the old bottom-of-page `Szukasz czegoś innego?` search block was removed.
 - `/stocks` route copy should stay compact: keep `Akcje` as the sole title, a short combined scope line (`z portfeli i obserwowanych`), and no extra search prompt above the search field.
+- `/stocks` now behaves as a monitoring desk, not a generic screener:
+  - lead with one `Na radarze` card chosen from the strongest current signal (prefer portfolio dips in the selected preview range),
+  - keep `W portfelu` and `Obserwowane` in separate sections,
+  - sort section cards by current move relevance for the selected preview range instead of alphabetically.
 - Watchlist/favorite copy should use `obserwowane` in UI, tooltips, and errors; avoid vague `widok` wording.
 - Stock report section intros should be short and functional; avoid descriptive subtitles that restate the section heading in longer words.
 - Stock report copy must stay utility-first:
   - delete sentences that only restate the heading,
   - avoid helper text like `kliknij, aby...` when the control already makes that obvious,
   - explanatory text should answer `co z tego wynika` or `na co patrzec dalej`.
+- Stock report should not over-teach the reading flow:
+  - do not stack sidebar coaching (`Na szybko`) with section descriptions and repeated `Co to znaczy dla inwestora?` blocks,
+  - prefer one strong interpretive block per important section, not a takeaway after every card.
+- Stock report should surface core supporting evidence before the deep fold:
+  - `Bilans` belongs in the main reading stream,
+  - `Wybrane trendy finansowe` should stay visible before the final deep-analysis collapsible,
+  - the remaining depth should feel like optional reading, not where the real report starts.
+- `Dalsza analiza` should not hide all meaningful supporting sections behind one top-level drawer:
+  - keep subgroup labels visible (`Zarzad i wyniki`, `Trend i rozbicia`),
+  - if content is collapsible at all, collapse only the deepest layers, not the whole remainder of the report.
 - Long-form stock report education blocks (5Y analysis, concept sections, margin explainers, leadership) should prefer one short intro and one combined takeaway box; avoid stacked `what this is` + `how to read` + `what it means` copy for the same section.
 - Report wording should stay consistent across sections: prefer one label family (`Najwazniejsze punkty`, `Bilans w skrocie`, `Kluczowe obserwacje`, `Wniosek`) instead of mixing near-synonyms like `podsumowanie`, `skrot`, `sekcja`, and `na co patrzec` for the same job.
 - Desktop polish follow-up adjusted `/stocks` shell/readability on large screens (search width containment, loader/skeleton geometry, and screener card density/rhythm).
@@ -207,6 +221,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Desktop follow-up pass on `InsightsWidgetsSection` aligned widget-card and modal rhythm with the report system: flatter modal chrome (`rounded-sm`), calmer micro-typography/tracking, denser card spacing on large screens, and reduced chart axis noise in both compact and expanded widget charts.
 - `InsightsWidgetsSection` now mixes dynamic and legacy cards through one shared `HistoricalInsightWidget` model:
   - `InsightsWidgetsSectionSlot` resolves public cached data on the server and passes serializable dynamic widget models into the client section,
+  - widget slot must fail soft; if dynamic widget data throws, the report should keep rendering with legacy/static cards instead of crashing the whole page,
   - `Revenue` and `Earnings` use Yahoo for quarterly history and CompaniesMarketCap only as annual/TTM fallback,
   - `P/E` and `P/S` are `best-available` widgets: use dense daily Yahoo-derived history for bounded short ranges (`1Y-5Y`) and only fall back to annual Yahoo/CompaniesMarketCap extension for longer views like `10Y` / `ALL`,
   - CompaniesMarketCap scraping must stay async-only (cron/manual batch -> DB cache -> report read), never request-path,
@@ -246,7 +261,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - secondary `Warstwy` chip row with progressive disclosure for `Spolka/Globalne` and fundamental overlays,
   - secondary chips should stay visually softer than the primary segmented controls so the chart still leads,
   - active state on secondary chips must still be explicit at a glance (stronger border/fill + small status dot), but should not mimic form checkboxes,
-  - chart copy should stay compressed: avoid helper headings like `Widoczne` / `Warstwy` when the UI is already self-explanatory, and prefer one compact notice line over stacked micro-messages,
+  - chart copy should stay compressed: prefer one compact notice line below the plot over stacked micro-messages above it,
   - no production-facing mock trade toggle in the public report UI.
 - `StockChartCard.tsx` stays split into focused subcomponents (`StockChartCardHeader.tsx`, `StockChartPrimaryControls.tsx`, `StockChartLayerControls.tsx`, `StockChartLegend.tsx`, `stock-chart-card-state.ts`) to keep file size under repo limits and preserve readability.
 - Report shell styling follows the `Tactile Ledger` standard:

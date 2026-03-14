@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { InvestorTakeaway, ReportCard, SectionHeader } from "./ReportPrimitives";
+import { ReportCard, SectionHeader } from "./ReportPrimitives";
 import type { RevenueBreakdownCardViewModel } from "./stock-report-revenue-breakdown-view-model";
 import {
   PROFIT_CONVERSION_EMPTY_STATE,
@@ -91,11 +91,7 @@ export default function StockReportRevenueMixSection({
   return (
     <TooltipProvider>
       <section className="space-y-3 border-b border-dashed border-black/15 pb-6">
-        <SectionHeader
-          as="h3"
-          title="Jak firma zarabia"
-          description="Marze i mix przychodow w jednej, spokojniejszej sekcji."
-        />
+        <SectionHeader as="h3" title="Jak firma zarabia" />
 
         <ProfitabilitySnapshot viewModel={profitConversionViewModel} />
 
@@ -130,10 +126,6 @@ export default function StockReportRevenueMixSection({
               />
             </div>
           </div>
-          <InvestorTakeaway>
-            Szukaj odpowiedzi na trzy pytania: skad bierze sie zysk, czy jeden segment nie
-            dominuje za mocno i czy geografia przychodow daje dywersyfikacje.
-          </InvestorTakeaway>
         </ReportCard>
       </section>
     </TooltipProvider>

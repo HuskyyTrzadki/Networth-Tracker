@@ -7,9 +7,6 @@ export default function StockReportFiveYearTrendAnalysisSection() {
       <h3 className="font-serif text-2xl font-bold tracking-tight">
         {FIVE_YEAR_TREND_ANALYSIS.title}
       </h3>
-      <p className="text-sm text-muted-foreground">
-        Patrz na kierunek calego cyklu, nie na pojedynczy kwartal.
-      </p>
 
       <div className="space-y-2">
         {FIVE_YEAR_TREND_ANALYSIS.sections.map((section) => (

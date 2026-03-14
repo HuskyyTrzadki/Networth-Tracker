@@ -126,11 +126,7 @@ export default function InsightsWidgetsSection({
 
   return (
     <section className="space-y-4 border-b border-dashed border-black/15 pb-6">
-      <SectionHeader
-        as="h3"
-        title="Wybrane trendy finansowe"
-        description="Kilka liczb, ktore warto zobaczyc obok glownego raportu."
-      />
+      <SectionHeader as="h3" title="Wybrane trendy finansowe" />
 
       <ReportCard contentClassName="p-4 sm:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:[&>*:nth-child(odd)]:border-r lg:[&>*:nth-child(odd)]:border-dashed lg:[&>*:nth-child(odd)]:border-black/15">

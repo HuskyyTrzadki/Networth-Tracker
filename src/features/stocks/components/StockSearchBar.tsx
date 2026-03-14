@@ -137,9 +137,9 @@ export function StockSearchBar({
       value={value}
       listenForFocusShortcut
       showSelectedIndicator={false}
-      emptyLabel="Szukaj instrumentu po nazwie lub tickerze"
+      emptyLabel="Szukaj spółki po nazwie lub tickerze"
       queryPlaceholder="Szukaj (np. AAPL, MSFT, CDR)"
-      triggerClassName="h-11 rounded-md bg-background"
+      triggerClassName="h-11 rounded-sm bg-background"
       onChange={(next) => {
         setValue(next);
         router.push(`/stocks/${encodeURIComponent(next.providerKey)}`);

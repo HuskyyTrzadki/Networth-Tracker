@@ -208,6 +208,34 @@ export function StockChartCard({
             }
           />
 
+          {isLoading ? (
+            <div className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+              <LoaderCircle className="size-3.5 animate-spin" />
+              Laduje wykres dla {range}...
+            </div>
+          ) : null}
+
+          {chartResource.errorMessage ? (
+            <p className="text-sm text-loss">{chartResource.errorMessage}</p>
+          ) : null}
+
+          <StockChartPlot
+            chart={chart}
+            chartData={chartData}
+            normalizedOverlays={normalizedOverlays}
+            mode={mode}
+            priceTrendDirection={priceTrend.direction}
+            priceLineColor={priceLineColor}
+            showOverlayAxis={showOverlayAxis}
+            priceAxisDomainForChart={priceAxisDomainForChart}
+            overlayAxisDomainForChart={overlayAxisDomainForChart}
+            overlayAxisLabel={overlayAxisMeta.label}
+            visibleTradeMarkers={visibleTradeMarkers}
+            eventMarkers={eventMarkers}
+            showNarrativeLabels={showNarration && hasVisibleEvents}
+            isLoading={isLoading}
+          />
+
           <StockChartLayerControls
             mode={mode}
             isLoading={isLoading}
@@ -226,12 +254,7 @@ export function StockChartCard({
             }
           />
 
-          {isLoading ? (
-            <div className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
-              <LoaderCircle className="size-3.5 animate-spin" />
-              Laduje wykres dla {range}...
-            </div>
-          ) : null}
+          <StockChartLegend items={legendItems} />
 
           {chartNotice ? (
             <p
@@ -244,29 +267,6 @@ export function StockChartCard({
               {chartNotice.text}
             </p>
           ) : null}
-
-          {chartResource.errorMessage ? (
-            <p className="text-sm text-loss">{chartResource.errorMessage}</p>
-          ) : null}
-
-          <StockChartLegend items={legendItems} />
-
-          <StockChartPlot
-            chart={chart}
-            chartData={chartData}
-            normalizedOverlays={normalizedOverlays}
-            mode={mode}
-            priceTrendDirection={priceTrend.direction}
-            priceLineColor={priceLineColor}
-            showOverlayAxis={showOverlayAxis}
-            priceAxisDomainForChart={priceAxisDomainForChart}
-            overlayAxisDomainForChart={overlayAxisDomainForChart}
-            overlayAxisLabel={overlayAxisMeta.label}
-            visibleTradeMarkers={visibleTradeMarkers}
-            eventMarkers={eventMarkers}
-            showNarrativeLabels={showNarration && hasVisibleEvents}
-            isLoading={isLoading}
-          />
 
           {chart !== null &&
           normalizedOverlays.some((overlay) => !chart.hasOverlayData[overlay]) ? (

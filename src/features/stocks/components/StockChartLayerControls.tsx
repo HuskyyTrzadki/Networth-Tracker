@@ -43,11 +43,11 @@ function LayerChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-none border transition-[color,background-color,border-color,box-shadow] duration-150",
+        "rounded-sm border transition-[color,background-color,border-color,box-shadow] duration-150",
         compact ? "h-7 px-2.5 text-[11px]" : "h-8 px-3 text-[12px]",
         active
-          ? "border-black/30 bg-black/[0.085] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_1px_2px_rgba(0,0,0,0.06)] hover:bg-black/[0.1]"
-          : "border-black/10 bg-white/88 text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.58)] hover:border-black/20 hover:bg-black/[0.025] hover:text-foreground",
+          ? "border-black/25 bg-black/[0.06] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.38),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-black/[0.08]"
+          : "border-black/10 bg-[rgba(250,248,244,0.6)] text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.58)] hover:border-black/15 hover:bg-black/[0.02] hover:text-foreground",
         disabled && "cursor-not-allowed"
       )}
     >
@@ -84,8 +84,11 @@ export function StockChartLayerControls({
   const showSubRow = hasFundamentals;
 
   return (
-    <div className="space-y-2.5 border-b border-dashed border-[color:var(--report-rule)]/20 pb-3.5">
+    <div className="space-y-2 border-t border-dashed border-[color:var(--report-rule)]/20 pt-3">
       <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
+          Nakladki
+        </span>
         {hasTradeMarkers ? (
           <LayerChip
             label="Transakcje"
@@ -103,7 +106,7 @@ export function StockChartLayerControls({
       </div>
 
       {showSubRow ? (
-        <div className="ml-0.5 flex flex-wrap items-center gap-1.5 border-l border-dashed border-[color:var(--report-rule)]/20 pl-3">
+        <div className="ml-0.5 flex flex-wrap items-center gap-1.5 pl-0.5">
           {FUNDAMENTAL_OPTIONS.map((overlay) => (
             <LayerChip
               key={overlay}

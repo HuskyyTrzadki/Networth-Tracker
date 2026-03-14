@@ -10,10 +10,16 @@ import {
 } from "@/features/design-system/components/ui/toggle-group";
 import type { StockScreenerCard } from "@/features/stocks/types";
 import { removeStockWatchlistAction } from "@/features/stocks/server/watchlist-actions";
-import { STOCK_SCREENER_PREVIEW_RANGES, type StockScreenerPreviewRange } from "@/features/stocks/server/types";
+import {
+  STOCK_SCREENER_PREVIEW_RANGES,
+  type StockScreenerPreviewRange,
+} from "@/features/stocks/server/types";
+import { cn } from "@/lib/cn";
 
 import { StockScreenerGrid } from "./StockScreenerGrid";
+import { StockScreenerLeadCard } from "./StockScreenerLeadCard";
 import { StockSearchBar } from "./StockSearchBar";
+import { buildStockScreenerMonitoringSections } from "./stock-screener-monitoring";
 
 type Props = Readonly<{
   cards: readonly StockScreenerCard[];
@@ -49,9 +55,7 @@ const reduceOptimisticCards = (
     const hasExisting = current.some(
       (card) => card.providerKey === action.card.providerKey
     );
-    if (!hasExisting) {
-      return sortCards([...current, action.card]);
-    }
+    if (!hasExisting) return sortCards([...current, action.card]);
     return sortCards(
       current.map((card) =>
         card.providerKey === action.card.providerKey ? action.card : card
@@ -62,9 +66,7 @@ const reduceOptimisticCards = (
   const existing = current.find(
     (card) => card.providerKey === action.card.providerKey
   );
-  if (!existing) {
-    return sortCards([...current, action.card]);
-  }
+  if (!existing) return sortCards([...current, action.card]);
 
   return sortCards(
     current.map((card) =>
@@ -83,6 +85,9 @@ const reduceOptimisticCards = (
   );
 };
 
+const statCardClassName =
+  "rounded-sm border border-border/55 bg-background/78 px-3 py-3";
+
 export function StocksScreenerInteractive({
   cards,
   favoriteProviderKeys,
@@ -95,11 +100,22 @@ export function StocksScreenerInteractive({
     reduceOptimisticCards
   );
 
-  const onRemoveFavorite = (card: StockScreenerCard) => {
+  const monitoring = buildStockScreenerMonitoringSections(
+    optimisticCards,
+    selectedRange
+  );
+
+  const onRemoveFavorite = (providerKey: string) => {
+    const previousCard =
+      optimisticCards.find((card) => card.providerKey === providerKey) ?? null;
+
     startRemoveTransition(() => {
-      applyOptimistic({ type: "remove", providerKey: card.providerKey });
-      void removeStockWatchlistAction(card.providerKey).catch((error: unknown) => {
-        applyOptimistic({ type: "restore", card });
+      applyOptimistic({ type: "remove", providerKey });
+      void removeStockWatchlistAction(providerKey).catch((error: unknown) => {
+        if (previousCard) {
+          applyOptimistic({ type: "restore", card: previousCard });
+        }
+
         dispatchAppToast({
           tone: "destructive",
           title: "Nie udało się usunąć spółki z obserwowanych.",
@@ -114,58 +130,128 @@ export function StocksScreenerInteractive({
 
   return (
     <>
-      <section className="rounded-xl border border-border/75 bg-card/94 p-4 shadow-[var(--surface-shadow)] sm:p-5">
-        <header className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Akcje</h1>
-            <p className="text-sm text-muted-foreground">Spółki z portfeli i obserwowanych.</p>
-          </div>
-          <div className="w-full max-w-xl lg:w-[26rem] lg:max-w-none">
-            <StockSearchBar
-              initialFavoriteProviderKeys={favoriteProviderKeys}
-              onOptimisticAdd={(card) => {
-                applyOptimistic({ type: "add", card });
-              }}
-              onOptimisticRemove={(providerKey) => {
-                applyOptimistic({ type: "remove", providerKey });
-              }}
-            />
-          </div>
-        </header>
+      <section className="border-b border-dashed border-black/15 pb-7">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.82fr)] xl:items-start">
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground/75">
+                Pulpit monitoringu
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-[2.1rem]">
+                Akcje
+              </h1>
+            </div>
 
-        <div className="mt-4 flex items-center justify-start border-t border-dashed border-black/10 pt-4">
-          <ToggleGroup
-            type="single"
-            value={selectedRange}
-            onValueChange={(value) => {
-              if (!value) return;
-              setSelectedRange(value as StockScreenerPreviewRange);
-            }}
-            className="gap-1"
-            aria-label="Zakres wykresow akcji"
-          >
-            {STOCK_SCREENER_PREVIEW_RANGES.map((range) => (
-              <ToggleGroupItem
-                key={range}
-                value={range}
-                variant="ledger"
-                size="sm"
-                className="rounded-none px-3 font-mono text-[11px]"
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className={statCardClassName}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  W portfelu
+                </p>
+                <p className="mt-2 font-mono text-2xl font-semibold tabular-nums">
+                  {monitoring.holdingCount}
+                </p>
+              </div>
+              <div className={statCardClassName}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  Na dipie
+                </p>
+                <p className="mt-2 font-mono text-2xl font-semibold tabular-nums">
+                  {monitoring.dipCount}
+                </p>
+              </div>
+              <div className={statCardClassName}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  Obserwowane
+                </p>
+                <p className="mt-2 font-mono text-2xl font-semibold tabular-nums">
+                  {monitoring.watchlistCount}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-dashed border-black/10 pt-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/75">
+                Zakres podglądu
+              </p>
+              <ToggleGroup
+                type="single"
+                value={selectedRange}
+                onValueChange={(value) => {
+                  if (!value) return;
+                  setSelectedRange(value as StockScreenerPreviewRange);
+                }}
+                className="gap-1"
+                aria-label="Zakres wykresów akcji"
               >
-                {range}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+                {STOCK_SCREENER_PREVIEW_RANGES.map((range) => (
+                  <ToggleGroupItem
+                    key={range}
+                    value={range}
+                    variant="ledger"
+                    size="sm"
+                    className={cn(
+                      "rounded-sm px-3 font-mono text-[11px]",
+                      range === selectedRange
+                        ? "border-border/80 bg-background"
+                        : "border-transparent bg-transparent text-muted-foreground hover:border-border/50 hover:bg-background/75"
+                    )}
+                  >
+                    {range}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          </div>
+
+          <aside className="rounded-sm border border-border/60 bg-card/95 p-4 shadow-[var(--surface-shadow)] xl:mt-0.5">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/75">
+                Szukaj spółki
+              </p>
+              <h2 className="text-lg font-semibold tracking-tight">
+                Otwórz raport albo dodaj do obserwowanych
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Szukaj po nazwie lub tickerze. Gwiazdka dodaje do obserwowanych.
+              </p>
+            </div>
+
+            <div className="mt-3">
+              <StockSearchBar
+                initialFavoriteProviderKeys={favoriteProviderKeys}
+                onOptimisticAdd={(card) => {
+                  applyOptimistic({ type: "add", card });
+                }}
+                onOptimisticRemove={(providerKey) => {
+                  applyOptimistic({ type: "remove", providerKey });
+                }}
+              />
+            </div>
+          </aside>
         </div>
       </section>
 
-      <StockScreenerGrid
-        className="mt-5"
-        cards={optimisticCards}
-        selectedRange={selectedRange}
-        onRemoveFavorite={onRemoveFavorite}
-        isRemovingFavorite={isRemovingFavorite}
-      />
+      {monitoring.lead ? <StockScreenerLeadCard item={monitoring.lead} /> : null}
+
+      <div className="mt-7 space-y-8">
+        <StockScreenerGrid
+          title="W portfelu"
+          description={`Twoje aktywne pozycje posortowane według ruchu za ${selectedRange}.`}
+          items={monitoring.portfolio}
+          emptyMessage="Nie masz jeszcze akcji w portfelach. Dodaj transakcję akcji albo przypnij spółkę do obserwowanych."
+          onRemoveFavorite={onRemoveFavorite}
+          isRemovingFavorite={isRemovingFavorite}
+        />
+
+        <StockScreenerGrid
+          title="Obserwowane"
+          description={`Spółki poza portfelem, które warto mieć pod ręką w tym samym rytmie przeglądu.`}
+          items={monitoring.watchlist}
+          emptyMessage="Nie masz jeszcze obserwowanych spółek. Dodaj je z wyszukiwarki u góry, żeby zbudować własny radar."
+          onRemoveFavorite={onRemoveFavorite}
+          isRemovingFavorite={isRemovingFavorite}
+        />
+      </div>
     </>
   );
 }

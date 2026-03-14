@@ -28,7 +28,9 @@ const SECTION_LINKS = [
   { id: "sekcja-wykres", label: "Wykres ceny" },
   { id: "sekcja-fundamenty", label: "Wycena i fundamenty" },
   { id: "sekcja-jak-zarabia", label: "Jak firma zarabia" },
-  { id: "sekcja-zaawansowane", label: "Zaawansowane" },
+  { id: "sekcja-bilans", label: "Bilans" },
+  { id: "sekcja-trendy", label: "Trendy finansowe" },
+  { id: "sekcja-zaawansowane", label: "Dalsza analiza" },
 ] as const;
 
 export default function StockReportSidebar({
@@ -120,9 +122,14 @@ export default function StockReportSidebar({
     <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-8 lg:self-start lg:h-[calc(100dvh-4rem)] lg:border-r lg:border-dashed lg:border-[color:var(--report-rule)]/20 lg:pr-4 lg:pt-4">
       <div className="space-y-4 bg-background">
         <section className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-4">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+          <div className="flex items-center gap-2">
             <ReportShellMenuTrigger className="px-2" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/70">
+              Raport spolki
+            </p>
+          </div>
 
+          <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <InstrumentLogoImage
                 src={logoUrl}
@@ -133,16 +140,20 @@ export default function StockReportSidebar({
                 priority
               />
               <div className="min-w-0">
-                <h1 className="truncate text-2xl font-semibold tracking-tight">{symbol}</h1>
-                <p className="truncate text-sm text-muted-foreground">{name}</p>
+                <h1 className="truncate text-[1.75rem] font-semibold tracking-tight">
+                  {symbol}
+                </h1>
+                <p className="truncate text-[13px] text-muted-foreground">{name}</p>
               </div>
             </div>
             {favoriteControl}
           </div>
 
           <div className="mt-4">
-            <h2 className="text-[15px] font-semibold tracking-tight">Na tej stronie</h2>
-            <ul className="mt-3 space-y-1 text-[13px] font-medium tracking-tight">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">
+              Na tej stronie
+            </h2>
+            <ul className="mt-3 space-y-1 text-[12px] font-medium tracking-[0.01em]">
               {SECTION_LINKS.map((link) => {
                 const isActive = activeSectionId === link.id;
 
@@ -153,7 +164,7 @@ export default function StockReportSidebar({
                         "group relative flex items-center gap-1 rounded-sm px-2 py-1.5 transition-colors",
                         isActive
                           ? "bg-foreground/5 font-semibold text-foreground before:absolute before:bottom-1 before:left-0 before:top-1 before:w-[2px] before:rounded-full before:bg-foreground before:content-['']"
-                          : "text-foreground/80 hover:text-foreground"
+                          : "text-foreground/72 hover:bg-foreground/[0.03] hover:text-foreground"
                       )}
                       href={`#${link.id}`}
                     >
@@ -175,9 +186,11 @@ export default function StockReportSidebar({
       </div>
 
       <div className="report-scrollbar relative pb-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
-        <div className="space-y-6 pt-4">
-          <section className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-6">
-            <h2 className="text-[15px] font-semibold tracking-tight">Fakty podstawowe</h2>
+        <div className="space-y-4 pt-4">
+          <section className="pb-4">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">
+              Fakty podstawowe
+            </h2>
             <dl className="mt-4 space-y-2">
               <FactRow label="Gielda" value={exchange} />
               <FactRow label="Region" value={region} />
@@ -187,21 +200,6 @@ export default function StockReportSidebar({
               <FactRow label="Stopa dywidendy" value={dividendYield} />
               <FactRow label="Aktualizacja" value={asOf} />
             </dl>
-          </section>
-
-          <section className="pb-4">
-            <h3 className="text-[15px] font-semibold tracking-tight">Na szybko</h3>
-            <ul className="mt-3 space-y-2 text-sm text-foreground/90">
-              <li className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2">
-                • Zacznij od snapshotu, potem sprawdz wycene i model biznesowy.
-              </li>
-              <li className="border-b border-dashed border-[color:var(--report-rule)]/20 pb-2">
-                • Wykres ma dawac kontekst dlugiego terminu, nie sygnal do szybkiej decyzji.
-              </li>
-              <li className="pb-1">
-                • Sekcje nizej doprecyzowuja teze, zamiast budowac ja od zera.
-              </li>
-            </ul>
           </section>
         </div>
       </div>

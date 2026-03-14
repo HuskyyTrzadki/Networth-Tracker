@@ -19,7 +19,7 @@ export function StockChartLegend({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-black/5 bg-[rgba(250,248,244,0.68)] px-3 py-2 text-[11px] text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-sm border border-black/5 bg-[rgba(250,248,244,0.52)] px-2.5 py-1.5 text-[10px] font-medium text-muted-foreground/88">
       {items.map((item) => (
         <span key={item.key} className="inline-flex items-center gap-1.5">
           <span

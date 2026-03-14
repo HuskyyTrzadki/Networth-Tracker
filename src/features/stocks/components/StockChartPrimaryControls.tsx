@@ -27,13 +27,8 @@ function ControlGroup({
   className?: string;
 }>) {
   return (
-    <div
-      className={cn(
-        "rounded-sm border border-black/10 bg-[rgba(250,248,244,0.82)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]",
-        className
-      )}
-    >
-      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
+    <div className={cn("space-y-1.5", className)}>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
         {label}
       </div>
       {children}
@@ -50,9 +45,9 @@ export function StockChartPrimaryControls({
   isRangeDisabledOption,
 }: Props) {
   return (
-    <div className="grid gap-3 border-b border-dashed border-[color:var(--report-rule)]/20 pb-3.5 xl:grid-cols-[1fr_auto] xl:items-stretch">
+    <div className="grid gap-4 border-b border-dashed border-[color:var(--report-rule)]/20 pb-3.5 xl:grid-cols-[1fr_auto] xl:items-end">
       <ControlGroup label="Zakres">
-        <div className="inline-flex border border-black/15 bg-white/90 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+        <div className="inline-flex rounded-sm border border-black/10 bg-[rgba(250,248,244,0.62)] p-1">
           <ToggleGroup
             type="single"
             value={range}
@@ -70,7 +65,7 @@ export function StockChartPrimaryControls({
                 variant="ledger"
                 size="sm"
                 disabled={isRangeDisabledOption(rangeOption)}
-                className={cn("min-w-10 rounded-none px-2.5 font-mono text-[11px]")}
+                className={cn("min-w-10 rounded-sm px-2.5 font-mono text-[11px]")}
                 aria-label={`Zakres ${rangeOption}`}
               >
                 {rangeOption}
@@ -81,7 +76,7 @@ export function StockChartPrimaryControls({
       </ControlGroup>
 
       <ControlGroup label="Tryb" className="xl:justify-self-end">
-        <div className="inline-flex border border-black/15 bg-white/90 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+        <div className="inline-flex rounded-sm border border-black/10 bg-[rgba(250,248,244,0.62)] p-1">
           <ToggleGroup
             type="single"
             value={mode}
@@ -98,7 +93,7 @@ export function StockChartPrimaryControls({
               variant="ledger"
               size="sm"
               disabled={isLoading}
-              className="rounded-none px-3 text-xs"
+              className="rounded-sm px-3 text-xs"
             >
               Trend (100)
             </ToggleGroupItem>
@@ -107,7 +102,7 @@ export function StockChartPrimaryControls({
               variant="ledger"
               size="sm"
               disabled={isLoading}
-              className="rounded-none px-3 text-xs"
+              className="rounded-sm px-3 text-xs"
             >
               Surowe
             </ToggleGroupItem>

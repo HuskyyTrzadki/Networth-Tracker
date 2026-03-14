@@ -6,8 +6,6 @@ import { createPublicStocksSupabaseClient } from "@/features/stocks/server/creat
 import { getStockValuationHistory } from "@/features/stocks/server/get-stock-valuation-history";
 import { buildStockValuationRangeContext } from "@/features/stocks/server/valuation-range-context";
 
-import { InvestorTakeaway } from "./ReportPrimitives";
-
 export default async function StockMetricsSection({
   providerKey,
   metricCurrency,
@@ -41,17 +39,11 @@ export default async function StockMetricsSection({
   } as const;
 
   return (
-    <div className="space-y-4">
-      <StockMetricsGrid
-        summary={summary}
-        currency={metricCurrency}
-        valuationContexts={valuationContexts}
-      />
-      <InvestorTakeaway>
-        Tu sprawdzasz dwie rzeczy: czy biznes nadal rośnie z dobra marza i czy cena nie
-        zaklada juz zbyt wiele dobrych wiadomosci z gory.
-      </InvestorTakeaway>
-    </div>
+    <StockMetricsGrid
+      summary={summary}
+      currency={metricCurrency}
+      valuationContexts={valuationContexts}
+    />
   );
 }
 

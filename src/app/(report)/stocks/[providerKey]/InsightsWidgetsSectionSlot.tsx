@@ -92,7 +92,16 @@ export default async function InsightsWidgetsSectionSlot({
 }: Readonly<{
   providerKey: string;
 }>) {
-  const dynamicWidgets = await getInsightWidgetsCached(providerKey);
+  let dynamicWidgets: readonly HistoricalInsightWidget[] = [];
+
+  try {
+    dynamicWidgets = await getInsightWidgetsCached(providerKey);
+  } catch (error) {
+    console.error("Failed to load stock insight widgets", {
+      providerKey,
+      error,
+    });
+  }
 
   return <InsightsWidgetsSectionLazy dynamicWidgets={dynamicWidgets} />;
 }
