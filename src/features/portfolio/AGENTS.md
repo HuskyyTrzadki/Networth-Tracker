@@ -195,6 +195,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Transaction edit flow marks dirty range from the earlier of old/new trade date (`min(old_trade_date, new_trade_date)`), so moved transactions correctly remove historical impact before re-applying.
 - Portfolio valuation includes per-user custom instruments (`custom_instruments`) as synthetic holdings with deterministic pricing (compounded annual rate) so they participate in totals and snapshot history.
 - Chunk rebuild now computes per-day snapshots in a range-batch pass (single batched read of transactions + preloaded daily price/FX series, then in-memory day loop), instead of query-heavy day-by-day RPC pipeline.
+- Snapshot range market-data preload must de-duplicate fetched daily cache rows before DB upsert and before cached+fetched merge so duplicate provider sessions cannot crash Postgres or double-render chart points.
 - Dashboard chart surfaces rebuild status and shows loading state while history is being recomputed.
 - Dashboard server payload (`summary`, `snapshots`, `live totals`, `recent transactions`) now uses Cache Components private caching with tags (`portfolio:all`, `portfolio:<id>`), so reads are reused between navigations and writes can invalidate deterministically.
 - Dashboard initial snapshot payload is bounded to 400 days for faster first render; selecting `ALL` lazily loads full history from `/api/portfolio-snapshots/rows` (auth + RLS).
@@ -246,6 +247,10 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Allocation mode now gates `Mapa` for larger datasets only (`assets > 4`); smaller sets fall back to `Słupki` by default while keeping `Tabela` available.
 - Portfolio net-value hero now uses explicit typography split (sans labels + mono value) with a compact inline `Dzisiaj` delta chip placed next to the main amount; do not render daily change as a separate header block.
 - Portfolio hero/widget surfaces adopt shared light-theme depth token (`--surface-shadow`) for subtle paper-card lift without heavy decorative shadows.
+- Portfolio dashboard color should stay restrained but warmer than pure neutral:
+  - hero may use soft cream-paper gradients plus one semantic day-change chip,
+  - allocation can carry richer category accents and subtle semantic tints,
+  - movers / recent transactions can use light gain-loss or asset-cash surface tints as long as the dashboard still reads as trusted finance UI, not a trading arcade.
 - Freshness badges (`Notowania z...`, `Kurs FX...`) are no longer shown in the hero or chart header.
 - Value comparison chart now renders as an area chart (thicker primary stroke + subtle gradient fill under `Wartość portfela`) to anchor trend perception.
 - Allocation module now prioritizes high-variance portfolios with `Mapa` (hierarchical treemap by category) and `Słupki` (ranked horizontal share bars), while `Tabela` stays as the precision ledger view.

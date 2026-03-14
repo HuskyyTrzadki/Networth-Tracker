@@ -41,14 +41,14 @@ type TreemapDatum = Readonly<{
   children?: readonly TreemapDatum[];
 }>;
 
-const pageBackground = "#e7e3dd";
-const tileBorderColor = "#d2cbbe";
-const positiveTile = "#dcefe3";
-const negativeTile = "#f2e2e1";
-const neutralTile = "#f4f2ee";
-const positiveInk = "#28382d";
-const negativeInk = "#433131";
-const neutralInk = "#343230";
+const pageBackground = "#ece4d8";
+const tileBorderColor = "#d8c6af";
+const positiveTile = "#d8eadc";
+const negativeTile = "#f0ddd9";
+const neutralTile = "#f5eee6";
+const positiveInk = "#264034";
+const negativeInk = "#493430";
+const neutralInk = "#39322b";
 
 const categoryGap = 3;
 const leafGap = 2;
@@ -286,7 +286,7 @@ export function AllocationTreemapView({
                           color: colors.text,
                           border: `1px solid ${tileBorderColor}`,
                           borderRadius: 4,
-                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
+                          boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.18), inset 0 3px 0 0 ${assetData.asset.color}`,
                           padding: 6,
                         }}
                       >
@@ -370,8 +370,10 @@ export function AllocationTreemapView({
           </div>
         </div>
       </TooltipProvider>
-      <div className="text-center">
-        <div className="text-[12px] font-medium text-muted-foreground">Wartość portfela</div>
+      <div className="rounded-full border border-border/60 bg-background/72 px-4 py-2 text-center">
+        <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Wartość portfela
+        </div>
         <div className="mt-1 inline-flex items-baseline gap-1 font-mono text-lg font-semibold tabular-nums text-foreground">
           <span>{totalAmountLabel}</span>
           {totalCurrencyLabel ? (

@@ -61,8 +61,11 @@ describe("CurrencyExposureWidget", () => {
     render(<CurrencyExposureWidget summary={summary} selectedPortfolioId={null} />);
 
     expect(screen.getByText("Ekspozycja walutowa")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Notowania" })).toHaveAttribute(
+      "data-state",
+      "on"
+    );
     expect(screen.getByRole("button", { name: "Gospodarcza" })).toBeInTheDocument();
-    expect(screen.getByText("Notowania vs gospodarcza")).toBeInTheDocument();
     expect(screen.getAllByText("Dolar amerykański (USD)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Polski Złoty (PLN)").length).toBeGreaterThan(0);
   });

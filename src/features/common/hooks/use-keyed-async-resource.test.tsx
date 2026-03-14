@@ -124,4 +124,26 @@ describe("useKeyedAsyncResource", () => {
       expect(result.current.data).toBeNull();
     });
   });
+
+  it("ignores aborted requests reported as plain objects", async () => {
+    const deferred = createDeferred<string>();
+    const load = vi.fn(() => deferred.promise);
+
+    const { result } = renderHook(() =>
+      useKeyedAsyncResource({
+        requestKey: "abort",
+        load,
+      })
+    );
+
+    await act(async () => {
+      deferred.reject({ name: "AbortError" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("loading");
+      expect(result.current.errorMessage).toBeNull();
+      expect(result.current.data).toBeNull();
+    });
+  });
 });

@@ -80,11 +80,22 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
               mover.trend === "UP"
                 ? "text-[color:var(--profit)]"
                 : "text-[color:var(--loss)]";
+            const trendSurface =
+              mover.trend === "UP"
+                ? "border-emerald-200/60 bg-emerald-50/85"
+                : "border-rose-200/60 bg-rose-50/85";
+            const trendChipClass =
+              mover.trend === "UP"
+                ? "border-emerald-300/55 bg-emerald-100/80 text-[color:var(--profit)]"
+                : "border-rose-300/55 bg-rose-100/80 text-[color:var(--loss)]";
 
             return (
               <li key={mover.instrumentId}>
                 <Link
-                  className="group block rounded-md border border-border/60 bg-background/60 px-3 py-2.5 transition-colors hover:border-border/80 hover:bg-background/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  className={cn(
+                    "group block rounded-md border px-3 py-2.5 transition-colors hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                    trendSurface
+                  )}
                   href={`/stocks/${encodeURIComponent(mover.providerKey)}`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -115,11 +126,19 @@ export function PortfolioTopMoversWidget({ summary }: Props) {
                       <div className="text-right">
                         <div
                           className={cn(
-                            "font-mono text-[12px] font-semibold tabular-nums",
+                            "inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+                            trendChipClass
+                          )}
+                        >
+                          {trendLabel}
+                        </div>
+                        <div
+                          className={cn(
+                            "mt-1 font-mono text-[12px] font-semibold tabular-nums",
                             trendTone
                           )}
                         >
-                          {trendLabel} {percentLabel}
+                          {percentLabel}
                         </div>
                         <div className={cn("mt-1 font-mono text-[12px] tabular-nums", trendTone)}>
                           {changeLabel ?? "—"}

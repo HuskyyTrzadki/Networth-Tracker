@@ -166,7 +166,7 @@ export function PortfolioPerformanceModeContent({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-dashed border-border/65 bg-background/68 px-3 py-2.5">
+      <div className="rounded-md border border-sky-200/55 bg-[linear-gradient(180deg,rgba(242,247,252,0.95)_0%,rgba(234,241,248,0.88)_100%)] px-3 py-2.5">
         <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85">
           {`Zwrot za okres (${range})`}
         </div>
@@ -209,14 +209,14 @@ export function PortfolioPerformanceModeContent({
                 )
               : "—"}
           </div>
-          <div className="rounded-sm border border-border/65 bg-background/74 px-2 py-1 text-[11px] text-muted-foreground">
+          <div className="rounded-sm border border-sky-200/45 bg-white/72 px-2 py-1 text-[11px] text-muted-foreground">
             {periodTrendLabel}
           </div>
         </div>
       </div>
 
       <div
-        className="rounded-md border border-dashed border-border/65 bg-background/68 p-2"
+        className="rounded-md border border-border/65 bg-[linear-gradient(180deg,rgba(255,253,249,0.96)_0%,rgba(247,243,236,0.92)_100%)] p-2"
         style={{ height: SHARED_PORTFOLIO_CHART_HEIGHT }}
       >
         <DailyReturnsLineChart

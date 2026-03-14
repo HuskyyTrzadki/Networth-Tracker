@@ -37,7 +37,11 @@ const defaultErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Request failed.";
 
 const isAbortError = (error: unknown) =>
-  error instanceof DOMException && error.name === "AbortError";
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError");
 
 export function useKeyedAsyncResource<TData>({
   requestKey,

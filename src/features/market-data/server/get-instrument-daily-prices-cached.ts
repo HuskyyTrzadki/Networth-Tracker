@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 
+import { dedupeRowsByKey } from "./lib/dedupe-rows-by-key";
 import { subtractIsoDays } from "./lib/date-utils";
 import { fetchYahooDailySeries } from "./providers/yahoo/yahoo-daily";
 import type { InstrumentDailyPrice, InstrumentQuoteRequest } from "./types";
@@ -177,11 +178,15 @@ const fetchAndCacheMissingRows = async (
   }
 
   if (upserts.length > 0) {
+    const dedupedUpserts = dedupeRowsByKey(
+      upserts,
+      (row) => `${row.provider}:${row.provider_key}:${row.price_date}`
+    );
     const adminClient = tryCreateAdminClient();
     if (adminClient) {
       const { error } = await adminClient
         .from("instrument_daily_prices_cache")
-        .upsert(upserts, {
+        .upsert(dedupedUpserts, {
           onConflict: "provider,provider_key,price_date",
         });
 
@@ -191,7 +196,10 @@ const fetchAndCacheMissingRows = async (
     }
   }
 
-  return fetchedRows;
+  return dedupeRowsByKey(
+    fetchedRows,
+    (row) => `${row.provider}:${row.provider_key}:${row.price_date}`
+  );
 };
 
 export async function getInstrumentDailyPricesCached(
@@ -273,5 +281,6 @@ export async function getInstrumentDailyPricesCached(
 }
 
 export const __test__ = {
+  dedupeRowsByKey,
   pickLatestRowsForRequestedDate,
 };

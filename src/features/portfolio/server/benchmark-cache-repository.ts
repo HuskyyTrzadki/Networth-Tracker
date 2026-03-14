@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { dedupeRowsByKey } from "@/features/market-data/server/lib/dedupe-rows-by-key";
 import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 
 type InstrumentCacheRow = Pick<
@@ -78,18 +79,33 @@ export const createBenchmarkCacheRepository = ({
   async upsertInstrumentRows(rows) {
     if (!writer || rows.length === 0) return;
 
-    const { error } = await writer.from("instrument_daily_prices_cache").upsert(rows, {
-      onConflict: "provider,provider_key,price_date",
-    });
+    const dedupedRows = dedupeRowsByKey(
+      rows,
+      (row) => `${row.provider}:${row.provider_key}:${row.price_date}`
+    );
+    const { error } = await writer.from("instrument_daily_prices_cache").upsert(
+      dedupedRows,
+      {
+        onConflict: "provider,provider_key,price_date",
+      }
+    );
     if (error) throw new Error(error.message);
   },
 
   async upsertFxRows(rows) {
     if (!writer || rows.length === 0) return;
 
-    const { error } = await writer.from("fx_daily_rates_cache").upsert(rows, {
-      onConflict: "provider,base_currency,quote_currency,rate_date",
-    });
+    const dedupedRows = dedupeRowsByKey(
+      rows,
+      (row) =>
+        `${row.provider}:${row.base_currency}:${row.quote_currency}:${row.rate_date}`
+    );
+    const { error } = await writer.from("fx_daily_rates_cache").upsert(
+      dedupedRows,
+      {
+        onConflict: "provider,base_currency,quote_currency,rate_date",
+      }
+    );
     if (error) throw new Error(error.message);
   },
 });

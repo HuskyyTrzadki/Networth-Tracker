@@ -54,7 +54,7 @@ const EMPTY_LOADING_COMPARISONS: readonly ComparisonOptionId[] = [];
 const CONTROLS_ROW_CLASS = "flex flex-wrap items-center gap-x-5 gap-y-2";
 const CONTROL_GROUP_CLASS = "flex flex-wrap items-center gap-2.5";
 const CONTROL_LABEL_CLASS =
-  "text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/82";
+  "text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/74";
 const LEDGER_TOGGLE_GROUP_CLASS =
   "inline-flex flex-wrap items-center gap-1 rounded-md bg-background/72 p-0.5";
 const LEDGER_TOGGLE_ITEM_CLASS = "h-7 px-2.5 font-sans text-[11px]";
@@ -200,7 +200,7 @@ export function PortfolioValueOverTimeHeader({
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  className="h-7 gap-1.5 rounded-full px-2.5 text-[11px]"
+                  className="h-7 gap-1.5 rounded-full border-sky-300/45 bg-sky-100/65 px-2.5 text-[11px] text-sky-950 hover:bg-sky-100"
                   type="button"
                   variant="outline"
                 >

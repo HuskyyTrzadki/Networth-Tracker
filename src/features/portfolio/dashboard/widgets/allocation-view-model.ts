@@ -20,11 +20,11 @@ const categoryLabels = {
 } as const;
 
 const categoryColors = {
-  REAL_ESTATE: ["#1f4e79", "#2b6398", "#3d77ad", "#4f8bc2"],
-  EQUITIES: ["#1f2430", "#2d3445", "#3c455c", "#4a5673"],
-  FIXED_INCOME: ["#8a5a14", "#a06d1d", "#b8842d", "#cc9b43"],
-  CASH: ["#17603d", "#237b4f", "#319761", "#46ad77"],
-  OTHER: ["#8b1e3f", "#9f3352", "#b24967", "#c65f7d"],
+  REAL_ESTATE: ["#8f5f3f", "#a8744f", "#c08d67", "#d6a786"],
+  EQUITIES: ["#355c7d", "#437192", "#5586a7", "#6f9cbc"],
+  FIXED_INCOME: ["#7f6a2b", "#96813a", "#b29a4b", "#c9b366"],
+  CASH: ["#2f6c54", "#3f8467", "#589d7d", "#74b393"],
+  OTHER: ["#80556c", "#976a82", "#ae8098", "#c296ae"],
 } as const;
 
 export type AllocationCategoryKey = (typeof categoryOrder)[number];
@@ -72,11 +72,11 @@ const toShare = (value: number | null) => Math.max(0, value ?? 0);
 
 const asDecimalOrNull = (value: string) => parseDecimalString(value);
 
-const neutralHeatColor = "#2f2b27";
-const positiveHeatStart = "#2f4a3f";
-const positiveHeatEnd = "#6ca88b";
-const negativeHeatStart = "#4a2f2c";
-const negativeHeatEnd = "#a3655d";
+const neutralHeatColor = "#433b33";
+const positiveHeatStart = "#355645";
+const positiveHeatEnd = "#83b399";
+const negativeHeatStart = "#5a3a35";
+const negativeHeatEnd = "#bf8278";
 const maxHeatMagnitude = 0.05;
 
 const resolveCategory = (holding: ValuedHolding): AllocationCategoryKey => {

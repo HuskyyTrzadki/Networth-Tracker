@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { FxPair, InstrumentQuoteRequest } from "@/features/market-data";
+import { dedupeRowsByKey } from "@/features/market-data/server/lib/dedupe-rows-by-key";
 import { fetchYahooDailySeries } from "@/features/market-data/server/providers/yahoo/yahoo-daily";
 import { subtractIsoDays } from "@/features/market-data/server/lib/date-utils";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
@@ -72,7 +73,10 @@ const mergeRowMaps = <T,>(
   const keys = new Set([...left.keys(), ...right.keys()]);
 
   keys.forEach((key) => {
-    const combined = [...(left.get(key) ?? []), ...(right.get(key) ?? [])];
+    const combined = dedupeRowsByKey(
+      [...(left.get(key) ?? []), ...(right.get(key) ?? [])],
+      pickDate
+    );
     if (combined.length === 0) {
       return;
     }
@@ -220,11 +224,15 @@ export async function preloadInstrumentDailySeries(
   }
 
   if (upsertRows.length > 0) {
+    const dedupedUpsertRows = dedupeRowsByKey(
+      upsertRows,
+      (row) => `${row.provider}:${row.provider_key}:${row.price_date}`
+    );
     const adminClient = tryCreateAdminClient();
     const writer = adminClient ?? supabase;
     const { error } = await writer
       .from("instrument_daily_prices_cache")
-      .upsert(upsertRows, {
+      .upsert(dedupedUpsertRows, {
         onConflict: "provider,provider_key,price_date",
       });
 
@@ -236,7 +244,14 @@ export async function preloadInstrumentDailySeries(
     }
   }
 
-  const fetchedByKey = buildRowsByKey(fetchedRows, (row) => row.provider_key);
+  const dedupedFetchedRows = dedupeRowsByKey(
+    fetchedRows,
+    (row) => `${row.provider_key}:${row.price_date}`
+  );
+  const fetchedByKey = buildRowsByKey(
+    dedupedFetchedRows,
+    (row) => row.provider_key
+  );
   return mergeRowMaps(
     new Map(
       Array.from(cachedByKey.entries()).map(([key, rows]) => [
@@ -346,11 +361,19 @@ export async function preloadFxDailySeries(
   }
 
   if (upsertRows.length > 0) {
+    const dedupedUpsertRows = dedupeRowsByKey(
+      upsertRows,
+      (row) =>
+        `${row.provider}:${row.base_currency}:${row.quote_currency}:${row.rate_date}`
+    );
     const adminClient = tryCreateAdminClient();
     const writer = adminClient ?? supabase;
-    const { error } = await writer.from("fx_daily_rates_cache").upsert(upsertRows, {
-      onConflict: "provider,base_currency,quote_currency,rate_date",
-    });
+    const { error } = await writer.from("fx_daily_rates_cache").upsert(
+      dedupedUpsertRows,
+      {
+        onConflict: "provider,base_currency,quote_currency,rate_date",
+      }
+    );
 
     // User-scoped clients can read cache rows via RLS but cannot write.
     // If service-role client is unavailable, keep the request successful
@@ -360,8 +383,12 @@ export async function preloadFxDailySeries(
     }
   }
 
-  const fetchedByPair = buildRowsByKey(
+  const dedupedFetchedRows = dedupeRowsByKey(
     fetchedRows,
+    (row) => `${row.base_currency}:${row.quote_currency}:${row.rate_date}`
+  );
+  const fetchedByPair = buildRowsByKey(
+    dedupedFetchedRows,
     (row) => `${row.base_currency}:${row.quote_currency}`
   );
 
@@ -385,4 +412,8 @@ export async function preloadFxDailySeries(
 export type {
   InstrumentDailyRow,
   FxDailyRow,
+};
+
+export const __test__ = {
+  mergeRowMaps,
 };

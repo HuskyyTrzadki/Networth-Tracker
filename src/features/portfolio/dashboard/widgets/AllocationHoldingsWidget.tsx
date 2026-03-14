@@ -119,7 +119,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
   return (
     <Dialog onOpenChange={setIsExpandedOpen} open={isExpandedOpen}>
       <ChartCard
-        className="border-border/75 bg-card/94"
+        className="border-border/75 bg-[linear-gradient(180deg,rgba(255,251,245,0.96)_0%,rgba(249,245,238,0.94)_100%)]"
         surface="subtle"
         title="Alokacja i pozycje"
         subtitle={
@@ -134,7 +134,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
         right={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ToggleGroup
-              className="rounded-md bg-background/70 p-1"
+              className="rounded-md bg-background/72 p-1"
               onValueChange={(value) => {
                 if (shouldForceTable) return;
                 if (!isTreemapEligible && value === "TREEMAP") return;
@@ -163,7 +163,7 @@ export function AllocationHoldingsWidget({ summary, rebuild }: Props) {
               <DialogTrigger asChild>
                 <Button
                   aria-label={expandButtonAriaLabel}
-                  className="h-8 gap-1.5 rounded-full px-2.5"
+                  className="h-8 gap-1.5 rounded-full border-amber-300/45 bg-amber-100/65 px-2.5 text-amber-950 hover:bg-amber-100"
                   size="sm"
                   type="button"
                   variant="outline"

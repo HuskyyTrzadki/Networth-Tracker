@@ -36,7 +36,7 @@ export function PortfolioValueOverTimeWidget({
 }: Props) {
   return (
     <ChartCard
-      className="border-border/75 bg-card/94"
+      className="border-border/75 bg-[linear-gradient(180deg,rgba(250,248,243,0.98)_0%,rgba(246,242,235,0.95)_100%)]"
       title="Wartość i performance"
       subtitle="Snapshoty dzienne"
       surface="subtle"

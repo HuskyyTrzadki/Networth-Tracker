@@ -4,6 +4,7 @@ import { decimalOne, divideDecimals, parseDecimalString } from "@/lib/decimal";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import type { Database, Tables, TablesInsert } from "@/lib/supabase/database.types";
 
+import { dedupeRowsByKey } from "./lib/dedupe-rows-by-key";
 import { subtractIsoDays } from "./lib/date-utils";
 import { fetchYahooDailySeries } from "./providers/yahoo/yahoo-daily";
 import type { FxDailyRate, FxPair } from "./types";
@@ -190,11 +191,16 @@ const fetchAndCacheRows = async (
   }
 
   if (upserts.length > 0) {
+    const dedupedUpserts = dedupeRowsByKey(
+      upserts,
+      (row) =>
+        `${row.provider}:${row.base_currency}:${row.quote_currency}:${row.rate_date}`
+    );
     const adminClient = tryCreateAdminClient();
     if (adminClient) {
       const { error } = await adminClient
         .from("fx_daily_rates_cache")
-        .upsert(upserts, {
+        .upsert(dedupedUpserts, {
           onConflict: "provider,base_currency,quote_currency,rate_date",
         });
 
@@ -204,7 +210,10 @@ const fetchAndCacheRows = async (
     }
   }
 
-  return fetchedRows;
+  return dedupeRowsByKey(
+    fetchedRows,
+    (row) => `${row.provider}:${row.base_currency}:${row.quote_currency}:${row.rate_date}`
+  );
 };
 
 export async function getFxDailyRatesCached(
@@ -298,5 +307,6 @@ export async function getFxDailyRatesCached(
 }
 
 export const __test__ = {
+  dedupeRowsByKey,
   pickLatestRowsByPairForRequestedDate,
 };

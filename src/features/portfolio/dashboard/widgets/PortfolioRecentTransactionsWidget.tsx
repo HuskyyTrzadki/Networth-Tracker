@@ -76,11 +76,15 @@ export function PortfolioRecentTransactionsWidget({
               item.instrument.currency
             );
             const priceLabel = formatPriceLabel(item.price, item.instrument.currency);
+            const isCashMovement = item.legRole !== "ASSET";
+            const rowSurfaceClass = isCashMovement
+              ? "border-amber-200/60 bg-amber-50/70"
+              : "border-sky-200/60 bg-sky-50/60";
 
             return (
               <li
                 key={item.id}
-                className="rounded-md border border-border/60 bg-background/60 px-3 py-2.5"
+                className={cn("rounded-md border px-3 py-2.5", rowSurfaceClass)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-3">
@@ -118,7 +122,7 @@ export function PortfolioRecentTransactionsWidget({
                     <div className="font-mono text-sm font-semibold tabular-nums text-foreground">
                       {valueLabel}
                     </div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">
+                    <div className="mt-1 text-[11px] font-medium text-muted-foreground">
                       {item.legRole === "ASSET" ? "Wpływa na pozycję" : "Ruch gotówki"}
                     </div>
                   </div>

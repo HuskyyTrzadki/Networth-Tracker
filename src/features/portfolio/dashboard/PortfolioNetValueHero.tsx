@@ -134,19 +134,27 @@ export function PortfolioNetValueHero({
 
   const { amount: totalValueAmount, currency: totalValueCurrency } =
     splitCurrencyLabel(animatedTotalLabel);
-  const valuationToneClass =
-    valuationTone === "warning" ? "text-[color:var(--chart-3)]" : "text-[color:var(--profit)]";
   const metadataItems = [
     valuationSummary,
     "Notowania opóźnione 10 minut",
     asOf ? `Stan na ${asOf}` : null,
   ].filter(Boolean) as string[];
+  const valuationAccentClass =
+    valuationTone === "warning"
+      ? "border-amber-300/55 bg-amber-100/70 text-amber-900"
+      : "border-emerald-300/45 bg-emerald-100/70 text-emerald-950";
+  const dayChipClass =
+    dailyChangeDecimal && dailyChangeDecimal.gt(0)
+      ? "border-emerald-300/45 bg-emerald-100/75 text-[color:var(--profit)]"
+      : dailyChangeDecimal && dailyChangeDecimal.lt(0)
+        ? "border-rose-300/45 bg-rose-100/75 text-[color:var(--loss)]"
+        : "border-border/60 bg-background/72 text-muted-foreground";
 
   return (
-    <section className="rounded-xl border border-border/60 bg-card/96 px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
+    <section className="rounded-xl border border-border/60 bg-[linear-gradient(180deg,rgba(255,252,246,0.98)_0%,rgba(250,247,241,0.96)_100%)] px-4 py-4 shadow-[var(--surface-shadow)] sm:px-5 sm:py-5">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-3">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/78">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/78">
             Portfel
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -169,33 +177,50 @@ export function PortfolioNetValueHero({
       </div>
 
       <div className="mt-5 border-t border-dashed border-border/60 pt-4">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/82">
-          Wartość netto
-        </div>
-        <div className="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
-          <div
-            className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
-            data-testid="portfolio-net-value"
-          >
-            <span>{totalValueAmount}</span>
-            {totalValueCurrency ? (
-              <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
-                {totalValueCurrency}
-              </span>
-            ) : null}
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="space-y-2">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/82">
+              Wartość netto
+            </div>
+            <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+              <div
+                className="font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl"
+                data-testid="portfolio-net-value"
+              >
+                <span>{totalValueAmount}</span>
+                {totalValueCurrency ? (
+                  <span className="ml-1.5 text-base font-medium text-muted-foreground/75 sm:text-lg">
+                    {totalValueCurrency}
+                  </span>
+                ) : null}
+              </div>
+              <div
+                className={cn(
+                  "mb-1 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px]",
+                  dayChipClass
+                )}
+              >
+                <span className="font-semibold uppercase tracking-[0.12em]">Dzisiaj</span>
+                <span className={cn("font-mono tabular-nums", dailyChangeTone)}>
+                  {dailyChangeCombined ?? "—"}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="mb-1 flex items-baseline gap-2 text-sm">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80">
-              Dzisiaj
-            </span>
-            <span className={cn("font-mono text-xs tabular-nums", dailyChangeTone)}>
-              {dailyChangeCombined ?? "—"}
+
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            <span
+              className={cn(
+                "inline-flex rounded-full border px-3 py-1 text-[11px] font-medium",
+                valuationAccentClass
+              )}
+            >
+              {valuationSummary}
             </span>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <span className={cn("font-medium", valuationToneClass)}>{valuationSummary}</span>
           {metadataItems.slice(1).map((item) => (
             <span key={item}>{item}</span>
           ))}
