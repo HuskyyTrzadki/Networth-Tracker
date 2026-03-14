@@ -33,7 +33,7 @@ export function GuestUpgradeGoogleButton({ nextPath }: Props) {
   return (
     <div className="space-y-2">
       <Button
-        className="h-9 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
+        className="h-9 rounded-sm"
         disabled={pending}
         onClick={startGoogleAuth}
       >

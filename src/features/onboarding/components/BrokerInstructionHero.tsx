@@ -45,10 +45,13 @@ export function BrokerInstructionHero({
                 />
               </div>
             ) : (
-              <div className="flex min-h-[260px] items-center justify-center bg-[linear-gradient(135deg,rgba(20,20,20,0.98),rgba(12,28,37,0.98))] px-6 py-10">
-                <p className="max-w-2xl text-center text-sm leading-6 text-slate-300/80">
-                  {description}
-                </p>
+              <div className="flex min-h-[260px] items-center justify-center bg-muted/25 px-6 py-10">
+                <div className="max-w-2xl rounded-2xl border border-border/70 bg-card/95 px-6 py-5 text-center shadow-[var(--surface-shadow)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Podgląd instrukcji
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
+                </div>
               </div>
             )}
           </div>

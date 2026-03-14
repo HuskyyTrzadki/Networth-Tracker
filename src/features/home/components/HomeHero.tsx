@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { PublicProductPreview } from "@/features/common/components/PublicProductPreview";
 import { Button } from "@/features/design-system/components/ui/button";
 import { Card, CardContent } from "@/features/design-system/components/ui/card";
 
@@ -57,11 +58,11 @@ export function HomeHero() {
               </p>
             </div>
 
-            <Card className="max-w-xl border-black/5 bg-white">
+            <Card className="max-w-xl border-border/75 bg-card/95 shadow-[var(--surface-shadow)]">
               <CardContent className="space-y-3 p-5">
                 <Button
                   size="lg"
-                  className="w-full rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
+                  className="w-full rounded-sm text-sm"
                   onClick={startGuest}
                   disabled={pending}
                   aria-busy={pending}
@@ -84,20 +85,17 @@ export function HomeHero() {
           </div>
 
           <div className="space-y-4">
-            <Card className="border-black/5 bg-white">
-              <CardContent className="p-5">
-                <h2 className="mt-3 font-serif text-2xl font-semibold tracking-tight text-foreground">
-                  Podgląd raportu spółki
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Tutaj pokażemy ilustrację albo podgląd raportu.
-                </p>
-                <div className="mt-5 h-[360px] rounded-sm border border-dashed border-black/15 bg-[#f7f4ec]" />
-              </CardContent>
-            </Card>
+            <PublicProductPreview
+              eyebrow="W środku produktu"
+              title="Raport, portfel i transakcje w jednej spokojnej powierzchni"
+              description="Najpierw to, co wymaga decyzji. Bez przeskakiwania między katalogiem spółek, tabelą transakcji i osobnym pulpitem portfela."
+            />
             <div className="grid gap-3 sm:grid-cols-3">
-              {["Opóźnione notowania", "PLN + USD", "Cache-first"].map((item) => (
-                <Card key={item} className="rounded-sm border-black/5 bg-white">
+                {["Opóźnione notowania", "PLN + USD", "Cache-first"].map((item) => (
+                <Card
+                  key={item}
+                  className="rounded-sm border-border/75 bg-card/95 shadow-[var(--surface-shadow)]"
+                >
                   <CardContent className="p-3 text-sm">{item}</CardContent>
                 </Card>
               ))}

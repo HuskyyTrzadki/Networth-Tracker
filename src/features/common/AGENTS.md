@@ -7,6 +7,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Main entrypoints
 - `src/features/common/components/Container.tsx`
+- `src/features/common/components/LegalDocument.tsx`
+- `src/features/common/components/PublicProductPreview.tsx`
 - `src/features/common/hooks/use-keyed-async-resource.ts`
 - `src/features/common/hooks/use-debounced-callback.ts`
 - `src/features/common/lib/remote-image.ts`
@@ -14,6 +16,8 @@ This file must be kept up to date by the LLM whenever this feature changes.
 
 ## Boundaries
 - Keep components generic and small.
+- `PublicProductPreview` is the shared public/report marketing showcase surface for homepage and login; keep it product-level, calm, and free of placeholder copy.
+- `LegalDocument` is the shared wrapper for public legal/informational pages; keep copy honest about beta scope and avoid fake company/legal specifics.
 - Hooks in this feature should stay UI-agnostic (no domain-specific payload shapes).
 - `use-debounced-callback` keeps a stable callable wrapper and manages debounce instance lifecycle in effects (no `useMemo`/`useCallback` dependency).
 - `use-keyed-async-resource` must treat both DOM `AbortError` and fetch-style `{ name: "AbortError" }` objects as expected cancellation, not user-visible failures.

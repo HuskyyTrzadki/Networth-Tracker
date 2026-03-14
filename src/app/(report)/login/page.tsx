@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthLoginPanel } from "@/features/auth/ui/AuthLoginPanel";
-import { Card, CardContent } from "@/features/design-system/components/ui/card";
+import { PublicProductPreview } from "@/features/common/components/PublicProductPreview";
 import { getAuthUser } from "@/features/auth/server/service";
 
 export const metadata: Metadata = {
@@ -21,17 +21,12 @@ export default async function LoginPage() {
       <AuthLoginPanel />
 
       <section className="hidden h-full items-center justify-center lg:flex">
-        <Card className="w-full max-w-[620px] border-black/5 bg-white">
-          <CardContent className="p-6">
-            <h2 className="font-serif text-3xl font-semibold tracking-tight text-foreground">
-              Obraz raportu finansowego
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Miejsce na ilustracje w stylu reportu.
-            </p>
-            <div className="mt-6 h-[360px] rounded-sm border border-dashed border-black/15 bg-[#f7f4ec]" />
-          </CardContent>
-        </Card>
+        <PublicProductPreview
+          className="w-full max-w-[720px]"
+          eyebrow="Po zalogowaniu"
+          title="Jedno miejsce na monitoring spółek i porządną historię portfela"
+          description="Logowanie od razu otwiera raporty, pulpit portfela i dziennik transakcji. Bez osobnego panelu admina dla każdej czynności."
+        />
       </section>
     </main>
   );

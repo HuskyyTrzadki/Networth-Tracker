@@ -58,6 +58,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Auth forms now keep a constrained inner width (`max-w-md`) to avoid over-wide desktop inputs.
 - Login/register mode switch uses compact typography tabs with dashed underline active state; OAuth/email split uses explicit `lub` divider.
 - Auth marketing/supporting copy should stay terse: avoid repeating `konto`/`logowanie` in eyebrow, title, and description when the page already provides that context.
+- `AuthLoginPanel` must stay a real semantic `<form>` for email/password auth so Enter submit, browser autofill, and password-manager heuristics keep working.
+- The same semantic-form rule applies to settings auth flows too: `AuthEmailTabs` and `AuthGuestUpgradeForm` should submit through `<form>` + submit buttons, not click-only button wrappers.
+- Legal acceptance links on `/login` point to public report-shell pages `/terms` and `/privacy`; do not leave these as dead links again.
 
 ## Tests
 - Server tests in `src/features/auth/server/*.test.ts`.

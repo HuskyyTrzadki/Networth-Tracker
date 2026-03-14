@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const PUBLIC_PATHS = ["/", "/pricing"] as const;
+const PUBLIC_PATHS = ["/", "/pricing", "/terms", "/privacy"] as const;
 
 const getSiteUrl = () => {
   const explicitUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();

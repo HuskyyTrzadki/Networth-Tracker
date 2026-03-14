@@ -1,6 +1,6 @@
 export function AuthSettingsSectionSkeleton() {
   return (
-    <section className="rounded-xl border border-black/8 bg-white shadow-[var(--surface-shadow)]">
+    <section className="rounded-xl border border-border/75 bg-card/95 shadow-[var(--surface-shadow)]">
       <div className="space-y-5 p-6 sm:p-7">
         <header className="space-y-2">
           <div className="h-4 w-16 animate-pulse rounded-md bg-muted/35" />

@@ -55,76 +55,96 @@ export function AuthEmailTabs({
           </TabsTrigger>
         </TabsList>
         <TabsContent value="signin" className="space-y-4">
-          <div className="grid gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="signin-email">E-mail</Label>
-              <Input
-                id="signin-email"
-                value={signInEmail}
-                onChange={(e) => onSignInEmailChange(e.currentTarget.value)}
-                placeholder="name@domain.com"
-                inputMode="email"
-                autoComplete="email"
-              />
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSignInSubmit();
+            }}
+          >
+            <div className="grid gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="signin-email">E-mail</Label>
+                <Input
+                  id="signin-email"
+                  name="email"
+                  value={signInEmail}
+                  onChange={(e) => onSignInEmailChange(e.currentTarget.value)}
+                  placeholder="name@domain.com"
+                  inputMode="email"
+                  autoComplete="email"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signin-password">Hasło</Label>
+                <Input
+                  id="signin-password"
+                  name="password"
+                  value={signInPassword}
+                  onChange={(e) => onSignInPasswordChange(e.currentTarget.value)}
+                  placeholder="Twoje hasło"
+                  type="password"
+                  autoComplete="current-password"
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="signin-password">Hasło</Label>
-              <Input
-                id="signin-password"
-                value={signInPassword}
-                onChange={(e) => onSignInPasswordChange(e.currentTarget.value)}
-                placeholder="Twoje hasło"
-                type="password"
-                autoComplete="current-password"
-              />
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={pendingAction === "signin"}
+                className="h-10 min-w-32 rounded-sm"
+              >
+                Zaloguj
+              </Button>
             </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              onClick={onSignInSubmit}
-              disabled={pendingAction === "signin"}
-              className="h-10 min-w-32 rounded-sm"
-            >
-              Zaloguj
-            </Button>
-          </div>
+          </form>
         </TabsContent>
         <TabsContent value="signup" className="space-y-4">
-          <div className="grid gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="signup-email">E-mail</Label>
-              <Input
-                id="signup-email"
-                value={signUpEmail}
-                onChange={(e) => onSignUpEmailChange(e.currentTarget.value)}
-                placeholder="name@domain.com"
-                inputMode="email"
-                autoComplete="email"
-              />
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSignUpSubmit();
+            }}
+          >
+            <div className="grid gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-email">E-mail</Label>
+                <Input
+                  id="signup-email"
+                  name="email"
+                  value={signUpEmail}
+                  onChange={(e) => onSignUpEmailChange(e.currentTarget.value)}
+                  placeholder="name@domain.com"
+                  inputMode="email"
+                  autoComplete="email"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-password">Hasło</Label>
+                <Input
+                  id="signup-password"
+                  name="password"
+                  value={signUpPassword}
+                  onChange={(e) => onSignUpPasswordChange(e.currentTarget.value)}
+                  placeholder="Min. 8 znaków"
+                  type="password"
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="signup-password">Hasło</Label>
-              <Input
-                id="signup-password"
-                value={signUpPassword}
-                onChange={(e) => onSignUpPasswordChange(e.currentTarget.value)}
-                placeholder="Min. 8 znaków"
-                type="password"
-                autoComplete="new-password"
-              />
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={pendingAction === "signup"}
+                className="h-10 min-w-36 rounded-sm"
+              >
+                Utwórz konto
+              </Button>
             </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              onClick={onSignUpSubmit}
-              disabled={pendingAction === "signup"}
-              className="h-10 min-w-36 rounded-sm"
-            >
-              Utwórz konto
-            </Button>
-          </div>
+          </form>
         </TabsContent>
       </Tabs>
     </div>

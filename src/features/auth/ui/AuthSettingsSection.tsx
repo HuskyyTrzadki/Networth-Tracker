@@ -57,7 +57,7 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
   return (
     <section>
       <AnimatedReveal>
-        <Card className="border-black/8 bg-white shadow-[var(--surface-shadow)]">
+        <Card className="border-border/75 bg-card/95 shadow-[var(--surface-shadow)]">
           <CardContent className="space-y-5 p-6 sm:p-7">
             <header className="space-y-2">
               <h2 className="font-serif text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
@@ -67,7 +67,7 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
             </header>
 
             {mode === "guest" ? (
-              <Alert className="border-amber-300/70 bg-amber-50/65 px-4 py-4 text-foreground shadow-none">
+              <Alert className="border-amber-300/70 bg-amber-50/65 px-4 py-4 text-foreground shadow-none dark:border-amber-900/70 dark:bg-amber-950/25">
                 <AlertTriangle className="mt-0.5 mb-0.5 size-4 text-amber-700" aria-hidden="true" />
                 <div className="space-y-3">
                   <AlertTitle className="text-sm font-semibold text-amber-950">
@@ -78,11 +78,11 @@ export async function AuthSettingsSection({ showAuthError }: Props) {
                       ? "To konto zawiera przykładowe dane demonstracyjne. Wróć do onboardingu, aby zacząć od własnego portfela i własnej historii."
                       : "Uaktualnij konto, aby nie stracić danych."}
                   </AlertDescription>
-                  {demoGuest ? (
-                    <div>
-                      <StartRealPortfolioButton className="h-9 rounded-md bg-black px-4 text-white hover:bg-black/90" />
-                    </div>
-                  ) : (
+                    {demoGuest ? (
+                      <div>
+                        <StartRealPortfolioButton className="h-9 rounded-md px-4" />
+                      </div>
+                    ) : (
                     <div>
                       <GuestUpgradeGoogleButton nextPath={nextPath} />
                     </div>

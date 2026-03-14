@@ -35,12 +35,14 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Report shell is public-first: `/(report)/layout.tsx` should not block on `cookies()`/auth reads. Account-specific actions resolve in a deferred server slot (`ReportShellAccountControlsSlot`) under Suspense, with guest controls available immediately.
 - `ReportShell` now accepts `accountControls` instead of a blocking `hasSession` prop, so report chrome can stream before personalized account state resolves.
 - Shell chrome was visually normalized with the refreshed design system: tighter uppercase micro-labels for menu triggers, consistent `rounded-md` control styling, and reduced one-off styling in report search/menu surfaces.
+- Report shell public search copy should stay in Polish and match the rest of the UI; avoid stray English placeholders/labels in public chrome.
 - App shell owns global keyboard shortcuts:
   - `/` focuses the active search surface (`app:focus-search` event),
   - `n` opens add-transaction route (portfolio-aware on `/portfolio/<id>`),
   - `Escape` requests modal close (`app:close-modal` event).
 - App shell renders a global toast host (`AppToastHost`) and listens for `app:toast` events so features can show success/error feedback without local toast wiring.
-- App shell provides keyboard accessibility anchor points (`Przejdz do tresci` skip link + `#main-content`) for faster keyboard navigation across route content.
+- App shell provides keyboard accessibility anchor points (`Przejdź do treści` skip link + `#main-content`) for faster keyboard navigation across route content.
+- Keep accessibility-facing shell copy polished too (`Przejdź do treści`, clear aria labels); these strings are part of product quality, not throwaway implementation detail.
 - Active desktop sidebar items use an editorial anchor marker: a 2px vertical left rule on the active row in addition to active background/ring states.
 - Desktop sidebar portfolio rows expose per-item actions via a 3-dot popover; `Usuń` opens a compact confirmation dialog before portfolio deletion.
 - Sidebar `Nowy portfel` create flow navigates to `/portfolio/<id>` after server action success; refresh is handled by App Router revalidation.

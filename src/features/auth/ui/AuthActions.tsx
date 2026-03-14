@@ -164,7 +164,7 @@ export function AuthActions({
             <Button
               onClick={startGoogleAuth}
               disabled={pendingAction === "google"}
-              className="h-10 rounded-sm bg-[#1c1c1c] text-white hover:bg-[#151515]"
+              className="h-10 rounded-sm"
             >
               {primaryGoogleActionLabel}
             </Button>
@@ -196,9 +196,9 @@ export function AuthActions({
 
       {showOauthDivider ? (
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 border-t border-dashed border-black/20" />
+          <span className="h-px flex-1 border-t border-dashed border-border/70" />
           lub
-          <span className="h-px flex-1 border-t border-dashed border-black/20" />
+          <span className="h-px flex-1 border-t border-dashed border-border/70" />
         </div>
       ) : null}
 

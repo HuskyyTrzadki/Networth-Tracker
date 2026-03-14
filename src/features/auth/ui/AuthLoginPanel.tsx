@@ -78,7 +78,7 @@ export function AuthLoginPanel() {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-[560px] border-black/5 bg-white">
+    <Card className="mx-auto w-full max-w-[560px] border-border/75 bg-card/95 shadow-[var(--surface-shadow)]">
       <CardContent className="p-6 sm:p-7">
         <div className="space-y-2">
           <h1 className="font-serif text-4xl font-semibold tracking-tight text-foreground">
@@ -132,13 +132,20 @@ export function AuthLoginPanel() {
             </button>
           </div>
 
-          <div className="space-y-3">
+          <form
+            className="space-y-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void onSubmit();
+            }}
+          >
             <label className="block space-y-1.5" htmlFor="auth-login-email">
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 E-mail
               </span>
               <Input
                 id="auth-login-email"
+                name="email"
                 type="email"
                 autoComplete="email"
                 value={email}
@@ -152,6 +159,7 @@ export function AuthLoginPanel() {
               </span>
               <Input
                 id="auth-login-password"
+                name="password"
                 type="password"
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
                 value={password}
@@ -160,13 +168,13 @@ export function AuthLoginPanel() {
               />
             </label>
             <Button
-              className="h-11 w-full rounded-sm bg-[#1c1c1c] text-sm text-white hover:bg-[#151515]"
-              onClick={onSubmit}
+              type="submit"
+              className="h-11 w-full rounded-sm text-sm"
               disabled={pendingAction === "signin" || pendingAction === "signup"}
             >
               {mode === "signin" ? "Zaloguj się" : "Utwórz konto"}
             </Button>
-          </div>
+          </form>
 
           {notice ? (
             <div

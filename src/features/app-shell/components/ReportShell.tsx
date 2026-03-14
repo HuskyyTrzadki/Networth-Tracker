@@ -138,7 +138,7 @@ export function ReportShell({ children, accountControls = null }: Props) {
 
                 <form onSubmit={onSearchSubmit} className="min-w-0 flex-1">
                   <label htmlFor="report-menu-search" className="sr-only">
-                    Search stocks and ETFs
+                    Szukaj akcji i ETF-ów
                   </label>
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
@@ -146,7 +146,7 @@ export function ReportShell({ children, accountControls = null }: Props) {
                       id="report-menu-search"
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search Stocks & ETFs (NASDAQ & NYSE)"
+                      placeholder="Szukaj akcji i ETF-ów"
                       className="h-10 rounded-md border-[color:var(--report-rule)] bg-background pl-12 pr-4 text-sm"
                     />
                   </div>

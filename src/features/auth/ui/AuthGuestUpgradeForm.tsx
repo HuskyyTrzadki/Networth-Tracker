@@ -22,7 +22,13 @@ export function AuthGuestUpgradeForm({
   onSubmit,
 }: Props) {
   return (
-    <div className="space-y-4 rounded-lg border border-dashed border-border/80 bg-background/72 p-4">
+    <form
+      className="space-y-4 rounded-lg border border-dashed border-border/80 bg-background/72 p-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Przez e-mail
@@ -36,6 +42,7 @@ export function AuthGuestUpgradeForm({
           <Label htmlFor="upgrade-email">E-mail</Label>
           <Input
             id="upgrade-email"
+            name="email"
             value={email}
             onChange={(e) => onEmailChange(e.currentTarget.value)}
             placeholder="name@domain.com"
@@ -47,6 +54,7 @@ export function AuthGuestUpgradeForm({
           <Label htmlFor="upgrade-password">Hasło</Label>
           <Input
             id="upgrade-password"
+            name="password"
             value={password}
             onChange={(e) => onPasswordChange(e.currentTarget.value)}
             placeholder="Min. 8 znaków"
@@ -57,13 +65,13 @@ export function AuthGuestUpgradeForm({
       </div>
       <div className="flex justify-end">
         <Button
+          type="submit"
           variant="outline"
-          onClick={onSubmit}
           disabled={pendingAction === "upgrade"}
         >
           Zapisz konto przez e-mail
         </Button>
       </div>
-    </div>
+    </form>
   );
 }
