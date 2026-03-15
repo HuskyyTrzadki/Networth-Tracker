@@ -9,6 +9,7 @@ import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
 import { buildCashDebtInsightWidget } from "./stock-report-cash-debt-insight";
 import { buildEarningsInsightWidget } from "./stock-report-earnings-insight";
 import { buildRevenueInsightWidget } from "./stock-report-revenue-insight";
+import { buildSharesOutstandingInsightWidget } from "./stock-report-shares-outstanding-insight";
 import { buildValuationRatioInsightWidget } from "./stock-report-valuation-ratio-insight";
 import type { HistoricalInsightWidget } from "./stock-insights-widget-types";
 
@@ -33,6 +34,7 @@ const getInsightWidgetsCached = async (providerKey: string) => {
     quarterlyEarnings,
     cashHistory,
     debtHistory,
+    sharesOutstandingHistory,
     valuationHistory,
     fallbackMetrics,
   ] = await Promise.all([
@@ -71,6 +73,13 @@ const getInsightWidgetsCached = async (providerKey: string) => {
       REVENUE_LOOKBACK_START_DATE,
       { ttlMs: REVENUE_QUARTERLY_TTL_MS }
     ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "shares_outstanding",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_QUARTERLY_TTL_MS }
+    ),
     getStockValuationHistory(supabase, providerKey, "10Y"),
     getInstrumentCompaniesMarketCapMetrics(supabase, providerKey),
   ]);
@@ -102,6 +111,14 @@ const getInsightWidgetsCached = async (providerKey: string) => {
         (event) => event.periodType === "POINT_IN_TIME_ANNUAL"
       ),
       annualDebtEvents: debtHistory.filter(
+        (event) => event.periodType === "POINT_IN_TIME_ANNUAL"
+      ),
+    }),
+    buildSharesOutstandingInsightWidget({
+      quarterlyEvents: sharesOutstandingHistory.filter(
+        (event) => event.periodType === "POINT_IN_TIME"
+      ),
+      annualEvents: sharesOutstandingHistory.filter(
         (event) => event.periodType === "POINT_IN_TIME_ANNUAL"
       ),
     }),
