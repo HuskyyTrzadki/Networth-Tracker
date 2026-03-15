@@ -100,14 +100,22 @@ export default function InsightsWidgetsSection({
 }: Readonly<{
   dynamicWidgets: readonly HistoricalInsightWidget[];
 }>) {
-  const hasDynamicValuationWidget = dynamicWidgets.some(
-    (widget) => widget.id === "pe-ratio" || widget.id === "ps-ratio"
-  );
+  const dynamicWidgetIds = new Set(dynamicWidgets.map((widget) => widget.id));
+  const hasDynamicValuationWidget =
+    dynamicWidgetIds.has("pe-ratio") || dynamicWidgetIds.has("ps-ratio");
   const widgets: readonly InsightWidget[] = [
     ...dynamicWidgets,
-    ...STATIC_STOCK_INSIGHT_WIDGETS.filter((widget) =>
-      hasDynamicValuationWidget ? widget.id !== "valuation" : true
-    ),
+    ...STATIC_STOCK_INSIGHT_WIDGETS.filter((widget) => {
+      if (dynamicWidgetIds.has(widget.id)) {
+        return false;
+      }
+
+      if (widget.id === "valuation" && hasDynamicValuationWidget) {
+        return false;
+      }
+
+      return true;
+    }),
   ];
   const [activeWidgetId, setActiveWidgetId] = useState<string | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

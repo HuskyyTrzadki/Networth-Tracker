@@ -95,6 +95,44 @@ describe("fundamental-time-series helpers", () => {
     ]);
   });
 
+  it("parses cash and debt from balance-sheet rows", () => {
+    const cashRows = __test__.parseFundamentalRows(
+      [{ date: "2025-03-31", periodType: "3M", cashAndCashEquivalents: 120 }],
+      {
+        metric: "cash_and_equivalents",
+        source: "quarterly_balance_sheet",
+        outputPeriodType: "POINT_IN_TIME",
+        expectedPeriodType: "3M",
+      }
+    );
+    const debtRows = __test__.parseFundamentalRows(
+      [{ date: "2025-03-31", periodType: "3M", totalDebt: 80 }],
+      {
+        metric: "total_debt",
+        source: "quarterly_balance_sheet",
+        outputPeriodType: "POINT_IN_TIME",
+        expectedPeriodType: "3M",
+      }
+    );
+
+    expect(cashRows).toEqual([
+      {
+        periodEndDate: "2025-03-31",
+        value: 120,
+        periodType: "POINT_IN_TIME",
+        source: "quarterly_balance_sheet",
+      },
+    ]);
+    expect(debtRows).toEqual([
+      {
+        periodEndDate: "2025-03-31",
+        value: 80,
+        periodType: "POINT_IN_TIME",
+        source: "quarterly_balance_sheet",
+      },
+    ]);
+  });
+
   it("parses book value from balance-sheet rows", () => {
     const rows = __test__.parseFundamentalRows(
       [{ date: "2025-03-31", periodType: "12M", commonStockEquity: 420 }],
@@ -222,6 +260,34 @@ describe("fundamental-time-series helpers", () => {
         "totalOperatingIncomeAsReported",
         "quarterlyOperatingIncome",
       ],
+    });
+    expect(__test__.getFundamentalMetricDefinition("cash_and_equivalents")).toEqual({
+      metric: "cash_and_equivalents",
+      module: "balance-sheet",
+      mode: "point_in_time",
+      fields: [
+        "cashAndCashEquivalents",
+        "cashCashEquivalentsAndShortTermInvestments",
+        "cashAndShortTermInvestments",
+        "cashCashEquivalentsAndFederalFundsSold",
+        "cashAndDueFromBanks",
+        "cash",
+      ],
+      keyword: "cash",
+    });
+    expect(__test__.getFundamentalMetricDefinition("total_debt")).toEqual({
+      metric: "total_debt",
+      module: "balance-sheet",
+      mode: "point_in_time",
+      fields: [
+        "totalDebt",
+        "currentDebtAndCapitalLeaseObligation",
+        "longTermDebtAndCapitalLeaseObligation",
+        "currentDebt",
+        "longTermDebt",
+        "bankIndebtedness",
+      ],
+      keyword: "debt",
     });
     expect(__test__.getFundamentalMetricDefinition("book_value")).toEqual({
       metric: "book_value",

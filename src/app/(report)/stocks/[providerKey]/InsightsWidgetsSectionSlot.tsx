@@ -6,6 +6,7 @@ import { getFundamentalTimeSeriesCached } from "@/features/stocks/server/get-fun
 import { getStockValuationHistory } from "@/features/stocks/server/get-stock-valuation-history";
 
 import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
+import { buildCashDebtInsightWidget } from "./stock-report-cash-debt-insight";
 import { buildEarningsInsightWidget } from "./stock-report-earnings-insight";
 import { buildRevenueInsightWidget } from "./stock-report-revenue-insight";
 import { buildValuationRatioInsightWidget } from "./stock-report-valuation-ratio-insight";
@@ -30,6 +31,8 @@ const getInsightWidgetsCached = async (providerKey: string) => {
     quarterlyRevenue,
     annualRevenue,
     quarterlyEarnings,
+    cashHistory,
+    debtHistory,
     valuationHistory,
     fallbackMetrics,
   ] = await Promise.all([
@@ -54,6 +57,20 @@ const getInsightWidgetsCached = async (providerKey: string) => {
       REVENUE_LOOKBACK_START_DATE,
       { ttlMs: REVENUE_QUARTERLY_TTL_MS }
     ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "cash_and_equivalents",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_QUARTERLY_TTL_MS }
+    ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "total_debt",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_QUARTERLY_TTL_MS }
+    ),
     getStockValuationHistory(supabase, providerKey, "10Y"),
     getInstrumentCompaniesMarketCapMetrics(supabase, providerKey),
   ]);
@@ -73,6 +90,20 @@ const getInsightWidgetsCached = async (providerKey: string) => {
         (event) => event.periodType === "FLOW_QUARTERLY"
       ),
       fallbackAnnualHistory: fallbackMetrics.earnings?.annualHistory,
+    }),
+    buildCashDebtInsightWidget({
+      quarterlyCashEvents: cashHistory.filter(
+        (event) => event.periodType === "POINT_IN_TIME"
+      ),
+      quarterlyDebtEvents: debtHistory.filter(
+        (event) => event.periodType === "POINT_IN_TIME"
+      ),
+      annualCashEvents: cashHistory.filter(
+        (event) => event.periodType === "POINT_IN_TIME_ANNUAL"
+      ),
+      annualDebtEvents: debtHistory.filter(
+        (event) => event.periodType === "POINT_IN_TIME_ANNUAL"
+      ),
     }),
     buildValuationRatioInsightWidget({
       kind: "pe-ratio",

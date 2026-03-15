@@ -97,6 +97,8 @@ export type FundamentalSeriesMetric =
   | "cost_of_revenue"
   | "operating_income"
   | "net_income"
+  | "cash_and_equivalents"
+  | "total_debt"
   | "shares_outstanding"
   | "book_value";
 

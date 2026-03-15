@@ -223,6 +223,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - `InsightsWidgetsSectionSlot` resolves public cached data on the server and passes serializable dynamic widget models into the client section,
   - widget slot must fail soft; if dynamic widget data throws, the report should keep rendering with legacy/static cards instead of crashing the whole page,
   - `Revenue` and `Earnings` use Yahoo for quarterly history and CompaniesMarketCap only as annual/TTM fallback,
+  - `Cash vs Debt` uses Yahoo balance-sheet point-in-time history only (`cash_and_equivalents`, `total_debt`) and should stay a raw factual widget rather than a net-cash interpretation block,
   - `P/E` and `P/S` are `best-available` widgets: use dense daily Yahoo-derived history for bounded short ranges (`1Y-5Y`) and only fall back to annual Yahoo/CompaniesMarketCap extension for longer views like `10Y` / `ALL`,
   - CompaniesMarketCap scraping must stay async-only (cron/manual batch -> DB cache -> report read), never request-path,
   - widget period controls must never pretend annual-only data is a detailed short-horizon series; if the higher-resolution dataset cannot cover the requested window, switch to the coarser dataset honestly,
@@ -235,6 +236,9 @@ This file must be kept up to date by the LLM whenever this feature changes.
   - use CompaniesMarketCap only to extend older or missing annual coverage,
   - do not let fallback annual rows overwrite valid Yahoo history for the same year,
   - the stock chart overlay and the report insight widgets should consume the same merge policy rather than each implementing their own source selection.
+- Supported historical Yahoo fundamentals in the shared normalization layer now include:
+  - flow metrics: `total_revenue`, `cost_of_revenue`, `operating_income`, `net_income`,
+  - point-in-time metrics: `cash_and_equivalents`, `total_debt`, `shares_outstanding`, `book_value`.
 - Valuation context card now uses a segmented switcher (`P/E`, `P/S`, `P/B`) with one active historical view at a time:
   - `P/E`, `P/S`, and `P/B` should all show real 5Y min/median/max context when the required historical inputs are available,
   - `P/S` is derived from historical `revenue_ttm` + `shares_outstanding`,
