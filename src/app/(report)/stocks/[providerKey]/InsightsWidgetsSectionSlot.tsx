@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 
+import { getInstrumentDividendSignalsCached } from "@/features/market-data/server/get-instrument-dividend-signals-cached";
 import { getInstrumentCompaniesMarketCapMetrics } from "@/features/market-data/server/get-instrument-companiesmarketcap-metrics";
 import { createPublicStocksSupabaseClient } from "@/features/stocks/server/create-public-stocks-supabase-client";
 import { getFundamentalTimeSeriesCached } from "@/features/stocks/server/get-fundamental-time-series-cached";
@@ -7,7 +8,11 @@ import { getStockValuationHistory } from "@/features/stocks/server/get-stock-val
 
 import InsightsWidgetsSectionLazy from "./InsightsWidgetsSectionLazy";
 import { buildCashDebtInsightWidget } from "./stock-report-cash-debt-insight";
+import { buildDividendsInsightWidget } from "./stock-report-dividends-insight";
 import { buildEarningsInsightWidget } from "./stock-report-earnings-insight";
+import { buildFreeCashFlowInsightWidget } from "./stock-report-free-cash-flow-insight";
+import { buildNetMarginInsightWidget } from "./stock-report-net-margin-insight";
+import { buildOperatingMarginInsightWidget } from "./stock-report-operating-margin-insight";
 import { buildRevenueInsightWidget } from "./stock-report-revenue-insight";
 import { buildSharesOutstandingInsightWidget } from "./stock-report-shares-outstanding-insight";
 import { buildValuationRatioInsightWidget } from "./stock-report-valuation-ratio-insight";
@@ -17,6 +22,8 @@ const REVENUE_LOOKBACK_START_DATE = "2010-01-01";
 const REVENUE_WIDGET_CACHE_PROFILE = "minutes";
 const REVENUE_QUARTERLY_TTL_MS = 12 * 60 * 60 * 1000;
 const REVENUE_ANNUAL_TTL_MS = 6 * 60 * 60 * 1000;
+const DIVIDENDS_LOOKBACK_START_DATE = "2010-01-01";
+const DIVIDENDS_FUTURE_TO_DATE = "2100-01-01";
 
 const getInsightWidgetsCached = async (providerKey: string) => {
   "use cache";
@@ -31,10 +38,16 @@ const getInsightWidgetsCached = async (providerKey: string) => {
   const [
     quarterlyRevenue,
     annualRevenue,
+    quarterlyOperatingIncome,
+    annualOperatingIncome,
     quarterlyEarnings,
+    annualNetIncome,
+    quarterlyFreeCashFlow,
+    annualFreeCashFlow,
     cashHistory,
     debtHistory,
     sharesOutstandingHistory,
+    dividendSignalsByKey,
     valuationHistory,
     fallbackMetrics,
   ] = await Promise.all([
@@ -55,9 +68,44 @@ const getInsightWidgetsCached = async (providerKey: string) => {
     getFundamentalTimeSeriesCached(
       supabase,
       providerKey,
+      "operating_income",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_QUARTERLY_TTL_MS }
+    ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "operating_income_annual",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_ANNUAL_TTL_MS }
+    ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
       "net_income",
       REVENUE_LOOKBACK_START_DATE,
       { ttlMs: REVENUE_QUARTERLY_TTL_MS }
+    ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "net_income_annual",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_ANNUAL_TTL_MS }
+    ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "free_cash_flow",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_QUARTERLY_TTL_MS }
+    ),
+    getFundamentalTimeSeriesCached(
+      supabase,
+      providerKey,
+      "free_cash_flow_annual",
+      REVENUE_LOOKBACK_START_DATE,
+      { ttlMs: REVENUE_ANNUAL_TTL_MS }
     ),
     getFundamentalTimeSeriesCached(
       supabase,
@@ -80,6 +128,15 @@ const getInsightWidgetsCached = async (providerKey: string) => {
       REVENUE_LOOKBACK_START_DATE,
       { ttlMs: REVENUE_QUARTERLY_TTL_MS }
     ),
+    getInstrumentDividendSignalsCached(
+      [{ provider: "yahoo", providerKey }],
+      {
+        pastFromDate: DIVIDENDS_LOOKBACK_START_DATE,
+        pastToDate: new Date().toISOString().slice(0, 10),
+        futureToDate: DIVIDENDS_FUTURE_TO_DATE,
+        historicalLookbackFromDate: DIVIDENDS_LOOKBACK_START_DATE,
+      }
+    ),
     getStockValuationHistory(supabase, providerKey, "10Y"),
     getInstrumentCompaniesMarketCapMetrics(supabase, providerKey),
   ]);
@@ -94,11 +151,47 @@ const getInsightWidgetsCached = async (providerKey: string) => {
       ),
       fallbackAnnualHistory: fallbackMetrics.revenue?.annualHistory,
     }),
+    buildOperatingMarginInsightWidget({
+      quarterlyRevenueEvents: quarterlyRevenue.filter(
+        (event) => event.periodType === "FLOW_QUARTERLY"
+      ),
+      quarterlyOperatingIncomeEvents: quarterlyOperatingIncome.filter(
+        (event) => event.periodType === "FLOW_QUARTERLY"
+      ),
+      annualRevenueEvents: annualRevenue.filter(
+        (event) => event.periodType === "TTM_PROXY_ANNUAL"
+      ),
+      annualOperatingIncomeEvents: annualOperatingIncome.filter(
+        (event) => event.periodType === "FLOW_ANNUAL"
+      ),
+    }),
     buildEarningsInsightWidget({
       quarterlyEvents: quarterlyEarnings.filter(
         (event) => event.periodType === "FLOW_QUARTERLY"
       ),
       fallbackAnnualHistory: fallbackMetrics.earnings?.annualHistory,
+    }),
+    buildNetMarginInsightWidget({
+      quarterlyRevenueEvents: quarterlyRevenue.filter(
+        (event) => event.periodType === "FLOW_QUARTERLY"
+      ),
+      quarterlyNetIncomeEvents: quarterlyEarnings.filter(
+        (event) => event.periodType === "FLOW_QUARTERLY"
+      ),
+      annualRevenueEvents: annualRevenue.filter(
+        (event) => event.periodType === "TTM_PROXY_ANNUAL"
+      ),
+      annualNetIncomeEvents: annualNetIncome.filter(
+        (event) => event.periodType === "FLOW_ANNUAL"
+      ),
+    }),
+    buildFreeCashFlowInsightWidget({
+      quarterlyEvents: quarterlyFreeCashFlow.filter(
+        (event) => event.periodType === "FLOW_QUARTERLY"
+      ),
+      annualEvents: annualFreeCashFlow.filter(
+        (event) => event.periodType === "FLOW_ANNUAL"
+      ),
     }),
     buildCashDebtInsightWidget({
       quarterlyCashEvents: cashHistory.filter(
@@ -122,6 +215,9 @@ const getInsightWidgetsCached = async (providerKey: string) => {
         (event) => event.periodType === "POINT_IN_TIME_ANNUAL"
       ),
     }),
+    buildDividendsInsightWidget(
+      dividendSignalsByKey.get(providerKey) ?? { pastEvents: [], upcomingEvent: null }
+    ),
     buildValuationRatioInsightWidget({
       kind: "pe-ratio",
       historyPoints: valuationHistory.points,

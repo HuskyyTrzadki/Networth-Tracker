@@ -63,6 +63,8 @@ const normalizeCacheRows = (
     periodType:
       row.period_type === "FLOW_QUARTERLY"
         ? "FLOW_QUARTERLY"
+        : row.period_type === "FLOW_ANNUAL"
+        ? "FLOW_ANNUAL"
         : row.period_type === "TTM_PROXY_ANNUAL"
         ? "TTM_PROXY_ANNUAL"
         : row.period_type === "POINT_IN_TIME"
@@ -72,6 +74,8 @@ const normalizeCacheRows = (
             : "TTM",
     source:
       row.source === "quarterly_financials" ||
+      row.source === "annual_financials" ||
+      row.source === "annual_cash_flow" ||
       row.source === "quarterly_rollup" ||
       row.source === "annual_proxy" ||
       row.source === "trailing" ||
@@ -297,6 +301,24 @@ export async function getFundamentalTimeSeriesCached(
         source: "quarterly_financials",
         outputPeriodType: "FLOW_QUARTERLY",
         expectedPeriodType: "3M",
+      });
+    } else if (definition.mode === "flow_annual") {
+      const annualRaw = await yahooFinance.fundamentalsTimeSeries(
+        providerKey,
+        {
+          period1: fetchWindow.annualFromDate,
+          type: "annual",
+          module: definition.module,
+        },
+        { validateResult: false }
+      );
+      fetchedMerged = parseFundamentalRows(unwrapYahooRows(annualRaw), {
+        metric,
+        source:
+          definition.module === "cash-flow" ? "annual_cash_flow" : "annual_financials",
+        outputPeriodType: "FLOW_ANNUAL",
+        expectedPeriodType: "12M",
+        skipFutureDates: true,
       });
     } else {
       const quarterlyRaw = await yahooFinance.fundamentalsTimeSeries(

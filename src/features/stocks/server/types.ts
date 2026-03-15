@@ -96,7 +96,11 @@ export type FundamentalSeriesMetric =
   | "total_revenue"
   | "cost_of_revenue"
   | "operating_income"
+  | "operating_income_annual"
   | "net_income"
+  | "net_income_annual"
+  | "free_cash_flow"
+  | "free_cash_flow_annual"
   | "cash_and_equivalents"
   | "total_debt"
   | "shares_outstanding"
@@ -105,6 +109,7 @@ export type FundamentalSeriesMetric =
 export type FundamentalSeriesPeriodType =
   | "TTM"
   | "FLOW_QUARTERLY"
+  | "FLOW_ANNUAL"
   | "TTM_PROXY_ANNUAL"
   | "POINT_IN_TIME"
   | "POINT_IN_TIME_ANNUAL";
@@ -112,6 +117,8 @@ export type FundamentalSeriesPeriodType =
 export type FundamentalSeriesSource =
   | "trailing"
   | "quarterly_financials"
+  | "annual_financials"
+  | "annual_cash_flow"
   | "quarterly_rollup"
   | "annual_proxy"
   | "quarterly_balance_sheet"

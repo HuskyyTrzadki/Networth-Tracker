@@ -74,6 +74,107 @@ describe("fundamental-time-series helpers", () => {
     ]);
   });
 
+  it("parses annual operating income rows for annual margin history", () => {
+    const rows = __test__.parseFundamentalRows(
+      [{ date: "2024-12-31", periodType: "12M", operatingIncome: 420 }],
+      {
+        metric: "operating_income_annual",
+        source: "annual_financials",
+        outputPeriodType: "FLOW_ANNUAL",
+        expectedPeriodType: "12M",
+      }
+    );
+
+    expect(rows).toEqual([
+      {
+        periodEndDate: "2024-12-31",
+        value: 420,
+        periodType: "FLOW_ANNUAL",
+        source: "annual_financials",
+      },
+    ]);
+  });
+
+  it("parses annual net income rows for annual net-margin history", () => {
+    const rows = __test__.parseFundamentalRows(
+      [{ date: "2024-12-31", periodType: "12M", netIncome: 315 }],
+      {
+        metric: "net_income_annual",
+        source: "annual_financials",
+        outputPeriodType: "FLOW_ANNUAL",
+        expectedPeriodType: "12M",
+      }
+    );
+
+    expect(rows).toEqual([
+      {
+        periodEndDate: "2024-12-31",
+        value: 315,
+        periodType: "FLOW_ANNUAL",
+        source: "annual_financials",
+      },
+    ]);
+  });
+
+  it("parses quarterly free cash flow rows and derives from operating cash flow plus capex when needed", () => {
+    const directRows = __test__.parseFundamentalRows(
+      [{ date: "2025-03-31", periodType: "3M", freeCashFlow: 55 }],
+      {
+        metric: "free_cash_flow",
+        source: "quarterly_financials",
+        outputPeriodType: "FLOW_QUARTERLY",
+        expectedPeriodType: "3M",
+      }
+    );
+    const derivedRows = __test__.parseFundamentalRows(
+      [{ date: "2025-06-30", periodType: "3M", operatingCashFlow: 100, capitalExpenditure: -35 }],
+      {
+        metric: "free_cash_flow",
+        source: "quarterly_financials",
+        outputPeriodType: "FLOW_QUARTERLY",
+        expectedPeriodType: "3M",
+      }
+    );
+
+    expect(directRows).toEqual([
+      {
+        periodEndDate: "2025-03-31",
+        value: 55,
+        periodType: "FLOW_QUARTERLY",
+        source: "quarterly_financials",
+      },
+    ]);
+    expect(derivedRows).toEqual([
+      {
+        periodEndDate: "2025-06-30",
+        value: 65,
+        periodType: "FLOW_QUARTERLY",
+        source: "quarterly_financials",
+      },
+    ]);
+  });
+
+  it("parses annual free cash flow rows from cash-flow statements", () => {
+    const rows = __test__.parseFundamentalRows(
+      [{ date: "2024-12-31", periodType: "12M", freeCashFlow: 3581 }],
+      {
+        metric: "free_cash_flow_annual",
+        source: "annual_cash_flow",
+        outputPeriodType: "FLOW_ANNUAL",
+        expectedPeriodType: "12M",
+      }
+    );
+
+    expect(rows).toEqual([
+      {
+        periodEndDate: "2024-12-31",
+        value: 3581,
+        periodType: "FLOW_ANNUAL",
+        source: "annual_cash_flow",
+      },
+    ]);
+  });
+
   it("parses shares outstanding from balance-sheet rows", () => {
     const rows = __test__.parseFundamentalRows(
       [{ date: "2025-03-31", periodType: "3M", ordinarySharesNumber: 15.2 }],
@@ -260,6 +361,44 @@ describe("fundamental-time-series helpers", () => {
         "totalOperatingIncomeAsReported",
         "quarterlyOperatingIncome",
       ],
+    });
+    expect(__test__.getFundamentalMetricDefinition("operating_income_annual")).toEqual({
+      metric: "operating_income_annual",
+      module: "financials",
+      mode: "flow_annual",
+      fields: [
+        "operatingIncome",
+        "totalOperatingIncomeAsReported",
+        "annualOperatingIncome",
+      ],
+    });
+    expect(__test__.getFundamentalMetricDefinition("net_income_annual")).toEqual({
+      metric: "net_income_annual",
+      module: "financials",
+      mode: "flow_annual",
+      fields: [
+        "netIncome",
+        "netIncomeCommonStockholders",
+        "netIncomeFromContinuingOperations",
+        "netIncomeContinuousOperations",
+        "netIncomeFromContinuingOperationNetMinorityInterest",
+        "annualNetIncome",
+      ],
+      keyword: "netincome",
+    });
+    expect(__test__.getFundamentalMetricDefinition("free_cash_flow")).toEqual({
+      metric: "free_cash_flow",
+      module: "cash-flow",
+      mode: "flow_quarterly",
+      fields: ["freeCashFlow", "quarterlyFreeCashFlow"],
+      keyword: "freecashflow",
+    });
+    expect(__test__.getFundamentalMetricDefinition("free_cash_flow_annual")).toEqual({
+      metric: "free_cash_flow_annual",
+      module: "cash-flow",
+      mode: "flow_annual",
+      fields: ["freeCashFlow", "annualFreeCashFlow"],
+      keyword: "freecashflow",
     });
     expect(__test__.getFundamentalMetricDefinition("cash_and_equivalents")).toEqual({
       metric: "cash_and_equivalents",

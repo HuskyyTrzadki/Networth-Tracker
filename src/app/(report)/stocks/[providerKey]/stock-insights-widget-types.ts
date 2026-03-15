@@ -14,6 +14,7 @@ export type InsightSeriesKey = "primary" | "secondary" | "tertiary";
 export type InsightValueFormat =
   | "usd_billions"
   | "usd_per_share"
+  | "percent"
   | "ratio"
   | "shares_billions";
 

@@ -103,6 +103,7 @@ export default function InsightsWidgetsSection({
   const dynamicWidgetIds = new Set(dynamicWidgets.map((widget) => widget.id));
   const hasDynamicValuationWidget =
     dynamicWidgetIds.has("pe-ratio") || dynamicWidgetIds.has("ps-ratio");
+  const hasDynamicOperatingMarginWidget = dynamicWidgetIds.has("operating-margin");
   const widgets: readonly InsightWidget[] = [
     ...dynamicWidgets,
     ...STATIC_STOCK_INSIGHT_WIDGETS.filter((widget) => {
@@ -111,6 +112,10 @@ export default function InsightsWidgetsSection({
       }
 
       if (widget.id === "valuation" && hasDynamicValuationWidget) {
+        return false;
+      }
+
+      if (widget.id === "expenses" && hasDynamicOperatingMarginWidget) {
         return false;
       }
 

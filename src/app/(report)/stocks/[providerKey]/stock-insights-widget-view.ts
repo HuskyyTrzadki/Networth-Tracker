@@ -15,11 +15,21 @@ const ratioFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 1,
 });
 
+const valuePercentFormatter = new Intl.NumberFormat("pl-PL", {
+  style: "percent",
+  maximumFractionDigits: 1,
+});
+
 const decimalFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 2,
 });
 
 const axisDecimalFormatter = new Intl.NumberFormat("pl-PL", {
+  maximumFractionDigits: 1,
+});
+
+const pointDeltaFormatter = new Intl.NumberFormat("pl-PL", {
+  signDisplay: "always",
   maximumFractionDigits: 1,
 });
 
@@ -47,6 +57,8 @@ export const formatInsightValue = (
       return `$${decimalFormatter.format(value)}B`;
     case "usd_per_share":
       return `$${decimalFormatter.format(value)}`;
+    case "percent":
+      return valuePercentFormatter.format(value);
     case "shares_billions":
       return `${decimalFormatter.format(value)}B`;
     case "ratio":
@@ -65,6 +77,8 @@ export const formatInsightAxisValue = (
       return `$${axisDecimalFormatter.format(value)}B`;
     case "usd_per_share":
       return `$${axisDecimalFormatter.format(value)}`;
+    case "percent":
+      return valuePercentFormatter.format(value);
     case "shares_billions":
       return `${axisDecimalFormatter.format(value)}B`;
     case "ratio":
@@ -99,17 +113,30 @@ export const resolveInsightWidgetCardStat = (
   if (widget.series.length === 1) {
     const current = toSeriesValue(latest, widget.series[0].key);
     const previous = toSeriesValue(first, widget.series[0].key);
+    const seriesFormat = widget.series[0].valueFormat ?? widget.valueFormat;
     const change =
       typeof current === "number" &&
       typeof previous === "number" &&
       previous !== 0
         ? (current - previous) / Math.abs(previous)
         : null;
+    const pointDelta =
+      typeof current === "number" && typeof previous === "number"
+        ? current - previous
+        : null;
+    const changeLabel =
+      seriesFormat === "percent"
+        ? pointDelta === null
+          ? "-"
+          : `${pointDeltaFormatter.format(pointDelta * 100)} p.p.`
+        : change === null
+          ? "-"
+          : signedPercentFormatter.format(change);
 
     return `${formatInsightValue(
       current,
-      widget.series[0].valueFormat ?? widget.valueFormat
-    )} • ${change === null ? "-" : signedPercentFormatter.format(change)}`;
+      seriesFormat
+    )} • ${changeLabel}`;
   }
 
   if (widget.id === "cash-debt") {

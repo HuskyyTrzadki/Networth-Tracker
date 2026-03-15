@@ -53,6 +53,7 @@ This file must be kept up to date by the LLM whenever this feature changes.
 - Quote cache stores normalized daily quote deltas (`dayChange`, `dayChangePercent`) for portfolio daily-movers UI.
 - Dividend signals are cache-component based (`use cache` + `cacheLife("days")`) keyed by instrument/providerKey and fetched with bounded concurrency to protect provider/API limits.
 - Dividend fetch is fault-tolerant per symbol: one Yahoo failure logs and returns empty signals for that ticker only.
+- Yahoo dividend signals are a clean source for report/widget payout history: group `pastEvents` into quarterly/annual per-share totals in the stocks feature instead of deriving dividend history from summary yield/rate fields.
 - Yahoo quote normalization falls back to `regularMarketPreviousClose` when provider omits direct day-change fields, so daily movers remain populated.
 - Historical daily caches store only real trading sessions. Weekend/holiday carry-forward is resolved at lookup time, not persisted as synthetic rows.
 - Historical instrument cache stores optional `adj_close` alongside OHLC, enabling split-safe derived metrics (e.g. PE overlays).

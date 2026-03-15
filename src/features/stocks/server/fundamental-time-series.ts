@@ -16,8 +16,8 @@ type YahooFinancialSeriesRow = Readonly<{
 
 export type FundamentalMetricDefinition = Readonly<{
   metric: FundamentalSeriesMetric;
-  module: "financials" | "balance-sheet";
-  mode: "flow_ttm" | "flow_quarterly" | "point_in_time";
+  module: "financials" | "balance-sheet" | "cash-flow";
+  mode: "flow_ttm" | "flow_quarterly" | "flow_annual" | "point_in_time";
   fields: readonly string[];
   keyword?: string;
 }>;
@@ -40,6 +40,25 @@ const pickByKeyword = (
     }
     return toFiniteNumber(value);
   }, null);
+
+const deriveFreeCashFlow = (row: YahooFinancialSeriesRow) => {
+  const operatingCashFlow =
+    toFiniteNumber(row.operatingCashFlow) ??
+    toFiniteNumber(row.quarterlyOperatingCashFlow) ??
+    toFiniteNumber(row.cashFlowFromContinuingOperatingActivities);
+  const capitalExpenditure =
+    toFiniteNumber(row.capitalExpenditure) ??
+    toFiniteNumber(row.quarterlyCapitalExpenditure) ??
+    toFiniteNumber(row.purchaseOfPPE);
+
+  if (operatingCashFlow === null || capitalExpenditure === null) {
+    return null;
+  }
+
+  return capitalExpenditure < 0
+    ? operatingCashFlow + capitalExpenditure
+    : operatingCashFlow - capitalExpenditure;
+};
 
 const METRIC_DEFINITIONS: Readonly<Record<FundamentalSeriesMetric, FundamentalMetricDefinition>> =
   {
@@ -95,6 +114,16 @@ const METRIC_DEFINITIONS: Readonly<Record<FundamentalSeriesMetric, FundamentalMe
         "quarterlyOperatingIncome",
       ],
     },
+    operating_income_annual: {
+      metric: "operating_income_annual",
+      module: "financials",
+      mode: "flow_annual",
+      fields: [
+        "operatingIncome",
+        "totalOperatingIncomeAsReported",
+        "annualOperatingIncome",
+      ],
+    },
     net_income: {
       metric: "net_income",
       module: "financials",
@@ -108,6 +137,34 @@ const METRIC_DEFINITIONS: Readonly<Record<FundamentalSeriesMetric, FundamentalMe
         "quarterlyNetIncome",
       ],
       keyword: "netincome",
+    },
+    net_income_annual: {
+      metric: "net_income_annual",
+      module: "financials",
+      mode: "flow_annual",
+      fields: [
+        "netIncome",
+        "netIncomeCommonStockholders",
+        "netIncomeFromContinuingOperations",
+        "netIncomeContinuousOperations",
+        "netIncomeFromContinuingOperationNetMinorityInterest",
+        "annualNetIncome",
+      ],
+      keyword: "netincome",
+    },
+    free_cash_flow: {
+      metric: "free_cash_flow",
+      module: "cash-flow",
+      mode: "flow_quarterly",
+      fields: ["freeCashFlow", "quarterlyFreeCashFlow"],
+      keyword: "freecashflow",
+    },
+    free_cash_flow_annual: {
+      metric: "free_cash_flow_annual",
+      module: "cash-flow",
+      mode: "flow_annual",
+      fields: ["freeCashFlow", "annualFreeCashFlow"],
+      keyword: "freecashflow",
     },
     cash_and_equivalents: {
       metric: "cash_and_equivalents",
@@ -168,6 +225,16 @@ const extractMetricValue = (
   row: YahooFinancialSeriesRow,
   metric: FundamentalSeriesMetric
 ) => {
+  if (metric === "free_cash_flow" || metric === "free_cash_flow_annual") {
+    return (
+      pickByFields(row, METRIC_DEFINITIONS[metric].fields) ??
+      deriveFreeCashFlow(row) ??
+      (METRIC_DEFINITIONS[metric].keyword
+        ? pickByKeyword(row, METRIC_DEFINITIONS[metric].keyword)
+        : null)
+    );
+  }
+
   const definition = METRIC_DEFINITIONS[metric];
   return (
     pickByFields(row, definition.fields) ??
