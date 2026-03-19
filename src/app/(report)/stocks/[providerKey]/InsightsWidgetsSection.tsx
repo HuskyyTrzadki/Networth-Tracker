@@ -30,6 +30,33 @@ import {
   shouldRenderInsightWidgetSubtitle,
 } from "./stock-insights-widget-view";
 
+const WIDGET_PRIORITY: Readonly<Record<string, number>> = {
+  revenue: 0,
+  "operating-margin": 1,
+  earnings: 2,
+  "net-margin": 3,
+  "free-cash-flow": 4,
+  "cash-debt": 5,
+  "shares-outstanding": 6,
+  "pe-ratio": 7,
+  "ps-ratio": 8,
+  dividends: 9,
+  valuation: 10,
+  expenses: 11,
+};
+
+const sortWidgetsByPriority = (widgets: readonly InsightWidget[]) =>
+  [...widgets].sort((left, right) => {
+    const leftPriority = WIDGET_PRIORITY[left.id] ?? Number.MAX_SAFE_INTEGER;
+    const rightPriority = WIDGET_PRIORITY[right.id] ?? Number.MAX_SAFE_INTEGER;
+
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority;
+    }
+
+    return left.title.localeCompare(right.title);
+  });
+
 function LegacyInsightWidgetDialog({
   widget,
   reducedMotion,
@@ -105,22 +132,24 @@ export default function InsightsWidgetsSection({
     dynamicWidgetIds.has("pe-ratio") || dynamicWidgetIds.has("ps-ratio");
   const hasDynamicOperatingMarginWidget = dynamicWidgetIds.has("operating-margin");
   const widgets: readonly InsightWidget[] = [
-    ...dynamicWidgets,
-    ...STATIC_STOCK_INSIGHT_WIDGETS.filter((widget) => {
-      if (dynamicWidgetIds.has(widget.id)) {
-        return false;
-      }
+    ...sortWidgetsByPriority([
+      ...dynamicWidgets,
+      ...STATIC_STOCK_INSIGHT_WIDGETS.filter((widget) => {
+        if (dynamicWidgetIds.has(widget.id)) {
+          return false;
+        }
 
-      if (widget.id === "valuation" && hasDynamicValuationWidget) {
-        return false;
-      }
+        if (widget.id === "valuation" && hasDynamicValuationWidget) {
+          return false;
+        }
 
-      if (widget.id === "expenses" && hasDynamicOperatingMarginWidget) {
-        return false;
-      }
+        if (widget.id === "expenses" && hasDynamicOperatingMarginWidget) {
+          return false;
+        }
 
-      return true;
-    }),
+        return true;
+      }),
+    ]),
   ];
   const [activeWidgetId, setActiveWidgetId] = useState<string | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -142,6 +171,9 @@ export default function InsightsWidgetsSection({
       <SectionHeader as="h3" title="Wybrane trendy finansowe" />
 
       <ReportCard contentClassName="p-4 sm:p-6">
+        <div className="border-b border-dashed border-black/15 pb-3 text-[11px] text-muted-foreground">
+          Najpierw skala i marze, potem przeplywy, bilans, kapital i wycena.
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:[&>*:nth-child(odd)]:border-r lg:[&>*:nth-child(odd)]:border-dashed lg:[&>*:nth-child(odd)]:border-black/15">
           {widgets.map((widget) => {
             const defaultFrequency =
@@ -173,21 +205,16 @@ export default function InsightsWidgetsSection({
                     <h4 className="mt-1 text-base font-semibold tracking-tight">
                       {widget.title}
                     </h4>
-                    {shouldRenderInsightWidgetSubtitle(widget) ? (
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        {widget.subtitle}
-                      </p>
-                    ) : null}
                   </div>
-                  <span className="inline-flex h-7 w-7 items-center justify-center border border-black/15 text-muted-foreground transition-colors group-hover:text-foreground">
+                  <span className="inline-flex h-7 w-7 items-center justify-center border border-black/15 bg-background text-muted-foreground transition-colors group-hover:border-black/25 group-hover:text-foreground">
                     <Expand className="size-3.5" aria-hidden />
                   </span>
                 </div>
 
-                <p className="mt-2 text-[11px] font-medium text-foreground/90 lg:text-xs">
+                <p className="mt-2 min-h-[1rem] text-[11px] font-medium text-foreground/90 lg:text-xs">
                   {cardStat}
                 </p>
-                <div className="mt-2 border-t border-dashed border-black/15 pt-2">
+                <div className="mt-2 border-t border-dashed border-black/15 pt-1.5">
                   <InsightWidgetChart
                     widget={widget}
                     points={cardPoints}
