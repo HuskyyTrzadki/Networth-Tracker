@@ -115,7 +115,7 @@ export function XtbImportUploadStep({
               disabled={isPreviewing}
               onClick={onPreview}
             >
-              {isPreviewing ? "Przygotowuję podgląd..." : "Dalej do podglądu"}
+              {isPreviewing ? "Przygotowuję podgląd..." : "Dalej do podgladu"}
             </Button>
           </div>
         </div>
